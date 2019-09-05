@@ -1,0 +1,15 @@
+version: "3.7"
+services:
+  connection-manager-api:   
+    environment:
+      - PORT=80
+    ports:
+     - "80:80"
+
+
+
+
+
+
+
+
