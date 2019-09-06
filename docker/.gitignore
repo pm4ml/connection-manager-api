@@ -1,0 +1,5 @@
+dbdir/**
+dbdir
+docker-compose-auth.local.yml
+docker-compose-auth.uat.yml
+docker-compose-auth.dev.yml

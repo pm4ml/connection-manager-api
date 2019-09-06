@@ -1,0 +1,65 @@
+version: "3.7"
+
+services:
+  connection-manager-db:
+    # Using mariadb because mysql doesn't show any helpful error when docker disk is full as per https://github.com/docker-library/mysql/issues/69
+    image: mariadb
+    hostname: connection-manager-db
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=mcm
+      - MYSQL_USER=mcm
+      - MYSQL_PASSWORD=mcm
+    restart: always
+    command: mysqld --lower_case_table_names=1 --skip-ssl --character_set_server=utf8mb4 --explicit_defaults_for_timestamp
+  connection-manager-api:
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    image: connection-manager-api
+    hostname: connection-manager-api
+    environment:
+      - DATABASE_HOST=connection-manager-db
+      - DATABASE_PORT=3306
+      - DATABASE_USER=mcm
+      - DATABASE_PASSWORD=mcm
+      - DATABASE_SCHEMA=mcm
+      - MYSQL_ROOT_PASSWORD=modus123
+      - PORT=3001
+      - P12_PASS_PHRASE='SOME_S3C4R3_P@SS'
+    tty: true
+    stdin_open: true  
+    ports:
+     - "3001:3001"
+    restart: always
+    depends_on:
+      - connection-manager-db
+  connection-manager-ui:
+    # This builds the image from a locally cloned repo
+    build:
+      context: ../../connection-manager-ui
+      dockerfile: Dockerfile
+      args:
+        - AUTH_ENABLED=FALSE
+        - REACT_APP_COMMIT=${REACT_APP_COMMIT:-unknown}
+        - REACT_APP_VERSION=${REACT_APP_VERSION:-unknown}
+    hostname: connection-manager-ui
+    environment:
+      - API_BASE_URL=http://localhost:3001
+    tty: true
+    stdin_open: true  
+    ports:
+     - "80:8080"
+    restart: always
+  
+
+
+
+
+
+
+
+
+
