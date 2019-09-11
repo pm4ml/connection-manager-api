@@ -140,6 +140,41 @@ paths:
         422:
           description: "external process error"
       x-swagger-router-controller: "Login"
+  /resetPassword:
+    post:
+      tags:
+      - "login"
+      summary: "Reset password"
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - in: formData
+          name: username
+          type: string
+          required: true
+          description: username
+        - in: formData
+          name: newPassword
+          type: string
+          format: password
+          required: true
+          description: new password.
+        - in: formData
+          name: userguid
+          type: string
+          required: true
+          description: userguid needed for password change
+      operationId: "resetPassword"
+      produces:
+      - "application/json"
+      responses:
+        204:
+          description: "successful password reset and login"
+        401:
+          description: "invalid userguid or username"
+        422:
+          description: "external process error"
+      x-swagger-router-controller: "Login"
   /environments:
     get:
       tags:
@@ -2284,6 +2319,14 @@ definitions:
               dfspId:
                 description: "DFSP id. To be used when calling the API"
                 type: string
+              userguid:
+                description: "GUID to be used for reset password"
+                type: string
+                
+      userguid: 
+        type: string
+      askPassword:
+        type: boolean
       sharedSecret:
         type: string
       issuer:
@@ -2313,6 +2356,9 @@ definitions:
           exp: 1558713100
           iat: 1558709500
           dfspId: 'DFSP1'
+          userguid: "userguid"
+      userguid: "userguid"
+      askPassword: true
       sharedSecret: "xxxx"
       issuer: "MCM"
       label: "devMCM"

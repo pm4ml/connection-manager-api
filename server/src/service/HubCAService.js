@@ -79,7 +79,6 @@ exports.deleteHubCA = async (envId, hubCAId) => {
 };
 
 const bodyToRow = async (body, envId, validationResult) => {
-
   let chainInfo = await PkiService.splitChainIntermediateCertificate(body);
 
   return {

@@ -40,3 +40,46 @@ exports.getToken = async (username, password) => {
     throw error;
   }
 };
+
+/**
+ * Chnage password will go to WSO2 server to validate current password, and change it for the new one, also set flag first time in false, returning success
+ * This still needs to be defined by Greg
+ * @param {*} username
+ * @param {*} newPassword
+ * @param {*} userguid
+ * @returns success
+ */
+exports.resetPassword = async (username, newPassword, userguid) => {
+  const url = Constants.OAUTH.RESET_PASSWORD_ISSUER + `/${userguid}`;
+  const options = {
+    method: 'PUT',
+    uri: url,
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: {
+      'userName': username,
+      'password': newPassword,
+      'EnterpriseUser':
+        {
+          'askPassword': false
+        }
+
+    },
+    json: true,
+    auth: {
+      user: Constants.OAUTH.RESET_PASSWORD_AUTH_USER,
+      pass: Constants.OAUTH.RESET_PASSWORD_AUTH_PASSWORD
+    }
+  };
+  try {
+    let response = await rp(options);
+    return response;
+  } catch (error) {
+    if (error && (error.statusCode === 404 || error.statusCode === 400)) {
+      throw new UnauthorizedError(`Authentication failed for user ${username}`, error.error);
+    } else {
+      throw error;
+    }
+  }
+};

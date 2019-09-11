@@ -16,15 +16,25 @@
  ******************************************************************************/
 
 'use strict';
-const Constants = require('./constants/Constants');
-const http = require('http');
-const serverPort = Constants.SERVER.PORT;
-const app = require('./app');
 
-const appConnected = app.connect();
+const spawnProcess = require('../process/spawner');
 
-// Start the server
-http.createServer(appConnected).listen(serverPort, function () {
-  console.log('Connection-Manager API server is listening on port %d (http://localhost:%d)', serverPort, serverPort);
-  console.log('Swagger-ui is available on http://localhost:%d/docs', serverPort);
-});
+exports.printToolsVersion = () => {
+  spawnProcess('cfssl', ['version'], '')
+    .then(cfsslResult => {
+      let { stdout } = cfsslResult;
+      console.log('\nRunning cfssl version: ', stdout);
+    })
+    .catch(err => {
+      console.error('Error while trying to print cfssl version: ', err);
+    });
+
+  spawnProcess('openssl', ['version'], '')
+    .then(opensslResult => {
+      let { stdout } = opensslResult;
+      console.log('\nRunning openssl version: ', stdout);
+    })
+    .catch(err => {
+      console.error('Error while trying to print openssl version: ', err);
+    });
+};

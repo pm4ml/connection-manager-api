@@ -21,6 +21,8 @@ const Constants = require('../constants/Constants');
 const fs = require('fs');
 const path = require('path');
 
+const isAuthEnabled = Constants.OAUTH.AUTH_ENABLED != null && (Constants.OAUTH.AUTH_ENABLED === 'true' || Constants.OAUTH.AUTH_ENABLED === 'TRUE');
+
 function cookieExtractor (req) {
   let cookies = new Cookies(req);
   let token = cookies.get(Constants.OAUTH.JWT_COOKIE_NAME);
@@ -108,6 +110,19 @@ function getOAuth2Middleware () {
   };
 }
 
+const handleMiddleware = (middleware, app) => {
+  if (isAuthEnabled) {
+    console.log(`Enabling OAUTH. Constants.OAUTH.AUTH_ENABLED = ${Constants.OAUTH.AUTH_ENABLED}`);
+    app.use('/api/environments', exports.getOAuth2Middleware());
+    // https://github.com/apigee-127/swagger-tools/blob/master/docs/Middleware.md#swagger-security
+    app.use('/api/environments', middleware.swaggerSecurity({
+      OAuth2: exports.oauth2PermissionsVerifier
+    }));
+  } else {
+    console.log(`NOT enabling OAUTH. Constants.OAUTH.AUTH_ENABLED = ${Constants.OAUTH.AUTH_ENABLED}`);
+  }
+};
+
 /**
  * Validates that the user has the required permissions to execute the operation.
  *
@@ -187,4 +202,5 @@ function oauth2PermissionsVerifier (req, securityDefinition, scopes, callback) {
 module.exports = {
   getOAuth2Middleware,
   oauth2PermissionsVerifier,
+  handleMiddleware
 };

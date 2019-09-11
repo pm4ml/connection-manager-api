@@ -57,25 +57,24 @@ const runKnexMigrations = async () => {
 // https://docs.docker.com/compose/startup-order/
 let dbRetries = 1;
 exports.runKnexMigrationIfNeeded = async () => {
-    if(Constants.DATABASE.RUN_MIGRATIONS){
-        try {
-            await runKnexMigrations();
-            console.log(`success connected to DB and tables created after trying : ${dbRetries} time(s)`);
-        } catch (e) {
-            console.log(`error connecting to the database. Attempting retry: ${dbRetries}`);
-            dbRetries++;
-            if (dbRetries === Constants.DATABASE.DB_RETRIES) {
-                console.error('could not get connection to DB after retries', e);
-                process.exit(1);
-            } else {
-                setTimeout(
-                    exports.runKnexMigrationIfNeeded,
-                    Constants.DATABASE.DB_CONNECTION_RETRY_WAIT_MILLISECONDS
-                );
-            }
-        }
-
+  if (Constants.DATABASE.RUN_MIGRATIONS) {
+    try {
+      await runKnexMigrations();
+      console.log(`success connected to DB and tables created after trying : ${dbRetries} time(s)`);
+    } catch (e) {
+      console.log(`error connecting to the database. Attempting retry: ${dbRetries}`);
+      dbRetries++;
+      if (dbRetries === Constants.DATABASE.DB_RETRIES) {
+        console.error('could not get connection to DB after retries', e);
+        process.exit(1);
+      } else {
+        setTimeout(
+          exports.runKnexMigrationIfNeeded,
+          Constants.DATABASE.DB_CONNECTION_RETRY_WAIT_MILLISECONDS
+        );
+      }
     }
+  }
 };
 
 exports.knex = defaultKnex;

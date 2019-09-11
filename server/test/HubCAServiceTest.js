@@ -89,7 +89,5 @@ describe('HubCAServiceTest', () => {
         assert.instanceOf(error, ValidationError);
       }
     }).timeout(15000);
-
-
   });
 });

@@ -20,7 +20,6 @@
 var utils = require('../utils/writer.js');
 var Pki = require('../service/PkiService');
 
-
 exports.createCA = function createCA (req, res, next) {
   var envId = req.swagger.params['envId'].value;
   var body = req.swagger.params['body'].value;

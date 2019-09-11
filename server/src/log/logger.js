@@ -16,15 +16,23 @@
  ******************************************************************************/
 
 'use strict';
-const Constants = require('./constants/Constants');
-const http = require('http');
-const serverPort = Constants.SERVER.PORT;
-const app = require('./app');
 
-const appConnected = app.connect();
+const winston = require('winston');
+const expressWinston = require('express-winston');
 
-// Start the server
-http.createServer(appConnected).listen(serverPort, function () {
-  console.log('Connection-Manager API server is listening on port %d (http://localhost:%d)', serverPort, serverPort);
-  console.log('Swagger-ui is available on http://localhost:%d/docs', serverPort);
-});
+exports.createWinstonLogger = () => {
+  return expressWinston.logger({
+    transports: [
+      new winston.transports.Console()
+    ],
+    // format: winston.format.combine(
+    //   winston.format.colorize(),
+    //   winston.format.json()
+    // ),
+    meta: true,
+    msg: 'HTTP {{req.method}} {{req.url}}',
+    expressFormat: true,
+    colorize: false,
+    ignoreRoute: function (req, res) { return false; }
+  });
+};

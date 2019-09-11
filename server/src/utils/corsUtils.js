@@ -16,15 +16,28 @@
  ******************************************************************************/
 
 'use strict';
-const Constants = require('./constants/Constants');
-const http = require('http');
-const serverPort = Constants.SERVER.PORT;
-const app = require('./app');
+const Constants = require('../constants/Constants');
+const isAuthEnabled = Constants.OAUTH.AUTH_ENABLED != null && (Constants.OAUTH.AUTH_ENABLED === 'true' || Constants.OAUTH.AUTH_ENABLED === 'TRUE');
 
-const appConnected = app.connect();
+const whitelist = ['http://devint1-pkiadminweb.casahub.live', 'https://devint1-pkiadminweb.casahub.live'];
 
-// Start the server
-http.createServer(appConnected).listen(serverPort, function () {
-  console.log('Connection-Manager API server is listening on port %d (http://localhost:%d)', serverPort, serverPort);
-  console.log('Swagger-ui is available on http://localhost:%d/docs', serverPort);
-});
+exports.getCorsOptions = {
+  credentials: true,
+  origin: function (requestOrigin, callback) {
+    if (!isAuthEnabled) {
+      console.log(`cors origin callback: allowing ${requestOrigin} - No Auth`);
+      callback(null, true);
+      // requests from curl don't usually have the Origin header
+    } else if (!requestOrigin) {
+      console.log(`cors origin callback: allowing ${requestOrigin} - No requestOrigin`);
+      callback(null, true);
+    } else if (requestOrigin.indexOf('localhost') !== -1 || whitelist.indexOf(requestOrigin) !== -1) {
+      console.log(`cors origin callback: allowing ${requestOrigin} - whitelisted`);
+      callback(null, true);
+    } else {
+      console.log(`cors origin callback: allowing ${requestOrigin} since we don't know where the UI is published in UAT`);
+      callback(null, true);
+      // callback(new Error('Not allowed by CORS:  requestOrigin: ', requestOrigin));
+    }
+  }
+};

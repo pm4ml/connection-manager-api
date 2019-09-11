@@ -16,8 +16,6 @@
  ******************************************************************************/
 
 'use strict';
-var rp = require('request-promise-native');
-// const FormData = require('form-data');
 const Constants = require('../constants/Constants');
 const UnauthorizedError = require('../errors/UnauthorizedError');
 const BadRequestError = require('../errors/BadRequestError');
@@ -27,6 +25,7 @@ const wso2TotpClient = require('./Wso2TotpClient');
 const wso2Client = require('./Wso2Client');
 const wso2ManagerServiceClient = require('./Wso2ManagerServiceClient');
 const ENROLLED_2FA = '2fa-enrolled';
+const PASSWORD_RESET = 'askPassword';
 
 /**
  * Logs the user in.
@@ -53,21 +52,20 @@ exports.loginUser = async function (username, password, req, res) {
       }
     };
   }
-  const form = {
-    username: username,
-    password: password,
-    scope: 'openid',
-    grant_type: 'password',
-  };
   try {
-    let url = Constants.OAUTH.OAUTH2_ISSUER;
-    let loginResponse = await rp.post(url).form(form).auth(Constants.OAUTH.APP_OAUTH_CLIENT_KEY, Constants.OAUTH.APP_OAUTH_CLIENT_SECRET);
-    let loginResponseObj = JSON.parse(loginResponse);
+    let loginResponseObj = await wso2Client.getToken(username, password);
     let response; // there are 3 types of possible response depending on AUTH_2FA_ENABLED and if its enrolled or not
-    if ((/true/i).test(Constants.AUTH_2FA.AUTH_2FA_ENABLED)) {
-      response = await build2FAResponse(loginResponseObj, username);
+
+    let decodedIdToken = jwt.decode(loginResponseObj.id_token);
+
+    if (/true/i.test(decodedIdToken[PASSWORD_RESET])) {
+      response = buildFirstLoginResponse(decodedIdToken);
     } else {
-      response = buildJWTResponse(loginResponseObj, req, res);
+      if ((/true/i).test(Constants.AUTH_2FA.AUTH_2FA_ENABLED)) {
+        response = await build2FAResponse(decodedIdToken, username);
+      } else {
+        response = buildJWTResponse(decodedIdToken, loginResponseObj.access_token, req, res);
+      }
     }
 
     return response;
@@ -80,9 +78,17 @@ exports.loginUser = async function (username, password, req, res) {
   }
 };
 
-const build2FAResponse = async (loginResponseObj, user) => {
-  let decodedIdToken = jwt.decode(loginResponseObj.id_token);
+// Just in case we need more information from WSO2 response, we created a new object
+const buildFirstLoginResponse = (decodedIdToken) => {
+  let response = {
+    askPassword: true,
+    userguid: decodedIdToken['userguid']
+  };
 
+  return response;
+};
+
+const build2FAResponse = async (decodedIdToken, user) => {
   // analyze if the user is already enrolled (decodedIdToken.2fa-enrolled)
   let response;
   if (/true/i.test(decodedIdToken[ENROLLED_2FA])) {
@@ -106,8 +112,7 @@ const build2FAResponse = async (loginResponseObj, user) => {
   return response;
 };
 
-const buildJWTResponse = (loginResponseObj, req, res) => {
-  let decodedIdToken = jwt.decode(loginResponseObj.id_token);
+const buildJWTResponse = (decodedIdToken, accessToken, req, res) => {
   // If the user is a DFSP admin, set the dfspId so the UI can send it
   let dfspId = null;
   if (decodedIdToken.dfspId != null) {
@@ -132,7 +137,7 @@ const buildJWTResponse = (loginResponseObj, req, res) => {
   let cookies = new Cookies(req, res);
   let maxAge = 3600 * 1000; // ms
   let cookieOptions = { maxAge: maxAge, httpOnly: true, sameSite: 'strict' }; // secure is automatic based on HTTP or HTTPS used
-  cookies.set(Constants.OAUTH.JWT_COOKIE_NAME, loginResponseObj.access_token, cookieOptions);
+  cookies.set(Constants.OAUTH.JWT_COOKIE_NAME, accessToken, cookieOptions);
 
   return {
     ok: true,
@@ -169,13 +174,17 @@ exports.login2step = async (username, password, generatedToken, req, res) => {
     await wso2TotpClient.validateTOTP(username, generatedToken);
     if (!(/true/i).test(decodedIdToken[ENROLLED_2FA])) {
       // mark the user as enrolled
-      wso2ManagerServiceClient.setUserClaimValue(username, ENROLLED_2FA, true);
+      await wso2ManagerServiceClient.setUserClaimValue(username, ENROLLED_2FA, true);
     }
 
-    let response = buildJWTResponse(loginResponseObj, req, res);
+    let response = buildJWTResponse(decodedIdToken, loginResponseObj.access_token, req, res);
     return response;
   } catch (error) {
     console.log(`Error on LoginService.login2step: `, error);
     throw error;
   }
+};
+
+exports.resetPassword = async (username, newPassword, userguid) => {
+  await wso2Client.resetPassword(username, newPassword, userguid);
 };
