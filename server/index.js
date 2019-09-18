@@ -17,6 +17,8 @@
 
 'use strict';
 const app = require('./src/app');
+const Constants = require('./src/constants/Constants');
 
 // this will be used by another project which use this one as a library
 exports.appLoader = app.connect;
+exports.Constants = Constants;
