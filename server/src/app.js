@@ -29,8 +29,11 @@ const db = require('./db/database');
 const printToolsVersion = require('./utils/printToolVersion');
 const corsUtils = require('./utils/corsUtils');
 
+const { Model } = require('objection');
+
 exports.connect = () => {
   printToolsVersion.printToolsVersion();
+  Model.knex(db.knex);
   db.runKnexMigrationIfNeeded();
   setUpTempFilesManagement();
 

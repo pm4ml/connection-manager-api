@@ -40,7 +40,8 @@
     "swagger-tools": "^0.10.4",
     "tmp-promise": "^1.0.5",
     "winston": "^3.2.1",
-    "xml2js": "^0.4.19"
+    "xml2js": "^0.4.19",
+    "objection": "^1.6.9"
   },
   "devDependencies": {
     "eslint": "^5.15.3",

@@ -17,6 +17,7 @@
 
 const Constants = require('../constants/Constants');
 const path = require('path');
+const initialConfiguration = require('./InitialDataConfiguration');
 
 let knexOptions = {
   client: 'mysql',
@@ -51,6 +52,7 @@ const runKnexMigrations = async () => {
   console.log('Migrating');
   await exports.knex.migrate.latest();
   console.log('Migration done');
+  await initialConfiguration.runInitialConfigurations();
 };
 
 // design your application to attempt to re-establish a connection to the database after a failure
