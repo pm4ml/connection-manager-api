@@ -18,6 +18,8 @@
 const path = require('path');
 const initialConfiguration = require('../src/db/InitialDataConfiguration');
 
+const { Model } = require('objection');
+
 let knexOptions = {
   client: 'sqlite3',
   connection: {
@@ -50,6 +52,7 @@ const runKnexMigrations = async () => {
 };
 
 exports.setupTestDB = async () => {
+  Model.knex(knex);
   await knex.initialize();
   await runKnexMigrations();
   await initialConfiguration.runInitialConfigurations();

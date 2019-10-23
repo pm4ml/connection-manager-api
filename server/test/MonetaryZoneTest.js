@@ -17,13 +17,10 @@
 
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 const MonetaryZoneService = require('../src/service/MonetaryZoneService');
-const { Model } = require('objection');
-const { knex } = require('../src/db/database');
 const assert = require('chai').assert;
 
 describe('MonetaryZoneTest', () => {
   beforeEach(async () => {
-    Model.knex(knex);
     await setupTestDB();
   });
 
