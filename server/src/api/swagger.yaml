@@ -2268,7 +2268,22 @@ paths:
           schema:
             $ref: "#/definitions/JWSCert"
       x-swagger-router-controller: "JWSCerts"
-
+  /monetaryzones:
+    get:
+      tags:
+      - "monetaryzones"      
+      summary: "Returns the monetary zones supported"
+      operationId: "getMonetaryZones"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/MonetaryZone"
+      x-swagger-router-controller: "MonetaryZonesController"
 definitions:
   LoginResponse:
     type: "object"
@@ -3234,6 +3249,19 @@ definitions:
     type: "array"
     items:
       $ref: "#/definitions/Validation"
+
+  MonetaryZone:
+    type: "object"
+    properties:
+      monetaryZoneId:
+        type: "string"
+        pattern: '^[A-Z]{3}$'
+      name:
+        type: "string"
+    example:
+      monetaryZoneId: "EUR"
+      name: "Euro"      
+
 x-components:
   requestBodies:
     CA:

@@ -53,13 +53,3 @@ services:
     ports:
      - "80:8080"
     restart: always
-  
-
-
-
-
-
-
-
-
-

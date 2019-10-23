@@ -16,6 +16,7 @@
  ******************************************************************************/
 
 const path = require('path');
+const initialConfiguration = require('../src/db/InitialDataConfiguration');
 
 let knexOptions = {
   client: 'sqlite3',
@@ -29,7 +30,10 @@ let knexOptions = {
     directory: path.join(__dirname, '/./resources/knex/seeds')
   },
   useNullAsDefault: true,
-  // debug: true,
+  pool: {
+    afterCreate: (conn, cb) =>
+      conn.run('PRAGMA foreign_keys = ON', cb)
+  },
 };
 
 const { setKnex } = require('../src/db/database');
@@ -48,6 +52,7 @@ const runKnexMigrations = async () => {
 exports.setupTestDB = async () => {
   await knex.initialize();
   await runKnexMigrations();
+  await initialConfiguration.runInitialConfigurations();
   await knex.seed.run();
 };
 

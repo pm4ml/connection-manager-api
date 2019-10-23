@@ -21,7 +21,7 @@ exports.runInitialConfigurations = async () => {
   try {
     trx = await transaction.start(Currency.knex());
 
-    await createCurrency(currencyCodes);
+    await createCurrency(currencyCodes, trx);
 
     await updateCurrency(currencies, trx);
     await createMonetaryZone(monetaryZones, trx);

@@ -15,50 +15,17 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { BaseModel } = require('./BaseModel');
-const { Model } = require('objection');
-const { Currency } = require('./Currency');
-const monetaryZoneSchema = require('../../src/db/validators/monetaryZoneSchema');
+'use strict';
 
-class MonetaryZone extends BaseModel {
-  static get jsonSchema () {
-    return monetaryZoneSchema;
-  }
+var utils = require('../utils/writer.js');
+var MonetaryZonesService = require('../service/MonetaryZoneService');
 
-  static get tableName () {
-    return 'monetaryZone';
-  }
-
-  static get idColumn () {
-    return 'monetaryZoneId';
-  }
-
-  static get relationMappings () {
-    return {
-      currency: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: Currency,
-        join: {
-          from: 'monetaryZone.monetaryZoneId',
-          to: 'currency.currencyId'
-        }
-      }
-    };
-  }
-
-  static async findById (id) {
-    return MonetaryZone.query().findById(id);
-  }
-
-  static async create (monetaryZone, trx) {
-    return MonetaryZone.query(trx).insert(monetaryZone);
-  }
-
-  static async findAllActive (trx) {
-    return MonetaryZone.query(trx).where('isActive', true);
-  }
-}
-
-module.exports = {
-  MonetaryZone
+module.exports.getMonetaryZones = function getMonetaryZones (req, res) {
+  MonetaryZonesService.getMonetaryZones()
+    .then(function (response) {
+      utils.writeJson(res, response);
+    })
+    .catch(function (response) {
+      utils.writeJson(res, response);
+    });
 };
