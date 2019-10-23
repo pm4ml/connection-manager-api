@@ -259,6 +259,16 @@ exports.getDFSPById = async function (envId, dfspId) {
   }
 };
 
+exports.updateDFSP = async (envId, dfspId, newDfsp) => {
+  if (envId === null || typeof envId === 'undefined') {
+    throw new ValidationError(`Invalid envId ${envId}`);
+  }
+  if (dfspId === null || typeof dfspId === 'undefined') {
+    throw new ValidationError(`Invalid dfspId ${dfspId}`);
+  }
+  return DFSPModel.update(envId, dfspId, newDfsp);
+};
+
 /**
  *
  */

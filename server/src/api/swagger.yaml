@@ -870,6 +870,44 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/DFSP"
+      x-swagger-router-controller: "Pki"    
+      
+  /environments/{envId}/dfsps/{dfspId}:
+    parameters:
+    - name: "envId"
+      in: "path"
+      description: "ID of environment"
+      required: true
+      type: "string"
+    - name: "dfspId"
+      in: "path"
+      description: "ID of dfsp"
+      required: true
+      type: "string"      
+    put:
+      tags:
+      - "env-dfsp-config"
+      summary: "Updates DFSP related info"
+      description: "Updates DFSP related info"
+      operationId: "updateDFSP"
+      security:
+        - OAuth2: [ pta ]
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "DFSP initial info"
+        required: true
+        schema:
+          $ref: "#/definitions/DFSPUpdate"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/DFSPUpdate"
       x-swagger-router-controller: "Pki"
       
   /environments/{envId}/hub/cas:
@@ -2611,12 +2649,28 @@ definitions:
       name:
         type: "string"
         description: "Informal name"
+      monetaryZoneId:
+        type: "string"
+        description: 'The monetary Zone'
       securityGroup:
         type: "string"
         description: "OAuth role/group owner"
     example:
       dfspId: "DFSP1"
       name: "DFSP 1"
+      monetaryZoneId: "EUR"
+  DFSPUpdate:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        description: "Informal name"
+      monetaryZoneId:
+        type: "string"
+        description: 'The monetary Zone'
+    example:
+      name: "DFSP 1"
+      monetaryZoneId: "EUR"      
   DFSP:
     type: "object"
     properties:
@@ -2629,6 +2683,9 @@ definitions:
       name:
         type: "string"
         description: "Informal name"
+      monetaryZoneId:
+        type: "string"
+        description: 'The monetary Zone'
       securityGroup:
         type: "string"
         description: "DFSP Security group"
@@ -2636,6 +2693,7 @@ definitions:
       envId: 24,
       id: "DFSP2"
       name: "DFSP2"
+      monetaryZoneId: "EUR"
       securityGroup: "Application/DFSP:DFSP2"      
   DFSPInboundCreate:
     type: "object"

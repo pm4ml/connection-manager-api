@@ -145,3 +145,16 @@ exports.getDFSPca = function getDFSPca (req, res, next) {
       utils.writeJson(res, response, response.status);
     });
 };
+
+exports.updateDFSP = (req, res, next) => {
+  var envId = req.swagger.params['envId'].value;
+  var dfspId = req.swagger.params['dfspId'].value;
+  var body = req.swagger.params['body'].value;
+  Pki.updateDFSP(envId, dfspId, body)
+    .then(function (response) {
+      utils.writeJson(res, response);
+    })
+    .catch(function (response) {
+      utils.writeJson(res, response, response.status);
+    });
+};
