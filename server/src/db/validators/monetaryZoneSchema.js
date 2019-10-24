@@ -15,50 +15,18 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const path = require('path');
-const initialConfiguration = require('../src/db/InitialDataConfiguration');
+const currencyDefinition = require('./definitions/currencyDefinition');
 
-const { Model } = require('objection');
-
-let knexOptions = {
-  client: 'sqlite3',
-  connection: {
-    filename: ':memory:',
+module.exports = {
+  type: 'object',
+  required: ['monetaryZoneId', 'name'],
+  properties: {
+    monetaryZoneId: { $ref: '#/definitions/Currency' },
+    name: { type: 'string', maxLength: 256 },
+    description: { type: 'string', maxLength: 512 }
   },
-  migrations: {
-    directory: path.join(__dirname, '/../src/db/migrations')
-  },
-  seeds: {
-    directory: path.join(__dirname, '/./resources/knex/seeds')
-  },
-  useNullAsDefault: true,
-  pool: {
-    afterCreate: (conn, cb) =>
-      conn.run('PRAGMA foreign_keys = ON', cb)
-  },
-};
+  definitions: {
+    Currency: currencyDefinition
+  }
 
-const { setKnex } = require('../src/db/database');
-setKnex(knexOptions);
-
-// Now set up the test DB
-
-const { knex } = require('../src/db/database');
-
-const runKnexMigrations = async () => {
-  console.log('Migrating');
-  await knex.migrate.latest();
-  console.log('Migration done');
-};
-
-exports.setupTestDB = async () => {
-  Model.knex(knex);
-  await knex.initialize();
-  await runKnexMigrations();
-  await initialConfiguration.runInitialConfigurations();
-  await knex.seed.run();
-};
-
-exports.tearDownTestDB = async () => {
-  await knex.destroy();
 };

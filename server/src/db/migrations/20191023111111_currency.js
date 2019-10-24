@@ -15,50 +15,23 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const path = require('path');
-const initialConfiguration = require('../src/db/InitialDataConfiguration');
+'use strict';
 
-const { Model } = require('objection');
-
-let knexOptions = {
-  client: 'sqlite3',
-  connection: {
-    filename: ':memory:',
-  },
-  migrations: {
-    directory: path.join(__dirname, '/../src/db/migrations')
-  },
-  seeds: {
-    directory: path.join(__dirname, '/./resources/knex/seeds')
-  },
-  useNullAsDefault: true,
-  pool: {
-    afterCreate: (conn, cb) =>
-      conn.run('PRAGMA foreign_keys = ON', cb)
-  },
+exports.up = async (knex) => {
+  return knex.schema.hasTable('currency').then(function (exists) {
+    if (!exists) {
+      return knex.schema.createTable('currency', (t) => {
+        t.string('currencyId', 3).primary().notNullable();
+        t.string('name', 128).defaultTo(null).nullable();
+        t.integer('scale').unsigned().defaultTo(4).notNullable();
+        t.boolean('isActive').defaultTo(true).notNullable();
+        t.dateTime('createdDate').defaultTo(knex.fn.now()).notNullable();
+        t.boolean('enabled').defaultTo(false).notNullable();
+      });
+    }
+  });
 };
 
-const { setKnex } = require('../src/db/database');
-setKnex(knexOptions);
-
-// Now set up the test DB
-
-const { knex } = require('../src/db/database');
-
-const runKnexMigrations = async () => {
-  console.log('Migrating');
-  await knex.migrate.latest();
-  console.log('Migration done');
-};
-
-exports.setupTestDB = async () => {
-  Model.knex(knex);
-  await knex.initialize();
-  await runKnexMigrations();
-  await initialConfiguration.runInitialConfigurations();
-  await knex.seed.run();
-};
-
-exports.tearDownTestDB = async () => {
-  await knex.destroy();
+exports.down = function (knex) {
+  return knex.schema.dropTableIfExists('currency');
 };

@@ -54,6 +54,8 @@ module.exports = {
     DB_RETRIES: process.env.DB_RETRIES || 10,
     DB_CONNECTION_RETRY_WAIT_MILLISECONDS: process.env.DB_CONNECTION_RETRY_WAIT_MILLISECONDS || 5000,
     RUN_MIGRATIONS: process.env.RUN_MIGRATIONS || true,
+    CURRENCY_CODES: process.env.CURRENCY_CODES || './data/currencyCodes.json',
+    DATA_CONFIGURATION_FILE: process.env.DATA_CONFIGURATION_FILE || './data/sampleConfiguration.json'
   },
   PKI_ENGINE: {
     P12_PASS_PHRASE: process.env.P12_PASS_PHRASE || null,

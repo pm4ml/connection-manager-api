@@ -15,50 +15,36 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const path = require('path');
-const initialConfiguration = require('../src/db/InitialDataConfiguration');
+const { BaseModel } = require('./BaseModel');
+const NotFoundError = require('../errors/NotFoundError');
+const currencySchema = require('../../src/db/validators/currencySchema');
 
-const { Model } = require('objection');
+class Currency extends BaseModel {
+  static get jsonSchema () {
+    return currencySchema;
+  }
 
-let knexOptions = {
-  client: 'sqlite3',
-  connection: {
-    filename: ':memory:',
-  },
-  migrations: {
-    directory: path.join(__dirname, '/../src/db/migrations')
-  },
-  seeds: {
-    directory: path.join(__dirname, '/./resources/knex/seeds')
-  },
-  useNullAsDefault: true,
-  pool: {
-    afterCreate: (conn, cb) =>
-      conn.run('PRAGMA foreign_keys = ON', cb)
-  },
-};
+  static get tableName () {
+    return 'currency';
+  }
 
-const { setKnex } = require('../src/db/database');
-setKnex(knexOptions);
+  static get idColumn () {
+    return 'currencyId';
+  }
 
-// Now set up the test DB
+  static async create (currency, trx) {
+    return Currency.query(trx).insert(currency);
+  }
 
-const { knex } = require('../src/db/database');
+  static async enableCurrency (currency, trx) {
+    let enabledCurrency = await Currency.query(trx)
+      .findById(currency.currencyId)
+      .patch({ enabled: true });
 
-const runKnexMigrations = async () => {
-  console.log('Migrating');
-  await knex.migrate.latest();
-  console.log('Migration done');
-};
+    if (!enabledCurrency) throw new NotFoundError(`Currency ${currency} cannot be enabled because it is not present in the database`);
+  }
+}
 
-exports.setupTestDB = async () => {
-  Model.knex(knex);
-  await knex.initialize();
-  await runKnexMigrations();
-  await initialConfiguration.runInitialConfigurations();
-  await knex.seed.run();
-};
-
-exports.tearDownTestDB = async () => {
-  await knex.destroy();
+module.exports = {
+  Currency
 };

@@ -15,50 +15,24 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const path = require('path');
-const initialConfiguration = require('../src/db/InitialDataConfiguration');
+'use strict';
 
-const { Model } = require('objection');
-
-let knexOptions = {
-  client: 'sqlite3',
-  connection: {
-    filename: ':memory:',
-  },
-  migrations: {
-    directory: path.join(__dirname, '/../src/db/migrations')
-  },
-  seeds: {
-    directory: path.join(__dirname, '/./resources/knex/seeds')
-  },
-  useNullAsDefault: true,
-  pool: {
-    afterCreate: (conn, cb) =>
-      conn.run('PRAGMA foreign_keys = ON', cb)
-  },
+exports.up = async (knex) => {
+  return knex.schema.hasTable('monetaryZone').then(function (exists) {
+    if (!exists) {
+      return knex.schema.createTable('monetaryZone', (t) => {
+        t.string('monetaryZoneId', 3).primary().notNullable();
+        t.foreign('monetaryZoneId').references('currencyId').inTable('currency');
+        t.string('name', 256).notNullable();
+        t.string('description', 512).defaultTo(null).nullable();
+        t.boolean('isActive').defaultTo(true).notNullable();
+        t.dateTime('createdDate').defaultTo(knex.fn.now()).notNullable();
+        t.string('createdBy', 128).defaultTo('admin').notNullable();
+      });
+    }
+  });
 };
 
-const { setKnex } = require('../src/db/database');
-setKnex(knexOptions);
-
-// Now set up the test DB
-
-const { knex } = require('../src/db/database');
-
-const runKnexMigrations = async () => {
-  console.log('Migrating');
-  await knex.migrate.latest();
-  console.log('Migration done');
-};
-
-exports.setupTestDB = async () => {
-  Model.knex(knex);
-  await knex.initialize();
-  await runKnexMigrations();
-  await initialConfiguration.runInitialConfigurations();
-  await knex.seed.run();
-};
-
-exports.tearDownTestDB = async () => {
-  await knex.destroy();
+exports.down = function (knex) {
+  return knex.schema.dropTableIfExists('monetaryZone');
 };

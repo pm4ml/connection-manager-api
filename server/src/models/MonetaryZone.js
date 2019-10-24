@@ -15,50 +15,50 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const path = require('path');
-const initialConfiguration = require('../src/db/InitialDataConfiguration');
-
+const { BaseModel } = require('./BaseModel');
 const { Model } = require('objection');
+const { Currency } = require('./Currency');
+const monetaryZoneSchema = require('../../src/db/validators/monetaryZoneSchema');
 
-let knexOptions = {
-  client: 'sqlite3',
-  connection: {
-    filename: ':memory:',
-  },
-  migrations: {
-    directory: path.join(__dirname, '/../src/db/migrations')
-  },
-  seeds: {
-    directory: path.join(__dirname, '/./resources/knex/seeds')
-  },
-  useNullAsDefault: true,
-  pool: {
-    afterCreate: (conn, cb) =>
-      conn.run('PRAGMA foreign_keys = ON', cb)
-  },
-};
+class MonetaryZone extends BaseModel {
+  static get jsonSchema () {
+    return monetaryZoneSchema;
+  }
 
-const { setKnex } = require('../src/db/database');
-setKnex(knexOptions);
+  static get tableName () {
+    return 'monetaryZone';
+  }
 
-// Now set up the test DB
+  static get idColumn () {
+    return 'monetaryZoneId';
+  }
 
-const { knex } = require('../src/db/database');
+  static get relationMappings () {
+    return {
+      currency: {
+        relation: Model.BelongsToOneRelation,
+        modelClass: Currency,
+        join: {
+          from: 'monetaryZone.monetaryZoneId',
+          to: 'currency.currencyId'
+        }
+      }
+    };
+  }
 
-const runKnexMigrations = async () => {
-  console.log('Migrating');
-  await knex.migrate.latest();
-  console.log('Migration done');
-};
+  static async findById (id) {
+    return MonetaryZone.query().findById(id);
+  }
 
-exports.setupTestDB = async () => {
-  Model.knex(knex);
-  await knex.initialize();
-  await runKnexMigrations();
-  await initialConfiguration.runInitialConfigurations();
-  await knex.seed.run();
-};
+  static async create (monetaryZone, trx) {
+    return MonetaryZone.query(trx).insert(monetaryZone);
+  }
 
-exports.tearDownTestDB = async () => {
-  await knex.destroy();
+  static async findAllActive (trx) {
+    return MonetaryZone.query(trx).where('isActive', true);
+  }
+}
+
+module.exports = {
+  MonetaryZone
 };

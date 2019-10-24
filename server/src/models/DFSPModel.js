@@ -69,3 +69,15 @@ exports.deleteByRawId = async (id) => {
 exports.delete = async (envId, dfspId) => {
   return knex.table(DFSP_TABLE).where('env_id', envId).where({ dfsp_id: dfspId }).del();
 };
+
+exports.update = async (envId, dfspId, newDfsp) => {
+  let result = await knex.table(DFSP_TABLE).where('env_id', envId).where({ dfsp_id: dfspId }).update(newDfsp);
+  if (result === 0) {
+    throw new NotFoundError(`dfsp with ${dfspId}, env_id: ${envId}`);
+  } else if (result === 1) {
+    const dfsp = await exports.findByDfspId(envId, dfspId);
+    return { dfspId: dfsp.dfsp_id, name: dfsp.name, monetaryZoneId: dfsp.monetaryZoneId, securityGroup: dfsp.security_group };
+  } else {
+    throw new InternalError('E_TOO_MANY_ROWS');
+  }
+};
