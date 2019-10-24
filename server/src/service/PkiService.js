@@ -169,6 +169,7 @@ exports.createDFSP = async function (envId, body) {
     env_id: envId,
     dfsp_id: body.dfspId,
     name: body.name,
+    monetaryZoneId: body.monetaryZoneId,
     security_group: body.securityGroup || 'Application/DFSP:' + dfspIdNoSpaces
   };
 
@@ -266,7 +267,14 @@ exports.updateDFSP = async (envId, dfspId, newDfsp) => {
   if (dfspId === null || typeof dfspId === 'undefined') {
     throw new ValidationError(`Invalid dfspId ${dfspId}`);
   }
-  return DFSPModel.update(envId, dfspId, newDfsp);
+
+  let values = {
+    name: newDfsp.name,
+    monetaryZoneId: newDfsp.monetaryZoneId,
+    security_group: newDfsp.securityGroup
+  };
+
+  return DFSPModel.update(envId, dfspId, values);
 };
 
 /**
@@ -376,6 +384,7 @@ const dfspRowToObject = (row) => {
     envId: row.env_id,
     id: row.dfsp_id,
     name: row.name,
+    monetaryZoneId: row.monetaryZoneId,
     securityGroup: row.security_group,
   };
 };

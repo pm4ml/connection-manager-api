@@ -899,7 +899,7 @@ paths:
       parameters:
       - in: "body"
         name: "body"
-        description: "DFSP initial info"
+        description: "DFSP updated info"
         required: true
         schema:
           $ref: "#/definitions/DFSPUpdate"

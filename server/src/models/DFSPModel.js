@@ -76,7 +76,7 @@ exports.update = async (envId, dfspId, newDfsp) => {
     throw new NotFoundError(`dfsp with ${dfspId}, env_id: ${envId}`);
   } else if (result === 1) {
     const dfsp = await exports.findByDfspId(envId, dfspId);
-    return { name: dfsp.name, monetaryZoneId: dfsp.monetaryZoneId };
+    return { dfspId: dfsp.dfsp_id, name: dfsp.name, monetaryZoneId: dfsp.monetaryZoneId, securityGroup: dfsp.security_group };
   } else {
     throw new InternalError('E_TOO_MANY_ROWS');
   }

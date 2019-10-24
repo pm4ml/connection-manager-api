@@ -290,5 +290,66 @@ describe('PkiService', () => {
       let deleted = await PkiService.deleteDFSP(envId, result.id);
       assert.equal(deleted, 1);
     });
+
+    it('should create a DFSP with MZ', async () => {
+      let dfsp = {
+        dfspId: 'dfsp1',
+        name: 'dfsp1',
+        monetaryZoneId: 'EUR'
+
+      };
+      let result = await PkiService.createDFSP(envId, dfsp);
+      assert.property(result, 'id');
+      assert.isNotNull(result.id);
+      let saved = await PkiService.getDFSPById(envId, result.id);
+      assert.equal(saved.name, dfsp.name);
+      assert.equal(saved.monetaryZoneId, dfsp.monetaryZoneId);
+      let deleted = await PkiService.deleteDFSP(envId, result.id);
+      assert.equal(deleted, 1);
+    });
+
+    it('should create a DFSP without MZ and then add it', async () => {
+      let dfsp = {
+        dfspId: 'dfsp1',
+        name: 'dfsp1'
+      };
+
+      await PkiService.createDFSP(envId, dfsp);
+
+      // remove the mz
+      let newDfsp = { dfspId: dfsp.dfspId, monetaryZoneId: 'MAD' };
+      let result = await PkiService.updateDFSP(envId, dfsp.dfspId, newDfsp);
+      assert.equal(result.name, dfsp.name);
+      assert.equal(result.monetaryZoneId, 'MAD');
+
+      let saved = await PkiService.getDFSPById(envId, dfsp.dfspId);
+      assert.equal(saved.name, dfsp.name);
+      assert.equal(saved.monetaryZoneId, 'MAD');
+      let deleted = await PkiService.deleteDFSP(envId, dfsp.dfspId);
+      assert.equal(deleted, 1);
+    });
+
+    it('should create a DFSP with MZ and then remove it', async () => {
+      let dfsp = {
+        dfspId: 'dfsp1',
+        name: 'dfsp1',
+        monetaryZoneId: 'EUR'
+
+      };
+      await PkiService.createDFSP(envId, dfsp);
+
+      // remove the mz
+      let newDfsp = { ...dfsp, monetaryZoneId: null };
+      let result = await PkiService.updateDFSP(envId, dfsp.dfspId, newDfsp);
+      assert.equal(result.name, dfsp.name);
+      assert.equal(result.monetaryZoneId, null);
+
+      let saved = await PkiService.getDFSPById(envId, dfsp.dfspId);
+      assert.equal(saved.name, dfsp.name);
+      assert.equal(saved.monetaryZoneId, null);
+
+      let deleted = await PkiService.deleteDFSP(envId, dfsp.dfspId);
+      assert.equal(deleted, 1);
+    });
   });
 });
