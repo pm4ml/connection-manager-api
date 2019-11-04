@@ -41,6 +41,10 @@ exports.findByDfspId = async (envId, dfspId) => {
   return findByField(envId, 'dfsp_id', dfspId);
 };
 
+exports.getDfspsByMonetaryZones = async (envId, monetaryZoneId) => {
+  return findAllByField(envId, 'monetaryZoneId', monetaryZoneId);
+};
+
 const findByField = async (envId, columnName, value) => {
   let rows;
   if (envId != null) {
@@ -55,6 +59,20 @@ const findByField = async (envId, columnName, value) => {
     return row;
   } else {
     throw new InternalError('E_TOO_MANY_ROWS');
+  }
+};
+
+const findAllByField = async (envId, columnName, value) => {
+  let rows;
+  if (envId != null) {
+    rows = await knex.table(DFSP_TABLE).where('env_id', envId).where(columnName, value).select();
+  } else {
+    rows = await knex.table(DFSP_TABLE).where(columnName, value).select();
+  }
+  if (rows.length === 0) {
+    throw new NotFoundError(`dfsp with ${columnName} = ${value} , env_id: ${envId}`);
+  } else {
+    return rows;
   }
 };
 
@@ -76,8 +94,17 @@ exports.update = async (envId, dfspId, newDfsp) => {
     throw new NotFoundError(`dfsp with ${dfspId}, env_id: ${envId}`);
   } else if (result === 1) {
     const dfsp = await exports.findByDfspId(envId, dfspId);
-    return { dfspId: dfsp.dfsp_id, name: dfsp.name, monetaryZoneId: dfsp.monetaryZoneId, securityGroup: dfsp.security_group };
+    // return { dfspId: dfsp.dfsp_id, name: dfsp.name, monetaryZoneId: dfsp.monetaryZoneId, securityGroup: dfsp.security_group };
+    return rowToObject(dfsp);
   } else {
     throw new InternalError('E_TOO_MANY_ROWS');
   }
+};
+
+const rowToObject = (dfsp) => {
+  return { dfspId: dfsp.dfsp_id,
+    name: dfsp.name,
+    monetaryZoneId: dfsp.monetaryZoneId ? dfsp.monetaryZoneId : undefined,
+    securityGroup: dfsp.security_group
+  };
 };

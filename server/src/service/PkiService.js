@@ -169,7 +169,7 @@ exports.createDFSP = async function (envId, body) {
     env_id: envId,
     dfsp_id: body.dfspId,
     name: body.name,
-    monetaryZoneId: body.monetaryZoneId,
+    monetaryZoneId: body.monetaryZoneId ? body.monetaryZoneId : undefined,
     security_group: body.securityGroup || 'Application/DFSP:' + dfspIdNoSpaces
   };
 
@@ -350,6 +350,11 @@ exports.setDFSPca = async function (envId, dfspId, body) {
   }
 };
 
+exports.getDfspsByMonetaryZones = async (envId, monetaryZoneId) => {
+  const dfsps = await DFSPModel.getDfspsByMonetaryZones(envId, monetaryZoneId);
+  return dfsps.map(r => dfspRowToObject(r));
+};
+
 exports.getDFSPca = async function (envId, dfspId) {
   await exports.validateEnvironmentAndDfsp(envId, dfspId);
   try {
@@ -384,7 +389,7 @@ const dfspRowToObject = (row) => {
     envId: row.env_id,
     id: row.dfsp_id,
     name: row.name,
-    monetaryZoneId: row.monetaryZoneId,
+    monetaryZoneId: row.monetaryZoneId ? row.monetaryZoneId : undefined,
     securityGroup: row.security_group,
   };
 };
