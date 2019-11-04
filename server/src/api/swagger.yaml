@@ -2322,6 +2322,33 @@ paths:
             items:
               $ref: "#/definitions/MonetaryZone"
       x-swagger-router-controller: "MonetaryZonesController"
+  /environments/{envId}/monetaryzones/{monetaryZoneId}/dfsps:
+    parameters:
+    - name: "envId"
+      in: "path"
+      description: "ID of environment"
+      required: true
+      type: "string"      
+    - name: "monetaryZoneId"
+      in: "path"
+      description: "ID of monetaryZone"
+      required: true
+      type: "string"
+    get:
+      tags:
+      - "monetaryzones"      
+      summary: "Returns all the dfsps for that monetary zone"
+      operationId: "getDfspsByMonetaryZones"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/DFSPCreate"
+      x-swagger-router-controller: "Pki"      
 definitions:
   LoginResponse:
     type: "object"

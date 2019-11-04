@@ -158,3 +158,15 @@ exports.updateDFSP = (req, res, next) => {
       utils.writeJson(res, response, response.status);
     });
 };
+
+exports.getDfspsByMonetaryZones = (req, res, next) => {
+  var envId = req.swagger.params['envId'].value;
+  var monetaryZoneId = req.swagger.params['monetaryZoneId'].value;
+  Pki.getDfspsByMonetaryZones(envId, monetaryZoneId)
+    .then(function (response) {
+      utils.writeJson(res, response);
+    })
+    .catch(function (response) {
+      utils.writeJson(res, response, response.status);
+    });
+};
