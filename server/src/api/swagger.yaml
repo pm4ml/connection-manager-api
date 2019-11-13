@@ -821,6 +821,35 @@ paths:
           schema:
             $ref: "#/definitions/ServerCert"
       x-swagger-router-controller: "HubServerCerts"
+  /environments/{envId}/dfsps/jwscerts:
+    get:
+      tags:
+      - "JWS-certificates-configuration"
+      summary: "get JWS certificates for all DFSPs in the environment"
+      security:
+        - OAuth2: [ mta, pta ]
+      description: "TBD"
+      operationId: "getAllDfspJWSCerts"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "envId"
+        in: "path"
+        description: "ID of environment"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+                $ref: "#/definitions/DFSPJWSCert"
+        404:
+          description: "JWS certs not set"
+      x-swagger-router-controller: "JWSCerts"      
   /environments/{envId}/dfsps:
     parameters:
     - name: "envId"
@@ -2179,35 +2208,6 @@ paths:
           schema:
             $ref: "#/definitions/ServerCert"
       x-swagger-router-controller: "DfspServerCerts"
-  /environments/{envId}/dfsps/jwscerts:
-    get:
-      tags:
-      - "JWS-certificates-configuration"
-      summary: "get JWS certificates for all DFSPs in the environment"
-      security:
-        - OAuth2: [ mta, pta ]
-      description: "TBD"
-      operationId: "getAllDfspJWSCerts"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "envId"
-        in: "path"
-        description: "ID of environment"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            type: "array"
-            items:
-                $ref: "#/definitions/DFSPJWSCert"
-        404:
-          description: "JWS certs not set"
-      x-swagger-router-controller: "JWSCerts"
   /environments/{envId}/dfsps/{dfspId}/jwscerts:
     parameters:
     - name: "envId"
