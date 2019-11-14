@@ -342,68 +342,6 @@ paths:
             items:
               $ref: "#/definitions/EndPointAny"
       x-swagger-router-controller: "HubNetworkConfig"      
-  /environments/{envId}/hub/endpoints/{epId}:
-    parameters:
-    - name: "envId"
-      in: "path"
-      description: "Environment id"
-      required: true
-      type: "string"
-    - name: "epId"
-      in: "path"
-      description: "Endpoint entry id"
-      required: true
-      type: "string"
-    get:
-      tags:
-      - "Hub-Endpoint-configuration"
-      summary: "Get an endpoint entry"
-      security:
-        - OAuth2: [ everyone ]
-      operationId: "getHubEndpoint"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "HubNetworkConfig"      
-    put:
-      tags:
-      - "Hub-Endpoint-configuration"
-      summary: "Update an endpoint entry"
-      operationId: "updateHubEndpoint"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "endpoint entry"
-        required: true
-        schema:
-          $ref: "#/definitions/EndPointAny"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "HubNetworkConfig"      
-    delete:
-      tags:
-      - "Hub-Endpoint-configuration"
-      summary: "Delete an endpoint entry"
-      operationId: "deleteHubEndpoint"
-      consumes:
-      - "application/json"
-      responses:
-        204:
-          description: "successful operation"
-      x-swagger-router-controller: "HubNetworkConfig"      
   /environments/{envId}/hub/endpoints/ingress/ips:
     parameters:
     - name: "envId"
@@ -734,6 +672,68 @@ paths:
         204:
           description: "successful operation"
       x-swagger-router-controller: "HubNetworkConfig"      
+  /environments/{envId}/hub/endpoints/{epId}:
+    parameters:
+    - name: "envId"
+      in: "path"
+      description: "Environment id"
+      required: true
+      type: "string"
+    - name: "epId"
+      in: "path"
+      description: "Endpoint entry id"
+      required: true
+      type: "string"
+    get:
+      tags:
+      - "Hub-Endpoint-configuration"
+      summary: "Get an endpoint entry"
+      security:
+        - OAuth2: [ everyone ]
+      operationId: "getHubEndpoint"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/EndPointAny"
+      x-swagger-router-controller: "HubNetworkConfig"      
+    put:
+      tags:
+      - "Hub-Endpoint-configuration"
+      summary: "Update an endpoint entry"
+      operationId: "updateHubEndpoint"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "endpoint entry"
+        required: true
+        schema:
+          $ref: "#/definitions/EndPointAny"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/EndPointAny"
+      x-swagger-router-controller: "HubNetworkConfig"      
+    delete:
+      tags:
+      - "Hub-Endpoint-configuration"
+      summary: "Delete an endpoint entry"
+      operationId: "deleteHubEndpoint"
+      consumes:
+      - "application/json"
+      responses:
+        204:
+          description: "successful operation"
+      x-swagger-router-controller: "HubNetworkConfig"      
   /environments/{envId}/hub/servercerts:
     parameters:
     - name: "envId"
@@ -821,124 +821,6 @@ paths:
           schema:
             $ref: "#/definitions/ServerCert"
       x-swagger-router-controller: "HubServerCerts"
-  /environments/{envId}/dfsps/jwscerts:
-    get:
-      tags:
-      - "JWS-certificates-configuration"
-      summary: "get JWS certificates for all DFSPs in the environment"
-      security:
-        - OAuth2: [ mta, pta ]
-      description: "TBD"
-      operationId: "getAllDfspJWSCerts"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "envId"
-        in: "path"
-        description: "ID of environment"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            type: "array"
-            items:
-                $ref: "#/definitions/DFSPJWSCert"
-        404:
-          description: "JWS certs not set"
-      x-swagger-router-controller: "JWSCerts"      
-  /environments/{envId}/dfsps:
-    parameters:
-    - name: "envId"
-      in: "path"
-      description: "ID of environment"
-      required: true
-      type: "string"
-    post:
-      tags:
-      - "env-dfsp-config"
-      summary: "Creates an entry to store DFSP related info"
-      description: "Creates an entry to store DFSP related info\n\nReturns the newly\
-        \ created object's id\n"
-      operationId: "createDFSP"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "DFSP initial info"
-        required: true
-        schema:
-          $ref: "#/definitions/DFSPCreate"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/ObjectCreatedResponse"
-      x-swagger-router-controller: "Pki"
-    get:
-      tags:
-      - "env-dfsp-config"
-      summary: "Returns a list with all the DFSPs in the environment"
-      security:
-        - OAuth2: [ everyone ]
-      operationId: "getEnvironmentDFSPs"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      responses:
-        200:
-          description: "List of DFSPs"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/DFSP"
-      x-swagger-router-controller: "Pki"    
-      
-  /environments/{envId}/dfsps/{dfspId}:
-    parameters:
-    - name: "envId"
-      in: "path"
-      description: "ID of environment"
-      required: true
-      type: "string"
-    - name: "dfspId"
-      in: "path"
-      description: "ID of dfsp"
-      required: true
-      type: "string"      
-    put:
-      tags:
-      - "env-dfsp-config"
-      summary: "Updates DFSP related info"
-      description: "Updates DFSP related info"
-      operationId: "updateDFSP"
-      security:
-        - OAuth2: [ pta ]
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "DFSP updated info"
-        required: true
-        schema:
-          $ref: "#/definitions/DFSPUpdate"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/DFSPUpdate"
-      x-swagger-router-controller: "Pki"
-      
   /environments/{envId}/hub/cas:
     parameters:
     - name: "envId"
@@ -1047,6 +929,85 @@ paths:
         400:
           description: "validation error"
       x-swagger-router-controller: "HubCAController"
+  /environments/{envId}/dfsps/jwscerts:
+    get:
+      tags:
+      - "JWS-certificates-configuration"
+      summary: "get JWS certificates for all DFSPs in the environment"
+      security:
+        - OAuth2: [ mta, pta ]
+      description: "TBD"
+      operationId: "getAllDfspJWSCerts"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "envId"
+        in: "path"
+        description: "ID of environment"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+                $ref: "#/definitions/DFSPJWSCert"
+        404:
+          description: "JWS certs not set"
+      x-swagger-router-controller: "JWSCerts"      
+  /environments/{envId}/dfsps:
+    parameters:
+    - name: "envId"
+      in: "path"
+      description: "ID of environment"
+      required: true
+      type: "string"
+    post:
+      tags:
+      - "env-dfsp-config"
+      summary: "Creates an entry to store DFSP related info"
+      description: "Creates an entry to store DFSP related info\n\nReturns the newly\
+        \ created object's id\n"
+      operationId: "createDFSP"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "DFSP initial info"
+        required: true
+        schema:
+          $ref: "#/definitions/DFSPCreate"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/ObjectCreatedResponse"
+      x-swagger-router-controller: "Pki"
+    get:
+      tags:
+      - "env-dfsp-config"
+      summary: "Returns a list with all the DFSPs in the environment"
+      security:
+        - OAuth2: [ everyone ]
+      operationId: "getEnvironmentDFSPs"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "List of DFSPs"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/DFSP"
+      x-swagger-router-controller: "Pki"    
   /environments/{envId}/dfsps/endpoints/unprocessed:
     get:
       tags:
@@ -1069,6 +1030,72 @@ paths:
             items:
               $ref: "#/definitions/EndPointAny"
       x-swagger-router-controller: "DfspNetworkConfig"  
+  /environments/{envId}/dfsps/servercerts:
+    get:
+      tags:
+      - "DFSP-server-certificates-configuration"
+      summary: "get server certificates for all DFSPs in the environment"
+      security:
+        - OAuth2: [ pta ]
+      description: "TBD"
+      operationId: "getAllDfspServerCerts"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "envId"
+        in: "path"
+        description: "ID of environment"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+                $ref: "#/definitions/DFSPServerCert"
+        404:
+          description: "server certs not set"
+      x-swagger-router-controller: "DfspServerCerts"
+  /environments/{envId}/dfsps/{dfspId}:
+    parameters:
+    - name: "envId"
+      in: "path"
+      description: "ID of environment"
+      required: true
+      type: "string"
+    - name: "dfspId"
+      in: "path"
+      description: "ID of dfsp"
+      required: true
+      type: "string"      
+    put:
+      tags:
+      - "env-dfsp-config"
+      summary: "Updates DFSP related info"
+      description: "Updates DFSP related info"
+      operationId: "updateDFSP"
+      security:
+        - OAuth2: [ pta ]
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "DFSP updated info"
+        required: true
+        schema:
+          $ref: "#/definitions/DFSPUpdate"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/DFSPUpdate"
+      x-swagger-router-controller: "Pki"
   /environments/{envId}/dfsps/{dfspId}/ca:
     parameters:
     - name: "envId"
@@ -1573,109 +1600,6 @@ paths:
             items:
               $ref: "#/definitions/EndPointAny"
       x-swagger-router-controller: "DfspNetworkConfig"      
-  /environments/{envId}/dfsps/{dfspId}/endpoints/{epId}:
-    parameters:
-    - name: "envId"
-      in: "path"
-      description: "Environment id"
-      required: true
-      type: "string"
-    - name: "dfspId"
-      in: "path"
-      description: "DFSP id"
-      required: true
-      type: "string"
-    - name: "epId"
-      in: "path"
-      description: "Endpoint entry id"
-      required: true
-      type: "string"
-    get:
-      tags:
-      - "DFSP-Endpoint-configuration"
-      summary: "Get an endpoint entry"
-      security:
-        - OAuth2: [ mta, pta ]
-      operationId: "getDFSPEndpoint"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "DfspNetworkConfig"      
-    put:
-      tags:
-      - "DFSP-Endpoint-configuration"
-      summary: "Update an endpoint entry"
-      security:
-        - OAuth2: [ mta, pta ]
-      operationId: "updateDFSPEndpoint"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "endpoint entry"
-        required: true
-        schema:
-          $ref: "#/definitions/EndPointAny"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "DfspNetworkConfig"      
-    delete:
-      tags:
-      - "DFSP-Endpoint-configuration"
-      summary: "Delete an endpoint entry"
-      security:
-        - OAuth2: [ mta, pta ]
-      operationId: "deleteDFSPEndpoint"
-      consumes:
-      - "application/json"
-      responses:
-        204:
-          description: "successful operation"
-      x-swagger-router-controller: "DfspNetworkConfig"      
-  /environments/{envId}/dfsps/{dfspId}/endpoints/{epId}/confirmation:
-    post:
-      tags:
-      - "DFSP-Endpoint-configuration"
-      summary: "Updates the endpoint as confirmed"
-      security:
-        - OAuth2: [ pta ]
-      operationId: "confirmEndpointItem"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "envId"
-        in: "path"
-        description: "ID of environment"
-        required: true
-        type: "string"
-      - name: "dfspId"
-        in: "path"
-        description: "DFSP id"
-        required: true
-        type: "string"
-      - name: "epId"
-        in: "path"
-        description: "ID of the endpoint item"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "DfspNetworkConfig"
   /environments/{envId}/dfsps/{dfspId}/endpoints/ingress/ips:
     parameters:
     - name: "envId"
@@ -2081,17 +2005,85 @@ paths:
         204:
           description: "successful operation"
       x-swagger-router-controller: "DfspNetworkConfig"      
-  /environments/{envId}/dfsps/servercerts:
+  /environments/{envId}/dfsps/{dfspId}/endpoints/{epId}:
+    parameters:
+    - name: "envId"
+      in: "path"
+      description: "Environment id"
+      required: true
+      type: "string"
+    - name: "dfspId"
+      in: "path"
+      description: "DFSP id"
+      required: true
+      type: "string"
+    - name: "epId"
+      in: "path"
+      description: "Endpoint entry id"
+      required: true
+      type: "string"
     get:
       tags:
-      - "DFSP-server-certificates-configuration"
-      summary: "get server certificates for all DFSPs in the environment"
+      - "DFSP-Endpoint-configuration"
+      summary: "Get an endpoint entry"
       security:
-        - OAuth2: [ pta ]
-      description: "TBD"
-      operationId: "getAllDfspServerCerts"
+        - OAuth2: [ mta, pta ]
+      operationId: "getDFSPEndpoint"
       consumes:
       - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/EndPointAny"
+      x-swagger-router-controller: "DfspNetworkConfig"      
+    put:
+      tags:
+      - "DFSP-Endpoint-configuration"
+      summary: "Update an endpoint entry"
+      security:
+        - OAuth2: [ mta, pta ]
+      operationId: "updateDFSPEndpoint"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "endpoint entry"
+        required: true
+        schema:
+          $ref: "#/definitions/EndPointAny"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/EndPointAny"
+      x-swagger-router-controller: "DfspNetworkConfig"      
+    delete:
+      tags:
+      - "DFSP-Endpoint-configuration"
+      summary: "Delete an endpoint entry"
+      security:
+        - OAuth2: [ mta, pta ]
+      operationId: "deleteDFSPEndpoint"
+      consumes:
+      - "application/json"
+      responses:
+        204:
+          description: "successful operation"
+      x-swagger-router-controller: "DfspNetworkConfig"      
+  /environments/{envId}/dfsps/{dfspId}/endpoints/{epId}/confirmation:
+    post:
+      tags:
+      - "DFSP-Endpoint-configuration"
+      summary: "Updates the endpoint as confirmed"
+      security:
+        - OAuth2: [ pta ]
+      operationId: "confirmEndpointItem"
       produces:
       - "application/json"
       parameters:
@@ -2100,16 +2092,22 @@ paths:
         description: "ID of environment"
         required: true
         type: "string"
+      - name: "dfspId"
+        in: "path"
+        description: "DFSP id"
+        required: true
+        type: "string"
+      - name: "epId"
+        in: "path"
+        description: "ID of the endpoint item"
+        required: true
+        type: "string"
       responses:
         200:
           description: "successful operation"
           schema:
-            type: "array"
-            items:
-                $ref: "#/definitions/DFSPServerCert"
-        404:
-          description: "server certs not set"
-      x-swagger-router-controller: "DfspServerCerts"
+            $ref: "#/definitions/EndPointAny"
+      x-swagger-router-controller: "DfspNetworkConfig"
   /environments/{envId}/dfsps/{dfspId}/servercerts:
     parameters:
     - name: "envId"
