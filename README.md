@@ -87,6 +87,9 @@ Variables:
 |process.env.WSO2_MANAGER_SERVICE_URL|URL of WSO2 Manager Service|
 |process.env.WSO2_MANAGER_SERVICE_USER|user of WSO2 Manager Service|
 |process.env.WSO2_MANAGER_SERVICE_PASSWORD|pass of WSO2 Manager Service|
+|process.env.OAUTH_RESET_PASSWORD_ISSUER|URL of reset password issuer (WSO2)|
+|process.env.OAUTH_RESET_PASSWORD_AUTH_USER|user of WSO2 reset password service (WSO2)|
+|process.env.OAUTH_RESET_PASSWORD_AUTH_PASSWORD|password of WSO2 reset password service (WSO2)|
  
 
 ## Testing
