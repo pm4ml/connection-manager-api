@@ -20,7 +20,7 @@ module.exports = {
     PORT: process.env.PORT || 3001,
   },
   OAUTH: {
-    AUTH_ENABLED: process.env.AUTH_ENABLED || null, // null or 'DISABLED' to disable. 'true' or 'TRUE' to enable
+    AUTH_ENABLED: process.env.AUTH_ENABLED, // null or 'DISABLED' to disable. 'true' or 'TRUE' to enable
     APP_OAUTH_CLIENT_KEY: process.env.APP_OAUTH_CLIENT_KEY, // Configured in WSO2 IM Service Provider
     APP_OAUTH_CLIENT_SECRET: process.env.APP_OAUTH_CLIENT_SECRET,
     MTA_ROLE: process.env.MTA_ROLE || 'Application/MTA',
@@ -28,14 +28,18 @@ module.exports = {
     EVERYONE_ROLE: process.env.EVERYONE_ROLE || 'Internal/everyone',
     OAUTH2_ISSUER: process.env.OAUTH2_ISSUER || 'https://WSO2_IM_SERVER:9443/oauth2/token',
     CERTIFICATE_FILE_NAME: process.env.CERTIFICATE_FILE_NAME || 'resources/wso2carbon-publickey.cert',
-    EMBEDDED_CERTIFICATE: process.env.EMBEDDED_CERTIFICATE || null,
+    EMBEDDED_CERTIFICATE: process.env.EMBEDDED_CERTIFICATE,
     JWT_COOKIE_NAME: 'MCM-API_ACCESS_TOKEN',
     RESET_PASSWORD_ISSUER: process.env.OAUTH_RESET_PASSWORD_ISSUER,
     RESET_PASSWORD_AUTH_USER: process.env.OAUTH_RESET_PASSWORD_AUTH_USER,
-    RESET_PASSWORD_AUTH_PASSWORD: process.env.OAUTH_RESET_PASSWORD_AUTH_PASSWORD
+    RESET_PASSWORD_AUTH_PASSWORD: process.env.OAUTH_RESET_PASSWORD_AUTH_PASSWORD,
+  },
+  EXTRA_TLS: {
+    EXTRA_CERTIFICATE_CHAIN_FILE_NAME: process.env.EXTRA_CERTIFICATE_CHAIN_FILE_NAME,
+    EXTRA_ROOT_CERT_FILE_NAME: process.env.EXTRA_ROOT_CERT_FILE_NAME,
   },
   AUTH_2FA: {
-    AUTH_2FA_ENABLED: process.env.AUTH_2FA_ENABLED || null,
+    AUTH_2FA_ENABLED: process.env.AUTH_2FA_ENABLED,
     TOTP_ADMIN_ISSUER: process.env.TOTP_ADMIN_ISSUER,
     TOTP_ADMIN_AUTH_USER: process.env.TOTP_ADMIN_AUTH_USER,
     TOTP_ADMIN_AUTH_PASSWORD: process.env.TOTP_ADMIN_AUTH_PASSWORD,
@@ -58,6 +62,6 @@ module.exports = {
     DATA_CONFIGURATION_FILE: process.env.DATA_CONFIGURATION_FILE || './data/sampleConfiguration.json'
   },
   PKI_ENGINE: {
-    P12_PASS_PHRASE: process.env.P12_PASS_PHRASE || null,
+    P12_PASS_PHRASE: process.env.P12_PASS_PHRASE,
   }
 };

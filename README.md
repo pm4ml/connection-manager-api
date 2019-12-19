@@ -61,36 +61,53 @@ There's a [Constants.js file](./server/src/constants/Constants.js) that pulls th
 
 Variables:
 
-|ENV var|Description
-:---|:---
-|process.env.PORT|API http port|
-|process.env.AUTH_ENABLED|Enables support for OAuth2|
-|process.env.APP_OAUTH_CLIENT_KEY|OAuth2 Client Key|
-|process.env.CERTIFICATE_FILE_NAME|WSO2 Service Provider Public Certificate filename ( relative to the server dir )|
-|process.env.EMBEDDED_CERTIFICATE|WSO2 Service Provider Public Certificate PEM-encoded String. This one has priority over the previous var|
-|process.env.MTA_ROLE|DFSP Admin role|
-|process.env.PTA_ROLE|HUB Admin Role|
-|process.env.EVERYONE_ROLE|Authenticated users role|
-|process.env.OAUTH2_ISSUER|OAuth token issuer|
-|process.env.DATABASE_HOST|mysql host|
-|process.env.DATABASE_PORT|mysql port|
-|process.env.DATABASE_USER|mysql user|
-|process.env.DATABASE_PASSWORD|mysql password|
-|process.env.DATABASE_SCHEMA|mysql schema|
-|process.env.P12_PASS_PHRASE|Pass phrase used to save the internal CA Key in the DB.|
-|process.env.AUTH_2FA_ENABLED|Enables two-factor authentication|
-|process.env.TOTP_ADMIN_ISSUER|URL of TOTP Admin (WSO2)|
-|process.env.TOTP_ADMIN_AUTH_USER|user of TOTP Admin|
-|process.env.TOTP_ADMIN_AUTH_PASSWORD|pass of TOTP Admin|
-|process.env.TOTP_LABEL|a label to be shown with 2FA|
-|process.env.TOTP_ISSUER|a issuer to be shown with 2FA|
-|process.env.WSO2_MANAGER_SERVICE_URL|URL of WSO2 Manager Service|
-|process.env.WSO2_MANAGER_SERVICE_USER|user of WSO2 Manager Service|
-|process.env.WSO2_MANAGER_SERVICE_PASSWORD|pass of WSO2 Manager Service|
-|process.env.OAUTH_RESET_PASSWORD_ISSUER|URL of reset password issuer (WSO2)|
-|process.env.OAUTH_RESET_PASSWORD_AUTH_USER|user of WSO2 reset password service (WSO2)|
-|process.env.OAUTH_RESET_PASSWORD_AUTH_PASSWORD|password of WSO2 reset password service (WSO2)|
- 
+|Environment variable|Description|Default Value
+:---|:---|:---
+| **MCM API server configuration**
+|PORT|mcm API HTTP port|3001
+| **Authentication features**
+|AUTH_ENABLED|Enables support for OAuth2. 'TRUE' to enable| (disabled)
+|AUTH_2FA_ENABLED|Enables two-factor authentication 'TRUE' to enable| (disabled)
+| **OAuth2 roles**
+|MTA_ROLE|DFSP Admin role|'Application/MTA'
+|PTA_ROLE|HUB Admin Role|'Application/PTA'
+|EVERYONE_ROLE|Authenticated users role|'Internal/everyone'
+| **WSO2 OAuth Service Provider configuration**
+|APP_OAUTH_CLIENT_KEY|OAuth2 Client Key. Configured in WSO2 IM Service Provider|
+|APP_OAUTH_CLIENT_SECRET|OAuth2 Client Secret. Configured in WSO2 IM Service Provider|
+|CERTIFICATE_FILE_NAME|WSO2 **Service Provider** Public Certificate filename ( relative to the server dir ).|'resources/wso2carbon-publickey.cert'
+|EMBEDDED_CERTIFICATE|WSO2 **Service Provider** Public Certificate PEM-encoded string. This one has priority over the previous var|
+| **WSO2 OAuth server configuration**
+|OAUTH2_ISSUER|OAuth token issuer|https://WSO2_IM_SERVER:9443/oauth2/token
+| **Database configuration**
+|DATABASE_HOST|mysql host|localhost
+|DATABASE_PORT|mysql port|3306
+|DATABASE_USER|mysql user|mcm
+|DATABASE_PASSWORD|mysql password|mcm
+|DATABASE_SCHEMA|mysql schema|mcm
+|DB_RETRIES|Times the initial connection to the DB will be retried|10,
+|DB_CONNECTION_RETRY_WAIT_MILLISECONDS|Pause between retries|5000,
+|RUN_MIGRATIONS|If true, run db schema migration at startup. Can always be true as the schema creation is idempotent|true,
+|CURRENCY_CODES|Path to file containing all the supported currency codes|'./data/currencyCodes.json',
+|DATA_CONFIGURATION_FILE|Initial data configuration path. See specific doc|'./data/sampleConfiguration.json'
+| **WSO2 custom services configuration**
+|TOTP_ADMIN_ISSUER|URL of TOTP Admin (WSO2)|
+|TOTP_ADMIN_AUTH_USER|user of TOTP Admin|
+|TOTP_ADMIN_AUTH_PASSWORD|pass of TOTP Admin|
+|TOTP_LABEL|a label to be shown with 2FA|
+|TOTP_ISSUER|a issuer to be shown with 2FA|MCM
+|WSO2_MANAGER_SERVICE_URL|URL of WSO2 Manager Service|
+|WSO2_MANAGER_SERVICE_USER|user of WSO2 Manager Service|
+|WSO2_MANAGER_SERVICE_PASSWORD|pass of WSO2 Manager Service|
+|OAUTH_RESET_PASSWORD_ISSUER|URL of reset password issuer (WSO2)|
+|OAUTH_RESET_PASSWORD_AUTH_USER|user of WSO2 reset password service (WSO2)|
+|OAUTH_RESET_PASSWORD_AUTH_PASSWORD|password of WSO2 reset password service (WSO2)|
+| **MCM Internal Certificate Authority configuration**
+|P12_PASS_PHRASE|Pass phrase used to save the internal CA Key in the DB.|
+| **Support for self-signed certificates on OAuth Server and other TLS client connections**
+|EXTRA_CERTIFICATE_CHAIN_FILE_NAME|Extra trusted server certificate chain file name ( PEM-encoded, as explained in https://nodejs.org/api/tls.html#tls_tls_createsecurecontext_options )|
+|EXTRA_ROOT_CERT_FILE_NAME|Extra trusted server root certificate file name|
+
 
 ## Testing
 
