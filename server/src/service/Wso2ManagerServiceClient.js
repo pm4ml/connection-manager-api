@@ -48,7 +48,7 @@ exports.getUserClaimValue = (userName, claim) => {
 /**
  * set a claim value to a user
  */
-exports.setUserClaimValue = async (userName, claim, value) => {
+exports.setUserClaimValue = (userName, claim, value) => {
   return new Promise(function (resolve, reject) {
     soap.createClient(path.join(__dirname, '/../wsdl/RemoteUserStoreManagerService.wsdl'), (err, client) => {
       if (err) {
