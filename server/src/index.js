@@ -21,6 +21,10 @@ const http = require('http');
 const serverPort = Constants.SERVER.PORT;
 const app = require('./app');
 
+const { enableCustomRootCAs } = require('./utils/tlsUtils');
+
+enableCustomRootCAs();
+
 const appConnected = app.connect();
 
 // Start the server

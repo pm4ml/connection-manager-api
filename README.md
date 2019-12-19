@@ -77,12 +77,8 @@ Variables:
 |APP_OAUTH_CLIENT_SECRET|OAuth2 Client Secret. Configured in WSO2 IM Service Provider|
 |CERTIFICATE_FILE_NAME|WSO2 **Service Provider** Public Certificate filename ( relative to the server dir ).|'resources/wso2carbon-publickey.cert'
 |EMBEDDED_CERTIFICATE|WSO2 **Service Provider** Public Certificate PEM-encoded string. This one has priority over the previous var|
-| **WSO2 OAuth server TLS configuration if using self-signed certificates**
+| **WSO2 OAuth server configuration**
 |OAUTH2_ISSUER|OAuth token issuer|https://WSO2_IM_SERVER:9443/oauth2/token
-|OAUTH2_ISSUER_CERTIFICATE_CHAIN_FILE_NAME|OAUTH2_ISSUER server certificate chain file name ( PEM-encoded, as explained in https://nodejs.org/api/tls.html#tls_tls_createsecurecontext_options )|
-|OAUTH2_ISSUER_EMBEDDED_CERTIFICATE_CHAIN|If instead of using a file with the previous option, the content is set as the value of this env var|
-|OAUTH2_ISSUER_ROOT_CERT_FILE_NAME|OAUTH2_ISSUER server root certificate file name|
-|OAUTH2_ISSUER_EMBEDDED_ROOT_CERT|OAUTH2_ISSUER server root certificate contents|
 | **Database configuration**
 |DATABASE_HOST|mysql host|localhost
 |DATABASE_PORT|mysql port|3306
@@ -108,6 +104,10 @@ Variables:
 |OAUTH_RESET_PASSWORD_AUTH_PASSWORD|password of WSO2 reset password service (WSO2)|
 | **MCM Internal Certificate Authority configuration**
 |P12_PASS_PHRASE|Pass phrase used to save the internal CA Key in the DB.|
+| **Support for self-signed certificates on OAuth Server and other TLS client connections**
+|EXTRA_CERTIFICATE_CHAIN_FILE_NAME|Extra trusted server certificate chain file name ( PEM-encoded, as explained in https://nodejs.org/api/tls.html#tls_tls_createsecurecontext_options )|
+|EXTRA_ROOT_CERT_FILE_NAME|Extra trusted server root certificate file name|
+
 
 ## Testing
 
