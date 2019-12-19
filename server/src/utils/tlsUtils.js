@@ -1,4 +1,5 @@
 const Constants = require('../constants/Constants');
+
 const tls = require('tls');
 const fs = require('fs');
 
@@ -18,9 +19,15 @@ const addCertsToContextFromFile = (context, filePath) => {
   });
 };
 
+let origCreateSecureContext = null;
+
 const enableCustomRootCAs = () => {
   console.log('Enabling custom root CAs and certificate chain options');
-  const origCreateSecureContext = tls.createSecureContext;
+  if (origCreateSecureContext) {
+    console.log('Custom root CAs was already enabled');
+    return;
+  }
+  origCreateSecureContext = tls.createSecureContext;
 
   tls.createSecureContext = options => {
     const context = origCreateSecureContext(options);
@@ -35,5 +42,5 @@ const enableCustomRootCAs = () => {
 };
 
 module.exports = {
-  enableCustomRootCAs
+  enableCustomRootCAs,
 };
