@@ -39,7 +39,7 @@ exports.retrieveSecretKey = async (username) => {
     }
   };
   try {
-    let secretKeyResponse = await rp(options);
+    let secretKeyResponse = await rp(options); // MP-757
     let secretKeyValue;
     parseString(secretKeyResponse, (err, result) => {
       if (err) throw new UnauthorizedError('XML parse of the response failed');
@@ -67,11 +67,11 @@ exports.validateTOTP = async (username, verificationCode) => {
     auth: {
       user: Constants.AUTH_2FA.TOTP_ADMIN_AUTH_USER,
       pass: Constants.AUTH_2FA.TOTP_ADMIN_AUTH_PASSWORD
-    }
+    },
   };
 
   try {
-    let validateTotpResponse = await rp(options);
+    let validateTotpResponse = await rp(options); // MP-757
     parseString(validateTotpResponse, (err, result) => {
       if (err) throw new UnauthorizedError('XML parse of the response failed');
       console.log('Validate boolean :: ' + JSON.stringify(result['ns:validateTOTPResponse']['ns:return'][0]));
