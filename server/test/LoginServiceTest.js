@@ -46,6 +46,8 @@ describe('first login', () => {
 
     wso2ClientTokenMock.callsFake((params) => { return loginResponseObj; });
 
+    Constants.OAUTH.AUTH_ENABLED = 'true';
+
     let response = await LoginService.loginUser('user1', 'password1');
 
     // FIXME sending "true" string to UI

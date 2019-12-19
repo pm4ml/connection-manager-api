@@ -20,7 +20,7 @@ module.exports = {
     PORT: process.env.PORT || 3001,
   },
   OAUTH: {
-    AUTH_ENABLED: process.env.AUTH_ENABLED || null, // null or 'DISABLED' to disable. 'true' or 'TRUE' to enable
+    AUTH_ENABLED: process.env.AUTH_ENABLED || null, // null or 'DISABLED' to disable. 'true' or 'TRUE' to enable. FIXME this is confusing as setting it to 'false' actually enables it
     APP_OAUTH_CLIENT_KEY: process.env.APP_OAUTH_CLIENT_KEY, // Configured in WSO2 IM Service Provider
     APP_OAUTH_CLIENT_SECRET: process.env.APP_OAUTH_CLIENT_SECRET,
     MTA_ROLE: process.env.MTA_ROLE || 'Application/MTA',
