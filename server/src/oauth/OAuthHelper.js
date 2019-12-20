@@ -113,10 +113,10 @@ function getOAuth2Middleware () {
 const handleMiddleware = (middleware, app) => {
   if (isAuthEnabled) {
     console.log(`Enabling OAUTH. Constants.OAUTH.AUTH_ENABLED = ${Constants.OAUTH.AUTH_ENABLED}`);
-    app.use('/api/environments', exports.getOAuth2Middleware());
+    app.use('/api/environments', getOAuth2Middleware());
     // https://github.com/apigee-127/swagger-tools/blob/master/docs/Middleware.md#swagger-security
     app.use('/api/environments', middleware.swaggerSecurity({
-      OAuth2: exports.oauth2PermissionsVerifier
+      OAuth2: oauth2PermissionsVerifier
     }));
   } else {
     console.log(`NOT enabling OAUTH. Constants.OAUTH.AUTH_ENABLED = ${Constants.OAUTH.AUTH_ENABLED}`);
