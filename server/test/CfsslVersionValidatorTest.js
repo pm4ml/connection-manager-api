@@ -12,40 +12,26 @@
  *  distributed under the License is distributed on an "AS IS" BASIS,         *
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  *
  *  See the License for the specific language governing permissions and       *
- *  limitations under the License                                             *
+ *  limitations under the License.                                            *
  ******************************************************************************/
 
-'use strict';
-const Constants = require('./constants/Constants');
-const http = require('http');
-const serverPort = Constants.SERVER.PORT;
-const app = require('./app');
-const { enableCustomRootCAs } = require('./utils/tlsUtils');
-const { validateCfsslVersion } = require('./utils/cfssl');
+const { validateCfsslVersion } = require('../src/utils/cfssl');
 
-console.log('connection-manager-api starting with Constants:');
-console.log(JSON.stringify(Constants, null, 2));
+const assert = require('chai').assert;
 
-console.log('connection-manager-api starting with process env:');
-console.log(process.env);
-
-const init = async () => {
-  enableCustomRootCAs();
-
-  try {
-    await validateCfsslVersion();
-  } catch (error) {
-    console.error('Error while validating Cfssl version:', error);
-    process.exit(-1);
-  }
-
-  const appConnected = app.connect();
-
-  // Start the server
-  http.createServer(appConnected).listen(serverPort, function () {
-    console.log('Connection-Manager API server is listening on port %d (http://localhost:%d)', serverPort, serverPort);
-    console.log('Swagger-ui is available on http://localhost:%d/docs', serverPort);
+describe('CfsslVersionValidatorTest', () => {
+  before(async () => {
   });
-};
 
-init();
+  after(async () => {
+  });
+
+  it('validates that the correct version of CFSSL is installed', async () => {
+    try {
+      const result = await validateCfsslVersion();
+      assert.isTrue(result);
+    } catch (error) {
+      assert.fail('', '', `Error while validating Cfssl version. Other tests will probably fail too!: ${JSON.stringify(error)}`);
+    }
+  });
+});

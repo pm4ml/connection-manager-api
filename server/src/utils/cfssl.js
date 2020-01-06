@@ -14,11 +14,35 @@
  *  See the License for the specific language governing permissions and       *
  *  limitations under the License.                                            *
  ******************************************************************************/
+const Constants = require('../constants/Constants');
+const spawnProcess = require('../process/spawner');
+const ExternalProcessError = require('../errors/ExternalProcessError');
 
-const Constants = require('./constants/Constants');
+const validateCfsslVersion = async () => {
+  let cfsslVersion = Constants.CFSSL.VERSION;
+  if (!cfsslVersion) {
+    throw new Error(`CFSSL version not present on Constants.CFSSL.VERSION: ${Constants.CFSSL.VERSION}`);
+  }
 
-console.log('connection-manager-api starting with Constants:');
-console.log(JSON.stringify(Constants, null, 2));
+  const commandResult = await spawnProcess('cfssl', ['version'], '');
+  let { stdout } = commandResult;
+  if (typeof stdout !== 'string') {
+    throw new ExternalProcessError('Could not read command output');
+  }
 
-console.log('connection-manager-api starting with process env:');
-console.log(process.env);
+  let revisionRE = new RegExp('Revision: dev-modus');
+  if (!(revisionRE.test(stdout))) {
+    throw new ExternalProcessError(`cfssl version info doesn't match ${revisionRE}, it's \n${stdout}\n`);
+  }
+
+  let versionRE = new RegExp(`Version: ${cfsslVersion}`);
+  if (!(versionRE.test(stdout))) {
+    throw new ExternalProcessError(`cfssl version info doesn't match ${versionRE}, it's \n${stdout}\n`);
+  }
+
+  return true;
+};
+
+module.exports = {
+  validateCfsslVersion
+};

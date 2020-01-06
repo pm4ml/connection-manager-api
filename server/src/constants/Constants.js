@@ -63,5 +63,8 @@ module.exports = {
   },
   PKI_ENGINE: {
     P12_PASS_PHRASE: process.env.P12_PASS_PHRASE,
+  },
+  CFSSL: {
+    VERSION: '1.3.4' || process.env.CFSSL_VERSION
   }
 };
