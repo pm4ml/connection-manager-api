@@ -1,3 +1,4 @@
 node_modules
 .EXTRA_eslint.json
 .TODO_eslint.json
+.nyc_output
