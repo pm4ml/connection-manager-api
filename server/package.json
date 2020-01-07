@@ -6,8 +6,9 @@
   "scripts": {
     "testX": "standardx --verbose | snazzy && TEST=true mocha",
     "test": "P12_PASS_PHRASE=test_pass_phrase TEST=true mocha",
+    "test-self-signed-server": "TEST_START_SELF_SIGNED_SERVER=true npm test",
     "wtftest": "P12_PASS_PHRASE=test_pass_phrase TEST=true wtfnode ./node_modules/.bin/_mocha",
-    "test-with-coverage": "P12_PASS_PHRASE=test_pass_phrase TEST=true nyc --reporter=text mocha --recursive --timeout 20000 --colors -exit",
+    "test-with-coverage": "P12_PASS_PHRASE=test_pass_phrase TEST=true nyc --reporter=text mocha --timeout 20000 --colors -exit",
     "start": "P12_PASS_PHRASE=${P12_PASS_PHRASE:-so_secret_default} node src/index.js",
     "start-with-oauth-enabled": "source oauth.env && node src/index.js",
     "build": "babel src --out-dir ./dist --source-maps",
