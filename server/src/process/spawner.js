@@ -59,7 +59,7 @@ const spawnProcess = function (command, args, stdin, throwOnErrorCode = true) {
     });
 
     childProcess.on('close', async (code) => {
-      // if (command.indexOf('cfssl') !== -1 && args[0] === 'sign') {
+      // if (command.indexOf(Constants.CFSSL.COMMAND_PATH) !== -1 && args[0] === 'sign') {
       //   console.warn(`spawner.spawnProcess command: ${command}\nargs: ${args}\nstdin: ${stdin}\nstderr: ${stderr}\nstdout: ${stdout}`);
       // }
       if (code !== 0) {

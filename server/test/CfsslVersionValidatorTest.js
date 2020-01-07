@@ -15,10 +15,23 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const Constants = require('./constants/Constants');
+const { validateCfsslVersion } = require('../src/utils/cfssl');
 
-console.log('connection-manager-api starting with Constants:');
-console.log(JSON.stringify(Constants, null, 2));
+const assert = require('chai').assert;
 
-console.log('connection-manager-api starting with process env:');
-console.log(process.env);
+describe('CfsslVersionValidatorTest', () => {
+  before(async () => {
+  });
+
+  after(async () => {
+  });
+
+  it('validates that the correct version of CFSSL is installed', async () => {
+    try {
+      const result = await validateCfsslVersion();
+      assert.isTrue(result);
+    } catch (error) {
+      assert.fail('', '', `Error while validating Cfssl version. Other tests will probably fail too!: ${JSON.stringify(error)}`);
+    }
+  });
+});

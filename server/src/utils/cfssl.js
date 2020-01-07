@@ -12,40 +12,37 @@
  *  distributed under the License is distributed on an "AS IS" BASIS,         *
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  *
  *  See the License for the specific language governing permissions and       *
- *  limitations under the License                                             *
+ *  limitations under the License.                                            *
  ******************************************************************************/
+const Constants = require('../constants/Constants');
+const spawnProcess = require('../process/spawner');
+const ExternalProcessError = require('../errors/ExternalProcessError');
 
-'use strict';
-const Constants = require('./constants/Constants');
-const http = require('http');
-const serverPort = Constants.SERVER.PORT;
-const app = require('./app');
-const { enableCustomRootCAs } = require('./utils/tlsUtils');
-const { validateCfsslVersion } = require('./utils/cfssl');
-
-console.log('connection-manager-api starting with Constants:');
-console.log(JSON.stringify(Constants, null, 2));
-
-console.log('connection-manager-api starting with process env:');
-console.log(process.env);
-
-const init = async () => {
-  enableCustomRootCAs();
-
-  try {
-    await validateCfsslVersion();
-  } catch (error) {
-    console.error('Error while validating Cfssl version:', error);
-    process.exit(-1);
+const validateCfsslVersion = async () => {
+  let cfsslVersion = Constants.CFSSL.VERSION;
+  if (!cfsslVersion) {
+    throw new Error(`CFSSL version not present on Constants.CFSSL.VERSION: ${Constants.CFSSL.VERSION}`);
   }
 
-  const appConnected = app.connect();
+  const commandResult = await spawnProcess(Constants.CFSSL.COMMAND_PATH, ['version'], '');
+  let { stdout } = commandResult;
+  if (typeof stdout !== 'string') {
+    throw new ExternalProcessError('Could not read command output');
+  }
 
-  // Start the server
-  http.createServer(appConnected).listen(serverPort, function () {
-    console.log('Connection-Manager API server is listening on port %d (http://localhost:%d)', serverPort, serverPort);
-    console.log('Swagger-ui is available on http://localhost:%d/docs', serverPort);
-  });
+  let revisionRE = new RegExp('Revision: dev-modus');
+  if (!(revisionRE.test(stdout))) {
+    throw new ExternalProcessError(`cfssl version info doesn't match ${revisionRE}, it's \n${stdout}\n`);
+  }
+
+  let versionRE = new RegExp(`Version: ${cfsslVersion}`);
+  if (!(versionRE.test(stdout))) {
+    throw new ExternalProcessError(`cfssl version info doesn't match ${versionRE}, it's \n${stdout}\n`);
+  }
+
+  return true;
 };
 
-init();
+module.exports = {
+  validateCfsslVersion
+};

@@ -1,6 +1,7 @@
 const https = require('https');
 const tls = require('tls');
 const fs = require('fs');
+const path = require('path');
 
 const origCreateSecureContext = tls.createSecureContext;
 
@@ -10,7 +11,7 @@ tls.createSecureContext = options => {
   const context = origCreateSecureContext(options);
 
   const pem = fs
-    .readFileSync(ROOT_CERTIFICATE_PATH, { encoding: 'ascii' })
+    .readFileSync(path.join(__dirname, ROOT_CERTIFICATE_PATH), { encoding: 'ascii' })
     .replace(/\r\n/g, '\n');
 
   const certs = pem.match(/-----BEGIN CERTIFICATE-----\n[\s\S]+?\n-----END CERTIFICATE-----/g);

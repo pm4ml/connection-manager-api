@@ -1,10 +1,10 @@
 # Connection Manager API
 
-The Connection Manager API allows an administrator to manage the network configuration and PKI information for the Hub and a set of DFSPs.
+Connection Manager API is a component of the Mojaloop ecosystem that allows an administrator to manage the network configuration and PKI information for the Hub and a set of DFSPs.
 
 It provides a REST API, described using a [Swagger/OpenAPI document](./server/src/api/swagger.yaml).
 
-The current version uses both [cfssl](https://github.com/modusintegration/cfssl) and [openssl](https://www.openssl.org/) as the PKI engines which issue and process CSRs and Certificates. The specific version of cfssl that MCM depends on is kept in the [Dockerfile](./server/Dockerfile)
+The current version uses both [cfssl](https://github.com/modusintegration/cfssl) and [openssl](https://www.openssl.org/) as the PKI engines which issue and process CSRs and Certificates. The specific version of cfssl that MCM depends on is kept in the [Dockerfile](./server/Dockerfile) as the value of the `branch` argument ( as in `--branch=v1.3.4` ) and can also be specified as an environment variable ( see `CFSSL_VERSION` below ).
 
 The API servers uses OAuth2 to implement security, as defined in the [OAuth2 implementation doc](./oauth2.md)
 
@@ -107,6 +107,12 @@ Variables:
 | **Support for self-signed certificates on OAuth Server and other TLS client connections**
 |EXTRA_CERTIFICATE_CHAIN_FILE_NAME|Extra trusted server certificate chain file name ( PEM-encoded, as explained in https://nodejs.org/api/tls.html#tls_tls_createsecurecontext_options )|
 |EXTRA_ROOT_CERT_FILE_NAME|Extra trusted server root certificate file name|
+| **CFSSL**
+|CFSSL_VERSION|Expected CFSSL version to use. Should be updated to keep in sync with the cfssl development|1.3.4
+|CFSSL_COMMAND_PATH|cfssl command; it should be just cfssl if it's in the PATH or the full path|cfssl
+
+
+
 
 
 ## Testing

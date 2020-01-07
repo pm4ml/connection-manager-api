@@ -82,7 +82,7 @@ class EmbeddedPKIEngine extends PKIEngine {
       csrData.CN = csrData.names[0].CN;
 
       let cfsslCommand = 'genkey';
-      const cfsslResult = await spawnProcess('cfssl', [cfsslCommand, `-config=${caPath}`, '-initca', '-'], JSON.stringify(csrData));
+      const cfsslResult = await spawnProcess(Constants.CFSSL.COMMAND_PATH, [cfsslCommand, `-config=${caPath}`, '-initca', '-'], JSON.stringify(csrData));
 
       let cfsslOutput;
       cfsslOutput = JSON.parse(cfsslResult.stdout);
@@ -117,7 +117,7 @@ class EmbeddedPKIEngine extends PKIEngine {
       let fsWrite = util.promisify(fs.write);
       await fsWrite(certFd, this.cert);
       await fsWrite(keyFd, deKey);
-      const cfsslResult = await spawnProcess('cfssl', ['sign', '-loglevel', '1', '-ca', certPath, '-ca-key', keyPath, `-config=${configPath}`, '-'], csr);
+      const cfsslResult = await spawnProcess(Constants.CFSSL.COMMAND_PATH, ['sign', '-loglevel', '1', '-ca', certPath, '-ca-key', keyPath, `-config=${configPath}`, '-'], csr);
 
       let cfsslOutput = JSON.parse(cfsslResult.stdout);
       return cfsslOutput.cert;
@@ -169,7 +169,7 @@ class EmbeddedPKIEngine extends PKIEngine {
 
     let { configPath, configCleanup } = await this.currentConfigTempFile();
     try {
-      const cfssl = await spawnProcess('cfssl', ['genkey', '-loglevel', '1', `-config=${configPath}`, '-'], JSON.stringify(csr));
+      const cfssl = await spawnProcess(Constants.CFSSL.COMMAND_PATH, ['genkey', '-loglevel', '1', `-config=${configPath}`, '-'], JSON.stringify(csr));
       let cfsslOutput = JSON.parse(cfssl.stdout);
       cfsslOutput.key = await this.encryptKey(cfsslOutput.key);
       return cfsslOutput;
@@ -1093,7 +1093,7 @@ class EmbeddedPKIEngine extends PKIEngine {
     // cfssl certinfo -csr test/resources/modusbox/dfsp_outbound.csr
     let argsArray = ['certinfo', '-csr', '-'];
 
-    const commandResult = await spawnProcess('cfssl', argsArray, csr);
+    const commandResult = await spawnProcess(Constants.CFSSL.COMMAND_PATH, argsArray, csr);
     let { stdout } = commandResult;
     if (typeof stdout !== 'string') {
       throw new ExternalProcessError('Could not read command output');
@@ -1127,7 +1127,7 @@ class EmbeddedPKIEngine extends PKIEngine {
     // cfssl certinfo -csr test/resources/modusbox/dfsp_outbound.csr
     let argsArray = ['certinfo', '-cert', '-'];
 
-    const commandResult = await spawnProcess('cfssl', argsArray, cert);
+    const commandResult = await spawnProcess(Constants.CFSSL.COMMAND_PATH, argsArray, cert);
     let { stdout } = commandResult;
     if (typeof stdout !== 'string') {
       throw new ExternalProcessError('Could not read command output');

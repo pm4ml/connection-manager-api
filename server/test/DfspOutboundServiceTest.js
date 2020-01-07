@@ -24,6 +24,7 @@ const DfspOutboundService = require('../src/service/DfspOutboundService');
 const assert = require('chai').assert;
 const spawnProcess = require('../src/process/spawner');
 const ROOT_CA = require('./Root_CA.js');
+const Constants = require('../src/constants/Constants');
 
 const ValidationCodes = require('../src/pki_engine/ValidationCodes');
 
@@ -95,7 +96,7 @@ describe('DfspOutboundService', function () {
       // Let's sign the CSR ( what the DFSP would do )
       let certPath = path.join(__dirname, 'resources/modusbox/ca.pem');
       let keyPath = path.join(__dirname, 'resources/modusbox/ca-key.pem');
-      const cfsslResult = await spawnProcess('cfssl', ['sign', '-loglevel', '1', '-ca', certPath, '-ca-key', keyPath, '-'], csr);
+      const cfsslResult = await spawnProcess(Constants.CFSSL.COMMAND_PATH, ['sign', '-loglevel', '1', '-ca', certPath, '-ca-key', keyPath, '-'], csr);
 
       let cfsslOutput = JSON.parse(cfsslResult.stdout);
       let { cert: newCert } = cfsslOutput;
@@ -175,7 +176,7 @@ describe('DfspOutboundService', function () {
       // Let's sign the CSR ( what the DFSP would do )
       let certPath = path.join(__dirname, 'resources/modusbox//ca.pem');
       let keyPath = path.join(__dirname, 'resources/modusbox/ca-key.pem');
-      const cfsslResult = await spawnProcess('cfssl', ['sign', '-loglevel', '1', '-ca', certPath, '-ca-key', keyPath, '-'], csr);
+      const cfsslResult = await spawnProcess(Constants.CFSSL.COMMAND_PATH, ['sign', '-loglevel', '1', '-ca', certPath, '-ca-key', keyPath, '-'], csr);
 
       let cfsslOutput = JSON.parse(cfsslResult.stdout);
       let { cert: newCert } = cfsslOutput;
