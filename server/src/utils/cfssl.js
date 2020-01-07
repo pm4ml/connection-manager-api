@@ -24,7 +24,7 @@ const validateCfsslVersion = async () => {
     throw new Error(`CFSSL version not present on Constants.CFSSL.VERSION: ${Constants.CFSSL.VERSION}`);
   }
 
-  const commandResult = await spawnProcess('cfssl', ['version'], '');
+  const commandResult = await spawnProcess(Constants.CFSSL.COMMAND_PATH, ['version'], '');
   let { stdout } = commandResult;
   if (typeof stdout !== 'string') {
     throw new ExternalProcessError('Could not read command output');

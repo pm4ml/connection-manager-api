@@ -65,6 +65,7 @@ module.exports = {
     P12_PASS_PHRASE: process.env.P12_PASS_PHRASE,
   },
   CFSSL: {
-    VERSION: '1.3.4' || process.env.CFSSL_VERSION
+    VERSION: process.env.CFSSL_VERSION || '1.3.4',
+    COMMAND_PATH: process.env.CFSSL_COMMAND_PATH || 'cfssl'
   }
 };

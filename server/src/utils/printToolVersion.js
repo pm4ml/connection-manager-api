@@ -20,7 +20,7 @@
 const spawnProcess = require('../process/spawner');
 
 exports.printToolsVersion = () => {
-  spawnProcess('cfssl', ['version'], '')
+  spawnProcess(Constants.CFSSL.COMMAND_PATH, ['version'], '')
     .then(cfsslResult => {
       let { stdout } = cfsslResult;
       console.log('\nRunning cfssl version: ', stdout);

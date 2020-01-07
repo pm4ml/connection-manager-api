@@ -109,6 +109,7 @@ Variables:
 |EXTRA_ROOT_CERT_FILE_NAME|Extra trusted server root certificate file name|
 | **CFSSL**
 |CFSSL_VERSION|Expected CFSSL version to use. Should be updated to keep in sync with the cfssl development|1.3.4
+|CFSSL_COMMAND_PATH|cfssl command; it should be just cfssl if it's in the PATH or the full path|cfssl
 
 
 
