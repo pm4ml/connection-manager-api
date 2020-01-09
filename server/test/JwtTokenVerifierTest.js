@@ -18,11 +18,8 @@
 const { createJwtStrategy } = require('../src/oauth/OAuthHelper');
 
 const assert = require('chai').assert;
-const sinon = require('sinon');
 
-
-
-describe('JWT tests', () => {
+describe('JwtTokenVerifierTest tests', () => {
 
   before(() => {
   });
@@ -59,8 +56,6 @@ describe('JWT tests', () => {
     assert.isTrue(callbackCalled, 'Should have throw a TokenExpiredError');
   });
 });
-
-
 
 function tokenPropertyExtractor (req) {
   return req.token;
