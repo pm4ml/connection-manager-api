@@ -16,6 +16,7 @@
  ******************************************************************************/
 
 'use strict';
+const Constants = require('../constants/Constants');
 
 const spawnProcess = require('../process/spawner');
 

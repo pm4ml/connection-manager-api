@@ -20,6 +20,7 @@ const Cookies = require('cookies');
 const Constants = require('../constants/Constants');
 const fs = require('fs');
 const path = require('path');
+const http = require('http');
 
 const isAuthEnabled = Constants.OAUTH.AUTH_ENABLED != null && (Constants.OAUTH.AUTH_ENABLED === 'true' || Constants.OAUTH.AUTH_ENABLED === 'TRUE');
 
@@ -31,15 +32,26 @@ function cookieExtractor (req) {
 
 /**
  * Creates a JWTStrategy to use with passport
+ * @see http://www.passportjs.org/packages/passport-jwt/
  */
-function createJwtStrategy () {
+function createJwtStrategy (extraExtractors) {
   var JwtStrategy = require('passport-jwt').Strategy;
   var ExtractJwt = require('passport-jwt').ExtractJwt;
 
   var jwtStrategyOpts = {};
-  jwtStrategyOpts.jwtFromRequest = ExtractJwt.fromExtractors([ExtractJwt.fromAuthHeaderAsBearerToken(), cookieExtractor]);
+  let extractors = [];
+  if (extraExtractors) {
+    if (Array.isArray(extraExtractors)) {
+      extractors = extractors.concat(extraExtractors);
+    } else {
+      extractors = extractors.push(extraExtractors);
+    }
+  };
+  extractors = extractors.concat([ExtractJwt.fromAuthHeaderAsBearerToken(), cookieExtractor]);
 
-  jwtStrategyOpts.passReqToCallback = true;
+  jwtStrategyOpts.jwtFromRequest = ExtractJwt.fromExtractors(extractors);
+
+  jwtStrategyOpts.passReqToCallback = true; // passReqToCallback: If true the request will be passed to the verify callback. i.e. verify(request, jwt_payload, done_callback).
   jwtStrategyOpts.jsonWebTokenOptions = {};
   let certContent;
   if (Constants.OAUTH.EMBEDDED_CERTIFICATE) {
@@ -53,7 +65,7 @@ function createJwtStrategy () {
     done(null, certContent);
   };
   // jwtStrategyOpts.issuer = 'accounts.examplesoft.com';
-  jwtStrategyOpts.audience = Constants.OAUTH.APP_OAUTH_CLIENT_KEY;
+  jwtStrategyOpts.audience = Constants.OAUTH.APP_OAUTH_CLIENT_KEY; // audience: If defined, the token audience (aud) will be verified against this value.
   let jwtStrategy = new JwtStrategy(jwtStrategyOpts, verifyCallback);
   return jwtStrategy;
 }
@@ -106,7 +118,14 @@ function getOAuth2Middleware () {
   let jwtStrategy = createJwtStrategy();
   passport.use(jwtStrategy);
   return (req, res, next) => {
-    passport.authenticate('jwt', { session: false })(req, res, next); // failWithError: true returns awful html error. , failureMessage: true  eats the message
+    function failCallback (extra, success, challenge, status) {
+      // extra always null
+      // success always false
+      console.error(`Error authenticating JWT. Error info:`, challenge, status );
+      res.statusCode = 401;
+      res.end(http.STATUS_CODES[res.statusCode]);
+    };
+    passport.authenticate('jwt', { session: false }, failCallback)(req, res, next); // failWithError: true returns awful html error. , failureMessage: true  eats the message
   };
 }
 
@@ -202,5 +221,7 @@ function oauth2PermissionsVerifier (req, securityDefinition, scopes, callback) {
 module.exports = {
   getOAuth2Middleware,
   oauth2PermissionsVerifier,
-  handleMiddleware
+  handleMiddleware,
+  cookieExtractor,
+  createJwtStrategy
 };
