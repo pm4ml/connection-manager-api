@@ -44,7 +44,7 @@ function createJwtStrategy (extraExtractors) {
     if (Array.isArray(extraExtractors)) {
       extractors = extractors.concat(extraExtractors);
     } else {
-      extractors = extractors.push(extraExtractors);
+      extractors.push(extraExtractors);
     }
   };
   extractors = extractors.concat([ExtractJwt.fromAuthHeaderAsBearerToken(), cookieExtractor]);
