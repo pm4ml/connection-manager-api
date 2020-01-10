@@ -74,7 +74,7 @@ describe('JWSCertsService', () => {
       let result = await JWSCertsService.createDfspJWSCerts(envId, dfspId, body);
       assert.isNotNull(result.id);
       assert.equal('423194792965212014222460724964901821840176752000', result.jwsCertificateInfo.serialNumber);
-    }).timeout(15000);
+    }).timeout(30000);
 
     it('should create and delete a DfspJWSCerts entry', async () => {
       let body = {
@@ -91,7 +91,7 @@ describe('JWSCertsService', () => {
       } catch (error) {
         assert.instanceOf(error, NotFoundError);
       }
-    }).timeout(15000);
+    }).timeout(30000);
 
     it('should update a DfspJWSCerts entry', async () => {
       let body = {
@@ -111,7 +111,7 @@ describe('JWSCertsService', () => {
       let resultAfter = await JWSCertsService.updateDfspJWSCerts(envId, dfspId, newBody);
       assert.isNotNull(resultAfter.id);
       assert.equal('557705756627313016946929324774137869488341917432', resultAfter.jwsCertificateInfo.serialNumber);
-    }).timeout(15000);
+    }).timeout(30000);
 
     it('should create and find several dfsps certs', async () => {
       let body = {
@@ -143,7 +143,7 @@ describe('JWSCertsService', () => {
       dfspIds.forEach(async id => {
         await PkiService.deleteDFSP(envId, id);
       });
-    }).timeout(15000);
+    }).timeout(30000);
 
     it('should create and find several dfsps certs and dfspId shouldnt be null', async () => {
       let body = {
@@ -176,7 +176,7 @@ describe('JWSCertsService', () => {
       dfspIds.forEach(async id => {
         await PkiService.deleteDFSP(envId, id);
       });
-    }).timeout(15000);
+    }).timeout(30000);
 
     it('should throw an error with a wrong key size', async () => {
       let body = {
@@ -188,6 +188,6 @@ describe('JWSCertsService', () => {
       assert.isNotNull(result.validations);
       assert.isNotNull(result.validationState);
       assert.strictEqual(result.validationState, ValidationCodes.VALID_STATES.INVALID);
-    }).timeout(15000);
+    }).timeout(30000);
   });
 });
