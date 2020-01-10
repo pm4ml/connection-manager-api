@@ -5,3 +5,5 @@ tmpdir
 **/cfssl-bins/**
 **/node_modules/**
 .DS_Store
+localEnvs
+
