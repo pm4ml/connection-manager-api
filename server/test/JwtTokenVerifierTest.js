@@ -16,6 +16,7 @@
  ******************************************************************************/
 
 const { createJwtStrategy } = require('../src/oauth/OAuthHelper');
+const Constants = require('../src/constants/Constants');
 
 const assert = require('chai').assert;
 
@@ -25,6 +26,13 @@ describe('JwtTokenVerifierTest tests', () => {
   });
 
   after(() => {
+  });
+
+  beforeEach(() => {
+    Constants.OAUTH.EMBEDDED_CERTIFICATE = null;
+  });
+
+  afterEach(() => {
   });
 
   it('should fail because of an invalid signature', async () => {
@@ -56,6 +64,27 @@ describe('JwtTokenVerifierTest tests', () => {
     assert.isTrue(callbackCalled, 'Should have throw a TokenExpiredError');
   });
 });
+
+it('should fail because it\'s expired and using a custom cert', async () => {
+  let callbackCalled = false;
+
+  let token = 'eyJ4NXQiOiJPRGMzTVRNeU1UaGxPRGc1WXpRM1pHTTVNek16TnpGaE5UVmtNVFEwWlRGaU5tVmlZMkk1WkEiLCJraWQiOiJPRGMzTVRNeU1UaGxPRGc1WXpRM1pHTTVNek16TnpGaE5UVmtNVFEwWlRGaU5tVmlZMkk1WkEiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJodWJfb3BlcmF0b3JAY2FyYm9uLnN1cGVyIiwiYXVkIjoiVE5TVnZFRUdPV1NwZ1VkSklwRThtUFVsS3dvYSIsIm5iZiI6MTU3ODU2NTc0NCwiYXpwIjoiVE5TVnZFRUdPV1NwZ1VkSklwRThtUFVsS3dvYSIsInNjb3BlIjoib3BlbmlkIiwiaXNzIjoiaHR0cHM6XC9cL2lza20ucHVibGljLnRpcHMtc2FuZGJveC5saXZlOjk0NDNcL29hdXRoMlwvdG9rZW4iLCJncm91cHMiOlsiSW50ZXJuYWxcL3N1YnNjcmliZXIiLCJBcHBsaWNhdGlvblwvTVRBIiwiQXBwbGljYXRpb25cL2h1Yl9vcGVyYXRvcl9yZXN0X2FwaV9zdG9yZSIsIkFwcGxpY2F0aW9uXC9QVEEiLCJJbnRlcm5hbFwvZXZlcnlvbmUiLCJBcHBsaWNhdGlvblwvTUNNX3BvcnRhbCIsIkFwcGxpY2F0aW9uXC9odWJfb3BlcmF0b3JfRGVmYXVsdEFwcGxpY2F0aW9uX1BST0RVQ1RJT04iXSwiZXhwIjoxNTc4NTY5MzQ0LCJpYXQiOjE1Nzg1NjU3NDQsImp0aSI6ImJlN2JiNDhkLWI1NTMtNGFmOS1hOTYyLWM5Yzk2NzM0Nzc1ZiJ9.wV6c-YdaGcdMmgfJ-w5XIyiHGNiipyPoX36nxRH7pY0dFwxM4Wz5zghgPgMrdiV2A4Q52_5XFojk0R8ZxGfqk5h-TEj-NpYw6mvyfimndFPk9kngSyZDhMsxRtS4UXWxQCMmiIUtAZfZkTGroFClBKeLE-hIBoxHhaFFiN6VLPXXfW3CzekSfRovVHIr1JxP-4fK2ixz5tcAdqVvGXYGUdHhagPtX7a4O4ohvRRF5NWfSZQEsABjaT26PfIwdBiiW8-FGzYCIJV6VavESuwlOv2N1eSPfl-l81yLK9tJiXbwh1Hs-yl9x-tP2Qb2iAP2vPUqYp4E4LoCbWPMm0i2Zg';
+
+  Constants.OAUTH.EMBEDDED_CERTIFICATE = '-----BEGIN CERTIFICATE-----\nMIIFmjCCBIKgAwIBAgISA8BcoiclaPJ/UngflMyf7BYIMA0GCSqGSIb3DQEBCwUA\nMEoxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MSMwIQYDVQQD\nExpMZXQncyBFbmNyeXB0IEF1dGhvcml0eSBYMzAeFw0xOTEwMzExNDAxMTBaFw0y\nMDAxMjkxNDAxMTBaMCgxJjAkBgNVBAMTHWlza20ucHVibGljLnRpcHMtc2FuZGJv\neC5saXZlMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5sODbAwBiKE7\nx1cAkWOOCBdFMIhNbXo9CYYwI0/K5oAwZAHwMjGJQHIS+Ny2TMXWs4ESDJIQDv1g\nZhglmeUYp0PTOgWFeBB0oFg5VSSNr+EqhDdt3Qj8uscNtlCxDaX64mLATzHBWVha\nyoToJNcF2ONey//nTMsjDjf5o+i4GGleUEr0pqmYhUszBoAi6pmyOelliZ3oZeF5\naASpKUWyy+glin2g9EiSfF1kmap9XgTABAyttPqyJ/FZBNth04dv5SrwGaTKYd85\nAJQMvpmCyTSbLOlGV9W5IeKOszAm4WT4F+Dx3P2ZtPQKtY/ajpAw6jwZMAF+vZMJ\nW8TFZ5jkvQIDAQABo4ICmjCCApYwDgYDVR0PAQH/BAQDAgWgMB0GA1UdJQQWMBQG\nCCsGAQUFBwMBBggrBgEFBQcDAjAMBgNVHRMBAf8EAjAAMB0GA1UdDgQWBBT7VAhD\nNl7GXaFU7bnab1y43AnDfzAfBgNVHSMEGDAWgBSoSmpjBH3duubRObemRWXv86js\noTBvBggrBgEFBQcBAQRjMGEwLgYIKwYBBQUHMAGGImh0dHA6Ly9vY3NwLmludC14\nMy5sZXRzZW5jcnlwdC5vcmcwLwYIKwYBBQUHMAKGI2h0dHA6Ly9jZXJ0LmludC14\nMy5sZXRzZW5jcnlwdC5vcmcvMFAGA1UdEQRJMEeCHWlza20ucHVibGljLnRpcHMt\nc2FuZGJveC5saXZlgiZtb2phbG9vcC1pc2ttLnB1YmxpYy50aXBzLXNhbmRib3gu\nbGl2ZTBMBgNVHSAERTBDMAgGBmeBDAECATA3BgsrBgEEAYLfEwEBATAoMCYGCCsG\nAQUFBwIBFhpodHRwOi8vY3BzLmxldHNlbmNyeXB0Lm9yZzCCAQQGCisGAQQB1nkC\nBAIEgfUEgfIA8AB3AAe3XBvlfWj/8bDGHSMVx7rmV3xXlLdq7rxhOhpp06IcAAAB\nbiJVrfoAAAQDAEgwRgIhAKzaPtyoH4kd5T/z0jpYQRH71GlKLskw9F5lSp5QuBcd\nAiEA+Fe4n6+Vl2l40D4SeIS22Ugha2Ntgx2sZ294k30eNSYAdQBep3P531bA57U2\nSH3QSeAyepGaDIShEhKEGHWWgXFFWAAAAW4iVa/JAAAEAwBGMEQCIEPcCn1WO2ZO\n5HDxYudebn77YMcNn1N18r67R7KCaWQZAiBAWDT/2E+1s612D7cf89xo5ij60mLD\nmzj7Mw80qk+F8TANBgkqhkiG9w0BAQsFAAOCAQEAIb4u6mQ/maplSKly3VFUjKBs\nYavuJHQoAp1IFuVJzpF+8mSM7nistBtl/ODbiQs3G8wYLxLFbkeadFVf3xeVb0jl\nGM3c+w+AcwVGrSIACtlqmv75HxFIPp3lJ7vnywZwb7lTDPJ8XlvLk9TFRxeKfBrH\nK3t9dga6wxUXV8aIYoUHtfwL45CdYRoqcdZgMJeWIUJAYB+8On8eHuaLu1obrHcM\n5Odg6GdelqwkCCT/f17lNghsM1TUVQbmfIliSSW4VKpvIbrOLS1HJ6CuYaauPaeZ\nvdwaIza6BkmNdD/JjiptUKzwasVfQUnpboBNsu+WmIvpG/DPK3/cXOd79J+cUw==\n-----END CERTIFICATE-----';
+
+  let strategy = createJwtStrategy(tokenPropertyExtractor);
+  strategy.fail = (err) => {
+    assert.deepEqual(err.name, 'TokenExpiredError');
+    callbackCalled = true;
+  };
+  let req = {};
+  req.token = token;
+  strategy.authenticate(req, { session: false });
+  assert.isTrue(callbackCalled, 'Should have throw a TokenExpiredError');
+});
+
+// same but with efilename
+
 
 function tokenPropertyExtractor (req) {
   return req.token;
