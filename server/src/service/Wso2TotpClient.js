@@ -47,7 +47,7 @@ exports.retrieveSecretKey = async (username) => {
     });
     return secretKeyValue;
   } catch (err) {
-    console.log('ERROR :: ' + err);
+    console.error(`ERROR on Wso2TotpClient.retrieveSecretKey calling with options ${JSON.stringify(options)}` + err);
     throw new UnauthorizedError(err.message);
   }
 };
