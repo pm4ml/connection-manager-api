@@ -31,6 +31,7 @@ exports.getToken = async (username, password) => {
   try {
     let url = Constants.OAUTH.OAUTH2_ISSUER;
     let loginResponse = await rp.post(url).form(form).auth(Constants.OAUTH.APP_OAUTH_CLIENT_KEY, Constants.OAUTH.APP_OAUTH_CLIENT_SECRET); // MP-757
+    console.log(`Wso2Client.getToken received ${loginResponse}`);
     let loginResponseObj = JSON.parse(loginResponse);
     return loginResponseObj;
   } catch (error) {
