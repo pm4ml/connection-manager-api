@@ -55,12 +55,22 @@ function createJwtStrategy (extraExtractors) {
   jwtStrategyOpts.jsonWebTokenOptions = {};
   let certContent;
   if (Constants.OAUTH.EMBEDDED_CERTIFICATE) {
-    console.log('Setting certificate from Constants.OAUTH.EMBEDDED_CERTIFICATE');
+    console.log('Setting Token Issuer certificate from Constants.OAUTH.EMBEDDED_CERTIFICATE');
     certContent = Constants.OAUTH.EMBEDDED_CERTIFICATE;
+  } else if (Constants.OAUTH.CERTIFICATE_FILE_NAME) {
+    console.log(`Setting Token Issuer certificate from Constants.OAUTH.CERTIFICATE_FILE_NAME: ${Constants.OAUTH.CERTIFICATE_FILE_NAME}`);
+    if (Constants.OAUTH.CERTIFICATE_FILE_NAME.startsWith('/')) {
+      console.log(`Token Issuer Constants.OAUTH.CERTIFICATE_FILE_NAME absolute path`);
+      certContent = fs.readFileSync(Constants.OAUTH.CERTIFICATE_FILE_NAME, 'utf8');
+    } else {
+      console.log(`Token Issuer Constants.OAUTH.CERTIFICATE_FILE_NAME relative path`);
+      certContent = fs.readFileSync(path.join(__dirname, '..', Constants.OAUTH.CERTIFICATE_FILE_NAME), 'utf8');
+    }
   } else {
-    console.log(`Setting certificate from Constants.OAUTH.CERTIFICATE_FILE_NAME: ${Constants.OAUTH.CERTIFICATE_FILE_NAME}`);
-    certContent = Constants.OAUTH.EMBEDDED_CERTIFICATE || fs.readFileSync(path.join(__dirname, '..', Constants.OAUTH.CERTIFICATE_FILE_NAME), 'utf8');
+    console.warn(`No value specified for Constants.OAUTH.CERTIFICATE_FILE_NAME or Constants.OAUTH.EMBEDDED_CERTIFICATE. Auth will probably fail to validate the tokens`);
   }
+  console.log(`Token Issuer loaded: ${certContent}`);
+
   jwtStrategyOpts.secretOrKeyProvider = (request, rawJwtToken, done) => {
     done(null, certContent);
   };
@@ -82,17 +92,25 @@ function createJwtStrategy (extraExtractors) {
  */
 function verifyCallback (req, jwtPayload, done) {
   if (!jwtPayload.sub) {
-    return done(null, false, 'Invalid Authentication info: no sub');
+    let message = 'Invalid Authentication info: no sub';
+    console.log(`OAuthHelper.verifyCallbak received ${jwtPayload}. Verification failed because ${message}`);
+    return done(null, false, message);
   }
   if (!jwtPayload.iss) {
-    return done(null, false, 'Invalid Authentication info: no iss');
+    let message = 'Invalid Authentication info: no iss';
+    console.log(`OAuthHelper.verifyCallbak received ${jwtPayload}. Verification failed because ${message}`);
+    return done(null, false, message);
   }
   let issuer = jwtPayload.iss;
-  if (issuer !== Constants.OAUTH.OAUTH2_ISSUER) {
-    return done(null, false, `Invalid Authentication: wrong issuer ${issuer}`);
+  if (issuer !== Constants.OAUTH.OAUTH2_ISSUER && issuer !== Constants.OAUTH.OAUTH2_TOKEN_ISS) {
+    let message = `Invalid Authentication: wrong issuer ${issuer}, expecting: ${Constants.OAUTH.OAUTH2_ISSUER} or ${Constants.OAUTH.OAUTH2_TOKEN_ISS}`;
+    console.log(`OAuthHelper.verifyCallbak received ${jwtPayload}. Verification failed because ${message}`);
+    return done(null, false, message);
   }
   if (!jwtPayload.groups) {
-    return done(null, false, 'Invalid Authentication info: no groups');
+    let message = 'Invalid Authentication info: no groups';
+    console.log(`OAuthHelper.verifyCallbak received ${jwtPayload}. Verification failed because ${message}`);
+    return done(null, false, message);
   }
   console.log(`verifyCallback: user ${jwtPayload.sub} with roles ${jwtPayload.groups}`);
   let foundMTA = jwtPayload.groups.includes(Constants.OAUTH.MTA_ROLE);

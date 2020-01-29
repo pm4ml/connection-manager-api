@@ -75,10 +75,11 @@ Variables:
 | **WSO2 OAuth Service Provider configuration**
 |APP_OAUTH_CLIENT_KEY|OAuth2 Client Key. Configured in WSO2 IM Service Provider|
 |APP_OAUTH_CLIENT_SECRET|OAuth2 Client Secret. Configured in WSO2 IM Service Provider|
-|CERTIFICATE_FILE_NAME|WSO2 **Service Provider** Public Certificate filename ( relative to the server dir ).|'resources/wso2carbon-publickey.cert'
+|CERTIFICATE_FILE_NAME|WSO2 **Service Provider** Public Certificate filename. If the value starts with `/` it will be read as an absolute path, otherwise as a relative path to the app dir|'resources/wso2carbon-publickey.cert'
 |EMBEDDED_CERTIFICATE|WSO2 **Service Provider** Public Certificate PEM-encoded string. This one has priority over the previous var|
 | **WSO2 OAuth server configuration**
-|OAUTH2_ISSUER|OAuth token issuer|https://WSO2_IM_SERVER:9443/oauth2/token
+|OAUTH2_ISSUER|OAuth token issuer endpoint. This service will connect to this endpoint to request the JWTs |https://WSO2_IM_SERVER:9443/oauth2/token
+|OAUTH2_TOKEN_ISS|JWTs have an `iss` property. This property is usually the same as the endpoint (`OAUTH2_ISSUER`), but it may differ for example if there's an HTTP gateway with a different endpoint in between. You can use `OAUTH2_TOKEN_ISS` to specify the expected value of the `iss` property. This service validates that the value of the `iss` property on the JWT it receives on the API calls either is equal to either OAUTH2_ISSUER or OAUTH2_TOKEN_ISS; if there's no match then authentication will fail with a 401.|
 | **Database configuration**
 |DATABASE_HOST|mysql host|localhost
 |DATABASE_PORT|mysql port|3306

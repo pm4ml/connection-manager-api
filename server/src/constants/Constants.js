@@ -27,6 +27,7 @@ module.exports = {
     PTA_ROLE: process.env.PTA_ROLE || 'Application/PTA',
     EVERYONE_ROLE: process.env.EVERYONE_ROLE || 'Internal/everyone',
     OAUTH2_ISSUER: process.env.OAUTH2_ISSUER || 'https://WSO2_IM_SERVER:9443/oauth2/token',
+    OAUTH2_TOKEN_ISS: process.env.OAUTH2_TOKEN_ISS,
     CERTIFICATE_FILE_NAME: process.env.CERTIFICATE_FILE_NAME || 'resources/wso2carbon-publickey.cert',
     EMBEDDED_CERTIFICATE: process.env.EMBEDDED_CERTIFICATE,
     JWT_COOKIE_NAME: 'MCM-API_ACCESS_TOKEN',
