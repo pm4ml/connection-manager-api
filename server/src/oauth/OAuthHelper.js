@@ -55,18 +55,22 @@ function createJwtStrategy (extraExtractors) {
   jwtStrategyOpts.jsonWebTokenOptions = {};
   let certContent;
   if (Constants.OAUTH.EMBEDDED_CERTIFICATE) {
-    console.log('Setting certificate from Constants.OAUTH.EMBEDDED_CERTIFICATE');
+    console.log('Setting Token Issuer certificate from Constants.OAUTH.EMBEDDED_CERTIFICATE');
     certContent = Constants.OAUTH.EMBEDDED_CERTIFICATE;
   } else if (Constants.OAUTH.CERTIFICATE_FILE_NAME) {
-    console.log(`Setting certificate from Constants.OAUTH.CERTIFICATE_FILE_NAME: ${Constants.OAUTH.CERTIFICATE_FILE_NAME}`);
+    console.log(`Setting Token Issuer certificate from Constants.OAUTH.CERTIFICATE_FILE_NAME: ${Constants.OAUTH.CERTIFICATE_FILE_NAME}`);
     if (Constants.OAUTH.CERTIFICATE_FILE_NAME.startsWith('/')) {
+      console.log(`Token Issuer Constants.OAUTH.CERTIFICATE_FILE_NAME absolute path`);
       certContent = fs.readFileSync(Constants.OAUTH.CERTIFICATE_FILE_NAME, 'utf8');
     } else {
+      console.log(`Token Issuer Constants.OAUTH.CERTIFICATE_FILE_NAME relative path`);
       certContent = fs.readFileSync(path.join(__dirname, '..', Constants.OAUTH.CERTIFICATE_FILE_NAME), 'utf8');
     }
   } else {
     console.warn(`No value specified for Constants.OAUTH.CERTIFICATE_FILE_NAME or Constants.OAUTH.EMBEDDED_CERTIFICATE. Auth will probably fail to validate the tokens`);
   }
+  console.log(`Token Issuer loaded: ${certContent}`);
+
   jwtStrategyOpts.secretOrKeyProvider = (request, rawJwtToken, done) => {
     done(null, certContent);
   };
