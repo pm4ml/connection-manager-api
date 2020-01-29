@@ -123,6 +123,7 @@ function verifyCallback (req, jwtPayload, done) {
     roles[group] = true;
   }
   let authInfo = { roles: roles };
+  console.log(`verifyCallback: returning authInfo: ${JSON.stringify(authInfo)} `);
   return done(null, client, authInfo);
 }
 
@@ -136,14 +137,19 @@ function getOAuth2Middleware () {
   let jwtStrategy = createJwtStrategy();
   passport.use(jwtStrategy);
   return (req, res, next) => {
-    function failCallback (extra, success, challenge, status) {
+
+    function authenticateCallback (extra, successOrUser, challengeOrInfo, status) {
+      console.log(`OAuthHelper.getOAuth2Middleware authenticateCallback extra: ${extra} successOrUser: ${JSON.stringify(successOrUser)} challengeOrInfo: ${JSON.stringify(challengeOrInfo)} status: ${status}`);
       // extra always null
-      // success always false
-      console.error(`Error authenticating JWT. Error info:`, challenge, status );
-      res.statusCode = 401;
-      res.end(http.STATUS_CODES[res.statusCode]);
+      // successOrUser determines the outcome
+      if (!successOrUser) {
+        console.error(`Error authenticating JWT. See OAuthHelper.getOAuth2Middleware authenticateCallback above`);
+        res.statusCode = 401;
+        res.end(http.STATUS_CODES[res.statusCode]);
+      }
+      return next();
     };
-    passport.authenticate('jwt', { session: false }, failCallback)(req, res, next); // failWithError: true returns awful html error. , failureMessage: true  eats the message
+    passport.authenticate('jwt', { session: false }, authenticateCallback)(req, res, next); // failWithError: true returns awful html error. , failureMessage: true  eats the message
   };
 }
 
