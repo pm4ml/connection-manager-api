@@ -92,8 +92,8 @@ function verifyCallback (req, jwtPayload, done) {
     return done(null, false, message);
   }
   let issuer = jwtPayload.iss;
-  if (issuer !== Constants.OAUTH.OAUTH2_ISSUER) {
-    let message = `Invalid Authentication: wrong issuer ${issuer}, expected: ${Constants.OAUTH.OAUTH2_ISSUER}`;
+  if (issuer !== Constants.OAUTH.OAUTH2_ISSUER && issuer !== Constants.OAUTH.OAUTH2_TOKEN_ISS) {
+    let message = `Invalid Authentication: wrong issuer ${issuer}, expecting: ${Constants.OAUTH.OAUTH2_ISSUER} or ${Constants.OAUTH.OAUTH2_TOKEN_ISS}`;
     console.log(`OAuthHelper.verifyCallbak received ${jwtPayload}. Verification failed because ${message}`);
     return done(null, false, message);
   }
