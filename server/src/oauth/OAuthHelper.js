@@ -21,7 +21,7 @@ const Constants = require('../constants/Constants');
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
-
+const util = require('util');
 const isAuthEnabled = Constants.OAUTH.AUTH_ENABLED != null && (Constants.OAUTH.AUTH_ENABLED === 'true' || Constants.OAUTH.AUTH_ENABLED === 'TRUE');
 
 function cookieExtractor (req) {
@@ -137,19 +137,13 @@ function getOAuth2Middleware () {
   let jwtStrategy = createJwtStrategy();
   passport.use(jwtStrategy);
   return (req, res, next) => {
-
-    function authenticateCallback (extra, successOrUser, challengeOrInfo, status) {
-      console.log(`OAuthHelper.getOAuth2Middleware authenticateCallback extra: ${extra} successOrUser: ${JSON.stringify(successOrUser)} challengeOrInfo: ${JSON.stringify(challengeOrInfo)} status: ${status}`);
-      // extra always null
-      // successOrUser determines the outcome
-      if (!successOrUser) {
-        console.error(`Error authenticating JWT. See OAuthHelper.getOAuth2Middleware authenticateCallback above`);
-        res.statusCode = 401;
-        res.end(http.STATUS_CODES[res.statusCode]);
-      }
-      return next();
-    };
-    passport.authenticate('jwt', { session: false }, authenticateCallback)(req, res, next); // failWithError: true returns awful html error. , failureMessage: true  eats the message
+    // Defined in connection-manager-api/server/node_modules/passport/lib/middleware/authenticate.js
+    // We add this property to the req and set the failureMessage flag to true so that passport will log the error messages there.
+    // Unfortunately passport eats a lot of info ( like the Error objects ) but this way at least we know what happened if we get a 401
+    req.session = {};
+    passport.authenticate('jwt', { session: false, failureMessage: true })(req, res, next);
+    // failWithError: true returns awful html error. , failureMessage: True to store failure message in req.session.messages, or a string to use as override message for failure.
+    console.log(`OAuthHelper.getOAuth2Middleware after passport.authenticate. req.session is ${util.inspect(req.session)} res.statusCode: ${util.inspect(res.statusCode)} res.statusMessage: ${util.inspect(res.statusMessage)}`);
   };
 }
 
@@ -183,23 +177,21 @@ const handleMiddleware = (middleware, app) => {
  * @param {(error)} callback function to call with the result. If unauthorized, send the error.
  */
 function oauth2PermissionsVerifier (req, securityDefinition, scopes, callback) {
-  // console.log(req, securityDefinition, scopes, callback);
   let user = req.user;
   let authInfo = req.authInfo;
   let apiPath = req.swagger.apiPath;
   let originalUrl = req.originalUrl;
-  console.log('oauth2PermissionsVerifier: user', user, 'roles/groups: ', authInfo, ' resource: ', originalUrl, ' apiPath: ', apiPath);
-
+  let error = null;
+  console.log(`OAuthHelper.oauth2PermissionsVerifier: user ${util.inspect(user)} authInfo:  ${util.inspect(authInfo)} originalUrl: ${originalUrl} apiPath: ${apiPath}`);
   // Now check that the user has all the roles(scopes)
   let rolesOk = false;
-  if (scopes && Array.isArray(scopes)) {
+  if (scopes && Array.isArray(scopes) && authInfo && authInfo.roles) {
     for (const scope of scopes) {
       rolesOk = rolesOk || authInfo.roles[scope]; // FIXME Here should be an && since they are all required per definition. Need to review the roles ( like pta should include mta )
     }
   }
-  let error = null;
   if (!rolesOk) {
-    console.log(`API defined scopes: user ${JSON.stringify(user)} does not have the required roles ${JSON.stringify(scopes)}, it has roles ${JSON.stringify(authInfo.roles)}`);
+    console.log(`API defined scopes: user ${JSON.stringify(user)} does not have the required roles ${JSON.stringify(scopes)}, it has authInfo ${JSON.stringify(authInfo)}`);
     error = new Error(`user does not have the required roles ${scopes}`);
     error.statusCode = 403;
     error.headers = { 'X-AUTH-ERROR': error.message };
