@@ -57,9 +57,15 @@ function createJwtStrategy (extraExtractors) {
   if (Constants.OAUTH.EMBEDDED_CERTIFICATE) {
     console.log('Setting certificate from Constants.OAUTH.EMBEDDED_CERTIFICATE');
     certContent = Constants.OAUTH.EMBEDDED_CERTIFICATE;
-  } else {
+  } else if (Constants.OAUTH.CERTIFICATE_FILE_NAME) {
     console.log(`Setting certificate from Constants.OAUTH.CERTIFICATE_FILE_NAME: ${Constants.OAUTH.CERTIFICATE_FILE_NAME}`);
-    certContent = Constants.OAUTH.EMBEDDED_CERTIFICATE || fs.readFileSync(path.join(__dirname, '..', Constants.OAUTH.CERTIFICATE_FILE_NAME), 'utf8');
+    if (Constants.OAUTH.CERTIFICATE_FILE_NAME.startsWith('/')) {
+      certContent = fs.readFileSync(Constants.OAUTH.CERTIFICATE_FILE_NAME, 'utf8');
+    } else {
+      certContent = fs.readFileSync(path.join(__dirname, '..', Constants.OAUTH.CERTIFICATE_FILE_NAME), 'utf8');
+    }
+  } else {
+    console.warn(`No value specified for Constants.OAUTH.CERTIFICATE_FILE_NAME or Constants.OAUTH.EMBEDDED_CERTIFICATE. Auth will probably fail to validate the tokens`);
   }
   jwtStrategyOpts.secretOrKeyProvider = (request, rawJwtToken, done) => {
     done(null, certContent);
