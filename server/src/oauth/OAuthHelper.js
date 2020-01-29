@@ -82,17 +82,25 @@ function createJwtStrategy (extraExtractors) {
  */
 function verifyCallback (req, jwtPayload, done) {
   if (!jwtPayload.sub) {
-    return done(null, false, 'Invalid Authentication info: no sub');
+    let message = 'Invalid Authentication info: no sub';
+    console.log(`OAuthHelper.verifyCallbak received ${jwtPayload}. Verification failed because ${message}`);
+    return done(null, false, message);
   }
   if (!jwtPayload.iss) {
-    return done(null, false, 'Invalid Authentication info: no iss');
+    let message = 'Invalid Authentication info: no iss';
+    console.log(`OAuthHelper.verifyCallbak received ${jwtPayload}. Verification failed because ${message}`);
+    return done(null, false, message);
   }
   let issuer = jwtPayload.iss;
   if (issuer !== Constants.OAUTH.OAUTH2_ISSUER) {
-    return done(null, false, `Invalid Authentication: wrong issuer ${issuer}`);
+    let message = `Invalid Authentication: wrong issuer ${issuer}, expected: ${Constants.OAUTH.OAUTH2_ISSUER}`;
+    console.log(`OAuthHelper.verifyCallbak received ${jwtPayload}. Verification failed because ${message}`);
+    return done(null, false, message);
   }
   if (!jwtPayload.groups) {
-    return done(null, false, 'Invalid Authentication info: no groups');
+    let message = 'Invalid Authentication info: no groups';
+    console.log(`OAuthHelper.verifyCallbak received ${jwtPayload}. Verification failed because ${message}`);
+    return done(null, false, message);
   }
   console.log(`verifyCallback: user ${jwtPayload.sub} with roles ${jwtPayload.groups}`);
   let foundMTA = jwtPayload.groups.includes(Constants.OAUTH.MTA_ROLE);
