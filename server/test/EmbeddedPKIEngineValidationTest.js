@@ -100,4 +100,51 @@ describe('EmbeddedPKIEngine', () => {
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.INVALID);
     }).timeout(15000);
   });
+
+  describe('MP-1104 certificate validations', () => {
+    it('should validate a server certificate intermediate chain', async () => {
+      let rootCert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Root_CA_Cert.cer'), 'utf8');
+      let certChain = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Combined_Intermediate_CA_certs.pem'), 'utf8');
+      let validation = await EmbeddedPKIEngine.validateIntermediateChain(rootCert, certChain);
+      assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
+    }).timeout(15000);
+
+    it('should validate a server certificate with its chain and root', async () => {
+      let cert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/ServerCert.crt'), 'utf8');
+      let rootCert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Root_CA_Cert.cer'), 'utf8');
+      let certChain = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Combined_Intermediate_CA_certs.pem'), 'utf8');
+      const pkiEngine = new EmbeddedPKIEngine();
+      let validation = await pkiEngine.validateCertificateChain(cert, certChain, rootCert);
+      assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
+    }).timeout(15000);
+
+    it('should validate a server certificate with its chain if root is a globally trusted one', async () => {
+      let cert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/ServerCert.crt'), 'utf8');
+      let certChain = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Combined_Intermediate_CA_certs.pem'), 'utf8');
+      const pkiEngine = new EmbeddedPKIEngine();
+      let validation = await pkiEngine.validateCertificateChain(cert, certChain);
+      assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
+    }).timeout(15000);
+
+    it('should validate a server certificate usage', async () => {
+      let cert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/ServerCert.crt'), 'utf8');
+      const pkiEngine = new EmbeddedPKIEngine();
+      let validation = await pkiEngine.validateCertificateUsageServer(cert);
+      assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
+    }).timeout(15000);
+
+    it('should not validate a server certificate usage on a global root CA', async () => {
+      let cert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/ServerCert.crt'), 'utf8');
+      const pkiEngine = new EmbeddedPKIEngine();
+      let validation = await pkiEngine.validateCertificateUsageServer(cert);
+      assert.isTrue(validation.result === ValidationCodes.VALID_STATES.INVALID);
+    }).timeout(15000);
+
+    it('should not validate a server certificate usage on a intermediate CA', async () => {
+      let cert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/ServerCert.crt'), 'utf8');
+      const pkiEngine = new EmbeddedPKIEngine();
+      let validation = await pkiEngine.validateCertificateUsageServer(cert);
+      assert.isTrue(validation.result === ValidationCodes.VALID_STATES.INVALID);
+    }).timeout(15000);
+  });
 });
