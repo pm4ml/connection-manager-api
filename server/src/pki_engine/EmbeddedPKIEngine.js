@@ -16,6 +16,7 @@
  ******************************************************************************/
 
 const Constants = require('../constants/Constants');
+const PkiService = require('../service/PkiService');
 const PKIEngine = require('./PKIEngine');
 const spawnProcess = require('../process/spawner');
 const ExternalProcessError = require('../errors/ExternalProcessError');
@@ -936,12 +937,14 @@ class EmbeddedPKIEngine extends PKIEngine {
    * @returns {Validation} validation
    */
   async verifyIntermediateChain (rootCertificate, intermediateChain, code) {
-    if (!intermediateChain) {
+    let body = { intermediateChain: intermediateChain };
+    let lastCertInChain = await PkiService.lastChainIntermediateCertificate(body);
+    if (!lastCertInChain) {
       return new Validation(code, false, ValidationCodes.VALID_STATES.NOT_AVAILABLE,
         `No intermediate chain`);
     }
 
-    let { state, output } = await EmbeddedPKIEngine.validateIntermediateChain(rootCertificate, intermediateChain);
+    let { state, output } = await EmbeddedPKIEngine.validateIntermediateChain(rootCertificate, lastCertInChain);
 
     if (state === 'INVALID') {
       return new Validation(code, true, ValidationCodes.VALID_STATES.INVALID,
