@@ -100,4 +100,30 @@ describe('EmbeddedPKIEngine', () => {
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.INVALID);
     }).timeout(15000);
   });
+
+  describe('MP-1104 certificate validations', () => {
+    it('verifyIntermediateChain for first cert in chain', async () => {
+      let rootCert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Root_CA_Cert.cer'), 'utf8');
+      let certChain = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Combined_Intermediate_CA_certs.pem'), 'utf8');
+      const pkiEngine = new EmbeddedPKIEngine();
+      let validation = await pkiEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
+      assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
+    }).timeout(15000);
+
+    it('verifyIntermediateChain when there is only one certificate in chain', async () => {
+      let rootCert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Root_CA_Cert.cer'), 'utf8');
+      let certChain = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Combined_Intermediate_CA_cert.pem'), 'utf8');
+      const pkiEngine = new EmbeddedPKIEngine();
+      let validation = await pkiEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
+      assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
+    }).timeout(15000);
+
+    it('AMAZON - verifyIntermediateChain for first cert in chain', async () => {
+      let rootCert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/www.amazon.com.pem'), 'utf8');
+      let certChain = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/amazon.chain.pem'), 'utf8');
+      const pkiEngine = new EmbeddedPKIEngine();
+      let validation = await pkiEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
+      assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
+    }).timeout(15000);
+  });
 });

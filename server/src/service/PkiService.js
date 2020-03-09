@@ -299,6 +299,28 @@ exports.splitChainIntermediateCertificate = async (body) => {
 };
 
 /**
+ *
+ */
+exports.retrieveFirstChainIntermediateCertificate = async (body) => {
+  const beginCertRegex = /(?=-----BEGIN)/g;
+
+  let chainInfo = [];
+  let count = ((body.intermediateChain && body.intermediateChain.match(/BEGIN/g)) || []).length;
+  // split the intermediatesChain into a list of certInfo
+  if (count > 0) {
+    let intermediateChains = body.intermediateChain.split(beginCertRegex);
+    for (let index = 0; index < intermediateChains.length; index++) {
+      let chain = intermediateChains[index];
+      chain = chain.slice(0, chain.indexOf(certificateEndDelimiter)) + certificateEndDelimiter;
+      if (chain.match(/-----BEGIN CERTIFICATE-----/g)) {
+        chainInfo.push(chain);
+      }
+    }
+  }
+  return chainInfo[0];
+};
+
+/**
  * Delete a DFSP by its id
  *
  * envId String ID of environment
