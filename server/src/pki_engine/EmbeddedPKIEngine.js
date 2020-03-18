@@ -937,16 +937,14 @@ class EmbeddedPKIEngine extends PKIEngine {
    * @returns {Validation} validation
    */
   async verifyIntermediateChain (rootCertificate, intermediateChain, code) {
-    let body = { intermediateChain: intermediateChain };
-    let firstCertInChain = await PkiService.retrieveFirstChainIntermediateCertificate(body);
+    let firstCertInChain = await PkiService.retrieveFirstChainIntermediateCertificate(intermediateChain);
     if (!firstCertInChain) {
       return new Validation(code, false, ValidationCodes.VALID_STATES.NOT_AVAILABLE,
         `No intermediate chain`);
     }
 
     let { result, output } = await EmbeddedPKIEngine.verifyCertificateSigning(firstCertInChain, rootCertificate, intermediateChain);
-
-    if (result === false) {
+    if (!result) {
       return new Validation(code, true, ValidationCodes.VALID_STATES.INVALID,
         `the intermediateChain must be made of valid CAs and that the top of the chain is signed by the root`, output);
     }

@@ -22,6 +22,7 @@ const fs = require('fs');
 const path = require('path');
 const assert = require('chai').assert;
 const ValidationCodes = require('../src/pki_engine/ValidationCodes');
+const ValidationError = require('../src/errors/ValidationError');
 const moment = require('moment');
 
 describe('EmbeddedPKIEngine', () => {
@@ -124,6 +125,18 @@ describe('EmbeddedPKIEngine', () => {
       const pkiEngine = new EmbeddedPKIEngine();
       let validation = await pkiEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
+    }).timeout(15000);
+
+    it('verifyIntermediateChain for empty chain', async () => {
+      let rootCert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Root_CA_Cert.cer'), 'utf8');
+      let certChain = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/EmptyChain.pem'), 'utf8');
+      const pkiEngine = new EmbeddedPKIEngine();
+      try {
+        await pkiEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
+        assert.fail('Should not be here');
+      } catch (error) {
+        assert.isTrue(error instanceof ValidationError, error);
+      }
     }).timeout(15000);
   });
 });
