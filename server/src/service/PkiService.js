@@ -301,10 +301,11 @@ exports.splitChainIntermediateCertificate = async (body) => {
 /**
  *
  */
-exports.retrieveFirstChainIntermediateCertificate = async (intermediateChain) => {
+exports.retrieveFirstAndRemainingIntermediateChainCerts = async (intermediateChain) => {
   const beginCertRegex = /(?=-----BEGIN)/g;
 
   let chainInfo = [];
+  let remainingIntermediateChainInfo = '';
   let count = ((intermediateChain && intermediateChain.match(/BEGIN/g)) || []).length;
   // split the intermediatesChain into a list of certInfo
   if (count > 0) {
@@ -314,13 +315,20 @@ exports.retrieveFirstChainIntermediateCertificate = async (intermediateChain) =>
       chain = chain.slice(0, chain.indexOf(certificateEndDelimiter)) + certificateEndDelimiter;
       if (chain.match(/-----BEGIN CERTIFICATE-----/g)) {
         chainInfo.push(chain);
+        for (let rindex = index + 1; rindex < intermediateChains.length; rindex++) {
+          remainingIntermediateChainInfo = remainingIntermediateChainInfo.concat(intermediateChains[rindex]);
+        }
+        break;
       }
     }
   }
   if (chainInfo.length === 0) {
     throw new ValidationError('Empty intermediate chain');
   }
-  return chainInfo[0];
+  return {
+    firstIntermediateChainCertificate: chainInfo[0],
+    remainingIntermediateChainInfo: remainingIntermediateChainInfo
+  };
 };
 
 /**
