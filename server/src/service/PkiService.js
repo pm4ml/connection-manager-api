@@ -309,14 +309,14 @@ exports.retrieveFirstAndRemainingIntermediateChainCerts = async (intermediateCha
   let count = ((intermediateChain && intermediateChain.match(/BEGIN/g)) || []).length;
   // split the intermediatesChain into a list of certInfo
   if (count > 0) {
-    let intermediateChains = intermediateChain.split(beginCertRegex);
-    for (let index = 0; index < intermediateChains.length; index++) {
-      let chain = intermediateChains[index];
-      chain = chain.slice(0, chain.indexOf(certificateEndDelimiter)) + certificateEndDelimiter;
-      if (chain.match(/-----BEGIN CERTIFICATE-----/g)) {
-        chainInfo.push(chain);
-        for (let rindex = index + 1; rindex < intermediateChains.length; rindex++) {
-          remainingIntermediateChainInfo = remainingIntermediateChainInfo.concat(intermediateChains[rindex]);
+    let intermediateCerts = intermediateChain.split(beginCertRegex);
+    for (let index = 0; index < intermediateCerts.length; index++) {
+      let intermediateCert = intermediateCerts[index];
+      intermediateCert = intermediateCert.slice(0, intermediateCert.indexOf(certificateEndDelimiter)) + certificateEndDelimiter;
+      if (intermediateCert.match(/-----BEGIN CERTIFICATE-----/g)) {
+        chainInfo.push(intermediateCert);
+        for (let rindex = index + 1; rindex < intermediateCerts.length; rindex++) {
+          remainingIntermediateChainInfo = remainingIntermediateChainInfo.concat(intermediateCerts[rindex]);
         }
         break;
       }
