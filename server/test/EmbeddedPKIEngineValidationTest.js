@@ -119,7 +119,7 @@ describe('EmbeddedPKIEngine', () => {
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
     }).timeout(15000);
 
-    it('verifyIntermediateChain when there is more than three certificate in chain', async () => {
+    it('verifyIntermediateChain when there is more than two certificate in chain', async () => {
       let rootCert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Root_CA_Cert.cer'), 'utf8');
       let certChain = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Combined_Intermediate_CA_certs_three.pem'), 'utf8');
       const pkiEngine = new EmbeddedPKIEngine();

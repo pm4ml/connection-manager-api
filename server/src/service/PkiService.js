@@ -27,6 +27,7 @@ const PKIEngine = require('../pki_engine/EmbeddedPKIEngine');
 
 const ValidationCodes = require('../pki_engine/ValidationCodes');
 
+const certificateStartDelimiter = '-----BEGIN CERTIFICATE-----';
 const certificateEndDelimiter = '-----END CERTIFICATE-----';
 
 /**
@@ -302,23 +303,29 @@ exports.splitChainIntermediateCertificate = async (body) => {
  *
  */
 exports.retrieveFirstAndRemainingIntermediateChainCerts = async (intermediateChain) => {
-  const beginCertRegex = /(?=-----BEGIN)/g;
+  const beginCertPattern = '(?=' + certificateStartDelimiter + ')';
+  let certStartRegex = new RegExp(beginCertPattern, 'g');
 
   let chainInfo = [];
   let remainingIntermediateChainInfo = '';
-  let count = ((intermediateChain && intermediateChain.match(/BEGIN/g)) || []).length;
+  let count = ((intermediateChain && intermediateChain.match(certStartRegex)) || []).length;
   // split the intermediatesChain into a list of certInfo
   if (count > 0) {
-    let intermediateCerts = intermediateChain.split(beginCertRegex);
-    for (let index = 0; index < intermediateCerts.length; index++) {
-      let intermediateCert = intermediateCerts[index];
+    let intermediateCerts = intermediateChain.split(certStartRegex);
+    let intermediateCert = intermediateCerts[0];
+    intermediateCert = intermediateCert.slice(0, intermediateCert.indexOf(certificateEndDelimiter)) + certificateEndDelimiter;
+    if (intermediateCert.match(certStartRegex)) {
+      chainInfo.push(intermediateCert);
+      intermediateCerts.shift();
+      remainingIntermediateChainInfo = intermediateCerts.join('');
+    } else {
+      intermediateCert = intermediateCerts[1];
       intermediateCert = intermediateCert.slice(0, intermediateCert.indexOf(certificateEndDelimiter)) + certificateEndDelimiter;
-      if (intermediateCert.match(/-----BEGIN CERTIFICATE-----/g)) {
+      if (intermediateCert.match(certStartRegex)) {
         chainInfo.push(intermediateCert);
-        for (let rindex = index + 1; rindex < intermediateCerts.length; rindex++) {
-          remainingIntermediateChainInfo = remainingIntermediateChainInfo.concat(intermediateCerts[rindex]);
-        }
-        break;
+        intermediateCerts.shift();
+        intermediateCerts.shift();
+        remainingIntermediateChainInfo = intermediateCerts.join('');
       }
     }
   }
