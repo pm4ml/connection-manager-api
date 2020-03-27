@@ -27,6 +27,7 @@ const PKIEngine = require('../pki_engine/EmbeddedPKIEngine');
 
 const ValidationCodes = require('../pki_engine/ValidationCodes');
 
+const certificateStartDelimiter = '-----BEGIN CERTIFICATE-----';
 const certificateEndDelimiter = '-----END CERTIFICATE-----';
 
 /**
@@ -296,6 +297,45 @@ exports.splitChainIntermediateCertificate = async (body) => {
     }
   }
   return chainInfo;
+};
+
+/**
+ *
+ */
+exports.retrieveFirstAndRemainingIntermediateChainCerts = async (intermediateChain) => {
+  const beginCertPattern = '(?=' + certificateStartDelimiter + ')';
+  let certStartRegex = new RegExp(beginCertPattern, 'g');
+
+  let chainInfo = [];
+  let remainingIntermediateChainInfo = '';
+  let count = ((intermediateChain && intermediateChain.match(certStartRegex)) || []).length;
+  // split the intermediatesChain into a list of certInfo
+  if (count > 0) {
+    let intermediateCerts = intermediateChain.split(certStartRegex);
+    let intermediateCert = intermediateCerts[0];
+    intermediateCert = intermediateCert.slice(0, intermediateCert.indexOf(certificateEndDelimiter)) + certificateEndDelimiter;
+    if (intermediateCert.match(certStartRegex)) {
+      chainInfo.push(intermediateCert);
+      intermediateCerts.shift();
+      remainingIntermediateChainInfo = intermediateCerts.join('');
+    } else {
+      intermediateCert = intermediateCerts[1];
+      intermediateCert = intermediateCert.slice(0, intermediateCert.indexOf(certificateEndDelimiter)) + certificateEndDelimiter;
+      if (intermediateCert.match(certStartRegex)) {
+        chainInfo.push(intermediateCert);
+        intermediateCerts.shift();
+        intermediateCerts.shift();
+        remainingIntermediateChainInfo = intermediateCerts.join('');
+      }
+    }
+  }
+  if (chainInfo.length === 0) {
+    throw new ValidationError('Empty intermediate chain');
+  }
+  return {
+    firstIntermediateChainCertificate: chainInfo[0],
+    remainingIntermediateChainInfo: remainingIntermediateChainInfo
+  };
 };
 
 /**

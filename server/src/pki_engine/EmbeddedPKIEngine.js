@@ -16,6 +16,7 @@
  ******************************************************************************/
 
 const Constants = require('../constants/Constants');
+const PkiService = require('../service/PkiService');
 const PKIEngine = require('./PKIEngine');
 const spawnProcess = require('../process/spawner');
 const ExternalProcessError = require('../errors/ExternalProcessError');
@@ -936,14 +937,14 @@ class EmbeddedPKIEngine extends PKIEngine {
    * @returns {Validation} validation
    */
   async verifyIntermediateChain (rootCertificate, intermediateChain, code) {
-    if (!intermediateChain) {
+    let { firstIntermediateChainCertificate, remainingIntermediateChainInfo } = await PkiService.retrieveFirstAndRemainingIntermediateChainCerts(intermediateChain);
+    if (!firstIntermediateChainCertificate) {
       return new Validation(code, false, ValidationCodes.VALID_STATES.NOT_AVAILABLE,
         `No intermediate chain`);
     }
 
-    let { state, output } = await EmbeddedPKIEngine.validateIntermediateChain(rootCertificate, intermediateChain);
-
-    if (state === 'INVALID') {
+    let { result, output } = await EmbeddedPKIEngine.verifyCertificateSigning(firstIntermediateChainCertificate, rootCertificate, remainingIntermediateChainInfo);
+    if (!result) {
       return new Validation(code, true, ValidationCodes.VALID_STATES.INVALID,
         `the intermediateChain must be made of valid CAs and that the top of the chain is signed by the root`, output);
     }
@@ -983,45 +984,6 @@ class EmbeddedPKIEngine extends PKIEngine {
         return ({ state: VALID_SELF_SIGNED, output: stdout });
       }
       return ({ state: INVALID, output: stdout });
-    }
-
-    return ({ state: INVALID, output: stdout });
-  }
-
-  /**
-   * Verifies that the intermediateChain is made of valid CAs and that the top of the chain is signed by the root.
-   * If rootCertificate is null, the top of the chain should be signed by a global root.
-   * See validateRootCertificate
-   *
-   * @param {String} rootCertificate PEM-encoded certificate
-   * @param {String} intermediateChain PEM-encoded concatenated certificates
-   * @returns {state: String, output: String} state: 'VALID' | 'INVALID'. output: command output
-   */
-  static async validateIntermediateChain (rootCertificate, intermediateChain) {
-    let argsArray = ['verify', '-verbose'];
-    let fileCleanup = null;
-    if (rootCertificate) {
-      let { fd, path, cleanup } = await file({ mode: '0600', prefix: 'root-', postfix: '.pem' });
-      fileCleanup = cleanup;
-      let fsWrite = util.promisify(fs.write);
-      await fsWrite(fd, rootCertificate);
-
-      argsArray.push('-CAfile');
-      argsArray.push(path);
-    }
-    const opensslResult = await spawnProcess('openssl', argsArray, intermediateChain, false);
-    fileCleanup && fileCleanup();
-    let { stdout, code } = opensslResult;
-    if (typeof stdout !== 'string') {
-      throw new ExternalProcessError('Could not read openssl output');
-    }
-
-    if (code === 0) {
-      return ({ state: VALID, output: stdout });
-    }
-
-    if (code === 1) {
-      throw new ExternalProcessError(`openssl returned code ${code}`, { output: opensslResult });
     }
 
     return ({ state: INVALID, output: stdout });

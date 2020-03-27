@@ -546,19 +546,6 @@ class PKIEngine {
   }
 
   /**
-   * Verifies that the intermediateChain are valid CAs and that the top of the chain is signed by the root.
-   * If rootCertificate is null, the top of the chain should be signed by a global root.
-   * See validateRootCertificate
-   *
-   * @param {String} rootCertificate PEM-encoded certificate
-   * @param {String} intermediateChain PEM-encoded concatenated certificates
-   * @returns {state: String, output: String} state: 'VALID' | 'INVALID'. output: command output
-   */
-  static async validateIntermediateChain (rootCertificate, intermediateChain) {
-    return { state: null, output: null };
-  }
-
-  /**
    * Verifies that the certificate is signed by the chain and root
    *
    * @param {String} certificate PEM-encoded certificate
