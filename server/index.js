@@ -19,6 +19,8 @@
 const app = require('./src/app');
 const Constants = require('./src/constants/Constants');
 
-// this will be used by another project which use this one as a library
+// If you're surprised that there's no startup code in this file:
+// This file is only used by projects that use the version published at npm as a library and want to access the app or Constants objets before starting the server
+// See the `package.json` file; `npm start` runs `src/index.js`, not this one.
 exports.appLoader = app.connect;
 exports.Constants = Constants;
