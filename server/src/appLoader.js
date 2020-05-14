@@ -16,6 +16,8 @@
  ******************************************************************************/
 
 'use strict';
+const { enableCustomRootCAs } = require('./utils/tlsUtils');
+const { validateCfsslVersion } = require('./utils/cfssl');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
@@ -32,6 +34,7 @@ const corsUtils = require('./utils/corsUtils');
 const { Model } = require('objection');
 
 exports.connect = () => {
+  executeSSLCustomLogic();
   printToolsVersion.printToolsVersion();
   Model.knex(db.knex);
   db.runKnexMigrationIfNeeded();
@@ -69,6 +72,20 @@ exports.connect = () => {
   });
   return app;
 };
+
+/**
+ * Load custom SSL Logic to issue and process CSRs and Certificates
+ */
+async function executeSSLCustomLogic () {
+  enableCustomRootCAs();
+
+  try {
+    await validateCfsslVersion();
+  } catch (error) {
+    console.error('Error while validating Cfssl version:', error);
+    process.exit(-1);
+  }
+}
 
 /**
  * Returns the swagger doc to use
