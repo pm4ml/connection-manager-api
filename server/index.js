@@ -16,7 +16,7 @@
  ******************************************************************************/
 
 'use strict';
-const app = require('./src/app');
+const app = require('./src/appLoader');
 const Constants = require('./src/constants/Constants');
 
 // If you're surprised that there's no startup code in this file:

@@ -19,9 +19,7 @@
 const Constants = require('./constants/Constants');
 const http = require('http');
 const serverPort = Constants.SERVER.PORT;
-const app = require('./app');
-const { enableCustomRootCAs } = require('./utils/tlsUtils');
-const { validateCfsslVersion } = require('./utils/cfssl');
+const appLoader = require('./appLoader');
 
 console.log('connection-manager-api starting with Constants:');
 console.log(JSON.stringify(Constants, null, 2));
@@ -29,23 +27,10 @@ console.log(JSON.stringify(Constants, null, 2));
 console.log('connection-manager-api starting with process env:');
 console.log(process.env);
 
-const init = async () => {
-  enableCustomRootCAs();
+const appConnected = appLoader.connect();
 
-  try {
-    await validateCfsslVersion();
-  } catch (error) {
-    console.error('Error while validating Cfssl version:', error);
-    process.exit(-1);
-  }
-
-  const appConnected = app.connect();
-
-  // Start the server
-  http.createServer(appConnected).listen(serverPort, function () {
-    console.log('Connection-Manager API server is listening on port %d (http://localhost:%d)', serverPort, serverPort);
-    console.log('Swagger-ui is available on http://localhost:%d/docs', serverPort);
-  });
-};
-
-init();
+// Start the server
+http.createServer(appConnected).listen(serverPort, function () {
+  console.log('Connection-Manager API server is listening on port %d (http://localhost:%d)', serverPort, serverPort);
+  console.log('Swagger-ui is available on http://localhost:%d/docs', serverPort);
+});
