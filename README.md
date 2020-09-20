@@ -40,6 +40,15 @@ docker-compose build
 docker-compose up
 ```
 
+Once the docker containers are confirmed to be stable and up, you will need to create the initial HUB environment. From a new terminal
+ session, execute the following;
+
+ ```bash
+curl -X POST "http://localhost:3001/api/environments" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"name\": \"DEV\", \"defaultDN\": { \"CN\": \"tes1.centralhub.modusbox.live\", \"O\": \"Modusbox\", \"OU\": \"MCM\" }}"
+ ```
+
+The UI 'localhost' can now be opened in your local browser.
+
 If you want to start the app with auth enabled:
 
 1) create a local copy of `docker-compose-auth.yml` as in:
@@ -132,4 +141,3 @@ Variables:
 The server includes a [Dockerfile](./server/Dockerfile).
 
 There's a set of scripts to build the image and tag it for a local minikube or other environments. Take a look at [./docker-build.sh](./docker-build.sh)
-
