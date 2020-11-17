@@ -155,6 +155,50 @@ exports.getCurrentCARootCert = async function (envId) {
 };
 
 /**
+ * Returns the Environment Status based on configured information for given envId
+ * envId String ID of environment
+ * returns inline_response_200_1
+ **/
+exports.getEnvStatus = async function (envId) {
+  return [
+    {
+      phase: 'BUSINESS_SETUP',
+      steps: [
+        {
+          identifier: 'ID_GENERATION',
+          status: 'COMPLETED',
+        }
+      ]
+    },
+    {
+      phase: 'TECNICAL_SETUP',
+      steps: [
+        {
+          identifier: 'ENDPOINTS',
+          status: 'COMPLETED',
+        },
+        {
+          identifier: 'CSR_EXCHANGE',
+          status: 'COMPLETED'
+        },
+        {
+          identifier: 'CERTIFICATE_AUTHORITY',
+          status: 'COMPLETED'
+        },
+        {
+          identifier: 'SERVER_CERTIFICATES_EXCHANGE',
+          status: 'COMPLETED'
+        },
+        {
+          identifier: 'JWS_CERTIFICATES',
+          status: 'COMPLETED'
+        }
+      ]
+    }
+   ];
+};
+
+/**
  * Creates an entry to store DFSP related info
  * Returns the newly created object id
  *
