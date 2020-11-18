@@ -30,6 +30,10 @@ const ValidationCodes = require('../pki_engine/ValidationCodes');
 const certificateStartDelimiter = '-----BEGIN CERTIFICATE-----';
 const certificateEndDelimiter = '-----END CERTIFICATE-----';
 
+const EnvStatusEnum = Object.freeze({"NOT_STARTED":"NOT_STARTED", "IN_PROGRESS":"IN_PROGRESS", "COMPLETED":"COMPLETED"});
+const PhaseEnum = Object.freeze({"BUSINESS_SETUP":"BUSINESS_SETUP", "TECNICAL_SETUP":"TECNICAL_SETUP"});
+const StepEnum = Object.freeze({"ID_GENERATION":"ID_GENERATION", "ENDPOINTS":"ENDPOINTS", "CSR_EXCHANGE":"CSR_EXCHANGE", "CERTIFICATE_AUTHORITY":"CERTIFICATE_AUTHORITY", "SERVER_CERTIFICATES_EXCHANGE":"SERVER_CERTIFICATES_EXCHANGE", "JWS_CERTIFICATES":"JWS_CERTIFICATES"});
+
 /**
  * Returns all the environments
  *
@@ -160,13 +164,13 @@ exports.getCurrentCARootCert = async function (envId) {
  * returns inline_response_200_1
  **/
 exports.getEnvStatus = async function (envId) {
-  return [
+  let envStatus = [
     {
       phase: 'BUSINESS_SETUP',
       steps: [
         {
           identifier: 'ID_GENERATION',
-          status: 'COMPLETED',
+          status: 'NOT_STARTED',
         }
       ]
     },
@@ -175,27 +179,62 @@ exports.getEnvStatus = async function (envId) {
       steps: [
         {
           identifier: 'ENDPOINTS',
-          status: 'COMPLETED',
+          status: 'NOT_STARTED',
         },
         {
           identifier: 'CSR_EXCHANGE',
-          status: 'COMPLETED'
+          status: 'NOT_STARTED'
         },
         {
           identifier: 'CERTIFICATE_AUTHORITY',
-          status: 'COMPLETED'
+          status: 'NOT_STARTED'
         },
         {
           identifier: 'SERVER_CERTIFICATES_EXCHANGE',
-          status: 'COMPLETED'
+          status: 'NOT_STARTED'
         },
         {
           identifier: 'JWS_CERTIFICATES',
-          status: 'COMPLETED'
+          status: 'NOT_STARTED'
         }
       ]
     }
    ];
+   let dfsp = [];
+   try {
+     dfsp = await DFSPModel.findAllByEnvironment(envId).map(r => dfspRowToObject(r));
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw new NotFoundError(`DFSP for environment ${envId} not found`);
+    }
+    throw error;
+  }
+
+   console.log('dfsp:');
+   console.log(dfsp);
+   if(dfsp.length == 0) {
+     return [];
+   } else {
+
+     let bs = envStatus.filter(phase => phase.phase == PhaseEnum.BUSINESS_SETUP);
+     console.log('bs:');
+     console.log(bs);
+     let s = bs[0].steps.filter(step => step.identifier == StepEnum.ID_GENERATION);
+     console.log('s:');
+     console.log(s);
+
+     if(dfsp[0].id != null && dfsp[0].name != null) {
+       s[0].status = EnvStatusEnum.COMPLETED;
+     } else if(dfsp[0].id != null || dfsp[0].name != null) {
+       s[0].status = EnvStatusEnum.IN_PROGRESS;
+     }
+
+     console.log('envStatus:');
+     console.log(envStatus);
+
+   }
+
+   return envStatus;
 };
 
 /**
