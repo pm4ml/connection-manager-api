@@ -20,6 +20,18 @@
 var utils = require('../utils/writer.js');
 var DfspNetworkConfig = require('../service/DfspNetworkConfigService');
 
+exports.getEnvironmentDfspStatus = function getEnvironmentDfspStatus (req, res, next) {
+  var envId = req.swagger.params['envId'].value;
+  var dfspId = req.swagger.params['dfspId'].value;
+  DfspNetworkConfig.getEnvironmentDfspStatus(envId, dfspId)
+    .then(function (response) {
+      utils.writeJson(res, response);
+    })
+    .catch(function (response) {
+      utils.writeJson(res, response, response.status);
+    });
+};
+
 exports.createDFSPEgressIp = function createDFSPEgressIp (req, res, next) {
   var envId = req.swagger.params['envId'].value;
   var dfspId = req.swagger.params['dfspId'].value;

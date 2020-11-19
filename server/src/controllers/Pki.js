@@ -78,17 +78,6 @@ exports.getCurrentCARootCert = function getCurrentCARootCert (req, res, next) {
     });
 };
 
-exports.getEnvStatus = function getEnvStatus (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  Pki.getEnvStatus(envId)
-    .then(function (response) {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response) {
-      utils.writeJson(res, response, response.status);
-    });
-};
-
 exports.getEnvironmentById = function getEnvironmentById (req, res, next) {
   var envId = req.swagger.params['envId'].value;
   Pki.getEnvironmentById(envId)
