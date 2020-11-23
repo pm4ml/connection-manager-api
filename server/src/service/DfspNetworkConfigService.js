@@ -19,8 +19,75 @@
 const DFSPEndpointItemModel = require('../models/DFSPEndpointItemModel');
 const { validateIPAddressInput, validatePorts, validateURLInput } = require('../utils/formatValidator');
 const ValidationError = require('../errors/ValidationError');
+const NotFoundError = require('../errors/NotFoundError');
 const PkiService = require('./PkiService');
 const DFSPModel = require('../models/DFSPModel');
+
+const StatusEnum = Object.freeze({"NOT_STARTED":"NOT_STARTED", "IN_PROGRESS":"IN_PROGRESS", "COMPLETED":"COMPLETED"});
+const PhaseEnum = Object.freeze({"BUSINESS_SETUP":"BUSINESS_SETUP", "TECNICAL_SETUP":"TECNICAL_SETUP"});
+const StepEnum = Object.freeze({"ID_GENERATION":"ID_GENERATION", "ENDPOINTS":"ENDPOINTS", "CSR_EXCHANGE":"CSR_EXCHANGE", "CERTIFICATE_AUTHORITY":"CERTIFICATE_AUTHORITY", "SERVER_CERTIFICATES_EXCHANGE":"SERVER_CERTIFICATES_EXCHANGE", "JWS_CERTIFICATES":"JWS_CERTIFICATES"});
+
+/**
+ * Returns the Environment DFSP Status based on configured information for given envId and dfspId
+ * envId String ID of environment
+ * dfspId String ID of dfsp
+ * returns inline_response_200_1
+ **/
+exports.getEnvironmentDfspStatus = async function (envId, dfspId) {
+  let envStatus = [
+    {
+      phase: 'BUSINESS_SETUP',
+      steps: [
+        {
+          identifier: 'ID_GENERATION',
+          status: 'NOT_STARTED'
+        }
+      ]
+    },
+    {
+      phase: 'TECNICAL_SETUP',
+      steps: [
+        {
+          identifier: 'ENDPOINTS',
+          status: 'NOT_STARTED'
+        },
+        {
+          identifier: 'CSR_EXCHANGE',
+          status: 'NOT_STARTED'
+        },
+        {
+          identifier: 'CERTIFICATE_AUTHORITY',
+          status: 'NOT_STARTED'
+        },
+        {
+          identifier: 'SERVER_CERTIFICATES_EXCHANGE',
+          status: 'NOT_STARTED'
+        },
+        {
+          identifier: 'JWS_CERTIFICATES',
+          status: 'NOT_STARTED'
+        }
+      ]
+    }
+   ];
+   let dfsp = [];
+   try {
+     dfsp = await DFSPModel.findByDfspId(envId, dfspId);
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw new NotFoundError(`DFSP for environment ${envId} not found`);
+    }
+    throw error;
+  }
+
+   if(dfsp.id != null && dfsp.name != null) {
+    let bs = envStatus.filter(phase => phase.phase == PhaseEnum.BUSINESS_SETUP);
+    let s = bs[0].steps.filter(step => step.identifier == StepEnum.ID_GENERATION);
+     s[0].status = StatusEnum.COMPLETED;
+   }
+
+   return envStatus;
+};
 
 /**
  * Creates a DFSPEndpoint, used by the createDFSPEgressIP and createDFSPIngressIP methods
@@ -299,3 +366,5 @@ exports.deleteDFSPIngressUrlEndpoint = async (envId, dfspId, epId) => {
   await validateDirectionType('INGRESS', 'URL', epId, dfspId, envId);
   return exports.deleteDFSPEndpoint(envId, dfspId, epId);
 };
+
+

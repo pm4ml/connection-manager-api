@@ -315,7 +315,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/RootCACert"
-      x-swagger-router-controller: "Pki"
+      x-swagger-router-controller: "Pki"   
   /environments/{envId}/hub/endpoints:
     get:
       tags:
@@ -2304,6 +2304,32 @@ paths:
           schema:
             $ref: "#/definitions/JWSCert"
       x-swagger-router-controller: "JWSCerts"
+  /environments/{envId}/dfsps/{dfspId}/status:
+    get:
+      summary: Retrieves Environment dfsp status
+      security:
+        - OAuth2: [ everyone ]
+      description: Retrieves Environment dfsp status by phase and step completion 
+      operationId: getEnvironmentDfspStatus
+      produces:
+      - "application/json"
+      parameters:
+        - name: envId
+          in: path
+          description: ID of the environment to get satus
+          required: true
+          type: string
+        - name: dfspId
+          in: path
+          description: ID of the dfsp to get satus
+          required: true
+          type: string          
+      responses:
+        200:
+          description: successful operation
+          schema:
+                $ref: '#/definitions/EnvironmentDfspStatus'
+      x-swagger-router-controller: "DfspNetworkConfig"        
   /monetaryzones:
     get:
       tags:
@@ -3233,6 +3259,40 @@ definitions:
                 items:
                   type: "string"
                   example: "http://modusbox.live"
+  Statuses:
+    type: "string"
+    enum:
+      - NOT_STARTED
+      - IN_PROGRESS
+      - COMPLETED
+  Phases:
+    type: "string"
+    enum:
+      - BUSINESS_SETUP
+      - TECHNICAL_SETUP
+  Identifier:
+    type: "string"
+    enum:
+      - ID_GENERATION
+      - ENDPOINTS
+      - CSR_EXCHANGE
+      - CERTIFICATE_AUTHORITY
+      - SERVER_CERTIFICATES_EXCHANGE
+      - JWS_CERTIFICATES
+  EnvironmentDfspStatus:
+    type: object
+    properties:
+      phase:
+        $ref: '#/definitions/Phases'
+      steps:
+        type: array
+        items:
+          type: object
+          properties:
+            identifier:
+              $ref: '#/definitions/Identifier'
+            status:
+              $ref: '#/definitions/Statuses'                    
   ValidationCodes:
     type: "string"
     description:  "Identifies the type of validation"
