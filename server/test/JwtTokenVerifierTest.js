@@ -21,7 +21,6 @@ const Constants = require('../src/constants/Constants');
 const assert = require('chai').assert;
 
 describe('JwtTokenVerifierTest tests', () => {
-
   before(() => {
   });
 
@@ -83,7 +82,7 @@ it('should fail because it\'s expired and using a custom cert', async () => {
   assert.isTrue(callbackCalled, 'Should have throw a TokenExpiredError');
 });
 
-// same but with 
+// same but with
 
 it('should take this as a valid token ( unless it expires )', async () => {
   let callbackCalled = false;
@@ -108,10 +107,6 @@ it('should take this as a valid token ( unless it expires )', async () => {
   assert.isTrue(callbackCalled, 'It should have been validated or TokenExpiredError');
 });
 
-
-
-
 function tokenPropertyExtractor (req) {
   return req.token;
 };
-

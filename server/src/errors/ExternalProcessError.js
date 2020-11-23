@@ -26,7 +26,6 @@ class ExternalProcessError extends BaseError {
     this.payload.stderr = stderr;
     this.payload.rootError = rootError;
   }
-
 }
 
 module.exports = ExternalProcessError;

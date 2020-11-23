@@ -135,7 +135,9 @@ describe('EmbeddedPKIEngine', () => {
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
     }).timeout(15000);
 
-    it('verifyIntermediateChain for empty chain', async () => {
+    // Test and business logic added during MP-1104 bug fix work, but there is no requirement for it. The business logic results in bug MP-2398
+    // and therefore skipping test and commenting business logic.
+    it.skip('verifyIntermediateChain for empty chain', async () => {
       let rootCert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Root_CA_Cert.cer'), 'utf8');
       let certChain = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/EmptyChain.pem'), 'utf8');
       const pkiEngine = new EmbeddedPKIEngine();
