@@ -20,7 +20,6 @@ const Cookies = require('cookies');
 const Constants = require('../constants/Constants');
 const fs = require('fs');
 const path = require('path');
-const http = require('http');
 const util = require('util');
 const isAuthEnabled = Constants.OAUTH.AUTH_ENABLED != null && (Constants.OAUTH.AUTH_ENABLED === 'true' || Constants.OAUTH.AUTH_ENABLED === 'TRUE');
 

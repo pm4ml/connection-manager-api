@@ -329,9 +329,11 @@ exports.retrieveFirstAndRemainingIntermediateChainCerts = async (intermediateCha
       }
     }
   }
-  if (chainInfo.length === 0) {
-    throw new ValidationError('Empty intermediate chain');
-  }
+  // Test and business logic at following if (chainInfo.length === 0) added during MP-1104 bug fix work, but there is no requirement for it.
+  // The business logic results in bug MP-2398 and therefore skipping test and commenting business logic.
+  // if (chainInfo.length === 0) {
+  //   throw new ValidationError('Empty intermediate chain');
+  // }
   return {
     firstIntermediateChainCertificate: chainInfo[0],
     remainingIntermediateChainInfo: remainingIntermediateChainInfo

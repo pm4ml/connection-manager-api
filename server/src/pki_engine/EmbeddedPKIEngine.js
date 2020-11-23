@@ -32,7 +32,6 @@ const CAInitialInfo = require('./CAInitialInfo');
 const ValidationCodes = require('./ValidationCodes');
 const Validation = require('./Validation');
 const moment = require('moment');
-const VALID = 'VALID';
 const VALID_SIGNED = 'VALID(SIGNED)';
 const VALID_SELF_SIGNED = 'VALID(SELF_SIGNED)';
 const INVALID = 'INVALID';
