@@ -41,7 +41,7 @@ exports.getUserClaimValue = (userName, claim) => {
         }
         resolve(_result);
       });
-    });  
+    });
   });
 };
 
