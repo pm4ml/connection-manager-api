@@ -16,12 +16,17 @@
  ******************************************************************************/
 
 'use strict';
-const DFSPEndpointItemModel = require('../models/DFSPEndpointItemModel');
 const { validateIPAddressInput, validatePorts, validateURLInput } = require('../utils/formatValidator');
 const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
 const PkiService = require('./PkiService');
 const DFSPModel = require('../models/DFSPModel');
+const DFSPEndpointItemModel = require('../models/DFSPEndpointItemModel');
+const DfspInboundEnrollmentModel = require('../models/DfspInboundEnrollmentModel');
+const DfspOutboundEnrollmentModel = require('../models/DfspOutboundEnrollmentModel');
+// const CertificatesAuthoritiesModel = require('../models/CertificatesAuthoritiesModel');
+// const DfspServerCertsModel = require('../models/DfspServerCertsModel');
+// const DfspJWSCertsModel = require('../models/DfspJWSCertsModel');
 
 const StatusEnum = Object.freeze({"NOT_STARTED":"NOT_STARTED", "IN_PROGRESS":"IN_PROGRESS", "COMPLETED":"COMPLETED"});
 const PhaseEnum = Object.freeze({"BUSINESS_SETUP":"BUSINESS_SETUP", "TECNICAL_SETUP":"TECNICAL_SETUP"});
@@ -45,7 +50,7 @@ exports.getEnvironmentDfspStatus = async function (envId, dfspId) {
       ]
     },
     {
-      phase: 'TECNICAL_SETUP',
+      phase: 'TECHNICAL_SETUP',
       steps: [
         {
           identifier: 'ENDPOINTS',
@@ -71,11 +76,62 @@ exports.getEnvironmentDfspStatus = async function (envId, dfspId) {
     }
    ];
    let dfsp = [];
+   let endpoints = [];
+   let csrexch = [];
+   let csrexchin = [];
+   let csrexchout = [];
+   let ca = [];
+   let servercerts = [];
+   let jwscerts = [];
+
    try {
+     // ID_GENERATION
      dfsp = await DFSPModel.findByDfspId(envId, dfspId);
+
+     // ENDPOINTS
+     endpoints = await DFSPEndpointItemModel.findObjectAll(envId, dfspId);
+     console.log('endpoints:');
+     console.log(endpoints);
+     console.log('endpoints stringify:');
+     console.log(JSON.stringify(endpoints));
+
+    // CSR
+    csrexchout = await DfspOutboundEnrollmentModel.findAllDfsp(envId, dfspId);
+     console.log('csrexchout:');
+     console.log(csrexchout);
+     console.log('csrexchout stringify:');
+     console.log(JSON.stringify(csrexchout));
+
+     csrexchin = await DfspInboundEnrollmentModel.findAllDfsp(envId, dfspId);
+     console.log('csrexchin:');
+     console.log(csrexchin);
+     console.log('csrexchin stringify:');
+     console.log(JSON.stringify(csrexchin));
+
+     // CA
+    //  ca = await CertificatesAuthoritiesModel.findCurrentForEnv(envId);
+    //  console.log('ca:');
+    //  console.log(ca);
+    //  console.log('ca stringify:');
+    //  console.log(JSON.stringify(ca));
+
+    // SERVER_CERTIFICATES_EXCHANGE
+    // servercerts = await DfspServerCertsModel.findByEnvIdDfspId(envId, dfspId);
+    //  console.log('servercerts:');
+    //  console.log(servercerts);
+    //  console.log('servercerts stringify:');
+    //  console.log(JSON.stringify(servercerts));
+
+     // JWS_CERTIFICATES
+    //  jwscerts = await DfspJWSCertsModel.findByEnvIdDfspId(envId, dfspId);
+    //  console.log('jwscerts:');
+    //  console.log(jwscerts);
+    //  console.log('jwscerts stringify:');
+    //  console.log(JSON.stringify(jwscerts));
+
   } catch (error) {
     if (error instanceof NotFoundError) {
-      throw new NotFoundError(`DFSP for environment ${envId} not found`);
+      throw new NotFoundError(`Status for environment: ${envId} and dfsp: ${dfspId} not found`);
     }
     throw error;
   }
