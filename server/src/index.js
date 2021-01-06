@@ -20,17 +20,37 @@ const Constants = require('./constants/Constants');
 const http = require('http');
 const serverPort = Constants.SERVER.PORT;
 const appLoader = require('./appLoader');
+const { createEnvironment } = require('./service/PkiService');
 
-console.log('connection-manager-api starting with Constants:');
-console.log(JSON.stringify(Constants, null, 2));
+const run = ({
+  http = http,
+  appLoader = appLoader,
+  Constants = Constants,
+  createEnvironment = createEnvironment,
+} = {}) => {
+  console.log('connection-manager-api starting with Constants:');
+  console.log(JSON.stringify(Constants, null, 2));
 
-console.log('connection-manager-api starting with process env:');
-console.log(process.env);
+  console.log('connection-manager-api starting with process env:');
+  console.log(process.env);
 
-const appConnected = appLoader.connect();
+  const appConnected = appLoader.connect();
 
-// Start the server
-http.createServer(appConnected).listen(serverPort, function () {
-  console.log('Connection-Manager API server is listening on port %d (http://localhost:%d)', serverPort, serverPort);
-  console.log('Swagger-ui is available on http://localhost:%d/docs', serverPort);
-});
+  // Initialise state
+  if (Constants.ENVIRONMENT_INIT.initEnvironment) {
+    createEnvironment(Constants.ENVIRONMENT_INIT.config);
+  }
+
+  // Start the server
+  http.createServer(appConnected).listen(serverPort, function () {
+    console.log('Connection-Manager API server is listening on port %d (http://localhost:%d)', serverPort, serverPort);
+    console.log('Swagger-ui is available on http://localhost:%d/docs', serverPort);
+  });
+}
+
+// This structure enables us to mock and test
+if (require.main === module) {
+  run();
+} else {
+  module.exports = run;
+}
