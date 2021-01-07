@@ -1,6 +1,6 @@
 {
   "name": "connection-manager-api",
-  "version": "1.6.7",
+  "version": "1.7.0",
   "description": "ModusBox Connection Manager API",
   "main": "index.js",
   "scripts": {
@@ -18,7 +18,7 @@
   "keywords": [
     "swagger"
   ],
-  "license": "Unlicense",
+  "license": "Apache-2.0",
   "dependencies": {
     "chai": "^4.2.0",
     "connect": "^3.2.0",
@@ -32,19 +32,19 @@
     "knex": "^0.19.5",
     "moment": "^2.24.0",
     "mysql": "^2.16.0",
+    "objection": "^1.6.9",
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
     "sinon": "^7.4.1",
     "snazzy": "^8.0.0",
-    "soap": "^0.29.0",
+    "soap": "^0.35.0",
     "sqlite3": "^4.0.8",
     "swagger-tools": "^0.10.4",
     "tmp-promise": "^1.0.5",
     "winston": "^3.2.1",
-    "xml2js": "^0.4.19",
-    "objection": "^1.6.9"
+    "xml2js": "^0.4.19"
   },
   "devDependencies": {
     "eslint": "^5.15.3",
@@ -53,7 +53,7 @@
     "eslint-plugin-node": "^8.0.1",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
-    "mocha": "^6.1.4",
+    "mocha": "^8.2.1",
     "nyc": "^14.1.1",
     "standardx": "^3.0.1"
   },

@@ -68,5 +68,19 @@ module.exports = {
   CFSSL: {
     VERSION: process.env.CFSSL_VERSION || '1.3.4',
     COMMAND_PATH: process.env.CFSSL_COMMAND_PATH || 'cfssl'
+  },
+  ENVIRONMENT_INIT: {
+    initEnvironment: process.env.ENV_INIT_NAME !== undefined,
+    config: {
+      name: process.env.ENV_INIT_NAME,
+      defaultDN: {
+        CN: process.env.ENV_INIT_CN || null,
+        C: process.env.ENV_INIT_C || null,
+        L: process.env.ENV_INIT_L || null,
+        O: process.env.ENV_INIT_O || null,
+        OU: process.env.ENV_INIT_OU || null,
+        ST: process.env.ENV_INIT_ST || null,
+      }
+    }
   }
 };
