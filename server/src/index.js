@@ -17,28 +17,28 @@
 
 'use strict';
 const Constants = require('./constants/Constants');
-const http = require('http');
+const nodeHttp = require('http');
 const serverPort = Constants.SERVER.PORT;
 const appLoader = require('./appLoader');
-const { createEnvironment } = require('./service/PkiService');
+const { createEnvironment: defaultCreateEnvironment } = require('./service/PkiService');
 
 const run = ({
-  http = http,
-  appLoader = appLoader,
-  Constants = Constants,
-  createEnvironment = createEnvironment,
+  connect = appLoader.connect,
+  constants = Constants,
+  createEnvironment = defaultCreateEnvironment,
+  http = nodeHttp,
 } = {}) => {
-  console.log('connection-manager-api starting with Constants:');
-  console.log(JSON.stringify(Constants, null, 2));
+  console.log('connection-manager-api starting with constants:');
+  console.log(JSON.stringify(constants, null, 2));
 
   console.log('connection-manager-api starting with process env:');
   console.log(process.env);
 
-  const appConnected = appLoader.connect();
+  const appConnected = connect();
 
   // Initialise state
-  if (Constants.ENVIRONMENT_INIT.initEnvironment) {
-    createEnvironment(Constants.ENVIRONMENT_INIT.config);
+  if (constants.ENVIRONMENT_INIT.initEnvironment) {
+    createEnvironment(constants.ENVIRONMENT_INIT.config);
   }
 
   // Start the server

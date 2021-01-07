@@ -22,25 +22,23 @@ const assert = require('assert');
 describe('Server start', () => {
   it('Should call createEnvironment with the correct arguments', () => {
     const createEnvironmentSpy = sinon.spy();
-    const Constants = {
+    const constants = {
       ENVIRONMENT_INIT: {
         initEnvironment: true,
         config: 'whatever'
       }
     };
     run({
-      Constants,
+      constants,
       http: {
         createServer: () => ({
           listen: () => {}
         })
       },
       createEnvironment: createEnvironmentSpy,
-      appLoader: {
-        connect: () => {}
-      }
+      connect: () => {}
     });
-    assert(createEnvironmentSpy.calledOnceWith(Constants.ENVIRONMENT_INIT.config));
+    assert(createEnvironmentSpy.calledOnceWith(constants.ENVIRONMENT_INIT.config));
   });
   it('Should initialise in correct order', () => {
     const httpListenSpy = sinon.spy();
@@ -52,16 +50,14 @@ describe('Server start', () => {
           listen: httpListenSpy
         })
       },
-      Constants: {
+      constants: {
         ENVIRONMENT_INIT: {
           initEnvironment: true,
           config: 'whatever'
         }
       },
       createEnvironment: createEnvironmentSpy,
-      appLoader: {
-        connect: appLoaderConnectSpy
-      }
+      connect: appLoaderConnectSpy
     })
     assert(appLoaderConnectSpy.calledBefore(createEnvironmentSpy));
     assert(createEnvironmentSpy.calledBefore(httpListenSpy));
