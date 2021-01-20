@@ -1,0 +1,38 @@
+name: Publish image
+
+# TODO: create a tag/release with the version based on the version in package.json every time a
+# merge is made to master?
+on:
+  push:
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
+      -
+        name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2.2.1
+        with:
+          push: true
+          context: ./server
+          file: ./Dockerfile
+          tags: modusbox/connection-manager-api:latest
+      -
+        name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
