@@ -38,8 +38,7 @@ jobs:
         uses: docker/build-push-action@v2.2.1
         with:
           push: true
-          context: server/
-          file: ./Dockerfile
+          file: ./server/Dockerfile
           tags: modusbox/connection-manager-api:latest
       -
         name: Image digest
