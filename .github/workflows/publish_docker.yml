@@ -1,4 +1,9 @@
 name: Publish image
+# Notes:
+# - need to enable "improved container support":
+#   https://docs.github.com/en/packages/guides/enabling-improved-container-support
+# - need to add an access token, probably at organisation level
+# - need to modify the username to ${{ github.repository_owner }}
 
 # TODO: create a tag/release with the version based on the version in package.json every time a
 # merge is made to master?
@@ -10,6 +15,7 @@ on:
 jobs:
   main:
     runs-on: ubuntu-latest
+    environment: build
     steps:
       -
         name: Set up QEMU
