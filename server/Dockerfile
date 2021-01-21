@@ -64,5 +64,24 @@ COPY . .
 
 EXPOSE 3001
 
+ARG created
+ARG url
+ARG version
+ARG revision
+
+# See:
+# https://github.com/opencontainers/image-spec/blob/79b036d80240ae530a8de15e1d21c7ab9292c693/annotations.md
+LABEL org.opencontainers.image.created
+LABEL org.opencontainers.image.authors="ModusBox Inc."
+LABEL org.opencontainers.image.url=$url
+LABEL org.opencontainers.image.documentation=$url
+LABEL org.opencontainers.image.source=$url
+LABEL org.opencontainers.image.version=$version
+LABEL org.opencontainers.image.revision=$revision
+LABEL org.opencontainers.image.vendor="ModusBox Inc."
+LABEL org.opencontainers.image.licenses="Apache-2.0"
+LABEL org.opencontainers.image.title="ModusBox Connection Manager"
+LABEL org.opencontainers.image.description="Connection Manager API is a component of the Mojaloop ecosystem that allows an administrator to manage the network configuration and PKI information for the Hub and a set of DFSPs."
+
 # run!
 CMD ["npm", "start"]
