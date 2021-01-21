@@ -22,6 +22,12 @@ jobs:
     runs-on: ubuntu-latest
     environment: build
     steps:
+      # At the time of writing, we need to manually specify the context, as we can't set a
+      # subdirectory of the repo as a build context
+      # https://github.com/docker/build-push-action/tree/636b4540ec057719fe868a4435761056c89d2fff#git-context
+      -
+        name: Checkout
+        uses: actions/checkout@v2
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
