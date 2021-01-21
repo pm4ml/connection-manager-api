@@ -64,7 +64,7 @@ jobs:
       -
         name: Set build date-time in environment
         id: date
-        run: echo "::set-output name=date::test"
+        run: echo "::set-output name=date::$(date -u --rfc-3339=seconds)"
       -
         name: Build and push
         id: docker_build
@@ -88,7 +88,7 @@ jobs:
           # Note that org.opencontainers.image.source will allow Github to link this image to this
           # repo
           build-args: |
-            created=${{ steps.date.output.date }}
+            created=${{ steps.date.outputs.date }}
             url=https://github.com/${{ github.repository }}
             version=${{ github.event.release.tag_name }}
             revision=${{ github.sha }}
