@@ -48,6 +48,7 @@ jobs:
         with:
           push: true
           context: ./server
+          file: ./server/Dockerfile
           # tags need to have the registry name in them, except for Dockerhub, which is the default
           # See: https://docs.github.com/en/enterprise-server@2.22/actions/reference/context-and-expression-syntax-for-github-actions#github-context
           # And: https://docs.github.com/en/enterprise-server@2.22/actions/reference/context-and-expression-syntax-for-github-actions#functions
