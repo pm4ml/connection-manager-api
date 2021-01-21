@@ -8,10 +8,14 @@ name: Publish image
 # TODO: create a tag/release with the version based on the version in package.json every time a
 # merge is made to master?
 on:
+  # TODO: filter on vX.Y.Z (i.e. semantic-ish versioning)- ideally we'd have proper semantic
+  # versioning, but let's see what happens. Or don't filter?
+  # Or: only publish the :latest tag when the release name is a proper semantic version tag-
+  # perhaps even without any suffixes?
+  release:
+    types: [published]
   push:
     branches: master
-    # tags:
-    #   - v[0-9]+.[0-9]+.[0-9]+
 
 jobs:
   main:
@@ -39,7 +43,10 @@ jobs:
           push: true
           file: ./server/Dockerfile
           # tags need to have the registry name in them, except for Dockerhub, which is the default
-          tags: ghcr.io/${{ github.repository_owner }}/connection-manager-api/connection-manager-api:latest
+          # See: https://docs.github.com/en/enterprise-server@2.22/actions/reference/context-and-expression-syntax-for-github-actions#github-context
+          # And: https://docs.github.com/en/enterprise-server@2.22/actions/reference/context-and-expression-syntax-for-github-actions#functions
+          tags: |
+            ghcr.io/${{ github.repository }}/connection-manager-api:latest
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
