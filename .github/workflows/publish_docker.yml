@@ -88,10 +88,10 @@ jobs:
           # Note that org.opencontainers.image.source will allow Github to link this image to this
           # repo
           build-args: |
-            created=\"${{ steps.date.output.date }}\"
-            url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
-            version="${{ github.event.release.tag_name }}"
-            revision="$GITHUB_SHA"
+            created="${{ steps.date.output.date }}"
+            url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY
+            version=${{ github.event.release.tag_name }}
+            revision=$GITHUB_SHA
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
