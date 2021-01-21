@@ -37,6 +37,7 @@ jobs:
         uses: docker/build-push-action@v2.2.1
         with:
           push: true
+          file: ./server/Dockerfile
           # tags need to have the registry name in them, except for Dockerhub, which is the default
           tags: ghcr.io/${{ github.repository_owner }}/connection-manager-api/connection-manager-api:latest
       -
