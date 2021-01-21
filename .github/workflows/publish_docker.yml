@@ -19,7 +19,6 @@ on:
 
 jobs:
   main:
-    if: ${{ github.event.release.tag_name }}
     runs-on: ubuntu-latest
     environment: build
     steps:
