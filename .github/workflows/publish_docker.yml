@@ -38,7 +38,8 @@ jobs:
         with:
           push: true
           file: ./server/Dockerfile
-          tags: ghcr.io/msk-/connection-manager-api:latest
+          # tags need to have the registry name in them, except for Dockerhub, which is the default
+          tags: ghcr.io/msk-/connection-manager-api/connection-manager-api:latest
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
