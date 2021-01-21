@@ -38,7 +38,7 @@ jobs:
         with:
           push: true
           file: ./server/Dockerfile
-          tags: modusbox/connection-manager-api:latest
+          tags: ghcr.io/msk-/connection-manager-api:latest
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
