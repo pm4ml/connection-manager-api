@@ -71,7 +71,7 @@ ARG revision
 
 # See:
 # https://github.com/opencontainers/image-spec/blob/79b036d80240ae530a8de15e1d21c7ab9292c693/annotations.md
-LABEL org.opencontainers.image.created
+LABEL org.opencontainers.image.created=$created
 LABEL org.opencontainers.image.authors="ModusBox Inc."
 LABEL org.opencontainers.image.url=$url
 LABEL org.opencontainers.image.documentation=$url
