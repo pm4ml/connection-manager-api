@@ -1,4 +1,4 @@
-FROM node:8.15-jessie
+FROM node:14-buster
 
 # Install cfssl 
 RUN apt-get -y install wget
