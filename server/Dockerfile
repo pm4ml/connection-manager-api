@@ -57,7 +57,7 @@ ENV API_DESCRIBE=$API_DESCRIBE
 # where available (npm@5+)
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci --only=prod
 
 # My app sources
 COPY . .
