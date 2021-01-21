@@ -64,7 +64,7 @@ jobs:
       -
         name: Set build date-time in environment
         id: date
-        run: echo "::set-output name=date::$(date -u --rfc-3339=seconds)"
+        run: echo "::set-output name=date::test"
       -
         name: Build and push
         id: docker_build
