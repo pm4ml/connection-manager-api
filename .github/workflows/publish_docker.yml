@@ -64,7 +64,7 @@ jobs:
       -
         name: Set build date-time in environment
         id: date
-        run: echo '::set-output name=date::$(date --rfc-3339=seconds)'
+        run: echo "::set-output name=date::$(date -u --rfc-3339=seconds)"
       -
         name: Build and push
         id: docker_build
@@ -89,9 +89,9 @@ jobs:
           # repo
           build-args: |
             created=${{ steps.date.output.date }}
-            url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY
+            url=https://github.com/${{ github.repository }}
             version=${{ github.event.release.tag_name }}
-            revision=$GITHUB_SHA
+            revision=${{ github.sha }}
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
