@@ -5,6 +5,8 @@
 #   at organisation level. This access token needs to be a personal access token at the time of
 #   writing. This works, because the organisation policy gives organisation members permission to
 #   publish packages.
+#   Note this outstanding issue:
+#   https://github.community/t/cannot-create-pat-with-scope-write-packages-without-repo-scope/154300
 # - looks like you'll need to manually make the published image public by visiting:
 #   https://github.com/orgs/{{ your organisation }}/packages
 
