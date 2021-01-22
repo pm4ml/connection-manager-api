@@ -1,4 +1,4 @@
-# Notes:
+# Prerequisites for this action:
 # - need to enable "improved container support":
 #   https://docs.github.com/en/packages/guides/enabling-improved-container-support
 # - need to add an access token to secrets (in this case called CR_PAT), probably good to do this
@@ -6,7 +6,7 @@
 #   writing. This works, because the organisation policy gives organisation members permission to
 #   publish packages.
 # - looks like you'll need to manually make the published image public by visiting:
-#   https://github.com/orgs/mojaloop/packages
+#   https://github.com/orgs/{{ your organisation }}/packages
 
 # TODO: create a tag/release with the version based on the version in package.json every time a
 # merge is made to master? Prevent any merges to master without a code change? (That's probably
@@ -14,24 +14,8 @@
 # the checksum is the same as the existing one, and prevent pushes to master that change the
 # container checksum without changing the package.json version?).
 
-# At the time of writing, it's
-#  - not possible to filter here on the name of the release, for example we cannot say "only run
-#    this job on releases with a name matching v[0-9]+.[0-9]+.[0-9]+" (i.e. a pseudo semantic
-#    version)
-#  - possible to trigger the job on a tag matching a pseudo semantic version as described above,
-#    but also possible to push multiple tags at once, and difficult to extract the tag name using
-#    the information available to the job. As one example: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#github-context
-#    it isn't possible to use ${{ github.ref }} because that is of the form /refs/tags/$tag_name,
-#    and the functionality available here: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#functions
-#    is not sufficient to extract the tag.
-#    Similarly, `github.event.push` doesn't seem to provide an easy way to extract the tag that
-#    triggered the event, and does appear to potentially contain multiple tags per push:
-#    https://docs.github.com/en/actions/reference/events-that-trigger-workflows#push
-#    https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads#push
-#  - perhaps it's possible to use a workflow step to set a filter as an output value, then use said
-#    value to filter later steps? Here's how to set a step output value:
-#    https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-output-parameter
-#    Will need to determine whether it's possible to filter steps on a value
+# TODO:
+# - delete created images from the repository when a release is deleted/unpublished?
 
 name: Publish image
 
