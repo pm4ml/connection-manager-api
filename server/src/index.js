@@ -22,7 +22,7 @@ const serverPort = Constants.SERVER.PORT;
 const appLoader = require('./appLoader');
 const { createEnvironment: defaultCreateEnvironment } = require('./service/PkiService');
 
-const run = ({
+const run = async ({
   connect = appLoader.connect,
   constants = Constants,
   createEnvironment = defaultCreateEnvironment,
@@ -34,11 +34,11 @@ const run = ({
   console.log('connection-manager-api starting with process env:');
   console.log(process.env);
 
-  const appConnected = connect();
+  const appConnected = await connect();
 
   // Initialise state
   if (constants.ENVIRONMENT_INIT.initEnvironment) {
-    createEnvironment(constants.ENVIRONMENT_INIT.config);
+    await createEnvironment(constants.ENVIRONMENT_INIT.config);
   }
 
   // Start the server

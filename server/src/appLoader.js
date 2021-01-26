@@ -33,11 +33,11 @@ const corsUtils = require('./utils/corsUtils');
 
 const { Model } = require('objection');
 
-exports.connect = () => {
-  executeSSLCustomLogic();
+exports.connect = async () => {
+  await executeSSLCustomLogic();
   printToolsVersion.printToolsVersion();
   Model.knex(db.knex);
-  db.runKnexMigrationIfNeeded();
+  await db.runKnexMigrationIfNeeded();
   setUpTempFilesManagement();
 
   app.use(cors(corsUtils.getCorsOptions));

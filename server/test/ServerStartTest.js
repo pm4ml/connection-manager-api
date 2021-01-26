@@ -20,7 +20,7 @@ const sinon = require('sinon');
 const assert = require('assert');
 
 describe('Server start', () => {
-  it('Should call createEnvironment with the correct arguments', () => {
+  it('Should call createEnvironment with the correct arguments', async () => {
     const createEnvironmentSpy = sinon.spy();
     const constants = {
       ENVIRONMENT_INIT: {
@@ -28,7 +28,7 @@ describe('Server start', () => {
         config: 'whatever'
       }
     };
-    run({
+    await run({
       constants,
       http: {
         createServer: () => ({
@@ -40,11 +40,11 @@ describe('Server start', () => {
     });
     assert(createEnvironmentSpy.calledOnceWith(constants.ENVIRONMENT_INIT.config));
   });
-  it('Should initialise in correct order', () => {
+  it('Should initialise in correct order', async () => {
     const httpListenSpy = sinon.spy();
     const createEnvironmentSpy = sinon.spy();
     const appLoaderConnectSpy = sinon.spy();
-    run({
+    await run({
       http: {
         createServer: () => ({
           listen: httpListenSpy
