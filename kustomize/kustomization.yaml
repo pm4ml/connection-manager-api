@@ -1,0 +1,22 @@
+resources:
+- deploy.yaml
+- service.yaml
+- github.com/partiallyordered/bases/mysql?ref=d79f665e295b2dffb764964775e268931e407b80
+
+secretGenerator:
+- name: connection-manager-api-api-secret
+  literals:
+  - dummy=DUMMY
+- name: mysql
+  behavior: merge
+  literals:
+  - MYSQL_PASSWORD=mcm
+  - MYSQL_ROOT_PASSWORD=mcm
+
+configMapGenerator:
+- name: mysql
+  behavior: merge
+  literals:
+  - MYSQL_SERVICE=mysql
+  - MYSQL_USER=mcm
+  - MYSQL_DATABASE=mcm

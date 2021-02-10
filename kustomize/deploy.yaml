@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: connection-manager-api
+  labels:
+    app.kubernetes.io/name: connection-manager-api
+spec:
+  selector:
+    matchLabels: &labels
+      app.kubernetes.io/name: connection-manager-api
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      hostname: connection-manager-api
+      restartPolicy: Always
+      containers:
+      - name: connection-manager-api
+        image: ghcr.io/modusbox/connection-manager-api:1.7.1
+        ports:
+        - containerPort: 3001
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: DATABASE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: mysql
+              key: MYSQL_SERVICE
+        - name: DATABASE_USER
+          valueFrom:
+            configMapKeyRef:
+              name: mysql
+              key: MYSQL_USER
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql
+              key: MYSQL_PASSWORD
+        - name: DATABASE_SCHEMA
+          valueFrom:
+            configMapKeyRef:
+              name: mysql
+              key: MYSQL_DATABASE
+        - name: DATABASE_PORT
+          value: "3306"
+        - name: PORT
+          value: "3001"
+        - name: AUTH_ENABLED
+          value: "FALSE"
+        - name: OAUTH2_ISSUER
+          value: https://localhost/oauth2/token
+        - name: APP_OAUTH_CLIENT_KEY
+          value: mysecretkey
+        - name: APP_OAUTH_CLIENT_SECRET
+          value: changeme
+        - name: AUTH_2FA_ENABLED
+          value: "FALSE"
+        - name: TOTP_ADMIN_ISSUER
+          value: https://localhost/totp
+        - name: TOTP_ADMIN_AUTH_USER
+          value: myuser
+        - name: TOTP_ADMIN_AUTH_PASSWORD
+          value: changeme
+        - name: TOTP_LABEL
+          value: MCM
+        - name: TOTP_ISSUER
+          value: MCM
+        - name: WSO2_MANAGER_SERVICE_URL
+          value: https://localhost:9443/services/RemoteUserStoreManagerService.RemoteUserStoreManagerServiceHttpsSoap12Endpoint
+        - name: WSO2_MANAGER_SERVICE_USER
+          value: myuser
+        - name: WSO2_MANAGER_SERVICE_PASSWORD
+          value: changeme
+        - name: OAUTH_RESET_PASSWORD_ISSUER
+          value: https://localhost/scim2/Users
+        - name: OAUTH_RESET_PASSWORD_AUTH_USER
+          value: myuser
+        - name: OAUTH_RESET_PASSWORD_AUTH_PASSWORD
+          value: changeme
+        - name: ENV_INIT_NAME
+          value: example.com
+        - name: ENV_INIT_CN
+          value: Example Common Name
+        - name: ENV_INIT_C
+          value:
+        - name: ENV_INIT_L
+          value:
+        - name: ENV_INIT_O
+          value: Example Org
+        - name: ENV_INIT_OU
+          value:
+        - name: ENV_INIT_ST
+          value:
+        volumeMounts:
+        - name: secret-volume
+          readOnly: true
+          mountPath: "/mcm_secrets"
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: connection-manager-api-api-secret
