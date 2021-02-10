@@ -1,7 +1,7 @@
 resources:
 - deploy.yaml
 - service.yaml
-- github.com/partiallyordered/bases/mysql?ref=d79f665e295b2dffb764964775e268931e407b80
+- github.com/partiallyordered/bases/mysql?ref=01e9909a2bfc040dac27bb770f79a1049d833bda
 
 secretGenerator:
 - name: connection-manager-api-api-secret
