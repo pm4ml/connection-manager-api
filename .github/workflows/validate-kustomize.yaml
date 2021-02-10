@@ -12,4 +12,4 @@ jobs:
         with:
           kustomize: 3.10.0
           command: |
-            kustomize build kustomize | kubeval --strict
+            kustomize build kubernetes | kubeval --strict
