@@ -21,7 +21,6 @@ const Constants = require('../constants/Constants');
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
-const isAuthEnabled = Constants.OAUTH.AUTH_ENABLED != null && (Constants.OAUTH.AUTH_ENABLED === 'true' || Constants.OAUTH.AUTH_ENABLED === 'TRUE');
 
 function cookieExtractor (req) {
   let cookies = new Cookies(req);
@@ -147,7 +146,7 @@ function getOAuth2Middleware () {
 }
 
 const handleMiddleware = (middleware, app) => {
-  if (isAuthEnabled) {
+  if (Constants.OAUTH.AUTH_ENABLED) {
     console.log(`Enabling OAUTH. Constants.OAUTH.AUTH_ENABLED = ${Constants.OAUTH.AUTH_ENABLED}`);
     app.use('/api/environments', getOAuth2Middleware());
     // https://github.com/apigee-127/swagger-tools/blob/master/docs/Middleware.md#swagger-security

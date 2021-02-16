@@ -3355,8 +3355,8 @@ definitions:
         description: "The certificate must be valid according to the Online Certificate Status Protocol (OCSP) [RFC2560]"
       - validationCode: "CERTIFICATE_VALID_CRL"
         description: "The certificate must be valid according to the certificate revocation lists (CRLs) info. At the current time, the certificate is not revoked. See https://tools.ietf.org/html/rfc5280#section-6.3"
-        
-            
+
+
   Validation:
     type: "object"
     required:
