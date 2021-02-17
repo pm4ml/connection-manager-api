@@ -43,8 +43,6 @@ const run = async ({
   // Initialise state
   if (constants.ENVIRONMENT_INIT.initEnvironment) {
     const { id: newEnvId } = await createEnvironment(constants.ENVIRONMENT_INIT.config);
-    // console.log('RESULT');
-    // console.log(result);
     if (constants.USER_INIT.dfspId && constants.USER_INIT.name) {
       await createDFSP(newEnvId, constants.USER_INIT);
     }
