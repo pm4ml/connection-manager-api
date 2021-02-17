@@ -17,14 +17,13 @@
 
 'use strict';
 const Constants = require('../constants/Constants');
-const isAuthEnabled = Constants.OAUTH.AUTH_ENABLED != null && (Constants.OAUTH.AUTH_ENABLED === 'true' || Constants.OAUTH.AUTH_ENABLED === 'TRUE');
 
 const whitelist = ['http://devint1-pkiadminweb.casahub.live', 'https://devint1-pkiadminweb.casahub.live'];
 
 exports.getCorsOptions = {
   credentials: true,
   origin: function (requestOrigin, callback) {
-    if (!isAuthEnabled) {
+    if (!Constants.OAUTH.AUTH_ENABLED) {
       console.log(`cors origin callback: allowing ${requestOrigin} because Auth is not enabled`);
       callback(null, true);
       // requests from curl don't usually have the Origin header
