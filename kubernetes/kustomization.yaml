@@ -20,3 +20,31 @@ configMapGenerator:
   - MYSQL_SERVICE=mysql
   - MYSQL_USER=mcm
   - MYSQL_DATABASE=mcm
+- name: connection-manager-api
+  literals:
+  - PORT="3001"
+  - AUTH_ENABLED="FALSE"
+  - OAUTH2_ISSUER=https://localhost/oauth2/token
+  - APP_OAUTH_CLIENT_KEY=mysecretkey
+  - APP_OAUTH_CLIENT_SECRET=changeme
+  - AUTH_2FA_ENABLED="FALSE"
+  - TOTP_ADMIN_ISSUER=https://localhost/totp
+  - TOTP_ADMIN_AUTH_USER=myuser
+  - TOTP_ADMIN_AUTH_PASSWORD=changeme
+  - TOTP_LABEL=MCM
+  - TOTP_ISSUER=MCM
+  - WSO2_MANAGER_SERVICE_URL=https://localhost:9443/services/RemoteUserStoreManagerService.RemoteUserStoreManagerServiceHttpsSoap12Endpoint
+  - WSO2_MANAGER_SERVICE_USER=myuser
+  - WSO2_MANAGER_SERVICE_PASSWORD=changeme
+  - OAUTH_RESET_PASSWORD_ISSUER=https://localhost/scim2/Users
+  - OAUTH_RESET_PASSWORD_AUTH_USER=myuser
+  - OAUTH_RESET_PASSWORD_AUTH_PASSWORD=changeme
+  - ENV_INIT_NAME=
+  - ENV_INIT_CN=
+  - ENV_INIT_C=
+  - ENV_INIT_L=
+  - ENV_INIT_O=
+  - ENV_INIT_OU=
+  - ENV_INIT_ST=
+  - USER_INIT_DFSP_ID=
+  - USER_INIT_NAME=

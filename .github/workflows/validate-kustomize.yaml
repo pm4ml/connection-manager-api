@@ -6,10 +6,10 @@ jobs:
   test-action:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Run Kubernetes tools
-        uses: stefanprodan/kube-tools@v1
-        with:
-          kustomize: 3.10.0
-          command: |
-            kustomize build kubernetes | kubeval --strict
+    - uses: actions/checkout@v2
+    - name: Run Kubernetes tools
+      uses: stefanprodan/kube-tools@v1
+      with:
+        kustomize: 3.10.0
+        command: |
+          kustomize build kubernetes | kubeval --strict
