@@ -1,0 +1,5 @@
+# makes the `kustomize build . -o output` workflow a little easier
+output
+# if a user needs to put docker creds in this directory, this makes it less likely it'll be
+# committed
+.dockerconfigjson
