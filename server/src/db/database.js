@@ -18,6 +18,7 @@
 const Constants = require('../constants/Constants');
 const path = require('path');
 const initialConfiguration = require('./InitialDataConfiguration');
+const retry = require('async-retry');
 
 let knexOptions = {
   client: 'mysql',
@@ -48,35 +49,33 @@ exports.setKnex = (knexOptions) => {
   exports.knex = require('knex')(knexOptions);
 };
 
-const runKnexMigrations = async () => {
+exports.runKnexMigrations = async () => {
+  if (!Constants.DATABASE.RUN_MIGRATIONS) {
+    return;
+  }
   console.log('Migrating');
   await exports.knex.migrate.latest();
   console.log('Migration done');
   await initialConfiguration.runInitialConfigurations();
 };
 
-// design your application to attempt to re-establish a connection to the database after a failure
-// https://docs.docker.com/compose/startup-order/
-let dbRetries = 1;
-exports.runKnexMigrationIfNeeded = async () => {
-  if (Constants.DATABASE.RUN_MIGRATIONS) {
-    try {
-      await runKnexMigrations();
-      console.log(`success connected to DB and tables created after trying : ${dbRetries} time(s)`);
-    } catch (e) {
-      console.log(`error connecting to the database. Attempting retry: ${dbRetries}`);
-      dbRetries++;
-      if (dbRetries === Constants.DATABASE.DB_RETRIES) {
-        console.error('could not get connection to DB after retries', e);
-        process.exit(1);
-      } else {
-        setTimeout(
-          exports.runKnexMigrationIfNeeded,
-          Constants.DATABASE.DB_CONNECTION_RETRY_WAIT_MILLISECONDS
-        );
-      }
-    }
-  }
+exports.waitForConnection = async () => {
+  await retry(async (_, attempt) => {
+    console.log(`Attempting database connection. Attempt ${attempt} of ${Constants.DATABASE.DB_RETRIES + 1}`);
+    await exports.knex.raw('SELECT 1');
+    console.log('Database connection attempt successful');
+  }, {
+    retries: Constants.DATABASE.DB_RETRIES,
+    minTimeout: Constants.DATABASE.DB_CONNECTION_RETRY_WAIT_MILLISECONDS,
+    onRetry: () => console.log('Database connection attempt failed'),
+    // 1.3 ^ 10 ~= 14
+    // therefore, a factor of 1.3 with an initial 1s delay has a maximum between-attempt delay of
+    // 28 seconds, including jitter up to a factor of 2
+    factor: 1.3,
+    // async-retry has a default `randomize` parameter here which randomises retry delays by
+    // multiplying them by a factor of [1,2]. We leave this default to mitigate thundering herd,
+    // even though that's rather unlikely. You never know where your code will end up..
+  });
 };
 
 exports.knex = defaultKnex;

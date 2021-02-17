@@ -57,7 +57,7 @@ module.exports = {
     DATABASE_PASSWORD: process.env.DATABASE_PASSWORD || 'mcm',
     DATABASE_SCHEMA: process.env.DATABASE_SCHEMA || 'mcm',
     DB_RETRIES: process.env.DB_RETRIES || 10,
-    DB_CONNECTION_RETRY_WAIT_MILLISECONDS: process.env.DB_CONNECTION_RETRY_WAIT_MILLISECONDS || 5000,
+    DB_CONNECTION_RETRY_WAIT_MILLISECONDS: process.env.DB_CONNECTION_RETRY_WAIT_MILLISECONDS || 1000,
     RUN_MIGRATIONS: process.env.RUN_MIGRATIONS || true,
     CURRENCY_CODES: process.env.CURRENCY_CODES || './data/currencyCodes.json',
     DATA_CONFIGURATION_FILE: process.env.DATA_CONFIGURATION_FILE || './data/sampleConfiguration.json'
