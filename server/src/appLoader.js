@@ -35,10 +35,10 @@ const { Model } = require('objection');
 
 exports.connect = async () => {
   await db.waitForConnection();
+  Model.knex(db.knex);
   await db.runKnexMigrations();
   await executeSSLCustomLogic();
   printToolsVersion.printToolsVersion();
-  Model.knex(db.knex);
   setUpTempFilesManagement();
 
   app.use(cors(corsUtils.getCorsOptions));
