@@ -84,7 +84,7 @@ module.exports = {
     }
   },
   USER_INIT: {
-    // Required
+    // Required if user init is desirable
     dfspId: process.env.USER_INIT_DFSP_ID,
     name: process.env.USER_INIT_NAME,
     // Optional
