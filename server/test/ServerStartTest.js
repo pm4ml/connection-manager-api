@@ -21,12 +21,13 @@ const assert = require('assert');
 
 describe('Server start', () => {
   it('Should call createEnvironment with the correct arguments', async () => {
-    const createEnvironmentSpy = sinon.spy();
+    const createEnvironmentSpy = sinon.fake(() => ({ id: 'meh' }));
     const constants = {
       ENVIRONMENT_INIT: {
         initEnvironment: true,
         config: 'whatever'
-      }
+      },
+      USER_INIT: {},
     };
     await run({
       constants,
@@ -40,9 +41,41 @@ describe('Server start', () => {
     });
     assert(createEnvironmentSpy.calledOnceWith(constants.ENVIRONMENT_INIT.config));
   });
+
+  it('Should call createEnvironment and createDFSP with the correct arguments', async () => {
+    const fakeEnvId = 'fakeEnvId';
+    const createEnvironmentSpy = sinon.fake(() => ({ id: fakeEnvId }));
+    const createDFSPSpy = sinon.spy();
+    const constants = {
+      ENVIRONMENT_INIT: {
+        initEnvironment: true,
+        config: 'whatever'
+      },
+      USER_INIT: {
+        dfspId: 'blah',
+        name: 'whatever',
+        monetaryZone: 'yadda',
+        securityGroup: 'pah',
+      },
+    };
+    await run({
+      constants,
+      http: {
+        createServer: () => ({
+          listen: () => {}
+        })
+      },
+      createEnvironment: createEnvironmentSpy,
+      createDFSP: createDFSPSpy,
+      connect: () => {}
+    });
+    assert(createEnvironmentSpy.calledOnceWith(constants.ENVIRONMENT_INIT.config));
+    assert(createDFSPSpy.calledOnceWith(fakeEnvId, constants.USER_INIT));
+  });
+
   it('Should initialise in correct order', async () => {
     const httpListenSpy = sinon.spy();
-    const createEnvironmentSpy = sinon.spy();
+    const createEnvironmentSpy = sinon.fake(() => ({ id: 'meh' }));
     const appLoaderConnectSpy = sinon.spy();
     await run({
       http: {
@@ -54,7 +87,8 @@ describe('Server start', () => {
         ENVIRONMENT_INIT: {
           initEnvironment: true,
           config: 'whatever'
-        }
+        },
+        USER_INIT: {},
       },
       createEnvironment: createEnvironmentSpy,
       connect: appLoaderConnectSpy

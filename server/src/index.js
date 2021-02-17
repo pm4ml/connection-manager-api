@@ -20,12 +20,16 @@ const Constants = require('./constants/Constants');
 const nodeHttp = require('http');
 const serverPort = Constants.SERVER.PORT;
 const appLoader = require('./appLoader');
-const { createEnvironment: defaultCreateEnvironment } = require('./service/PkiService');
+const {
+  createEnvironment: defaultCreateEnvironment,
+  createDFSP: defaultCreateDFSP,
+} = require('./service/PkiService');
 
 const run = async ({
   connect = appLoader.connect,
   constants = Constants,
   createEnvironment = defaultCreateEnvironment,
+  createDFSP = defaultCreateDFSP,
   http = nodeHttp,
 } = {}) => {
   console.log('connection-manager-api starting with constants:');
@@ -38,7 +42,10 @@ const run = async ({
 
   // Initialise state
   if (constants.ENVIRONMENT_INIT.initEnvironment) {
-    await createEnvironment(constants.ENVIRONMENT_INIT.config);
+    const { id: newEnvId } = await createEnvironment(constants.ENVIRONMENT_INIT.config);
+    if (constants.USER_INIT.dfspId && constants.USER_INIT.name) {
+      await createDFSP(newEnvId, constants.USER_INIT);
+    }
   }
 
   // Start the server
@@ -46,7 +53,7 @@ const run = async ({
     console.log('Connection-Manager API server is listening on port %d (http://localhost:%d)', serverPort, serverPort);
     console.log('Swagger-ui is available on http://localhost:%d/docs', serverPort);
   });
-}
+};
 
 // This structure enables us to mock and test
 if (require.main === module) {

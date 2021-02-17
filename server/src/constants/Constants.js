@@ -82,5 +82,13 @@ module.exports = {
         ST: process.env.ENV_INIT_ST || null,
       }
     }
-  }
+  },
+  USER_INIT: {
+    // Required if user init is desirable
+    dfspId: process.env.USER_INIT_DFSP_ID,
+    name: process.env.USER_INIT_NAME,
+    // Optional
+    monetaryZone: process.env.USER_INIT_MONETARY_ZONE,
+    securityGroup: process.env.USER_INIT_SECURITY_GROUP,
+  },
 };
