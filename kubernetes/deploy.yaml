@@ -16,7 +16,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: connection-manager-api
-        image: ghcr.io/modusbox/connection-manager-api:1.7.6
+        image: ghcr.io/modusbox/connection-manager-api:1.7.7
         ports:
         - containerPort: 3001
         imagePullPolicy: IfNotPresent
