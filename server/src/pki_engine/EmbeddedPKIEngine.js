@@ -37,6 +37,12 @@ const VALID_SELF_SIGNED = 'VALID(SELF_SIGNED)';
 const INVALID = 'INVALID';
 const CAType = require('../models/CAType');
 
+const assertExternalProcessResult = (condition, ...args) => {
+  if (!condition) {
+    throw new ExternalProcessError(...args);
+  }
+};
+
 /**
  * PKI engine that uses cfssl and openssl as engines.
  *
@@ -826,13 +832,9 @@ class EmbeddedPKIEngine extends PKIEngine {
 
     const opensslResult = await spawnProcess('openssl', args, input, false);
     let { stdout, stderr, code } = opensslResult;
-    if (typeof stdout !== 'string') {
-      throw new ExternalProcessError('Could not read openssl output');
-    }
 
-    if (code !== 0) {
-      throw new ExternalProcessError(`openssl returned code ${code}`, { output: opensslResult });
-    }
+    assertExternalProcessResult(typeof stdout === 'string', 'Could not read openssl output');
+    assertExternalProcessResult(code === 0, `openssl returned code ${code}`, { output: opensslResult });
 
     if (type === 'CSR' && !stderr.includes('verify OK')) {
       throw new InvalidEntityError(`Input ${type} failed verification`, { output: opensslResult });
@@ -962,10 +964,10 @@ class EmbeddedPKIEngine extends PKIEngine {
    */
   static async validateRootCertificate (rootCertificate) {
     const opensslResult = await spawnProcess('openssl', ['verify', '-verbose'], rootCertificate, false);
-    let { stdout, code } = opensslResult;
-    if (typeof stdout !== 'string') {
-      throw new ExternalProcessError('Could not read openssl output');
-    }
+    let { stdout, stderr, code } = opensslResult;
+
+    assertExternalProcessResult(typeof stdout === 'string', 'Could not read openssl output');
+    assertExternalProcessResult(code !== 1, `openssl returned code ${code}`, { output: opensslResult });
 
     if (code === 0) {
       if (stdout.includes('self signed certificate')) {
@@ -974,12 +976,8 @@ class EmbeddedPKIEngine extends PKIEngine {
       return ({ state: VALID_SIGNED, output: stdout });
     }
 
-    if (code === 1) {
-      throw new ExternalProcessError(`openssl returned code ${code}`, { output: opensslResult });
-    }
-
     if (code === 2) {
-      if (stdout.includes('self signed certificate')) {
+      if (stdout.includes('self signed certificate') || stderr.includes('self signed certificate')) {
         return ({ state: VALID_SELF_SIGNED, output: stdout });
       }
       return ({ state: INVALID, output: stdout });
@@ -1024,19 +1022,11 @@ class EmbeddedPKIEngine extends PKIEngine {
     rootCleanup && rootCleanup();
     intermediateCleanup && intermediateCleanup();
     let { stdout, code } = opensslResult;
-    if (typeof stdout !== 'string') {
-      throw new ExternalProcessError('Could not read openssl output');
-    }
 
-    if (code === 0) {
-      return ({ result: true, output: stdout });
-    }
+    assertExternalProcessResult(typeof stdout === 'string', 'Could not read openssl output');
+    assertExternalProcessResult(code !== 0, `openssl returned code ${code}`, { output: opensslResult });
 
-    if (code === 1) {
-      throw new ExternalProcessError(`openssl returned code ${code}`, { output: opensslResult });
-    }
-
-    return { result: false, output: stdout };
+    return ({ result: code === 0, output: stdout });
   }
 
   /**
@@ -1056,9 +1046,8 @@ class EmbeddedPKIEngine extends PKIEngine {
 
     const commandResult = await spawnProcess(Constants.CFSSL.COMMAND_PATH, argsArray, csr);
     let { stdout } = commandResult;
-    if (typeof stdout !== 'string') {
-      throw new ExternalProcessError('Could not read command output');
-    }
+
+    assertExternalProcessResult(typeof stdout === 'string', 'Could not read openssl output');
 
     let doc;
     try {
@@ -1090,9 +1079,8 @@ class EmbeddedPKIEngine extends PKIEngine {
 
     const commandResult = await spawnProcess(Constants.CFSSL.COMMAND_PATH, argsArray, cert);
     let { stdout } = commandResult;
-    if (typeof stdout !== 'string') {
-      throw new ExternalProcessError('Could not read command output');
-    }
+
+    assertExternalProcessResult(typeof stdout === 'string', 'Could not read openssl output');
 
     let doc;
     try {
