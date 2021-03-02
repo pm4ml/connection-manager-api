@@ -1026,7 +1026,7 @@ class EmbeddedPKIEngine extends PKIEngine {
     assertExternalProcessResult(typeof stdout === 'string', 'Could not read openssl output');
     assertExternalProcessResult(code !== 0, `openssl returned code ${code}`, { output: opensslResult });
 
-    return ({ result: code === 0, output: stdout });
+    return ({ result: true, output: stdout });
   }
 
   /**
