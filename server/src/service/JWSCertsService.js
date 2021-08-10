@@ -21,7 +21,6 @@ const PKIEngine = require('../pki_engine/VaultPKIEngine');
 const PkiService = require('./PkiService');
 const ValidationError = require('../errors/ValidationError');
 const Constants = require('../constants/Constants');
-const { createID } = require('../models/GID');
 
 exports.createDfspJWSCerts = async (envId, dfspId, body) => {
   if (body === null || typeof body === 'undefined') {
@@ -32,11 +31,10 @@ exports.createDfspJWSCerts = async (envId, dfspId, body) => {
 
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  let { validations, validationState } = await pkiEngine.validateJWSCertificate(body.jwsCertificate, body.intermediateChain, body.rootCertificate);
+  let { validations, validationState } = await pkiEngine.validateJWSCertificate(body.publicKey);
   const jwsData = {
-    id: await createID(),
     dfspId,
-    ...(await formatBody(body)),
+    publicKey: body.publicKey,
     validations,
     validationState,
   };
@@ -70,15 +68,4 @@ exports.getAllDfspJWSCerts = async (envId) => {
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
   return pkiEngine.getAllDFSPJWSCerts();
-};
-
-const formatBody = async (body) => {
-  return {
-    rootCertificate: body.rootCertificate,
-    rootCertificateInfo: body.rootCertificate && await PKIEngine.getCertInfo(body.rootCertificate),
-    intermediateChain: body.intermediateChain,
-    intermediateChainInfo: await PkiService.splitChainIntermediateCertificate(body),
-    jwsCertificate: body.jwsCertificate,
-    jwsCertificateInfo: body.jwsCertificate && await PKIEngine.getCertInfo(body.jwsCertificate),
-  };
 };

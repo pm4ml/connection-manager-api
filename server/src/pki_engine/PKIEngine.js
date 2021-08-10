@@ -17,6 +17,9 @@
 
 const ValidationsConfiguration = require('./ValidationsConfiguration');
 const ValidationCodes = require('./ValidationCodes');
+const Validation = require("./Validation");
+const moment = require("moment");
+const forge = require('node-forge');
 
 /**
  * PKI Engine interface
@@ -67,14 +70,26 @@ class PKIEngine {
   /**
    * Performs a set of validations on the JWS certificate.
    *
-   * @param {String} certificate PEM-encoded certificate
-   * @param {String} intermediateChain PEM-encoded certificate chain
-   * @param {String} rootCertificate PEM-encoded root certificate
+   * @param {String} publicKey PEM-encoded JWS public key
    * @returns { validations, validationState } validations list and validationState, where validationState = VALID if all the validations are VALID or NOT_AVAIABLE; INVALID otherwise
    */
-  async validateJWSCertificate (certificate, intermediateChain, rootCertificate) {
-    let validationCodes = ValidationsConfiguration.jwsCertValidations;
-    return this.performCertificateValidations(validationCodes, certificate, intermediateChain, rootCertificate);
+  async validateJWSCertificate (publicKey) {
+    const validation = new Validation(ValidationsConfiguration.jwsCertValidations, true);
+    try {
+      forge.pki.publicKeyFromPem(publicKey);
+    } catch (e) {
+      validation.result = ValidationCodes.VALID_STATES.INVALID;
+      validation.message = e.message;
+      return {
+        validations: [validation],
+        validationState: ValidationCodes.VALID_STATES.INVALID,
+      };
+    }
+    validation.result = ValidationCodes.VALID_STATES.VALID;
+    return {
+      validations: [validation],
+      validationState: ValidationCodes.VALID_STATES.VALID,
+    };
   }
 
   /**

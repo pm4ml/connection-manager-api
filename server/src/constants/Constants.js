@@ -34,6 +34,7 @@ if (process.env.TEST) {
     VAULT_ROLE_SECRET_ID_FILE: '.vault/secret-id',
     VAULT_ENDPOINT: 'http://127.0.0.1:8233',
     VAULT_PKI_BASE_DOMAIN: 'example.com',
+    CFSSL_COMMAND_PATH: './cfssl'
   };
 }
 

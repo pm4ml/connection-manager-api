@@ -11,7 +11,7 @@
 # Unless required by applicable law or agreed to in writing, software       #
 # distributed under the License is distributed on an "AS IS" BASIS,         #
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #
-# See the License for the specific language governing permissions and       # 
+# See the License for the specific language governing permissions and       #
 # limitations under the License.                                            #
 #############################################################################
 ---
@@ -315,7 +315,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/RootCACert"
-      x-swagger-router-controller: "Pki"   
+      x-swagger-router-controller: "Pki"
   /environments/{envId}/hub/endpoints:
     get:
       tags:
@@ -341,7 +341,7 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "HubNetworkConfig"      
+      x-swagger-router-controller: "HubNetworkConfig"
   /environments/{envId}/hub/endpoints/ingress/ips:
     parameters:
     - name: "envId"
@@ -371,7 +371,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointIp"
-      x-swagger-router-controller: "HubNetworkConfig"      
+      x-swagger-router-controller: "HubNetworkConfig"
     get:
       tags:
       - "Hub-Endpoint-configuration"
@@ -389,7 +389,7 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/EndPointIp"
-      x-swagger-router-controller: "HubNetworkConfig"   
+      x-swagger-router-controller: "HubNetworkConfig"
   /environments/{envId}/hub/endpoints/ingress/ips/{epId}:
     parameters:
     - name: "envId"
@@ -418,7 +418,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "HubNetworkConfig"      
+      x-swagger-router-controller: "HubNetworkConfig"
     put:
       tags:
       - "Hub-Endpoint-configuration"
@@ -440,7 +440,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "HubNetworkConfig"      
+      x-swagger-router-controller: "HubNetworkConfig"
     delete:
       tags:
       - "Hub-Endpoint-configuration"
@@ -451,7 +451,7 @@ paths:
       responses:
         204:
           description: "successful operation"
-      x-swagger-router-controller: "HubNetworkConfig"      
+      x-swagger-router-controller: "HubNetworkConfig"
   /environments/{envId}/hub/endpoints/ingress/urls:
     parameters:
     - name: "envId"
@@ -481,7 +481,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointURL"
-      x-swagger-router-controller: "HubNetworkConfig"   
+      x-swagger-router-controller: "HubNetworkConfig"
     get:
       tags:
       - "Hub-Endpoint-configuration"
@@ -499,7 +499,7 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/EndPointURL"
-      x-swagger-router-controller: "HubNetworkConfig"   
+      x-swagger-router-controller: "HubNetworkConfig"
   /environments/{envId}/hub/endpoints/ingress/urls/{epId}:
     parameters:
     - name: "envId"
@@ -528,7 +528,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "HubNetworkConfig"      
+      x-swagger-router-controller: "HubNetworkConfig"
     put:
       tags:
       - "Hub-Endpoint-configuration"
@@ -550,7 +550,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "HubNetworkConfig"      
+      x-swagger-router-controller: "HubNetworkConfig"
     delete:
       tags:
       - "Hub-Endpoint-configuration"
@@ -561,7 +561,7 @@ paths:
       responses:
         204:
           description: "successful operation"
-      x-swagger-router-controller: "HubNetworkConfig"      
+      x-swagger-router-controller: "HubNetworkConfig"
   /environments/{envId}/hub/endpoints/egress/ips:
     parameters:
     - name: "envId"
@@ -591,7 +591,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointIp"
-      x-swagger-router-controller: "HubNetworkConfig"      
+      x-swagger-router-controller: "HubNetworkConfig"
     get:
       tags:
       - "Hub-Endpoint-configuration"
@@ -609,7 +609,7 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/EndPointIp"
-      x-swagger-router-controller: "HubNetworkConfig"   
+      x-swagger-router-controller: "HubNetworkConfig"
   /environments/{envId}/hub/endpoints/egress/ips/{epId}:
     parameters:
     - name: "envId"
@@ -638,7 +638,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "HubNetworkConfig"      
+      x-swagger-router-controller: "HubNetworkConfig"
     put:
       tags:
       - "Hub-Endpoint-configuration"
@@ -660,7 +660,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "HubNetworkConfig"      
+      x-swagger-router-controller: "HubNetworkConfig"
     delete:
       tags:
       - "Hub-Endpoint-configuration"
@@ -671,7 +671,7 @@ paths:
       responses:
         204:
           description: "successful operation"
-      x-swagger-router-controller: "HubNetworkConfig"      
+      x-swagger-router-controller: "HubNetworkConfig"
   /environments/{envId}/hub/endpoints/{epId}:
     parameters:
     - name: "envId"
@@ -700,7 +700,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "HubNetworkConfig"      
+      x-swagger-router-controller: "HubNetworkConfig"
     put:
       tags:
       - "Hub-Endpoint-configuration"
@@ -722,7 +722,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "HubNetworkConfig"      
+      x-swagger-router-controller: "HubNetworkConfig"
     delete:
       tags:
       - "Hub-Endpoint-configuration"
@@ -733,7 +733,7 @@ paths:
       responses:
         204:
           description: "successful operation"
-      x-swagger-router-controller: "HubNetworkConfig"      
+      x-swagger-router-controller: "HubNetworkConfig"
   /environments/{envId}/hub/servercerts:
     parameters:
     - name: "envId"
@@ -836,12 +836,12 @@ paths:
         - OAuth2: [ pta ]
       description: |
         Creates a new Hub CA.
-        
-        * rootCertificate: a root certificate used by the Hub. Can be a self-signed certificate, or a globally trusted CA like Digicert. 
+
+        * rootCertificate: a root certificate used by the Hub. Can be a self-signed certificate, or a globally trusted CA like Digicert.
         * intermediateChain: list of intermediate certificates.
-        
+
         The following combinations are possible
-        
+
         * no rootCertificate and no intermediateChain: The Hub uses a trusted CA to sign its certificates.
         * rootCertificate and no intermediateChain: The Hub uses a self-signed CA to sign its certificates.
         * no rootCertificate and intermediateChain: The Hub uses a chain of intermediate certificates ultimately signed by a trusted CA to sign its certificates.
@@ -957,7 +957,7 @@ paths:
                 $ref: "#/definitions/DFSPJWSCert"
         404:
           description: "JWS certs not set"
-      x-swagger-router-controller: "JWSCerts"      
+      x-swagger-router-controller: "JWSCerts"
   /environments/{envId}/dfsps:
     parameters:
     - name: "envId"
@@ -1007,7 +1007,7 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/DFSP"
-      x-swagger-router-controller: "Pki"    
+      x-swagger-router-controller: "Pki"
   /environments/{envId}/dfsps/endpoints/unprocessed:
     get:
       tags:
@@ -1029,7 +1029,7 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "DfspNetworkConfig"  
+      x-swagger-router-controller: "DfspNetworkConfig"
   /environments/{envId}/dfsps/servercerts:
     get:
       tags:
@@ -1070,7 +1070,7 @@ paths:
       in: "path"
       description: "ID of dfsp"
       required: true
-      type: "string"      
+      type: "string"
     put:
       tags:
       - "env-dfsp-config"
@@ -1116,12 +1116,12 @@ paths:
         - OAuth2: [ mta, pta ]
       description: |
         Saves the DFSP certificates. Both parameters are optional. It replaces the previous CA if there was one.
-        
-        * rootCertificate: a root certificate used by the DFSP. Can be a self-signed certificate, or a globally trusted CA like Digicert. 
+
+        * rootCertificate: a root certificate used by the DFSP. Can be a self-signed certificate, or a globally trusted CA like Digicert.
         * intermediateChain: list of intermediate certificates.
-        
+
         The following combinations are possible
-        
+
         * no rootCertificate and no intermediateChain: The DFSP uses a trusted CA to sign its certificates.
         * rootCertificate and no intermediateChain: The DFSP uses a self-signed CA to sign its certificates.
         * no rootCertificate and intermediateChain: The DFSP uses a chain of intermediate certificates ultimately signed by a trusted CA to sign its certificates.
@@ -1570,7 +1570,7 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "DfspNetworkConfig"      
+      x-swagger-router-controller: "DfspNetworkConfig"
   /environments/{envId}/dfsps/{dfspId}/endpoints/unprocessed:
     get:
       tags:
@@ -1599,7 +1599,7 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "DfspNetworkConfig"      
+      x-swagger-router-controller: "DfspNetworkConfig"
   /environments/{envId}/dfsps/{dfspId}/endpoints/ingress/ips:
     parameters:
     - name: "envId"
@@ -1636,7 +1636,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointIp"
-      x-swagger-router-controller: "DfspNetworkConfig"      
+      x-swagger-router-controller: "DfspNetworkConfig"
     get:
       tags:
       - "DFSP-Endpoint-configuration"
@@ -1665,7 +1665,7 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/EndPointIp"
-      x-swagger-router-controller: "DfspNetworkConfig"   
+      x-swagger-router-controller: "DfspNetworkConfig"
   /environments/{envId}/dfsps/{dfspId}/endpoints/ingress/ips/{epId}:
     parameters:
     - name: "envId"
@@ -1699,7 +1699,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "DfspNetworkConfig"      
+      x-swagger-router-controller: "DfspNetworkConfig"
     put:
       tags:
       - "DFSP-Endpoint-configuration"
@@ -1723,7 +1723,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "DfspNetworkConfig"      
+      x-swagger-router-controller: "DfspNetworkConfig"
     delete:
       tags:
       - "DFSP-Endpoint-configuration"
@@ -1736,7 +1736,7 @@ paths:
       responses:
         204:
           description: "successful operation"
-      x-swagger-router-controller: "DfspNetworkConfig"      
+      x-swagger-router-controller: "DfspNetworkConfig"
   /environments/{envId}/dfsps/{dfspId}/endpoints/ingress/urls:
     parameters:
     - name: "envId"
@@ -1773,7 +1773,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointURL"
-      x-swagger-router-controller: "DfspNetworkConfig"   
+      x-swagger-router-controller: "DfspNetworkConfig"
     get:
       tags:
       - "DFSP-Endpoint-configuration"
@@ -1791,7 +1791,7 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/EndPointURL"
-      x-swagger-router-controller: "DfspNetworkConfig"   
+      x-swagger-router-controller: "DfspNetworkConfig"
   /environments/{envId}/dfsps/{dfspId}/endpoints/ingress/urls/{epId}:
     parameters:
     - name: "envId"
@@ -1825,7 +1825,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "DfspNetworkConfig"      
+      x-swagger-router-controller: "DfspNetworkConfig"
     put:
       tags:
       - "DFSP-Endpoint-configuration"
@@ -1849,7 +1849,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "DfspNetworkConfig"      
+      x-swagger-router-controller: "DfspNetworkConfig"
     delete:
       tags:
       - "DFSP-Endpoint-configuration"
@@ -1899,7 +1899,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointIp"
-      x-swagger-router-controller: "DfspNetworkConfig"      
+      x-swagger-router-controller: "DfspNetworkConfig"
     get:
       tags:
       - "DFSP-Endpoint-configuration"
@@ -1917,7 +1917,7 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/EndPointIp"
-      x-swagger-router-controller: "DfspNetworkConfig"   
+      x-swagger-router-controller: "DfspNetworkConfig"
   /environments/{envId}/dfsps/{dfspId}/endpoints/egress/ips/{epId}:
     parameters:
     - name: "envId"
@@ -1951,7 +1951,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "DfspNetworkConfig"      
+      x-swagger-router-controller: "DfspNetworkConfig"
     put:
       tags:
       - "DFSP-Endpoint-configuration"
@@ -1975,7 +1975,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "DfspNetworkConfig"      
+      x-swagger-router-controller: "DfspNetworkConfig"
     delete:
       tags:
       - "DFSP-Endpoint-configuration"
@@ -2004,7 +2004,7 @@ paths:
       responses:
         204:
           description: "successful operation"
-      x-swagger-router-controller: "DfspNetworkConfig"      
+      x-swagger-router-controller: "DfspNetworkConfig"
   /environments/{envId}/dfsps/{dfspId}/endpoints/{epId}:
     parameters:
     - name: "envId"
@@ -2038,7 +2038,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "DfspNetworkConfig"      
+      x-swagger-router-controller: "DfspNetworkConfig"
     put:
       tags:
       - "DFSP-Endpoint-configuration"
@@ -2062,7 +2062,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/EndPointAny"
-      x-swagger-router-controller: "DfspNetworkConfig"      
+      x-swagger-router-controller: "DfspNetworkConfig"
     delete:
       tags:
       - "DFSP-Endpoint-configuration"
@@ -2075,7 +2075,7 @@ paths:
       responses:
         204:
           description: "successful operation"
-      x-swagger-router-controller: "DfspNetworkConfig"      
+      x-swagger-router-controller: "DfspNetworkConfig"
   /environments/{envId}/dfsps/{dfspId}/endpoints/{epId}/confirmation:
     post:
       tags:
@@ -2279,37 +2279,12 @@ paths:
         204:
           description: "no content"
       x-swagger-router-controller: "JWSCerts"
-    put:
-      tags:
-      - "JWS-certificates-configuration"
-      summary: "put JWS certificate"
-      security:
-        - OAuth2: [ mta, pta ]
-      description: "TBD"
-      operationId: "updateDfspJWSCerts"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "TBD"
-        required: true
-        schema:
-          $ref: "#/definitions/BaseJWSCert"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/JWSCert"
-      x-swagger-router-controller: "JWSCerts"
   /environments/{envId}/dfsps/{dfspId}/status:
     get:
       summary: Retrieves Environment dfsp status
       security:
         - OAuth2: [ everyone ]
-      description: Retrieves Environment dfsp status by phase and step completion 
+      description: Retrieves Environment dfsp status by phase and step completion
       operationId: getEnvironmentDfspStatus
       produces:
       - "application/json"
@@ -2323,17 +2298,17 @@ paths:
           in: path
           description: ID of the dfsp to get satus
           required: true
-          type: string          
+          type: string
       responses:
         200:
           description: successful operation
           schema:
                 $ref: '#/definitions/EnvironmentDfspStatus'
-      x-swagger-router-controller: "DfspNetworkConfig"        
+      x-swagger-router-controller: "DfspNetworkConfig"
   /monetaryzones:
     get:
       tags:
-      - "monetaryzones"      
+      - "monetaryzones"
       summary: "Returns the monetary zones supported"
       operationId: "getMonetaryZones"
       produces:
@@ -2352,7 +2327,7 @@ paths:
       in: "path"
       description: "ID of environment"
       required: true
-      type: "string"      
+      type: "string"
     - name: "monetaryZoneId"
       in: "path"
       description: "ID of monetaryZone"
@@ -2360,7 +2335,7 @@ paths:
       type: "string"
     get:
       tags:
-      - "monetaryzones"      
+      - "monetaryzones"
       summary: "Returns all the dfsps for that monetary zone"
       operationId: "getDfspsByMonetaryZones"
       produces:
@@ -2372,7 +2347,7 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/DFSPCreate"
-      x-swagger-router-controller: "Pki"      
+      x-swagger-router-controller: "Pki"
 definitions:
   LoginResponse:
     type: "object"
@@ -2426,8 +2401,8 @@ definitions:
               userguid:
                 description: "GUID to be used for reset password"
                 type: string
-                
-      userguid: 
+
+      userguid:
         type: string
       askPassword:
         type: boolean
@@ -2556,10 +2531,10 @@ definitions:
         description: "PEM-encoded certificate"
       intermediateChain:
         type: "string"
-        description: "PEM-encoded certificate"        
+        description: "PEM-encoded certificate"
       name:
         type: "string"
-        description: "Descriptive name. Must be unique in the environment"    
+        description: "Descriptive name. Must be unique in the environment"
       type:
         type: "string"
         enum:
@@ -2634,37 +2609,17 @@ definitions:
     type: "object"
     description: "JWS Certificate."
     required:
-      - jwsCertificate
+      - publicKey
     properties:
-      rootCertificate:
+      publicKey:
         type: "string"
-        description: "PEM-encoded root CA certificate"
-      intermediateChain:
-        type: "string"
-        description: "PEM-encoded intermediate chain certificates"
-      jwsCertificate:
-        type: "string"
-        description: "PEM-encoded JWS certificate"
+        description: "PEM-encoded JWS public key"
   JWSCert:
-    description: "The JWS certificate, with info and id."
+    description: "The JWS public key, with info and id."
     allOf:
       - $ref: "#/definitions/BaseJWSCert"
       - type: object
-        required:
-          - id
         properties:
-          id:
-            type: "integer"
-            format: "int32"
-          rootCertificateInfo:
-            $ref: "#/definitions/CertInfo"
-          intermediateChainInfo:
-            type: "array"
-            description: "List of CertInfo."
-            items:
-              $ref: "#/definitions/CertInfo"
-          jwsCertificateInfo:
-            $ref: "#/definitions/CertInfo"
           validations:
             $ref: "#/definitions/ValidationList"
           validationState:
@@ -2721,12 +2676,12 @@ definitions:
         description: 'The monetary Zone'
     example:
       name: "DFSP 1"
-      monetaryZoneId: "EUR"      
+      monetaryZoneId: "EUR"
   DFSP:
     type: "object"
     properties:
       id:
-        type: "string" 
+        type: "string"
         description: "DFSP identifier on Hub"
       envId:
         type: "integer"
@@ -2745,7 +2700,7 @@ definitions:
       id: "DFSP2"
       name: "DFSP2"
       monetaryZoneId: "EUR"
-      securityGroup: "Application/DFSP:DFSP2"      
+      securityGroup: "Application/DFSP:DFSP2"
   DFSPInboundCreate:
     type: "object"
     properties:
@@ -2769,7 +2724,7 @@ definitions:
             description: "Hub CA Id which created the Certificate"
   DFSPOutboundCreate:
     type: "object"
-    required: 
+    required:
     - "hubCSR"
     properties:
       hubCSR:
@@ -2872,7 +2827,7 @@ definitions:
       csrInfo:
         $ref: "#/definitions/CSRInfo"
       state:
-        $ref: "#/definitions/ValidInvalidState"        
+        $ref: "#/definitions/ValidInvalidState"
       validations:
         $ref: "#/definitions/ValidationList"
       validationState:
@@ -2884,7 +2839,7 @@ definitions:
         description: "PEM-encoded certificate"
       intermediateChain:
         type: "string"
-        description: "PEM-encoded certificate"        
+        description: "PEM-encoded certificate"
       validations:
         $ref: "#/definitions/ValidationList"
       validationState:
@@ -3071,7 +3026,7 @@ definitions:
       - type: object
         properties:
           value:
-            description: It's *either* {url} OR {address and ports}. 
+            description: It's *either* {url} OR {address and ports}.
             allOf:
               - $ref: "#/definitions/IPEntry"
               - $ref: "#/definitions/URLEntry"
@@ -3118,7 +3073,7 @@ definitions:
             description: Location
       extensions:
         type: object
-        description: X.509 extensions. 
+        description: X.509 extensions.
         properties:
           subjectAltName:
             type: object
@@ -3292,7 +3247,7 @@ definitions:
             identifier:
               $ref: '#/definitions/Identifier'
             status:
-              $ref: '#/definitions/Statuses'                    
+              $ref: '#/definitions/Statuses'
   ValidationCodes:
     type: "string"
     description:  "Identifies the type of validation"
@@ -3403,7 +3358,7 @@ definitions:
         type: "string"
     example:
       monetaryZoneId: "EUR"
-      name: "Euro"      
+      name: "Euro"
 
 x-components:
   requestBodies:

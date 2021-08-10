@@ -17,18 +17,12 @@
 
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 
-const fs = require('fs');
-const path = require('path');
 const JWSCertsService = require('../src/service/JWSCertsService');
 const PkiService = require('../src/service/PkiService');
 const assert = require('chai').assert;
 const NotFoundError = require('../src/errors/NotFoundError');
 const ValidationCodes = require('../src/pki_engine/ValidationCodes');
-
-const DFSP_JWS_ROOT_CERT_PATH = './resources/jws/ca.pem';
-const DFSP_JWS_CERT_PATH = './resources/jws/dfsp1-jws.pem';
-const DFSP_UPDATE_JWS_CERT_PATH = './resources/jws/dfsp1-update-jws.pem';
-const DFSP_WRONG_ALGO_JWS_CERT_PATH = './resources/jws/dfsp-short-jws.pem';
+const forge = require('node-forge');
 
 describe('JWSCertsService', () => {
   before(async () => {
@@ -42,6 +36,9 @@ describe('JWSCertsService', () => {
   describe('JWS Certificates', () => {
     let envId = null;
     let dfspId = null;
+
+    const keypair = forge.rsa.generateKeyPair({ bits: 2048 });
+    const publicKey = forge.pki.publicKeyToPem(keypair.publicKey, 72);
 
     beforeEach('creating Environment and DFSP', async () => {
       let env = {
@@ -66,24 +63,14 @@ describe('JWSCertsService', () => {
     });
 
     it('should create a DfspJWSCerts entry', async () => {
-      let body = {
-        rootCertificate: fs.readFileSync(path.join(__dirname, DFSP_JWS_ROOT_CERT_PATH)).toString(),
-        intermediateChain: null,
-        jwsCertificate: fs.readFileSync(path.join(__dirname, DFSP_JWS_CERT_PATH)).toString(),
-      };
+      let body = { publicKey };
       let result = await JWSCertsService.createDfspJWSCerts(envId, dfspId, body);
-      assert.isNotNull(result.id);
-      assert.equal('423194792965212014222460724964901821840176752000', result.jwsCertificateInfo.serialNumber);
+      assert.equal(publicKey, result.publicKey);
     }).timeout(30000);
 
     it('should create and delete a DfspJWSCerts entry', async () => {
-      let body = {
-        rootCertificate: fs.readFileSync(path.join(__dirname, DFSP_JWS_ROOT_CERT_PATH)).toString(),
-        intermediateChain: null,
-        jwsCertificate: fs.readFileSync(path.join(__dirname, DFSP_JWS_CERT_PATH)).toString(),
-      };
-      let result = await JWSCertsService.createDfspJWSCerts(envId, dfspId, body);
-      assert.isNotNull(result.id);
+      let body = { publicKey };
+      await JWSCertsService.createDfspJWSCerts(envId, dfspId, body);
       await JWSCertsService.deleteDfspJWSCerts(envId, dfspId);
       try {
         await JWSCertsService.getDfspJWSCerts(envId, dfspId);
@@ -93,32 +80,8 @@ describe('JWSCertsService', () => {
       }
     }).timeout(30000);
 
-    it('should update a DfspJWSCerts entry', async () => {
-      let body = {
-        rootCertificate: fs.readFileSync(path.join(__dirname, DFSP_JWS_ROOT_CERT_PATH)).toString(),
-        intermediateChain: null,
-        jwsCertificate: fs.readFileSync(path.join(__dirname, DFSP_JWS_CERT_PATH)).toString(),
-      };
-      let result = await JWSCertsService.createDfspJWSCerts(envId, dfspId, body);
-      assert.isNotNull(result.id);
-      assert.equal('423194792965212014222460724964901821840176752000', result.jwsCertificateInfo.serialNumber);
-
-      let newBody = {
-        rootCertificate: fs.readFileSync(path.join(__dirname, DFSP_JWS_ROOT_CERT_PATH)).toString(),
-        intermediateChain: null,
-        jwsCertificate: fs.readFileSync(path.join(__dirname, DFSP_UPDATE_JWS_CERT_PATH)).toString(),
-      };
-      let resultAfter = await JWSCertsService.updateDfspJWSCerts(envId, dfspId, newBody);
-      assert.isNotNull(resultAfter.id);
-      assert.equal('557705756627313016946929324774137869488341917432', resultAfter.jwsCertificateInfo.serialNumber);
-    }).timeout(30000);
-
     it('should create and find several dfsps certs', async () => {
-      let body = {
-        rootCertificate: fs.readFileSync(path.join(__dirname, DFSP_JWS_ROOT_CERT_PATH)).toString(),
-        intermediateChain: null,
-        jwsCertificate: fs.readFileSync(path.join(__dirname, DFSP_JWS_CERT_PATH)).toString(),
-      };
+      let body = { publicKey };
 
       const N_DFSPS = 20;
       let dfspIds = [];
@@ -127,17 +90,15 @@ describe('JWSCertsService', () => {
           dfspId: 'DFSP_TEST' + i,
           name: 'DFSP'
         };
-        let resultDfsp = await PkiService.createDFSP(envId, dfsp);
-        let eachId = resultDfsp.id;
-        dfspIds.push(eachId);
+        await PkiService.createDFSP(envId, dfsp);
+        dfspIds.push(dfsp.dfspId);
 
-        let result = await JWSCertsService.createDfspJWSCerts(envId, eachId, body);
-        assert.isNotNull(result.id);
+        await JWSCertsService.createDfspJWSCerts(envId, dfsp.dfspId, body);
       }
 
       let certs = await JWSCertsService.getAllDfspJWSCerts(envId);
       certs.forEach(cert => {
-        assert.equal('423194792965212014222460724964901821840176752000', cert.jwsCertificateInfo.serialNumber);
+        assert.equal(publicKey, cert.publicKey);
       });
 
       dfspIds.forEach(async id => {
@@ -146,11 +107,7 @@ describe('JWSCertsService', () => {
     }).timeout(30000);
 
     it('should create and find several dfsps certs and dfspId shouldnt be null', async () => {
-      let body = {
-        rootCertificate: fs.readFileSync(path.join(__dirname, DFSP_JWS_ROOT_CERT_PATH)).toString(),
-        intermediateChain: null,
-        jwsCertificate: fs.readFileSync(path.join(__dirname, DFSP_JWS_CERT_PATH)).toString(),
-      };
+      let body = { publicKey };
 
       const N_DFSPS = 20;
       let dfspIds = [];
@@ -159,12 +116,10 @@ describe('JWSCertsService', () => {
           dfspId: 'DFSP_TEST' + i,
           name: 'DFSP'
         };
-        let resultDfsp = await PkiService.createDFSP(envId, dfsp);
-        let eachId = resultDfsp.id;
-        dfspIds.push(eachId);
+        await PkiService.createDFSP(envId, dfsp);
+        dfspIds.push(dfsp.dfspId);
 
-        let result = await JWSCertsService.createDfspJWSCerts(envId, eachId, body);
-        assert.isNotNull(result.id);
+        await JWSCertsService.createDfspJWSCerts(envId, dfsp.dfspId, body);
       }
 
       let certs = await JWSCertsService.getAllDfspJWSCerts(envId);
@@ -179,11 +134,7 @@ describe('JWSCertsService', () => {
     }).timeout(30000);
 
     it('should throw an error with a wrong key size', async () => {
-      let body = {
-        rootCertificate: fs.readFileSync(path.join(__dirname, DFSP_JWS_ROOT_CERT_PATH)).toString(),
-        intermediateChain: null,
-        jwsCertificate: fs.readFileSync(path.join(__dirname, DFSP_WRONG_ALGO_JWS_CERT_PATH)).toString(),
-      };
+      let body = { publicKey: publicKey.replace('A', '') };
       let result = await JWSCertsService.createDfspJWSCerts(envId, dfspId, body);
       assert.isNotNull(result.validations);
       assert.isNotNull(result.validationState);
