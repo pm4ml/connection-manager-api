@@ -15,80 +15,171 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
+const fs = require('fs');
+require('dotenv').config();
+const { from } = require('env-var');
+
+function getFileContent (path) {
+  if (!fs.existsSync(path)) {
+    throw new Error(`File ${path} doesn't exist`);
+  }
+  return fs.readFileSync(path);
+}
+
+if (process.env.TEST) {
+  process.env = {
+    ...process.env,
+    VAULT_AUTH_METHOD: 'APP_ROLE',
+    VAULT_ROLE_ID_FILE: '.vault/role-id',
+    VAULT_ROLE_SECRET_ID_FILE: '.vault/secret-id',
+    VAULT_ENDPOINT: 'http://127.0.0.1:8233',
+    VAULT_PKI_BASE_DOMAIN: 'example.com',
+  };
+}
+
+const env = from(process.env, {
+  asFileContent: (path) => getFileContent(path),
+  asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
+  asJsonConfig: (path) => JSON.parse(getFileContent(path)),
+  asTextFileContent: (path) => getFileContent(path).toString().trim(),
+});
+
+const vaultAuthMethod = env.get('VAULT_AUTH_METHOD').required().asEnum(['K8S', 'APP_ROLE']);
+let vaultAuth;
+if (vaultAuthMethod === 'K8S') {
+  vaultAuth = {
+    k8s: {
+      token: env.get('VAULT_K8S_TOKEN_FILE').default('/var/run/secrets/kubernetes.io/serviceaccount/token').asTextFileContent(),
+      role: env.get('VAULT_K8S_ROLE').required().asString(),
+    },
+  };
+} else if (vaultAuthMethod === 'APP_ROLE') {
+  vaultAuth = {
+    appRole: {
+      // Generated per: https://www.vaultproject.io/docs/auth/approle#via-the-cli-1
+      // Or: https://github.com/kr1sp1n/node-vault/blob/70097269d35a58bb560b5290190093def96c87b1/example/auth_approle.js
+      roleId: env.get('VAULT_ROLE_ID_FILE').default('/vault/role-id').asTextFileContent(),
+      roleSecretId: env.get('VAULT_ROLE_SECRET_ID_FILE').default('/vault/role-secret-id').asTextFileContent(),
+    },
+  };
+}
+
 module.exports = {
   SERVER: {
-    PORT: process.env.PORT || 3001,
+    PORT: env.get('PORT').default('3001').asPortNumber(),
   },
   OAUTH: {
-    AUTH_ENABLED: (process.env.AUTH_ENABLED && process.env.AUTH_ENABLED.toLowerCase() === 'true') || false,
-    APP_OAUTH_CLIENT_KEY: process.env.APP_OAUTH_CLIENT_KEY, // Configured in WSO2 IM Service Provider
-    APP_OAUTH_CLIENT_SECRET: process.env.APP_OAUTH_CLIENT_SECRET,
-    MTA_ROLE: process.env.MTA_ROLE || 'Application/MTA',
-    PTA_ROLE: process.env.PTA_ROLE || 'Application/PTA',
-    EVERYONE_ROLE: process.env.EVERYONE_ROLE || 'Internal/everyone',
-    OAUTH2_ISSUER: process.env.OAUTH2_ISSUER || 'https://WSO2_IM_SERVER:9443/oauth2/token',
-    OAUTH2_TOKEN_ISS: process.env.OAUTH2_TOKEN_ISS,
-    CERTIFICATE_FILE_NAME: process.env.CERTIFICATE_FILE_NAME || 'resources/wso2carbon-publickey.cert',
-    EMBEDDED_CERTIFICATE: process.env.EMBEDDED_CERTIFICATE,
+    AUTH_ENABLED: env.get('AUTH_ENABLED').default('false').asBool(),
+    APP_OAUTH_CLIENT_KEY: env.get('APP_OAUTH_CLIENT_KEY').asString(), // Configured in WSO2 IM Service Provider
+    APP_OAUTH_CLIENT_SECRET: env.get('APP_OAUTH_CLIENT_SECRET').asString(),
+    MTA_ROLE: env.get('MTA_ROLE').default('Application/MTA').asString(),
+    PTA_ROLE: env.get('PTA_ROLE').default('Application/PTA').asString(),
+    EVERYONE_ROLE: env
+      .get('EVERYONE_ROLE')
+      .default('Internal/everyone')
+      .asString(),
+    OAUTH2_ISSUER: env
+      .get('OAUTH2_ISSUER')
+      .default('https://WSO2_IM_SERVER:9443/oauth2/token')
+      .asString(),
+    OAUTH2_TOKEN_ISS: env.get('OAUTH2_TOKEN_ISS').asString(),
+    CERTIFICATE_FILE_NAME: env
+      .get('CERTIFICATE_FILE_NAME')
+      .default('resources/wso2carbon-publickey.cert')
+      .asString(),
+    EMBEDDED_CERTIFICATE: env.get('EMBEDDED_CERTIFICATE').asString(),
     JWT_COOKIE_NAME: 'MCM-API_ACCESS_TOKEN',
-    RESET_PASSWORD_ISSUER: process.env.OAUTH_RESET_PASSWORD_ISSUER,
-    RESET_PASSWORD_AUTH_USER: process.env.OAUTH_RESET_PASSWORD_AUTH_USER,
-    RESET_PASSWORD_AUTH_PASSWORD: process.env.OAUTH_RESET_PASSWORD_AUTH_PASSWORD,
+    RESET_PASSWORD_ISSUER: env.get('OAUTH_RESET_PASSWORD_ISSUER').asString(),
+    RESET_PASSWORD_AUTH_USER: env
+      .get('OAUTH_RESET_PASSWORD_AUTH_USER')
+      .asString(),
+    RESET_PASSWORD_AUTH_PASSWORD: env
+      .get('OAUTH_RESET_PASSWORD_AUTH_PASSWORD')
+      .asString(),
   },
   EXTRA_TLS: {
-    EXTRA_CERTIFICATE_CHAIN_FILE_NAME: process.env.EXTRA_CERTIFICATE_CHAIN_FILE_NAME,
-    EXTRA_ROOT_CERT_FILE_NAME: process.env.EXTRA_ROOT_CERT_FILE_NAME,
+    EXTRA_CERTIFICATE_CHAIN_FILE_NAME: env
+      .get('EXTRA_CERTIFICATE_CHAIN_FILE_NAME')
+      .asString(),
+    EXTRA_ROOT_CERT_FILE_NAME: env.get('EXTRA_ROOT_CERT_FILE_NAME').asString(),
   },
   AUTH_2FA: {
-    AUTH_2FA_ENABLED: process.env.AUTH_2FA_ENABLED,
-    TOTP_ADMIN_ISSUER: process.env.TOTP_ADMIN_ISSUER,
-    TOTP_ADMIN_AUTH_USER: process.env.TOTP_ADMIN_AUTH_USER,
-    TOTP_ADMIN_AUTH_PASSWORD: process.env.TOTP_ADMIN_AUTH_PASSWORD,
-    TOTP_LABEL: process.env.TOTP_LABEL,
-    TOTP_ISSUER: process.env.TOTP_ISSUER || 'MCM',
-    WSO2_MANAGER_SERVICE_URL: process.env.WSO2_MANAGER_SERVICE_URL,
-    WSO2_MANAGER_SERVICE_USER: process.env.WSO2_MANAGER_SERVICE_USER,
-    WSO2_MANAGER_SERVICE_PASSWORD: process.env.WSO2_MANAGER_SERVICE_PASSWORD,
+    AUTH_2FA_ENABLED: env.get('AUTH_2FA_ENABLED').default('false').asBool(),
+    TOTP_ADMIN_ISSUER: env.get('TOTP_ADMIN_ISSUER').asString(),
+    TOTP_ADMIN_AUTH_USER: env.get('TOTP_ADMIN_AUTH_USER').asString(),
+    TOTP_ADMIN_AUTH_PASSWORD: env.get('TOTP_ADMIN_AUTH_PASSWORD').asString(),
+    TOTP_LABEL: env.get('TOTP_LABEL').asString(),
+    TOTP_ISSUER: env.get('TOTP_ISSUER').default('MCM').asString(),
+    WSO2_MANAGER_SERVICE_URL: env.get('WSO2_MANAGER_SERVICE_URL').asString(),
+    WSO2_MANAGER_SERVICE_USER: env.get('WSO2_MANAGER_SERVICE_USER').asString(),
+    WSO2_MANAGER_SERVICE_PASSWORD: env
+      .get('WSO2_MANAGER_SERVICE_PASSWORD')
+      .asString(),
   },
   DATABASE: {
-    DATABASE_HOST: process.env.DATABASE_HOST || 'localhost',
-    DATABASE_PORT: process.env.DATABASE_PORT || 3306,
-    DATABASE_USER: process.env.DATABASE_USER || 'mcm',
-    DATABASE_PASSWORD: process.env.DATABASE_PASSWORD || 'mcm',
-    DATABASE_SCHEMA: process.env.DATABASE_SCHEMA || 'mcm',
-    DB_RETRIES: process.env.DB_RETRIES || 10,
-    DB_CONNECTION_RETRY_WAIT_MILLISECONDS: process.env.DB_CONNECTION_RETRY_WAIT_MILLISECONDS || 1000,
-    RUN_MIGRATIONS: process.env.RUN_MIGRATIONS || true,
-    CURRENCY_CODES: process.env.CURRENCY_CODES || './data/currencyCodes.json',
-    DATA_CONFIGURATION_FILE: process.env.DATA_CONFIGURATION_FILE || './data/sampleConfiguration.json'
-  },
-  PKI_ENGINE: {
-    P12_PASS_PHRASE: process.env.P12_PASS_PHRASE,
+    DATABASE_HOST: env.get('DATABASE_HOST').default('localhost').asString(),
+    DATABASE_PORT: env.get('DATABASE_PORT').default(3306).asPortNumber(),
+    DATABASE_USER: env.get('DATABASE_USER').default('mcm').asString(),
+    DATABASE_PASSWORD: env.get('DATABASE_PASSWORD').default('mcm').asString(),
+    DATABASE_SCHEMA: env.get('DATABASE_SCHEMA').default('mcm').asString(),
+    DB_RETRIES: env.get('DB_RETRIES').default('10').asInt(),
+    DB_CONNECTION_RETRY_WAIT_MILLISECONDS: env
+      .get('DB_CONNECTION_RETRY_WAIT_MILLISECONDS')
+      .default('1000')
+      .asInt(),
+    RUN_MIGRATIONS: env.get('RUN_MIGRATIONS').default('true').asBool(),
+    CURRENCY_CODES: env
+      .get('CURRENCY_CODES')
+      .default('./data/currencyCodes.json')
+      .asString(),
+    DATA_CONFIGURATION_FILE: env
+      .get('DATA_CONFIGURATION_FILE')
+      .default('./data/sampleConfiguration.json')
+      .asString(),
   },
   CFSSL: {
-    VERSION: process.env.CFSSL_VERSION || '1.3.4',
-    COMMAND_PATH: process.env.CFSSL_COMMAND_PATH || 'cfssl'
+    VERSION: env.get('CFSSL_VERSION').default('1.3.4').asString(),
+    COMMAND_PATH: env.get('CFSSL_COMMAND_PATH').default('cfssl').asString(),
   },
   ENVIRONMENT_INIT: {
-    initEnvironment: process.env.ENV_INIT_NAME !== undefined,
+    initEnvironment: env.get('ENV_INIT_NAME').asString(),
     config: {
-      name: process.env.ENV_INIT_NAME,
+      name: env.get('ENV_INIT_NAME').asString(),
       defaultDN: {
-        CN: process.env.ENV_INIT_CN || null,
-        C: process.env.ENV_INIT_C || null,
-        L: process.env.ENV_INIT_L || null,
-        O: process.env.ENV_INIT_O || null,
-        OU: process.env.ENV_INIT_OU || null,
-        ST: process.env.ENV_INIT_ST || null,
-      }
-    }
+        CN: env.get('ENV_INIT_CN').asString(),
+        C: env.get('ENV_INIT_C').asString(),
+        L: env.get('ENV_INIT_L').asString(),
+        O: env.get('ENV_INIT_O').asString(),
+        OU: env.get('ENV_INIT_OU').asString(),
+        ST: env.get('ENV_INIT_ST').asString(),
+      },
+    },
   },
   USER_INIT: {
     // Required if user init is desirable
-    dfspId: process.env.USER_INIT_DFSP_ID,
-    name: process.env.USER_INIT_NAME,
+    dfspId: env.get('USER_INIT_DFSP_ID').asString(),
+    name: env.get('USER_INIT_NAME').asString(),
     // Optional
-    monetaryZone: process.env.USER_INIT_MONETARY_ZONE,
-    securityGroup: process.env.USER_INIT_SECURITY_GROUP,
+    monetaryZone: env.get('USER_INIT_MONETARY_ZONE').asString(),
+    securityGroup: env.get('USER_INIT_SECURITY_GROUP').asString(),
   },
+  vault: {
+    endpoint: env.get('VAULT_ENDPOINT').required().asString(),
+    mounts: {
+      pki: env.get('VAULT_MOUNT_PKI').default('pki').asString(),
+      intermediatePki: env.get('VAULT_MOUNT_INTERMEDIATE_PKI').default('pki_int').asString(),
+      kv: env.get('VAULT_MOUNT_KV').default('secrets').asString(),
+    },
+    pkiBaseDomain: env.get('VAULT_PKI_BASE_DOMAIN').required().asString(),
+    auth: vaultAuth,
+  },
+  auth: {
+    enabled: env.get('AUTH_ENABLED').asBoolStrict(),
+    creds: {
+      user: env.get('AUTH_USER').asString(),
+      pass: env.get('AUTH_PASS').asString(),
+    }
+  },
+  privateKeyLength: env.get('PRIVATE_KEY_LENGTH').default(4096).asIntPositive(),
+  privateKeyAlgorithm: env.get('PRIVATE_KEY_ALGORITHM').default('rsa').asString(),
 };

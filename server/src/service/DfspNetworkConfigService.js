@@ -22,11 +22,6 @@ const NotFoundError = require('../errors/NotFoundError');
 const PkiService = require('./PkiService');
 const DFSPModel = require('../models/DFSPModel');
 const DFSPEndpointItemModel = require('../models/DFSPEndpointItemModel');
-const DfspInboundEnrollmentModel = require('../models/DfspInboundEnrollmentModel');
-const DfspOutboundEnrollmentModel = require('../models/DfspOutboundEnrollmentModel');
-// const CertificatesAuthoritiesModel = require('../models/CertificatesAuthoritiesModel');
-// const DfspServerCertsModel = require('../models/DfspServerCertsModel');
-// const DfspJWSCertsModel = require('../models/DfspJWSCertsModel');
 
 const StatusEnum = Object.freeze({"NOT_STARTED":"NOT_STARTED", "IN_PROGRESS":"IN_PROGRESS", "COMPLETED":"COMPLETED"});
 const PhaseEnum = Object.freeze({"BUSINESS_SETUP":"BUSINESS_SETUP", "TECNICAL_SETUP":"TECNICAL_SETUP"});
@@ -96,17 +91,17 @@ exports.getEnvironmentDfspStatus = async function (envId, dfspId) {
      console.log(JSON.stringify(endpoints));
 
     // CSR
-    csrexchout = await DfspOutboundEnrollmentModel.findAllDfsp(envId, dfspId);
-     console.log('csrexchout:');
-     console.log(csrexchout);
-     console.log('csrexchout stringify:');
-     console.log(JSON.stringify(csrexchout));
-
-     csrexchin = await DfspInboundEnrollmentModel.findAllDfsp(envId, dfspId);
-     console.log('csrexchin:');
-     console.log(csrexchin);
-     console.log('csrexchin stringify:');
-     console.log(JSON.stringify(csrexchin));
+    // csrexchout = await DfspOutboundEnrollmentModel.findAllDfsp(envId, dfspId);
+    //  console.log('csrexchout:');
+    //  console.log(csrexchout);
+    //  console.log('csrexchout stringify:');
+    //  console.log(JSON.stringify(csrexchout));
+    //
+    //  csrexchin = await DfspInboundEnrollmentModel.findAllDfsp(envId, dfspId);
+    //  console.log('csrexchin:');
+    //  console.log(csrexchin);
+    //  console.log('csrexchin stringify:');
+    //  console.log(JSON.stringify(csrexchin));
 
      // CA
     //  ca = await CertificatesAuthoritiesModel.findCurrentForEnv(envId);

@@ -17,16 +17,17 @@
 
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 
-const EmbeddedPKIEngine = require('../src/pki_engine/EmbeddedPKIEngine');
+const PKIEngine = require('../src/pki_engine/VaultPKIEngine');
 
 const ExternalProcessError = require('../src/errors/ExternalProcessError');
 const ValidationError = require('../src/errors/ValidationError');
 
 const fs = require('fs');
 const path = require('path');
+const Constants = require('../src/constants/Constants');
 const assert = require('chai').assert;
 
-describe('EmbeddedPKIEngine', () => {
+describe('PKIEngine', () => {
   before(async () => {
     await setupTestDB();
   });
@@ -38,40 +39,40 @@ describe('EmbeddedPKIEngine', () => {
   describe('verify CSRs', () => {
     it('should validate a CSR key length', async () => {
       let csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
-      let result = await EmbeddedPKIEngine.verifyCSRKeyLength(csr, 4096);
+      let result = await PKIEngine.verifyCSRKeyLength(csr, 4096);
       assert.isTrue(result.valid);
     });
 
     it('should validate a CSR algorithm - 512', async () => {
       let csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
       // cfssl generates CSRs with sha512
-      let result = await EmbeddedPKIEngine.verifyCSRAlgorithm(csr, 'sha512WithRSAEncryption');
+      let result = await PKIEngine.verifyCSRAlgorithm(csr, 'sha512WithRSAEncryption');
       assert.isTrue(result.valid, JSON.stringify(result));
     });
 
     it('should validate a CSR algorithm - 256', async () => {
       let csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
       // cfssl generates CSRs with sha512
-      let result = await EmbeddedPKIEngine.verifyCSRAlgorithm(csr, 'sha512WithRSAEncryption');
+      let result = await PKIEngine.verifyCSRAlgorithm(csr, 'sha512WithRSAEncryption');
       assert.isTrue(result.valid, JSON.stringify(result));
     });
 
     it('should not validate a CSR with short key length', async () => {
       let csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
-      let result = await EmbeddedPKIEngine.verifyCSRKeyLength(csr, 4097);
+      let result = await PKIEngine.verifyCSRKeyLength(csr, 4097);
       assert.isFalse(result.valid);
     });
 
     it('should not validate a CSR with a 2048 key length', async () => {
       let csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client-2048.csr'), 'utf8');
-      let result = await EmbeddedPKIEngine.verifyCSRKeyLength(csr, 4096);
+      let result = await PKIEngine.verifyCSRKeyLength(csr, 4096);
       assert.isFalse(result.valid);
     });
 
     it('should fail when sent a cert instead of a CSR', async () => {
       let csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.pem'), 'utf8');
       try {
-        await EmbeddedPKIEngine.verifyCSRKeyLength(csr, 4096);
+        await PKIEngine.verifyCSRKeyLength(csr, 4096);
         assert.fail('Should not be here');
       } catch (error) {
         assert.isTrue(error instanceof ExternalProcessError, error);
@@ -99,7 +100,8 @@ describe('EmbeddedPKIEngine', () => {
           }
         }
       };
-      let pkiEngine = new EmbeddedPKIEngine();
+      let pkiEngine = new PKIEngine(Constants.vault);
+      await pkiEngine.connect();
       let keyCSRPair = await pkiEngine.createCSR(csrParameters, 4096, 'rsa');
       assert.isNotNull(keyCSRPair.key);
       assert.isNotNull(keyCSRPair.csr);
@@ -107,7 +109,7 @@ describe('EmbeddedPKIEngine', () => {
 
     it('should create parse a CSR and return its info', async () => {
       let csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
-      let csrInfo = await EmbeddedPKIEngine.getCSRInfo(csr);
+      let csrInfo = await PKIEngine.getCSRInfo(csr);
       assert.equal('hub1.dev.modusbox.com', csrInfo.extensions.subjectAltName.dns[0]);
     }).timeout(15000);
   });
@@ -115,7 +117,7 @@ describe('EmbeddedPKIEngine', () => {
   describe('verify Certs', () => {
     it('should create parse a Cert and return its info', async () => {
       let cert = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.pem'), 'utf8');
-      let certInfo = await EmbeddedPKIEngine.getCertInfo(cert);
+      let certInfo = await PKIEngine.getCertInfo(cert);
       assert.equal('SHA256WithRSA', certInfo.signatureAlgorithm);
     }).timeout(15000);
   });
@@ -138,7 +140,7 @@ describe('EmbeddedPKIEngine', () => {
         }
       };
 
-      let pkiEngine = new EmbeddedPKIEngine();
+      let pkiEngine = new PKIEngine(Constants.vault);
       try {
         await pkiEngine.createCA(caOptionsDoc);
       } catch (error) {
@@ -163,7 +165,7 @@ describe('EmbeddedPKIEngine', () => {
         }
       };
 
-      let pkiEngine = new EmbeddedPKIEngine();
+      let pkiEngine = new PKIEngine(Constants.vault);
       try {
         await pkiEngine.createCA(caOptionsDoc);
       } catch (error) {
@@ -188,7 +190,7 @@ describe('EmbeddedPKIEngine', () => {
         }
       };
 
-      let pkiEngine = new EmbeddedPKIEngine();
+      let pkiEngine = new PKIEngine(Constants.vault);
       try {
         await pkiEngine.createCA(caOptionsDoc);
       } catch (error) {

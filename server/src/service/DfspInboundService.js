@@ -16,18 +16,17 @@
  ******************************************************************************/
 
 'use strict';
-const DfspInboundEnrollmentModel = require('../models/DfspInboundEnrollmentModel');
-const DFSPModel = require('../models/DFSPModel');
 const PkiService = require('./PkiService');
-const InternalError = require('../errors/InternalError');
 const InvalidEntityError = require('../errors/InvalidEntityError');
 const ValidationError = require('../errors/ValidationError');
 const CAType = require('../models/CAType');
-const PKIEngine = require('../pki_engine/EmbeddedPKIEngine');
-const CertificatesAuthoritiesModel = require('../models/CertificatesAuthoritiesModel');
+const PKIEngine = require('../pki_engine/VaultPKIEngine');
 const Joi = require('joi');
+const Constants = require('../constants/Constants');
+const { createID } = require('../models/GID');
+const DFSPModel = require('../models/DFSPModel');
 
-const enrollmentCertificate = Joi.object().description('Enrollment Certificatet').keys({
+const enrollmentCertificate = Joi.object().description('Enrollment Certificate').keys({
   certificate: Joi.string().description('certificate').required(),
   hubCAId: Joi.number().description('the id of the selected EXTERNAL Hub CA').required(),
 });
@@ -52,30 +51,26 @@ exports.createDFSPInboundEnrollment = async function (envId, dfspId, body) {
   }
 
   // FIXME: create an Enrollment class with inbound and outbound as children
-  let enrollment = {
+  const enrollment = {
     csr: body.clientCSR
   };
 
-  const pkiEngine = new PKIEngine();
-  let { validations, validationState } = await pkiEngine.validateInboundEnrollment(enrollment);
-  let rawDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  const { validations, validationState } = await pkiEngine.validateInboundEnrollment(enrollment);
 
-  let values = {
-    env_id: envId,
-    dfsp_id: rawDfspId,
+  const values = {
+    id: await createID(),
     csr: body.clientCSR,
-    csr_info: JSON.stringify(csrInfo),
+    csrInfo,
     state: 'CSR_LOADED',
-    validations: JSON.stringify(validations),
+    validations,
     validationState
   };
 
-  let result = await DfspInboundEnrollmentModel.create(values);
-  if (result.length === 1) {
-    return { id: result[0] };
-  } else {
-    throw new InternalError('More than one row created');
-  }
+  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  await pkiEngine.setDFSPInboundEnrollment(dbDfspId, values.id, values);
+  return values;
 };
 
 /**
@@ -83,8 +78,10 @@ exports.createDFSPInboundEnrollment = async function (envId, dfspId, body) {
  */
 exports.getDFSPInboundEnrollments = async function (envId, dfspId) {
   await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
-  let rows = await DfspInboundEnrollmentModel.findAllDfsp(envId, dfspId);
-  return rows.map(row => rowToObject(row));
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  return pkiEngine.getDFSPInboundEnrollments(dbDfspId);
 };
 
 /**
@@ -97,8 +94,10 @@ exports.getDFSPInboundEnrollments = async function (envId, dfspId) {
  **/
 exports.getDFSPInboundEnrollment = async function (envId, dfspId, enId) {
   await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
-  let row = await DfspInboundEnrollmentModel.findById(enId);
-  return rowToObject(row);
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  return pkiEngine.getDFSPInboundEnrollment(dbDfspId, enId);
 };
 
 /**
@@ -113,14 +112,16 @@ exports.getDFSPInboundEnrollment = async function (envId, dfspId, enId) {
 exports.signDFSPInboundEnrollment = async function (envId, dfspId, enId) {
   await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
 
-  let row = await DfspInboundEnrollmentModel.getCaAndCSR(enId, envId);
-  if (row.length === 0) {
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const enrollment = await pkiEngine.getDFSPInboundEnrollment(dbDfspId, enId);
+  if (!enrollment) {
     throw new InvalidEntityError(`Could not retrieve current CA for the endpoint ${enId}, dfsp id ${dfspId}, environment id ${envId}`);
   }
 
-  let { csr } = row[0];
+  const { csr } = enrollment;
 
-  let pkiEngine = await CertificatesAuthoritiesModel.getPkiEngineForEnv(envId);
   let newCert = await pkiEngine.sign(csr);
   let certInfo = await PKIEngine.getCertInfo(newCert);
 
@@ -130,19 +131,19 @@ exports.signDFSPInboundEnrollment = async function (envId, dfspId, enId) {
     caType: CAType.EXTERNAL
   };
 
-  const validatingPkiEngine = new PKIEngine();
-  let { validations, validationState } = await validatingPkiEngine.validateInboundEnrollment(inboundEnrollment);
-  let values = {
-    cert: newCert,
-    cert_info: JSON.stringify(certInfo),
+  let { validations, validationState } = await pkiEngine.validateInboundEnrollment(inboundEnrollment);
+
+  const values = {
+    ...enrollment,
+    certificate: newCert,
+    certInfo,
     state: 'CERT_SIGNED',
-    validations: JSON.stringify(validations),
+    validations,
     validationState
   };
 
-  await DfspInboundEnrollmentModel.update(enId, values);
-  let updatedRow = await DfspInboundEnrollmentModel.findById(enId);
-  return rowToObject(updatedRow);
+  await pkiEngine.setDFSPInboundEnrollment(dbDfspId, values.id, values);
+  return values;
 };
 
 /**
@@ -172,36 +173,29 @@ exports.addDFSPInboundEnrollmentCertificate = async function (envId, dfspId, enI
     throw new ValidationError('Could not parse the Certificate content', error);
   }
 
-  const inboundEnrollment = await exports.getDFSPInboundEnrollment(envId, dfspId, enId);
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const inboundEnrollment = await pkiEngine.getDFSPInboundEnrollment(dbDfspId, enId);
+  if (!inboundEnrollment) {
+    throw new InvalidEntityError(`Could not retrieve current CA for the endpoint ${enId}, dfsp id ${dfspId}, environment id ${envId}`);
+  }
 
-  inboundEnrollment.certificate = certificate;
+  const validationEnrollment = JSON.parse(JSON.stringify(inboundEnrollment));
+  validationEnrollment.certificate = certificate;
 
-  const pkiEngine = new PKIEngine();
-  let { validations, validationState } = await pkiEngine.validateInboundEnrollment(inboundEnrollment);
+  const { validations, validationState } = await pkiEngine.validateInboundEnrollment(validationEnrollment);
 
-  let values = {
-    cert: certificate,
-    cert_info: JSON.stringify(certInfo),
+  const values = {
+    ...inboundEnrollment,
+    certificate,
+    certInfo,
     state: 'CERT_SIGNED',
-    validations: JSON.stringify(validations),
+    validations,
     validationState,
-    hub_issuer_ca_id: hubCAId
+    hubCAId
   };
 
-  await DfspInboundEnrollmentModel.update(enId, values);
-  return exports.getDFSPInboundEnrollment(envId, dfspId, enId);
-};
-
-const rowToObject = (row) => {
-  return {
-    id: row.id,
-    csr: row.csr,
-    certificate: row.cert,
-    csrInfo: row.csr_info && (typeof row.csr_info === 'string') ? JSON.parse(row.csr_info) : {},
-    certInfo: row.cert_info && (typeof row.cert_info === 'string') ? JSON.parse(row.cert_info) : {},
-    validationState: row.validationState,
-    validations: row.validations && (typeof row.validations === 'string') ? JSON.parse(row.validations) : {},
-    state: row.state,
-    hubCAId: row.hub_issuer_ca_id
-  };
+  await pkiEngine.setDFSPInboundEnrollment(dbDfspId, values.id, values);
+  return values;
 };

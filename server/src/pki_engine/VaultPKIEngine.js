@@ -1,41 +1,34 @@
-/******************************************************************************
- *  Copyright 2019 ModusBox, Inc.                                             *
- *                                                                            *
- *  info@modusbox.com                                                         *
- *                                                                            *
- *  Licensed under the Apache License, Version 2.0 (the "License");           *
- *  you may not use this file except in compliance with the License.          *
- *  You may obtain a copy of the License at                                   *
- *  http://www.apache.org/licenses/LICENSE-2.0                                *
- *                                                                            *
- *  Unless required by applicable law or agreed to in writing, software       *
- *  distributed under the License is distributed on an "AS IS" BASIS,         *
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  *
- *  See the License for the specific language governing permissions and       *
- *  limitations under the License.                                            *
- ******************************************************************************/
+/** ************************************************************************
+ *  (C) Copyright ModusBox Inc. 2021 - All rights reserved.               *
+ *                                                                        *
+ *  This file is made available under the terms of the license agreement  *
+ *  specified in the corresponding source code repository.                *
+ *                                                                        *
+ *  ORIGINAL AUTHOR:                                                      *
+ *       Yevhen Kyriukha - yevhen.kyriukha@modusbox.com                   *
+ ************************************************************************* */
 
-const Constants = require('../constants/Constants');
-const PkiService = require('../service/PkiService');
-const PKIEngine = require('./PKIEngine');
-const spawnProcess = require('../process/spawner');
-const ExternalProcessError = require('../errors/ExternalProcessError');
-const InvalidEntityError = require('../errors/InvalidEntityError');
+const vault = require('node-vault');
+const forge = require('node-forge');
+const CAInitialInfo = require('./CAInitialInfo');
 const defaultCAConfig = require('./ca-config.json');
-const { file } = require('tmp-promise');
-const fs = require('fs');
-const util = require('util');
+const Validation = require('./Validation');
+const ValidationCodes = require('./ValidationCodes');
+const moment = require('moment');
+const spawnProcess = require('../process/spawner');
+const CAType = require('../models/CAType');
+const PKIEngine = require('./PKIEngine');
+const InvalidEntityError = require('../errors/InvalidEntityError');
 const InternalError = require('../errors/InternalError');
+const NotFoundError = require('../errors/NotFoundError');
+const PkiService = require('../service/PkiService');
+const util = require('util');
+const fs = require('fs');
+const { file } = require('tmp-promise');
+const Constants = require('../constants/Constants');
 const CSRInfo = require('./CSRInfo');
 const CertInfo = require('./CertInfo');
-const CAInitialInfo = require('./CAInitialInfo');
-const ValidationCodes = require('./ValidationCodes');
-const Validation = require('./Validation');
-const moment = require('moment');
-const VALID_SIGNED = 'VALID(SIGNED)';
-const VALID_SELF_SIGNED = 'VALID(SELF_SIGNED)';
-const INVALID = 'INVALID';
-const CAType = require('../models/CAType');
+const ExternalProcessError = require('../errors/ExternalProcessError');
 
 const assertExternalProcessResult = (condition, ...args) => {
   if (!condition) {
@@ -43,29 +36,240 @@ const assertExternalProcessResult = (condition, ...args) => {
   }
 };
 
-/**
- * PKI engine that uses cfssl and openssl as engines.
- *
- * It mainly uses cfssl for the signing and creation operations, and opelssl for validation and printing
- */
-class EmbeddedPKIEngine extends PKIEngine {
-  /**
-   * Creates a PKIEngine, setting the CA
-   *
-   * @param {String} cert PEM encoded CA root cert
-   * @param {String} key PEM encoded CA private key - encrypted
-   * @param {Object} caConfig caConfig
-   */
-  constructor (cert, key, caConfig) { // FIXME add root and chain
+// TODO: find and link document containing rules on allowable paths
+const vaultPaths = {
+  HUB_SERVER_CERT: 'hub-server-cert',
+  DFSP_SERVER_CERT: 'dfsp-server-cert',
+  JWS_CERTS: 'dfsp-jws-certs',
+  HUB_ENDPOINTS: 'hub-endpoints',
+  DFSP_CA: 'dfsp-ca',
+  HUB_ISSUER_CA: 'hub-issuer-ca',
+  DFSP_OUTBOUND_ENROLLMENT: 'dfsp-outbound-enrollment',
+  DFSP_INBOUND_ENROLLMENT: 'dfsp-inbound-enrollment',
+};
+
+const VALID_SIGNED = 'VALID(SIGNED)';
+const VALID_SELF_SIGNED = 'VALID(SELF_SIGNED)';
+const INVALID = 'INVALID';
+
+class VaultPKIEngine extends PKIEngine {
+  constructor ({ endpoint, mounts, auth, pkiBaseDomain }) {
     super();
-    this.cert = cert;
-    this.key = key;
-    this.caConfig = caConfig;
+    this.auth = auth;
+    this.endpoint = endpoint;
+    this.vault = vault({ endpoint });
+    this.pkiBaseDomain = pkiBaseDomain;
+    this.mounts = mounts;
+  }
+
+  async connect () {
+    let creds;
+
+    if (this.auth.appRole) {
+      creds = await this.vault.approleLogin({
+        role_id: this.auth.appRole.roleId,
+        secret_id: this.auth.appRole.roleSecretId,
+      });
+    } else if (this.auth.k8s) {
+      creds = await this.vault.kubernetesLogin({
+        role: this.auth.k8s.role,
+        jwt: this.auth.k8s.token,
+      });
+    } else {
+      throw new Error('Unsupported auth method');
+    }
+    this.client = vault({
+      endpoint: this.endpoint,
+      token: creds.auth.client_token,
+    });
+  }
+
+  setSecret (key, value) {
+    const path = `${this.mounts.kv}/${key}`;
+    return this.client.write(path, value);
+  }
+
+  async getSecret (key) {
+    const path = `${this.mounts.kv}/${key}`;
+    try {
+      const { data } = await this.client.read(path);
+      return data;
+    } catch (e) {
+      if (e.response && e.response.statusCode === 404) {
+        throw new NotFoundError();
+      }
+      throw e;
+    }
+  }
+
+  async listSecrets (key) {
+    const path = `${this.mounts.kv}/${key}`;
+    try {
+      const { data: { keys } } = await this.client.list(path);
+      return keys;
+    } catch (e) {
+      if (e.response && e.response.statusCode === 404) {
+        return [];
+      }
+      throw e;
+    }
+  }
+
+  async deleteSecret (key) {
+    const path = `${this.mounts.kv}/${key}`;
+    await this.client.delete(path);
+  }
+
+  async deleteAllDFSPData (dfspId) {
+    return Promise.all([
+      this.deleteAllDFSPOutboundEnrollments(dfspId),
+      this.deleteAllDFSPInboundEnrollments(dfspId),
+      this.deleteDFSPCA(dfspId),
+      this.deleteDFSPJWSCerts(dfspId),
+      this.deleteDFSPServerCerts(dfspId)
+    ]);
+  }
+
+  // region DFSP Outbound Enrollment
+  async setDFSPOutboundEnrollment (dfspId, enId, value) {
+    return this.setSecret(`${vaultPaths.DFSP_OUTBOUND_ENROLLMENT}/${dfspId}/${enId}`, value);
+  }
+
+  async getDFSPOutboundEnrollment (dfspId, enId) {
+    return this.getSecret(`${vaultPaths.DFSP_OUTBOUND_ENROLLMENT}/${dfspId}/${enId}`);
+  }
+
+  async deleteDFSPOutboundEnrollment (dfspId, enId) {
+    return this.deleteSecret(`${vaultPaths.DFSP_OUTBOUND_ENROLLMENT}/${dfspId}/${enId}`);
+  }
+
+  async deleteAllDFSPOutboundEnrollments (dfspId) {
+    const secrets = await this.listSecrets(`${vaultPaths.DFSP_OUTBOUND_ENROLLMENT}/${dfspId}`);
+    return Promise.all(secrets.map(enId => this.deleteDFSPOutboundEnrollment(dfspId, enId)));
+  }
+
+  async getDFSPOutboundEnrollments (dfspId) {
+    const secrets = await this.listSecrets(`${vaultPaths.DFSP_OUTBOUND_ENROLLMENT}/${dfspId}`);
+    return Promise.all(secrets.map(enId => this.getDFSPOutboundEnrollment(dfspId, enId)));
+  }
+  // endregion
+
+  // region DFSP Inbound Enrollment
+  async setDFSPInboundEnrollment (dfspId, enId, value) {
+    return this.setSecret(`${vaultPaths.DFSP_INBOUND_ENROLLMENT}/${dfspId}/${enId}`, value);
+  }
+
+  async getDFSPInboundEnrollments (dfspId) {
+    const secrets = await this.listSecrets(`${vaultPaths.DFSP_INBOUND_ENROLLMENT}/${dfspId}`);
+    return Promise.all(secrets.map(enId => this.getDFSPInboundEnrollment(dfspId, enId)));
+  }
+
+  async getDFSPInboundEnrollment (dfspId, enId) {
+    return this.getSecret(`${vaultPaths.DFSP_INBOUND_ENROLLMENT}/${dfspId}/${enId}`);
+  }
+
+  async deleteDFSPInboundEnrollment (dfspId, enId) {
+    return this.deleteSecret(`${vaultPaths.DFSP_INBOUND_ENROLLMENT}/${dfspId}/${enId}`);
+  }
+
+  async deleteAllDFSPInboundEnrollments (dfspId) {
+    const secrets = await this.listSecrets(`${vaultPaths.DFSP_INBOUND_ENROLLMENT}/${dfspId}`);
+    return Promise.all(secrets.map(enId => this.deleteDFSPInboundEnrollment(dfspId, enId)));
+  }
+  // endregion
+
+  // region DFSP CA
+  async setDFSPCA (dfspId, value) {
+    return this.setSecret(`${vaultPaths.DFSP_CA}/${dfspId}`, value);
+  }
+
+  async getDFSPCA (dfspId) {
+    return this.getSecret(`${vaultPaths.DFSP_CA}/${dfspId}`);
+  }
+
+  async deleteDFSPCA (dfspId) {
+    return this.deleteSecret(`${vaultPaths.DFSP_CA}/${dfspId}`);
+  }
+  // endregion
+
+  // region DFSP JWS
+  async setDFSPJWSCerts (dfspId, value) {
+    return this.setSecret(`${vaultPaths.JWS_CERTS}/${dfspId}`, value);
+  }
+
+  async getDFSPJWSCerts (dfspId) {
+    return this.getSecret(`${vaultPaths.JWS_CERTS}/${dfspId}`);
+  }
+
+  async getAllDFSPJWSCerts () {
+    const secrets = await this.listSecrets(vaultPaths.JWS_CERTS);
+    return Promise.all(secrets.map(dfspId => this.getDFSPJWSCerts(dfspId)));
+  }
+
+  async deleteDFSPJWSCerts (dfspId) {
+    return this.deleteSecret(`${vaultPaths.JWS_CERTS}/${dfspId}`);
+  }
+  // endregion
+
+  // region Hub Server Cert
+  async setHubServerCert (value) {
+    return this.setSecret(vaultPaths.HUB_SERVER_CERT, value);
+  }
+
+  async getHubServerCert () {
+    return this.getSecret(vaultPaths.HUB_SERVER_CERT);
+  }
+
+  async deleteHubServerCert () {
+    return this.deleteSecret(vaultPaths.HUB_SERVER_CERT);
+  }
+
+  async setHubIssuerCACert (id, value) {
+    return this.setSecret(`${vaultPaths.HUB_ISSUER_CA}/${id}`, value);
+  }
+
+  async getHubIssuerCACert (id) {
+    return this.getSecret(`${vaultPaths.HUB_ISSUER_CA}/${id}`);
+  }
+
+  async getHubIssuerCACerts (id) {
+    const secrets = await this.listSecrets(vaultPaths.HUB_ISSUER_CA);
+    return Promise.all(secrets.map(id => this.getHubIssuerCACert(id)));
+  }
+
+  async deleteHubIssuerCACert (id) {
+    return this.deleteSecret(`${vaultPaths.HUB_ISSUER_CA}/${id}`);
+  }
+  // endregion
+
+  // region DFSP Server Cert
+  async setDFSPServerCerts (dfspId, value) {
+    return this.setSecret(`${vaultPaths.DFSP_SERVER_CERT}/${dfspId}`, value);
+  }
+
+  async getDFSPServerCerts (dfspId) {
+    return this.getSecret(`${vaultPaths.DFSP_SERVER_CERT}/${dfspId}`);
+  }
+
+  async deleteDFSPServerCerts (dfspId) {
+    return this.deleteSecret(`${vaultPaths.DFSP_SERVER_CERT}/${dfspId}`);
+  }
+  // endregion
+
+  /**
+   * Delete root CA
+   * @returns {Promise<void>}
+   */
+  async deleteCA () {
+    await this.client.request({
+      path: `/${this.mounts.pki}/root`,
+      method: 'DELETE',
+    });
   }
 
   /**
-   * Creates a CA
-   * @param {CAInitialInfo} options. Engine options, @see CAInitialInfo
+   * Create root CA
+   * @param {CAInitialInfo} caOptionsDoc. Engine options, @see CAInitialInfo
    */
   async createCA (caOptionsDoc) {
     let caOptions = new CAInitialInfo(caOptionsDoc);
@@ -73,67 +277,106 @@ class EmbeddedPKIEngine extends PKIEngine {
     if (caOptions.default) {
       caConfig.signing.default = caOptions.default;
     }
-    let { fd: caFd, path: caPath, cleanup: caCleanup } = await file({ mode: '0600', prefix: 'ca-', postfix: '.json' });
-    let fsWrite = util.promisify(fs.write);
-    try {
-      await fsWrite(caFd, JSON.stringify(caConfig));
-    } catch (error) {
-      caCleanup && caCleanup();
-      throw new InternalError(error.message);
-    }
 
-    try {
-      let csrData = caOptions.csr;
-      // fix to adapt to cfssl genkey command
-      csrData.CN = csrData.names[0].CN;
+    await this.deleteCA();
 
-      let cfsslCommand = 'genkey';
-      const cfsslResult = await spawnProcess(Constants.CFSSL.COMMAND_PATH, [cfsslCommand, `-config=${caPath}`, '-initca', '-'], JSON.stringify(csrData));
+    const { names, key: keyDetails } = caOptions.csr;
+    const altNames = names.length > 1 ? names.slice(1).map((name) => name.CN).join(',') : '';
+    const { data } = await this.client.request({
+      path: `/${this.mounts.pki}/root/generate/exported`,
+      method: 'POST',
+      json: {
+        common_name: names[0].CN,
+        alt_names: altNames,
+        ou: names.map((name) => name.OU),
+        organization: names.map((name) => name.O),
+        locality: names.map((name) => name.L),
+        country: names.map((name) => name.C),
+        province: names.map((name) => name.ST),
+        key_type: keyDetails.algo,
+        key_bits: keyDetails.size,
+        ttl: caConfig.signing.default.expiry,
+      },
+    });
 
-      let cfsslOutput;
-      cfsslOutput = JSON.parse(cfsslResult.stdout);
-      cfsslOutput.key = await this.encryptKey(cfsslOutput.key);
+    return {
+      cert: data.certificate,
+      key: data.private_key,
+      caConfig
+    };
+  }
 
-      let result = {
-        cert: cfsslOutput.cert,
-        csr: cfsslOutput.csr,
-        key: cfsslOutput.key,
-        caConfig
-      };
-      return result;
-    } catch (error) {
-      throw new ExternalProcessError(error.message);
-    } finally {
-      caCleanup && caCleanup();
-    }
+  // TODO: Need to implement an endpoint to use the following method
+  /**
+   * Creates hub server certificate
+   * @param params. CSR options, @see CAInitialInfo
+   */
+  async createHubServerCert (params) {
+    const { names } = params;
+    const altNames = names.length > 1 ? names.slice(1).map((name) => name.CN).join(',') : '';
+    const { data } = await this.client.request({
+      path: `/${this.mounts.pki}/issue/${this.pkiBaseDomain}`,
+      method: 'POST',
+      json: {
+        common_name: names[0].CN,
+        alt_names: altNames,
+        ou: names.map((name) => name.OU),
+        organization: names.map((name) => name.O),
+        locality: names.map((name) => name.L),
+        country: names.map((name) => name.C),
+        province: names.map((name) => name.ST),
+        key_type: params.key.algo,
+        key_bits: params.key.size,
+      },
+    });
+    return data;
   }
 
   /**
-   * Signs the CSR with the Engine CA.
-   *
-   * @param {String} csr CSR, PEM encoded
-   * @returns A PEM-encoded certificate
-   */
-  async sign (csr) {
-    let deKey = await this.decryptKey(this.key);
-    let { fd: certFd, path: certPath, cleanup: certCleanup } = await file({ mode: '0600', prefix: 'ca-', postfix: '.pem' });
-    let { fd: keyFd, path: keyPath, cleanup: keyCleanup } = await file({ mode: '0600', prefix: 'key-', postfix: '.pem' });
-    let { configPath, configCleanup } = await this.currentConfigTempFile();
-    try {
-      let fsWrite = util.promisify(fs.write);
-      await fsWrite(certFd, this.cert);
-      await fsWrite(keyFd, deKey);
-      const cfsslResult = await spawnProcess(Constants.CFSSL.COMMAND_PATH, ['sign', '-loglevel', '1', '-ca', certPath, '-ca-key', keyPath, `-config=${configPath}`, '-'], csr);
-
-      let cfsslOutput = JSON.parse(cfsslResult.stdout);
-      return cfsslOutput.cert;
-    } catch (error) {
-      throw new InternalError(error.message);
-    } finally {
-      certCleanup && certCleanup();
-      keyCleanup && keyCleanup();
-      configCleanup && configCleanup();
+     * Creates a CA
+     * @param {CAInitialInfo} caOptionsDoc. Engine options, @see CAInitialInfo
+     */
+  async createIntermediateCA (caOptionsDoc) {
+    let caOptions = new CAInitialInfo(caOptionsDoc);
+    let caConfig = { ...defaultCAConfig };
+    if (caOptions.default) {
+      caConfig.signing.default = caOptions.default;
     }
+    const csr = await this.createHubCSR(caOptions.csr);
+    const cert = await this.signHubCSR(csr.csr);
+    await this.setIntermediateCACert(cert.certificate);
+
+    return {
+      cert: cert.certificate,
+      csr: csr.csr,
+      key: csr.private_key,
+      caConfig
+    };
+  }
+
+  /**
+     * Creates intermediate CA CSR
+     * @param params. CSR options, @see CAInitialInfo
+     */
+  async createIntermediateHubCSR (params) {
+    const { names } = params;
+    const altNames = names.length > 1 ? names.slice(1).map((name) => name.CN).join(',') : '';
+    const { data } = await this.client.request({
+      path: `/${this.mounts.intermediatePki}/intermediate/generate/exported`,
+      method: 'POST',
+      json: {
+        common_name: names[0].CN,
+        alt_names: altNames,
+        ou: names.map((name) => name.OU),
+        organization: names.map((name) => name.O),
+        locality: names.map((name) => name.L),
+        country: names.map((name) => name.C),
+        province: names.map((name) => name.ST),
+        key_type: params.key.algo,
+        key_bits: params.key.size,
+      },
+    });
+    return data;
   }
 
   async currentConfigTempFile () {
@@ -150,19 +393,16 @@ class EmbeddedPKIEngine extends PKIEngine {
    * @param {CSRParameters} csrParameters CSR Parameters
    * @param {*} keyBits Key length. If not specified, takes the CA defaults ( see constructor )
    * @param {*} algorithm signature algorithm If not specified, takes the CA defaults ( see constructor )
-   * @returns {
-   *  csr: ,
-   *  key:  String, PEM-encoded. Encrypted ( see encryptKey )
-   * }
+   * @returns { csr: String, key:  String, PEM-encoded. Encrypted ( see encryptKey ) }
    */
   async createCSR (csrParameters, keyBits, algorithm) {
     let hosts = [];
     if (Array.isArray(csrParameters.extensions.subjectAltName.dns)) {
       hosts.push(...csrParameters.extensions.subjectAltName.dns);
-    };
+    }
     if (Array.isArray(csrParameters.extensions.subjectAltName.ips)) {
       hosts.push(...csrParameters.extensions.subjectAltName.ips);
-    };
+    }
     let csr = {
       CN: csrParameters.subject.CN,
       hosts: hosts,
@@ -177,37 +417,104 @@ class EmbeddedPKIEngine extends PKIEngine {
     try {
       const cfssl = await spawnProcess(Constants.CFSSL.COMMAND_PATH, ['genkey', '-loglevel', '1', `-config=${configPath}`, '-'], JSON.stringify(csr));
       let cfsslOutput = JSON.parse(cfssl.stdout);
-      cfsslOutput.key = await this.encryptKey(cfsslOutput.key);
+      // await this.setDFSPOutboundCert(csr.CN, { key: cfsslOutput.key });
+      // delete cfsslOutput.key;
       return cfsslOutput;
     } catch (error) {
       throw new InternalError(error.message);
     } finally {
-      configCleanup && configCleanup();
+      if (configCleanup) configCleanup();
     }
   }
 
-  async encryptKey (key) {
-    // Encrypt the key with P12_PASS_PHRASE
-    if (Constants.PKI_ENGINE.P12_PASS_PHRASE) {
-      const encryptResult = await spawnProcess('openssl', ['rsa', '-aes256', '-passout', 'env:P12_PASS_PHRASE'], key);
-
-      let encryptOutput = encryptResult.stdout;
-      return encryptOutput;
-    } else {
-      throw new InternalError('Unable to encrypt key, no P12_PASS_PHRASE');
-    }
+  async signIntermediateHubCSR (csr) {
+    const csrInfo = forge.pki.certificationRequestFromPem(csr);
+    const { data } = await this.client.request({
+      path: `/${this.mounts.pki}/root/sign-intermediate`,
+      method: 'POST',
+      json: {
+        use_csr_values: true,
+        common_name: csrInfo.subject.getField('CN').value,
+        csr,
+      },
+    });
+    return data;
   }
 
-  async decryptKey (key) {
-    // Decrypt the key with P12_PASS_PHRASE
-    if (Constants.PKI_ENGINE.P12_PASS_PHRASE) {
-      const encryptResult = await spawnProcess('openssl', ['rsa', '-passin', 'env:P12_PASS_PHRASE'], key);
+  /**
+   * Sign Hub CSR
+   * @param csr
+   * @returns {Promise<*>}
+   */
+  async signWithIntermediateCA (csr) {
+    const csrInfo = forge.pki.certificationRequestFromPem(csr);
+    const { data } = await this.client.request({
+      path: `/${this.mounts.intermediatePki}/sign/${this.pkiBaseDomain}`,
+      method: 'POST',
+      json: {
+        common_name: csrInfo.subject.getField('CN').value,
+        csr,
+      },
+    });
+    return data.certificate;
+  }
 
-      let encryptOutput = encryptResult.stdout;
-      return encryptOutput;
-    } else {
-      throw new InternalError('Unable to decrypt key, no P12_PASS_PHRASE');
-    }
+  /**
+   * Sign Hub CSR
+   * @param csr
+   * @returns {Promise<*>}
+   */
+  async sign (csr) {
+    const csrInfo = forge.pki.certificationRequestFromPem(csr);
+    const { data } = await this.client.request({
+      path: `/${this.mounts.pki}/sign/${this.pkiBaseDomain}`,
+      method: 'POST',
+      json: {
+        common_name: csrInfo.subject.getField('CN').value,
+        csr,
+        ttl: '600h',
+      },
+    });
+    return data.certificate;
+  }
+
+  async setHubCaCert (certPem, privateKeyPem) {
+    await this.client.request({
+      path: `/${this.mounts.pki}/config/ca`,
+      method: 'POST',
+      json: {
+        pem_bundle: `${privateKeyPem}\n${certPem}`,
+      },
+    });
+
+    // Secret object documentation:
+    // https://github.com/modusintegration/mojaloop-k3s-bootstrap/blob/e3578fc57a024a41023c61cd365f382027b922bd/docs/README-vault.md#vault-crd-secrets-integration
+    // https://vault.koudingspawn.de/supported-secret-types/secret-type-cert
+  }
+
+  async getRootCaCert () {
+    return this.client.request({
+      path: `/${this.mounts.pki}/ca/pem`,
+      method: 'GET',
+    });
+  }
+
+  async setIntermediateCACert (certPem) {
+    await this.client.request({
+      path: `/${this.mounts.intermediatePki}/intermediate/set-signed`,
+      method: 'POST',
+      json: {
+        certificate: certPem,
+      },
+    });
+  }
+
+  async setHubEndpoints (value) {
+    return this.setSecret(vaultPaths.HUB_ENDPOINTS, value);
+  }
+
+  async getHubEndpoints () {
+    return this.getSecret(vaultPaths.HUB_ENDPOINTS);
   }
 
   /**
@@ -217,19 +524,13 @@ class EmbeddedPKIEngine extends PKIEngine {
    * @param {String} code validation code
    */
   async validateCertificateValidity (serverCert, code) {
-    // with openssl, would need to run this command an parse the dates:
-    // openssl x509 -noout -in certificate.crt -dates
-    // notBefore=Feb  4 00:00:00 2019 GMT
-    // notAfter=Feb 12 12:00:00 2020 GMT
-    // Using CertInfo:
-
     if (!serverCert) {
       return new Validation(code, false, ValidationCodes.VALID_STATES.NOT_AVAILABLE,
         `No certificate`);
     }
 
     try {
-      let certInfo = await EmbeddedPKIEngine.getCertInfo(serverCert);
+      let certInfo = await VaultPKIEngine.getCertInfo(serverCert);
       let notAfterDate = moment(certInfo.notAfter);
       if (!notAfterDate || !notAfterDate.isValid()) {
         throw new Error('Invalid notAfterDate');
@@ -290,7 +591,7 @@ class EmbeddedPKIEngine extends PKIEngine {
     // /X509v3 Extended Key Usage:\s*([\w\ ,]*)\s*/gm
     // Should include 'TLS Web Server Authentication'
     // For client, should include 'TLS Web Client Authentication'
-    let certificateText = await EmbeddedPKIEngine.getPrimItemOutput(serverCert, 'CERT');
+    let certificateText = await VaultPKIEngine.getPrimItemOutput(serverCert, 'CERT');
     let extendedKeyUsageResult = certificateText.match(/X509v3 Extended Key Usage:\s*([\w ,]*)\s*/m);
     if (extendedKeyUsageResult == null || !Array.isArray(extendedKeyUsageResult)) {
       return new Validation(ValidationCodes.VALIDATION_CODES.CERTIFICATE_USAGE_SERVER.code, true, ValidationCodes.VALID_STATES.INVALID, `Certificate doesn't have the "TLS WWW server authentication" key usage extension`);
@@ -314,7 +615,7 @@ class EmbeddedPKIEngine extends PKIEngine {
    * @param {String} rootCertificate PEM-encoded root certificate
    */
   async validateCertificateChain (serverCert, intermediateChain, rootCertificate) {
-    let { result, output } = await EmbeddedPKIEngine.verifyCertificateSigning(serverCert, rootCertificate, intermediateChain);
+    let { result, output } = await VaultPKIEngine.verifyCertificateSigning(serverCert, rootCertificate, intermediateChain);
     if (!result) {
       return new Validation(ValidationCodes.VALIDATION_CODES.CERTIFICATE_CHAIN.code, true, ValidationCodes.VALID_STATES.INVALID, `Certificate chain invalid`, output);
     } else {
@@ -329,7 +630,7 @@ class EmbeddedPKIEngine extends PKIEngine {
    * @param {Integer} keyLength key length in bits
    */
   async validateCertificateKeyLength (serverCert, keyLength, code) {
-    let { valid, reason } = await EmbeddedPKIEngine.verifyCertKeyLength(serverCert, keyLength);
+    let { valid, reason } = await VaultPKIEngine.verifyCertKeyLength(serverCert, keyLength);
     if (!valid) {
       // eslint-disable-next-line no-template-curly-in-string
       let validation = new Validation(code, true);
@@ -363,7 +664,7 @@ class EmbeddedPKIEngine extends PKIEngine {
    */
   async verifyCsrMandatoryDistinguishedNames (csr, code) {
     try {
-      let csrInfo = await EmbeddedPKIEngine.getCSRInfo(csr);
+      let csrInfo = await VaultPKIEngine.getCSRInfo(csr);
       let { valid, reason } = csrInfo.hasAllRequiredDistinguishedNames();
       if (valid) {
         return new Validation(code, true, ValidationCodes.VALID_STATES.VALID,
@@ -416,7 +717,7 @@ class EmbeddedPKIEngine extends PKIEngine {
    */
   async validateCsrSignatureAlgorithm (csr, code, algo) {
     try {
-      let { valid, reason } = await EmbeddedPKIEngine.verifyCSRAlgorithm(csr, algo);
+      let { valid, reason } = await VaultPKIEngine.verifyCSRAlgorithm(csr, algo);
       if (valid) {
         return new Validation(code, true, ValidationCodes.VALID_STATES.VALID,
           `CSR has a valid Signature Algorithm : ${reason.actualAlgorithm}`);
@@ -446,7 +747,7 @@ class EmbeddedPKIEngine extends PKIEngine {
     }
 
     try {
-      let { valid, reason } = await EmbeddedPKIEngine.verifyCertAlgorithm(certificate, [algo]);
+      let { valid, reason } = await VaultPKIEngine.verifyCertAlgorithm(certificate, [algo]);
       if (valid) {
         return new Validation(code, true, ValidationCodes.VALID_STATES.VALID,
           `certificate has a valid Signature Algorithm : ${algo}`);
@@ -469,7 +770,7 @@ class EmbeddedPKIEngine extends PKIEngine {
    */
   async validateCsrPublicKeyLength (csr, code, length) {
     try {
-      let { valid, reason } = await EmbeddedPKIEngine.verifyCSRKeyLength(csr, length);
+      let { valid, reason } = await VaultPKIEngine.verifyCSRKeyLength(csr, length);
       if (valid) {
         return new Validation(code, true, ValidationCodes.VALID_STATES.VALID,
           `CSR has a valid Public Key length of ${length}`);
@@ -499,7 +800,7 @@ class EmbeddedPKIEngine extends PKIEngine {
     if (dfspCA.validationState === 'INVALID') {
       return new Validation(code, true, ValidationCodes.VALID_STATES.INVALID, `Invalid dfsp ca root or chain`);
     } else {
-      let { result } = await EmbeddedPKIEngine.verifyCertificateSigning(certificate, dfspCA.rootCertificate, dfspCA.intermediateChain);
+      let { result } = await VaultPKIEngine.verifyCertificateSigning(certificate, dfspCA.rootCertificate, dfspCA.intermediateChain);
       return new Validation(code, true, result ? ValidationCodes.VALID_STATES.VALID : ValidationCodes.VALID_STATES.INVALID, `The Certificate is signed by the DFSP CA`);
     }
   }
@@ -520,8 +821,8 @@ class EmbeddedPKIEngine extends PKIEngine {
       return new Validation(code, false, ValidationCodes.VALID_STATES.NOT_AVAILABLE,
         `No CSR`);
     }
-    let csrModulus = await EmbeddedPKIEngine.computeKeyModulus(csr, 'CSR');
-    let certModulus = await EmbeddedPKIEngine.computeKeyModulus(certificate, 'CERTIFICATE');
+    let csrModulus = await VaultPKIEngine.computeKeyModulus(csr, 'CSR');
+    let certModulus = await VaultPKIEngine.computeKeyModulus(certificate, 'CERTIFICATE');
     if (csrModulus === certModulus) {
       return new Validation(code, true, ValidationCodes.VALID_STATES.VALID,
         `CSR and Certificate have the same Public Key`);
@@ -545,7 +846,7 @@ class EmbeddedPKIEngine extends PKIEngine {
         `No certificate`);
     }
 
-    let certificateText = await EmbeddedPKIEngine.getPrimItemOutput(certificate, 'CERT');
+    let certificateText = await VaultPKIEngine.getPrimItemOutput(certificate, 'CERT');
     let extendedKeyUsageResult = certificateText.match(/X509v3 Extended Key Usage:\s*([\w ,]*)\s*/m);
     const invalidMessage = `Certificate doesn't have the "TLS WWW client authentication" key usage extension`;
     const validMessage = `Certificate has the "TLS WWW client authentication" key usage extension`;
@@ -586,8 +887,8 @@ class EmbeddedPKIEngine extends PKIEngine {
         `It has an External CA`);
     }
 
-    let csrInfo = await EmbeddedPKIEngine.getCSRInfo(enrollment.csr);
-    let certInfo = await EmbeddedPKIEngine.getCertInfo(enrollment.certificate);
+    let csrInfo = await VaultPKIEngine.getCSRInfo(enrollment.csr);
+    let certInfo = await VaultPKIEngine.getCertInfo(enrollment.certificate);
 
     let { valid, reason } = PKIEngine.compareSubjectBetweenCSRandCert(csrInfo, certInfo);
 
@@ -627,8 +928,8 @@ class EmbeddedPKIEngine extends PKIEngine {
         `It has an Internal CA`);
     }
 
-    let csrInfo = await EmbeddedPKIEngine.getCSRInfo(enrollment.csr);
-    let certInfo = await EmbeddedPKIEngine.getCertInfo(enrollment.certificate);
+    let csrInfo = await VaultPKIEngine.getCSRInfo(enrollment.csr);
+    let certInfo = await VaultPKIEngine.getCertInfo(enrollment.certificate);
 
     let { valid, reason } = PKIEngine.compareCNBetweenCSRandCert(csrInfo, certInfo);
 
@@ -648,8 +949,8 @@ class EmbeddedPKIEngine extends PKIEngine {
    * returns { valid: true } or { valid: false, reason: { actualKeySize: Number, minKeySize: Number } }
    */
   static async verifyCSRKeyLength (csr, minLength) {
-    let stdout = await EmbeddedPKIEngine.getCSROutput(csr);
-    return EmbeddedPKIEngine.verifyInputKeyLength(stdout, minLength);
+    let stdout = await VaultPKIEngine.getCSROutput(csr);
+    return VaultPKIEngine.verifyInputKeyLength(stdout, minLength);
   }
 
   /**
@@ -659,8 +960,8 @@ class EmbeddedPKIEngine extends PKIEngine {
    * returns { valid: true } or { valid: false, reason: { actualKeySize: Number, minKeySize: Number } }
    */
   static async verifyCertKeyLength (cert, minLength) {
-    let stdout = await EmbeddedPKIEngine.getCertOutput(cert);
-    return EmbeddedPKIEngine.verifyInputKeyLength(stdout, minLength);
+    let stdout = await VaultPKIEngine.getCertOutput(cert);
+    return VaultPKIEngine.verifyInputKeyLength(stdout, minLength);
   }
 
   /**
@@ -694,8 +995,8 @@ class EmbeddedPKIEngine extends PKIEngine {
    * @returns { valid: true } or { valid: false, reason: { actualAlgorithm : String, algorithm : String} }
    */
   static async verifyCSRAlgorithm (csr, algorithms) {
-    let stdout = await EmbeddedPKIEngine.getCSROutput(csr);
-    return EmbeddedPKIEngine.verifyOutputAlgorithm(stdout, algorithms);
+    let stdout = await VaultPKIEngine.getCSROutput(csr);
+    return VaultPKIEngine.verifyOutputAlgorithm(stdout, algorithms);
   }
 
   /**
@@ -706,8 +1007,8 @@ class EmbeddedPKIEngine extends PKIEngine {
    *
    */
   static async verifyCertAlgorithm (cert, algorithms) {
-    let stdout = await EmbeddedPKIEngine.getCertOutput(cert);
-    return EmbeddedPKIEngine.verifyOutputAlgorithm(stdout, algorithms);
+    let stdout = await VaultPKIEngine.getCertOutput(cert);
+    return VaultPKIEngine.verifyOutputAlgorithm(stdout, algorithms);
   }
 
   /**
@@ -743,9 +1044,8 @@ class EmbeddedPKIEngine extends PKIEngine {
    * }
    */
   async verifyCertificateAgainstKey (certificate, key) {
-    let checkedKey = this.isEncrypted(key) ? await this.decryptKey(key) : key;
-    let keyModulus = await EmbeddedPKIEngine.computeKeyModulus(checkedKey, 'KEY');
-    let certModulus = await EmbeddedPKIEngine.computeKeyModulus(certificate, 'CERTIFICATE');
+    let keyModulus = await VaultPKIEngine.computeKeyModulus(key, 'KEY');
+    let certModulus = await VaultPKIEngine.computeKeyModulus(certificate, 'CERTIFICATE');
     return { result: keyModulus === certModulus };
   }
 
@@ -776,17 +1076,6 @@ class EmbeddedPKIEngine extends PKIEngine {
     return new Validation(code, true, ValidationCodes.VALID_STATES.VALID, `the Certificate Public Key matches the private key used to sign the CSR`);
   }
 
-  isEncrypted (key) {
-    if (typeof key !== 'string') {
-      throw new InternalError('Key is not an string');
-    }
-    let lines = key.split('\n');
-    if (!Array.isArray(lines) || lines.length < 2) {
-      throw new InternalError('key string is not a key');
-    }
-    return lines[1].includes('Proc-Type: 4,ENCRYPTED');
-  }
-
   /**
    * Returns the openssl -text output.
    *
@@ -796,8 +1085,8 @@ class EmbeddedPKIEngine extends PKIEngine {
    * @throws InvalidEntityError if the CSR is invalid
    */
   static async getCSROutput (csr) {
-    return EmbeddedPKIEngine.getPrimItemOutput(csr, 'CSR');
-  };
+    return VaultPKIEngine.getPrimItemOutput(csr, 'CSR');
+  }
 
   /**
    * Returns the openssl -text output.
@@ -808,8 +1097,8 @@ class EmbeddedPKIEngine extends PKIEngine {
    * @throws InvalidEntityError if the Certificate is invalid
    */
   static async getCertOutput (cert) {
-    return EmbeddedPKIEngine.getPrimItemOutput(cert, 'CERT');
-  };
+    return VaultPKIEngine.getPrimItemOutput(cert, 'CERT');
+  }
 
   /**
    * Returns the openssl -text output.
@@ -840,7 +1129,7 @@ class EmbeddedPKIEngine extends PKIEngine {
       throw new InvalidEntityError(`Input ${type} failed verification`, { output: opensslResult });
     }
     return stdout;
-  };
+  }
 
   /**
    * Computes the modulus of a private key or the public key contained in the certificate or CSR
@@ -871,7 +1160,7 @@ class EmbeddedPKIEngine extends PKIEngine {
     }
     const openssl = await spawnProcess('openssl', [command, '-noout', '-modulus'], source);
     return openssl.stdout;
-  };
+  }
 
   /**
    * Validates ValidationCodes.VALIDATION_CODES.CA_CERTIFICATE_USAGE
@@ -887,7 +1176,7 @@ class EmbeddedPKIEngine extends PKIEngine {
         `No root certificate and currently not validating intermediate CAs if present`);
     }
 
-    let rootCertificateText = await EmbeddedPKIEngine.getPrimItemOutput(rootCertificate, 'CERT');
+    let rootCertificateText = await VaultPKIEngine.getPrimItemOutput(rootCertificate, 'CERT');
 
     const initIndex = rootCertificateText.search(/X509v3 Basic Constraints: critical/);
 
@@ -919,7 +1208,7 @@ class EmbeddedPKIEngine extends PKIEngine {
       return new Validation(code, false, ValidationCodes.VALID_STATES.NOT_AVAILABLE,
         `No root certificate`);
     }
-    let { state, output } = await EmbeddedPKIEngine.validateRootCertificate(rootCertificate);
+    let { state, output } = await VaultPKIEngine.validateRootCertificate(rootCertificate);
 
     if (state === 'INVALID') {
       return new Validation(code, true, ValidationCodes.VALID_STATES.INVALID,
@@ -944,7 +1233,7 @@ class EmbeddedPKIEngine extends PKIEngine {
         `No intermediate chain`);
     }
 
-    let { result, output } = await EmbeddedPKIEngine.verifyCertificateSigning(firstIntermediateChainCertificate, rootCertificate, remainingIntermediateChainInfo);
+    let { result, output } = await VaultPKIEngine.verifyCertificateSigning(firstIntermediateChainCertificate, rootCertificate, remainingIntermediateChainInfo);
     if (!result) {
       return new Validation(code, true, ValidationCodes.VALID_STATES.INVALID,
         `the intermediateChain must be made of valid CAs and that the top of the chain is signed by the root`, output);
@@ -1019,8 +1308,8 @@ class EmbeddedPKIEngine extends PKIEngine {
       argsArray.push(path);
     }
     const opensslResult = await spawnProcess('openssl', argsArray, certificate, false);
-    rootCleanup && rootCleanup();
-    intermediateCleanup && intermediateCleanup();
+    if (rootCleanup) rootCleanup();
+    if (intermediateCleanup) intermediateCleanup();
     let { stdout, code } = opensslResult;
 
     assertExternalProcessResult(typeof stdout === 'string', 'Could not read openssl output');
@@ -1095,6 +1384,6 @@ class EmbeddedPKIEngine extends PKIEngine {
     let certInfo = new CertInfo(doc);
     return certInfo;
   }
-};
+}
 
-module.exports = EmbeddedPKIEngine;
+module.exports = VaultPKIEngine;

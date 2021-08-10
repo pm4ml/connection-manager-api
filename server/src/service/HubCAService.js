@@ -19,8 +19,9 @@
 const PkiService = require('./PkiService');
 const Joi = require('joi');
 const ValidationError = require('../errors/ValidationError');
-const HubIssuerCasModel = require('../models/HubIssuerCAsModel');
-const PKIEngine = require('../pki_engine/EmbeddedPKIEngine');
+const PKIEngine = require('../pki_engine/VaultPKIEngine');
+const Constants = require('../constants/Constants');
+const { createID } = require('../models/GID');
 
 const hubCAInputSchema = Joi.object().description('Hub CA Input').keys({
   rootCertificate: Joi.string().description('CA root certificate'),
@@ -28,8 +29,6 @@ const hubCAInputSchema = Joi.object().description('Hub CA Input').keys({
   name: Joi.string().description('CA name').required(),
   type: Joi.string().required().valid(['EXTERNAL']),
 });
-
-const hubIssuerCasModel = new HubIssuerCasModel();
 
 exports.createHubCA = async (envId, body) => {
   await PkiService.validateEnvironment(envId);
@@ -41,24 +40,27 @@ exports.createHubCA = async (envId, body) => {
   let rootCertificate = body.rootCertificate || null;
   let intermediateChain = body.intermediateChain || null;
 
-  const validatingPkiEngine = new PKIEngine();
-  let { validations, validationState } = await validatingPkiEngine.validateCACertificate(rootCertificate, intermediateChain);
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  let { validations, validationState } = await pkiEngine.validateCACertificate(rootCertificate, intermediateChain);
 
-  let validationResult = {
-    validations: JSON.stringify(validations),
+  const info = {
+    id: await createID(),
+    ...(await formatBody(body)),
+    validations,
     validationState,
   };
 
-  let row = await bodyToRow(body, envId, validationResult);
-  await hubIssuerCasModel.create(row);
-  return rowToObject(row);
+  await pkiEngine.setHubIssuerCACert(info.id, info);
+  return info;
 };
 
 exports.getHubCAs = async (envId) => {
   await PkiService.validateEnvironment(envId);
 
-  let hubCAs = await hubIssuerCasModel.findAllByEnvId(envId);
-  return hubCAs.map(hubCA => rowToObject(hubCA));
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  return pkiEngine.getHubIssuerCACerts();
 };
 
 exports.getHubCA = async (envId, hubCAId) => {
@@ -66,8 +68,10 @@ exports.getHubCA = async (envId, hubCAId) => {
   if (hubCAId == null) {
     throw new ValidationError('Invalid hubCAid');
   }
-  let hubCA = await hubIssuerCasModel.findById(hubCAId);
-  return rowToObject(hubCA);
+
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  return pkiEngine.getHubIssuerCACert(hubCAId);
 };
 
 exports.deleteHubCA = async (envId, hubCAId) => {
@@ -75,34 +79,19 @@ exports.deleteHubCA = async (envId, hubCAId) => {
   if (hubCAId == null) {
     throw new ValidationError('Invalid hubCAid');
   }
-  await hubIssuerCasModel.delete(hubCAId);
+
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  await pkiEngine.deleteHubIssuerCACert(hubCAId);
 };
 
-const bodyToRow = async (body, envId, validationResult) => {
-  let chainInfo = await PkiService.splitChainIntermediateCertificate(body);
-
+const formatBody = async (body) => {
   return {
-    env_id: envId,
-    type: body.type,
     name: body.name,
-    root_cert: body.rootCertificate,
-    chain: body.intermediateChain,
-    root_cert_info: body.rootCertificate ? JSON.stringify(await PKIEngine.getCertInfo(body.rootCertificate)) : body.rootCertificate,
-    chain_info: JSON.stringify(chainInfo),
-    ...validationResult
-  };
-};
-
-const rowToObject = (row) => {
-  return {
-    id: row.id,
-    type: row.type,
-    name: row.name,
-    rootCertificate: row.root_cert,
-    intermediateChain: row.chain,
-    rootCertificateInfo: row.root_cert_info && (typeof row.root_cert_info === 'string') ? JSON.parse(row.root_cert_info) : {},
-    intermediateChainInfo: row.chain_info && (typeof row.chain_info === 'string') ? JSON.parse(row.chain_info) : [],
-    validationState: row.validationState,
-    validations: row.validations && (typeof row.validations === 'string') ? JSON.parse(row.validations) : []
+    type: body.type,
+    rootCertificate: body.rootCertificate,
+    rootCertificateInfo: body.rootCertificate && await PKIEngine.getCertInfo(body.rootCertificate),
+    intermediateChain: body.intermediateChain,
+    intermediateChainInfo: await PkiService.splitChainIntermediateCertificate(body),
   };
 };

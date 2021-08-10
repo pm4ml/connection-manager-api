@@ -17,15 +17,16 @@
 
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 
-const EmbeddedPKIEngine = require('../src/pki_engine/EmbeddedPKIEngine');
+const VaultPKIEngine = require('../src/pki_engine/VaultPKIEngine');
 const fs = require('fs');
 const path = require('path');
 const assert = require('chai').assert;
 const ValidationCodes = require('../src/pki_engine/ValidationCodes');
 const ValidationError = require('../src/errors/ValidationError');
 const moment = require('moment');
+const Constants = require("../src/constants/Constants");
 
-describe('EmbeddedPKIEngine', () => {
+describe('VaultPKIEngine', () => {
   before(async () => {
     await setupTestDB();
   });
@@ -37,7 +38,7 @@ describe('EmbeddedPKIEngine', () => {
   describe('Certificate validations', () => {
     it('should fail to validate a date-valid and usage-correct server certificate without its chain', async () => {
       let cert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/www.amazon.com.pem'), 'utf8');
-      const pkiEngine = new EmbeddedPKIEngine();
+      const pkiEngine = new VaultPKIEngine(Constants.vault);
       // eslint-disable-next-line no-unused-vars
       let { validations, validationState } = await pkiEngine.validateServerCertificate(cert);
       assert.isTrue(validationState === ValidationCodes.VALID_STATES.INVALID);
@@ -47,7 +48,7 @@ describe('EmbeddedPKIEngine', () => {
       let cert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/www.amazon.com.pem'), 'utf8');
       let rootCert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/VeriSign-Class-3-Public-Primary-Certification-Authority-G5.pem'), 'utf8');
       let certChain = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/amazon.chain.pem'), 'utf8');
-      const pkiEngine = new EmbeddedPKIEngine();
+      const pkiEngine = new VaultPKIEngine(Constants.vault);
       let validation = await pkiEngine.validateCertificateChain(cert, certChain, rootCert);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
     }).timeout(15000);
@@ -55,7 +56,7 @@ describe('EmbeddedPKIEngine', () => {
     it('should validate a server certificate with its chain if root is a globally trusted one', async () => {
       let cert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/www.amazon.com.pem'), 'utf8');
       let certChain = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/amazon.chain.pem'), 'utf8');
-      const pkiEngine = new EmbeddedPKIEngine();
+      const pkiEngine = new VaultPKIEngine(Constants.vault);
       let validation = await pkiEngine.validateCertificateChain(cert, certChain);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
     }).timeout(15000);
@@ -68,35 +69,35 @@ describe('EmbeddedPKIEngine', () => {
         return;
       }
       let cert = fs.readFileSync(path.join(__dirname, 'resources/modusbox/expired/expired.pem'), 'utf8');
-      const pkiEngine = new EmbeddedPKIEngine();
+      const pkiEngine = new VaultPKIEngine(Constants.vault);
       let validation = await pkiEngine.validateCertificateValidity(cert);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.INVALID);
     }).timeout(15000);
 
     it('should validate a server certificate usage', async () => {
       let cert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/www.amazon.com.pem'), 'utf8');
-      const pkiEngine = new EmbeddedPKIEngine();
+      const pkiEngine = new VaultPKIEngine(Constants.vault);
       let validation = await pkiEngine.validateCertificateUsageServer(cert);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
     }).timeout(15000);
 
     it('should not validate a server certificate usage on a global root CA', async () => {
       let cert = fs.readFileSync(path.join(__dirname, 'resources/digicert/digicert.global.root.pem'), 'utf8');
-      const pkiEngine = new EmbeddedPKIEngine();
+      const pkiEngine = new VaultPKIEngine(Constants.vault);
       let validation = await pkiEngine.validateCertificateUsageServer(cert);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.INVALID);
     }).timeout(15000);
 
     it('should not validate a server certificate usage on a intermediate CA', async () => {
       let cert = fs.readFileSync(path.join(__dirname, 'resources/orange/Orange_Internal_G2-Server_CA.pem'), 'utf8');
-      const pkiEngine = new EmbeddedPKIEngine();
+      const pkiEngine = new VaultPKIEngine(Constants.vault);
       let validation = await pkiEngine.validateCertificateUsageServer(cert);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.INVALID);
     }).timeout(15000);
 
     it('should not validate an invalid CSR', async () => {
       let csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/some-serial.srl'), 'utf8');
-      const pkiEngine = new EmbeddedPKIEngine();
+      const pkiEngine = new VaultPKIEngine(Constants.vault);
       let validation = await pkiEngine.validateCsrSignatureValid(csr);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.INVALID);
     }).timeout(15000);
@@ -106,7 +107,7 @@ describe('EmbeddedPKIEngine', () => {
     it('verifyIntermediateChain for first cert in chain', async () => {
       let rootCert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Root_CA_Cert.cer'), 'utf8');
       let certChain = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Combined_Intermediate_CA_certs.pem'), 'utf8');
-      const pkiEngine = new EmbeddedPKIEngine();
+      const pkiEngine = new VaultPKIEngine(Constants.vault);
       let validation = await pkiEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
     }).timeout(15000);
@@ -114,7 +115,7 @@ describe('EmbeddedPKIEngine', () => {
     it('verifyIntermediateChain when there is only one certificate in chain', async () => {
       let rootCert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Root_CA_Cert.cer'), 'utf8');
       let certChain = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Combined_Intermediate_CA_cert.pem'), 'utf8');
-      const pkiEngine = new EmbeddedPKIEngine();
+      const pkiEngine = new VaultPKIEngine(Constants.vault);
       let validation = await pkiEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
     }).timeout(15000);
@@ -122,7 +123,7 @@ describe('EmbeddedPKIEngine', () => {
     it('verifyIntermediateChain when there is more than two certificate in chain', async () => {
       let rootCert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Root_CA_Cert.cer'), 'utf8');
       let certChain = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Combined_Intermediate_CA_certs_three.pem'), 'utf8');
-      const pkiEngine = new EmbeddedPKIEngine();
+      const pkiEngine = new VaultPKIEngine(Constants.vault);
       let validation = await pkiEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
     }).timeout(15000);
@@ -130,7 +131,7 @@ describe('EmbeddedPKIEngine', () => {
     it('AMAZON - verifyIntermediateChain for first cert in chain', async () => {
       let rootCert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/www.amazon.com.pem'), 'utf8');
       let certChain = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/amazon.chain.pem'), 'utf8');
-      const pkiEngine = new EmbeddedPKIEngine();
+      const pkiEngine = new VaultPKIEngine(Constants.vault);
       let validation = await pkiEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
     }).timeout(15000);
@@ -140,7 +141,7 @@ describe('EmbeddedPKIEngine', () => {
     it.skip('verifyIntermediateChain for empty chain', async () => {
       let rootCert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Root_CA_Cert.cer'), 'utf8');
       let certChain = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/EmptyChain.pem'), 'utf8');
-      const pkiEngine = new EmbeddedPKIEngine();
+      const pkiEngine = new VaultPKIEngine(Constants.vault);
       try {
         await pkiEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
         assert.fail('Should not be here');

@@ -174,7 +174,7 @@ describe('DfspOutboundService', function () {
       let csr = newEnrollment.csr;
 
       // Let's sign the CSR ( what the DFSP would do )
-      let certPath = path.join(__dirname, 'resources/modusbox//ca.pem');
+      let certPath = path.join(__dirname, 'resources/modusbox/ca.pem');
       let keyPath = path.join(__dirname, 'resources/modusbox/ca-key.pem');
       const cfsslResult = await spawnProcess(Constants.CFSSL.COMMAND_PATH, ['sign', '-loglevel', '1', '-ca', certPath, '-ca-key', keyPath, '-'], csr);
 
@@ -217,6 +217,6 @@ describe('DfspOutboundService', function () {
 
       // 'VALID' key and signing 'VALID' should give a valid state
       assert.equal(afterCertValidatedEnrollmentWithCA.state, 'CERT_SIGNED', JSON.stringify(afterCertValidatedEnrollmentWithCA, null, 2));
-    }).timeout(15000);
-  }).timeout(30000);
-}).timeout(45000);
+    }).timeout(1500000);
+  }).timeout(3000000);
+}).timeout(4500000);

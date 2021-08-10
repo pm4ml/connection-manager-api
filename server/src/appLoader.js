@@ -38,6 +38,7 @@ exports.connect = async () => {
   Model.knex(db.knex);
   await db.runKnexMigrations();
   await executeSSLCustomLogic();
+  // await pkiService.init(Constants.vault);
   printToolsVersion.printToolsVersion();
   setUpTempFilesManagement();
 

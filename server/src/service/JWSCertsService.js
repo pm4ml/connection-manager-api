@@ -16,101 +16,69 @@
  ******************************************************************************/
 
 'use strict';
-const DfspJWSCertsModel = require('../models/DfspJWSCertsModel');
 const DFSPModel = require('../models/DFSPModel');
-const PKIEngine = require('../pki_engine/EmbeddedPKIEngine');
+const PKIEngine = require('../pki_engine/VaultPKIEngine');
 const PkiService = require('./PkiService');
 const ValidationError = require('../errors/ValidationError');
-
-const dfspJWSCertsModel = new DfspJWSCertsModel();
+const Constants = require('../constants/Constants');
+const { createID } = require('../models/GID');
 
 exports.createDfspJWSCerts = async (envId, dfspId, body) => {
-  await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
-
-  const pkiEngine = new PKIEngine();
-  let { validations, validationState } = await pkiEngine.validateJWSCertificate(body.jwsCertificate, body.intermediateChain, body.rootCertificate);
-  // FIXME move this logic to DfspJWSCertsModel
-  let rawDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
-  let values = {
-    env_id: envId,
-    dfsp_id: rawDfspId,
-    ...(await bodyToRow(body)),
-    validations: JSON.stringify(validations),
-    validationState
-  };
-
-  let { id } = await dfspJWSCertsModel.upsert(null, values);
-  return rowToObject(await dfspJWSCertsModel.findById(id));
-};
-
-exports.updateDfspJWSCerts = async (envId, dfspId, body) => {
   if (body === null || typeof body === 'undefined') {
     throw new ValidationError(`Invalid body ${body}`);
   }
+
   await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
 
-  const pkiEngine = new PKIEngine();
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
   let { validations, validationState } = await pkiEngine.validateJWSCertificate(body.jwsCertificate, body.intermediateChain, body.rootCertificate);
-  let values = {
-    ...(await bodyToRow(body)),
-    validations: JSON.stringify(validations),
-    validationState
+  const jwsData = {
+    id: await createID(),
+    dfspId,
+    ...(await formatBody(body)),
+    validations,
+    validationState,
   };
+  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  await pkiEngine.setDFSPJWSCerts(dbDfspId, jwsData);
+  return jwsData;
+};
 
-  let { id: rowId } = await dfspJWSCertsModel.findByEnvIdDfspId(envId, dfspId);
-  await dfspJWSCertsModel.update(rowId, values);
-  return rowToObject(await dfspJWSCertsModel.findById(rowId));
+exports.updateDfspJWSCerts = async (envId, dfspId, body) => {
+  return exports.createDfspJWSCerts(envId, dfspId, body);
 };
 
 exports.getDfspJWSCerts = async (envId, dfspId) => {
   await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
-  return rowToObject(await dfspJWSCertsModel.findByEnvIdDfspId(envId, dfspId));
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  return pkiEngine.getDFSPJWSCerts(dbDfspId);
 };
 
 exports.deleteDfspJWSCerts = async (envId, dfspId) => {
   await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
-  let { id } = await dfspJWSCertsModel.findByEnvIdDfspId(envId, dfspId);
-  await dfspJWSCertsModel.delete(id);
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  await pkiEngine.deleteDFSPJWSCerts(dbDfspId);
 };
 
 exports.getAllDfspJWSCerts = async (envId) => {
   await PkiService.validateEnvironment(envId);
-  let certs = await dfspJWSCertsModel.findAllByEnvId(envId);
-  let certObjects = Promise.all(certs.map(async cert => rowToDFSPObject(cert)));
-  return certObjects;
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  return pkiEngine.getAllDFSPJWSCerts();
 };
 
-const rowToObject = (row) => {
-  let jwsCerts = {
-    id: row.id,
-    rootCertificate: row.root_cert,
-    intermediateChain: row.chain,
-    jwsCertificate: row.jws_cert,
-    rootCertificateInfo: row.root_cert_info && (typeof row.root_cert_info === 'string') ? JSON.parse(row.root_cert_info) : {},
-    intermediateChainInfo: row.chain_info && (typeof row.chain_info === 'string') ? JSON.parse(row.chain_info) : [],
-    jwsCertificateInfo: row.jws_cert_info && (typeof row.jws_cert_info === 'string') ? JSON.parse(row.jws_cert_info) : {},
-    validationState: row.validationState,
-    validations: row.validations && (typeof row.validations === 'string') ? JSON.parse(row.validations) : {},
-  };
-  return jwsCerts;
-};
-
-const rowToDFSPObject = async (row) => {
-  let serverCerts = rowToObject(row);
-  let dfsp = await DFSPModel.findByRawId(row.dfsp_id);
-  serverCerts.dfspId = dfsp.dfsp_id;
-  return serverCerts;
-};
-
-const bodyToRow = async (body) => {
-  let chainInfo = await PkiService.splitChainIntermediateCertificate(body);
-
+const formatBody = async (body) => {
   return {
-    root_cert: body.rootCertificate,
-    root_cert_info: body.rootCertificate ? JSON.stringify(await PKIEngine.getCertInfo(body.rootCertificate)) : body.rootCertificate,
-    chain: body.intermediateChain,
-    chain_info: JSON.stringify(chainInfo),
-    jws_cert: body.jwsCertificate,
-    jws_cert_info: body.jwsCertificate ? JSON.stringify(await PKIEngine.getCertInfo(body.jwsCertificate)) : body.jwsCertificate
+    rootCertificate: body.rootCertificate,
+    rootCertificateInfo: body.rootCertificate && await PKIEngine.getCertInfo(body.rootCertificate),
+    intermediateChain: body.intermediateChain,
+    intermediateChainInfo: await PkiService.splitChainIntermediateCertificate(body),
+    jwsCertificate: body.jwsCertificate,
+    jwsCertificateInfo: body.jwsCertificate && await PKIEngine.getCertInfo(body.jwsCertificate),
   };
 };

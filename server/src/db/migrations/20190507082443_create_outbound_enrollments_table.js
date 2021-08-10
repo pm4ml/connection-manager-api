@@ -22,11 +22,10 @@ exports.up = function (knex, Promise) {
     table.integer('dfsp_id', 11).unsigned().notNullable();
     table.text('dfsp_ca_bundle');
     table.text('csr');
-    table.text('key');
     table.text('cert');
     table.json('cert_info');
     table.json('csr_info');
-    table.string('state', 512).defaultTo(null); ;
+    table.string('state', 512).defaultTo(null);
     table.string('key_validation_result', 512).defaultTo(null);
     table.text('key_validation_output').defaultTo(null);
     table.string('signing_validation_result', 512).defaultTo(null);

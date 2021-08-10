@@ -17,15 +17,14 @@
 
 'use strict';
 const EnvironmentModel = require('../models/EnvironmentModel');
-const CertificatesAuthoritiesModel = require('../models/CertificatesAuthoritiesModel');
 const DFSPModel = require('../models/DFSPModel');
-const DFSPCAsModel = require('../models/DFSPCAsModel');
 const InternalError = require('../errors/InternalError');
 const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
-const PKIEngine = require('../pki_engine/EmbeddedPKIEngine');
+const PKIEngine = require('../pki_engine/VaultPKIEngine');
 
 const ValidationCodes = require('../pki_engine/ValidationCodes');
+const Constants = require('../constants/Constants');
 
 const certificateStartDelimiter = '-----BEGIN CERTIFICATE-----';
 const certificateEndDelimiter = '-----END CERTIFICATE-----';
@@ -61,8 +60,7 @@ exports.createEnvironment = async function (body) {
     if (result.length === 1) {
       let id = result[0];
       let row = await EnvironmentModel.findById(id);
-      let environment = EnvironmentModel.mapRowToObject(row);
-      return environment;
+      return EnvironmentModel.mapRowToObject(row);
     }
   } catch (err) {
     throw new InternalError(err.message);
@@ -97,10 +95,6 @@ exports.deleteEnvironment = async function (envId) {
  * Creates a CA for the environment. This CA will be used to sign the CSRs it
  * receives from the DFSPs on the Inbound flow.
  *
- * Current implementation supports only the "EMBEDDED_PKI_ENGINE" type.
- * Future implementations may add support for an external CA.
- *
- * This operation creates a EMBEDDED_PKI_ENGINE for the environment.
  *
  * Since there will usually be just once CA per environment,
  * this operation establish the newly created CA as the current CA,
@@ -112,31 +106,15 @@ exports.deleteEnvironment = async function (envId) {
 exports.createCA = async function (envId, body) {
   let caOptions = body;
 
-  let pkiEngine = new PKIEngine();
-  const csrKeyCertConfig = await pkiEngine.createCA(caOptions);
+  let pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  const { cert } = await pkiEngine.createCA(caOptions);
+  let certInfo = await PKIEngine.getCertInfo(cert);
 
-  let csrInfo = await PKIEngine.getCSRInfo(csrKeyCertConfig.csr);
-  let certInfo = await PKIEngine.getCertInfo(csrKeyCertConfig.cert);
-  let values = {
-    env_id: envId,
-    current: 1,
-    csr: csrKeyCertConfig.csr,
-    key: csrKeyCertConfig.key,
-    csr_info: JSON.stringify(csrInfo),
-    cert_info: JSON.stringify(certInfo),
-    cert: csrKeyCertConfig.cert,
-    ca_config: JSON.stringify(csrKeyCertConfig.caConfig),
-    engine_type: CertificatesAuthoritiesModel.EMBEDDED_PKI_ENGINE
+  return {
+    certificate: cert,
+    certInfo,
   };
-
-  let result = await CertificatesAuthoritiesModel.create(values);
-  if (result.length === 1) {
-    // Set the others as "not current"
-    await CertificatesAuthoritiesModel.setAsCurrent(envId, result[0]);
-    return exports.getCurrentCARootCert(envId);
-  } else {
-    throw new InternalError('Insert returned more than 1 affected row' + JSON.stringify(result));
-  }
 };
 
 /**
@@ -146,11 +124,14 @@ exports.createCA = async function (envId, body) {
  * returns inline_response_200_1
  **/
 exports.getCurrentCARootCert = async function (envId) {
-  let row = await CertificatesAuthoritiesModel.findCurrentForEnv(envId);
+  let pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  const cert = await pkiEngine.getRootCaCert();
+  const certInfo = await PKIEngine.getCertInfo(cert);
   return {
-    certificate: row.cert,
-    certInfo: row.cert_info && (typeof row.cert_info === 'string') ? JSON.parse(row.cert_info) : {},
-    id: row.id
+    certificate: cert,
+    certInfo,
+    id: 1,
   };
 };
 
@@ -188,25 +169,6 @@ exports.createDFSP = async function (envId, body) {
     if (result.length === 1) {
       return { id: body.dfspId };
     }
-  } catch (err) {
-    console.error(err);
-    throw new InternalError(err.message);
-  }
-};
-
-/**
- * Deletes a DFSP
- *
- * envId String ID of environment
- * dfspId String ID of dfsp
- * returns ObjectCreatedResponse // FIXME
- **/
-exports.deleteDFSP = async function (envId, dfspId) {
-  await exports.validateEnvironmentAndDfsp(envId, dfspId);
-
-  try {
-    let result = await DFSPModel.delete(envId, dfspId);
-    return result;
   } catch (err) {
     console.error(err);
     throw new InternalError(err.message);
@@ -349,6 +311,9 @@ exports.retrieveFirstAndRemainingIntermediateChainCerts = async (intermediateCha
  **/
 exports.deleteDFSP = async function (envId, dfspId) {
   await exports.validateEnvironmentAndDfsp(envId, dfspId);
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  await pkiEngine.deleteAllDFSPData(dfspId);
   return DFSPModel.delete(envId, dfspId);
 };
 
@@ -364,32 +329,20 @@ exports.setDFSPca = async function (envId, dfspId, body) {
   let rootCertificate = body.rootCertificate || null;
   let intermediateChain = body.intermediateChain || null;
 
-  const validatingPkiEngine = new PKIEngine();
+  const validatingPkiEngine = new PKIEngine(Constants.vault);
+  await validatingPkiEngine.connect();
   let { validations, validationState } = await validatingPkiEngine.validateCACertificate(rootCertificate, intermediateChain);
 
-  let values = {
-    validations: JSON.stringify(validations),
+  const values = {
+    rootCertificate,
+    intermediateChain,
+    validations,
     validationState,
   };
 
-  if (rootCertificate) {
-    values.root_certificate = rootCertificate;
-  }
-  if (intermediateChain) {
-    values.intermediate_chain = intermediateChain;
-  }
-  let result = await DFSPCAsModel.upsert(envId, dfspId, values);
+  await validatingPkiEngine.setDFSPCA(dfspId, values);
 
-  if (result === 1) {
-    return {
-      rootCertificate,
-      intermediateChain,
-      validations,
-      validationState
-    };
-  } else {
-    throw new InternalError('Wrong number of returned rows on upsert');
-  }
+  return values;
 };
 
 exports.getDfspsByMonetaryZones = async (envId, monetaryZoneId) => {
@@ -400,13 +353,9 @@ exports.getDfspsByMonetaryZones = async (envId, monetaryZoneId) => {
 exports.getDFSPca = async function (envId, dfspId) {
   await exports.validateEnvironmentAndDfsp(envId, dfspId);
   try {
-    let result = await DFSPCAsModel.findByDfspId(envId, dfspId);
-    return {
-      rootCertificate: result.root_certificate,
-      intermediateChain: result.intermediate_chain,
-      validations: result.validations && (typeof result.validations === 'string') ? JSON.parse(result.validations) : {},
-      validationState: result.validationState
-    };
+    const pkiEngine = new PKIEngine(Constants.vault);
+    await pkiEngine.connect();
+    return await pkiEngine.getDFSPCA(dfspId);
   } catch (error) {
     if (error instanceof NotFoundError) {
       return {
