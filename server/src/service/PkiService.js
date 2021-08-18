@@ -46,7 +46,7 @@ exports.getEnvironments = function () {
  **/
 exports.createEnvironment = async function (body) {
   // FIXME remove defaultDNs
-  let values = {
+  const values = {
     name: body.name,
     CN: body.defaultDN ? body.defaultDN.CN : null,
     C: body.defaultDN ? body.defaultDN.C : null,
@@ -56,10 +56,10 @@ exports.createEnvironment = async function (body) {
     ST: body.defaultDN ? body.defaultDN.ST : null,
   };
   try {
-    let result = await EnvironmentModel.create(values);
+    const result = await EnvironmentModel.create(values);
     if (result.length === 1) {
-      let id = result[0];
-      let row = await EnvironmentModel.findById(id);
+      const id = result[0];
+      const row = await EnvironmentModel.findById(id);
       return EnvironmentModel.mapRowToObject(row);
     }
   } catch (err) {
@@ -78,13 +78,13 @@ exports.getEnvironmentById = async function (envId) {
   if (envId === null || typeof envId === 'undefined') {
     throw new ValidationError(`Invalid envId ${envId}`);
   }
-  let row = await EnvironmentModel.findById(envId);
-  let environment = EnvironmentModel.mapRowToObject(row);
+  const row = await EnvironmentModel.findById(envId);
+  const environment = EnvironmentModel.mapRowToObject(row);
   return environment;
 };
 
 exports.deleteEnvironment = async function (envId) {
-  let affectedRows = await EnvironmentModel.delete(envId);
+  const affectedRows = await EnvironmentModel.delete(envId);
   if (affectedRows === 0) {
     throw new NotFoundError();
   }
@@ -104,12 +104,12 @@ exports.deleteEnvironment = async function (envId) {
  *
  */
 exports.createCA = async function (envId, body) {
-  let caOptions = body;
+  const caOptions = body;
 
-  let pkiEngine = new PKIEngine(Constants.vault);
+  const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
   const { cert } = await pkiEngine.createCA(caOptions);
-  let certInfo = await PKIEngine.getCertInfo(cert);
+  const certInfo = pkiEngine.getCertInfo(cert);
 
   return {
     certificate: cert,
@@ -124,10 +124,10 @@ exports.createCA = async function (envId, body) {
  * returns inline_response_200_1
  **/
 exports.getCurrentCARootCert = async function (envId) {
-  let pkiEngine = new PKIEngine(Constants.vault);
+  const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
   const cert = await pkiEngine.getRootCaCert();
-  const certInfo = await PKIEngine.getCertInfo(cert);
+  const certInfo = pkiEngine.getCertInfo(cert);
   return {
     certificate: cert,
     certInfo,
@@ -144,10 +144,10 @@ exports.getCurrentCARootCert = async function (envId) {
  * returns ObjectCreatedResponse
  **/
 exports.createDFSP = async function (envId, body) {
-  let regex = / /gi;
-  let dfspIdNoSpaces = body.dfspId ? body.dfspId.replace(regex, '-') : null;
+  const regex = / /gi;
+  const dfspIdNoSpaces = body.dfspId ? body.dfspId.replace(regex, '-') : null;
 
-  let values = {
+  const values = {
     env_id: envId,
     dfsp_id: body.dfspId,
     name: body.name,
@@ -165,7 +165,7 @@ exports.createDFSP = async function (envId, body) {
   }
 
   try {
-    let result = await DFSPModel.create(values);
+    const result = await DFSPModel.create(values);
     if (result.length === 1) {
       return { id: body.dfspId };
     }
@@ -213,7 +213,7 @@ exports.getDFSPById = async function (envId, dfspId) {
     throw new ValidationError(`Invalid dfspId ${dfspId}`);
   }
   try {
-    let result = await DFSPModel.findByDfspId(envId, dfspId);
+    const result = await DFSPModel.findByDfspId(envId, dfspId);
     return dfspRowToObject(result);
   } catch (error) {
     if (error instanceof NotFoundError) {
@@ -231,7 +231,7 @@ exports.updateDFSP = async (envId, dfspId, newDfsp) => {
     throw new ValidationError(`Invalid dfspId ${dfspId}`);
   }
 
-  let values = {
+  const values = {
     name: newDfsp.name,
     monetaryZoneId: newDfsp.monetaryZoneId,
     security_group: newDfsp.securityGroup
@@ -240,66 +240,19 @@ exports.updateDFSP = async (envId, dfspId, newDfsp) => {
   return DFSPModel.update(envId, dfspId, values);
 };
 
-/**
- *
- */
-exports.splitChainIntermediateCertificate = async (body) => {
+exports.splitCertificateChain = (chain) => {
   const beginCertRegex = /(?=-----BEGIN)/g;
 
-  let chainInfo = [];
-  let count = ((body.intermediateChain && body.intermediateChain.match(/BEGIN/g)) || []).length;
-
-  // split the intermediatesChain into a list of certInfo
-  if (count > 0) {
-    let intermediateChains = body.intermediateChain.split(beginCertRegex);
-    for (let index = 1; index < intermediateChains.length; index++) {
-      let chain = intermediateChains[index];
-      chain = chain.slice(0, chain.indexOf(certificateEndDelimiter)) + certificateEndDelimiter;
-      chainInfo.push(await PKIEngine.getCertInfo(chain));
-    }
-  }
-  return chainInfo;
+  return chain.split(beginCertRegex)
+    .filter(cert => cert.match(/BEGIN/g))
+    .map(cert => cert.slice(0, cert.indexOf(certificateEndDelimiter)) + certificateEndDelimiter);
 };
 
 /**
  *
  */
-exports.retrieveFirstAndRemainingIntermediateChainCerts = async (intermediateChain) => {
-  const beginCertPattern = '(?=' + certificateStartDelimiter + ')';
-  let certStartRegex = new RegExp(beginCertPattern, 'g');
-
-  let chainInfo = [];
-  let remainingIntermediateChainInfo = '';
-  let count = ((intermediateChain && intermediateChain.match(certStartRegex)) || []).length;
-  // split the intermediatesChain into a list of certInfo
-  if (count > 0) {
-    let intermediateCerts = intermediateChain.split(certStartRegex);
-    let intermediateCert = intermediateCerts[0];
-    intermediateCert = intermediateCert.slice(0, intermediateCert.indexOf(certificateEndDelimiter)) + certificateEndDelimiter;
-    if (intermediateCert.match(certStartRegex)) {
-      chainInfo.push(intermediateCert);
-      intermediateCerts.shift();
-      remainingIntermediateChainInfo = intermediateCerts.join('');
-    } else {
-      intermediateCert = intermediateCerts[1];
-      intermediateCert = intermediateCert.slice(0, intermediateCert.indexOf(certificateEndDelimiter)) + certificateEndDelimiter;
-      if (intermediateCert.match(certStartRegex)) {
-        chainInfo.push(intermediateCert);
-        intermediateCerts.shift();
-        intermediateCerts.shift();
-        remainingIntermediateChainInfo = intermediateCerts.join('');
-      }
-    }
-  }
-  // Test and business logic at following if (chainInfo.length === 0) added during MP-1104 bug fix work, but there is no requirement for it.
-  // The business logic results in bug MP-2398 and therefore skipping test and commenting business logic.
-  // if (chainInfo.length === 0) {
-  //   throw new ValidationError('Empty intermediate chain');
-  // }
-  return {
-    firstIntermediateChainCertificate: chainInfo[0],
-    remainingIntermediateChainInfo: remainingIntermediateChainInfo
-  };
+exports.splitChainIntermediateCertificateInfo = (body) => {
+  return exports.splitCertificateChain(body.intermediateChain || '').map(PKIEngine.getCertInfo);
 };
 
 /**
@@ -326,12 +279,12 @@ exports.deleteDFSP = async function (envId, dfspId) {
 exports.setDFSPca = async function (envId, dfspId, body) {
   await exports.validateEnvironmentAndDfsp(envId, dfspId);
 
-  let rootCertificate = body.rootCertificate || null;
-  let intermediateChain = body.intermediateChain || null;
+  const rootCertificate = body.rootCertificate || null;
+  const intermediateChain = body.intermediateChain || null;
 
   const validatingPkiEngine = new PKIEngine(Constants.vault);
   await validatingPkiEngine.connect();
-  let { validations, validationState } = await validatingPkiEngine.validateCACertificate(rootCertificate, intermediateChain);
+  const { validations, validationState } = await validatingPkiEngine.validateCACertificate(rootCertificate, intermediateChain);
 
   const values = {
     rootCertificate,

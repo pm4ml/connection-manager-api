@@ -17,7 +17,6 @@
 
 'use strict';
 const { enableCustomRootCAs } = require('./utils/tlsUtils');
-const { validateCfsslVersion } = require('./utils/cfssl');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
@@ -28,7 +27,6 @@ const logger = require('./log/logger');
 const OAuthHelper = require('./oauth/OAuthHelper');
 
 const db = require('./db/database');
-const printToolsVersion = require('./utils/printToolVersion');
 const corsUtils = require('./utils/corsUtils');
 
 const { Model } = require('objection');
@@ -39,7 +37,6 @@ exports.connect = async () => {
   await db.runKnexMigrations();
   await executeSSLCustomLogic();
   // await pkiService.init(Constants.vault);
-  printToolsVersion.printToolsVersion();
   setUpTempFilesManagement();
 
   app.use(cors(corsUtils.getCorsOptions));
@@ -60,7 +57,7 @@ exports.connect = async () => {
 
     // Route validated requests to appropriate controller
     // Ref: https://github.com/apigee-127/swagger-tools/blob/master/docs/Middleware.md
-    var options = {
+    const options = {
       swaggerUi: path.join(__dirname, '/swagger.json'),
       controllers: path.join(__dirname, './controllers'),
       useStubs: false
@@ -80,13 +77,6 @@ exports.connect = async () => {
  */
 async function executeSSLCustomLogic () {
   enableCustomRootCAs();
-
-  try {
-    await validateCfsslVersion();
-  } catch (error) {
-    console.error('Error while validating Cfssl version:', error);
-    process.exit(-1);
-  }
 }
 
 /**
@@ -94,8 +84,8 @@ async function executeSSLCustomLogic () {
  *
  */
 function getSwaggerDoc () {
-  var spec = fs.readFileSync(path.join(__dirname, 'api/swagger.yaml'), 'utf8');
-  var swaggerDoc = jsyaml.safeLoad(spec);
+  const spec = fs.readFileSync(path.join(__dirname, 'api/swagger.yaml'), 'utf8');
+  const swaggerDoc = jsyaml.safeLoad(spec);
   return swaggerDoc;
 }
 

@@ -17,12 +17,12 @@
 
 'use strict';
 
-var utils = require('../utils/writer.js');
-var Pki = require('../service/PkiService');
+const utils = require('../utils/writer.js');
+const Pki = require('../service/PkiService');
 
 exports.createCA = function createCA (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var body = req.swagger.params['body'].value;
+  const envId = req.swagger.params.envId.value;
+  const body = req.swagger.params.body.value;
   Pki.createCA(envId, body)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -33,8 +33,8 @@ exports.createCA = function createCA (req, res, next) {
 };
 
 exports.createDFSP = function createDFSP (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var body = req.swagger.params['body'].value;
+  const envId = req.swagger.params.envId.value;
+  const body = req.swagger.params.body.value;
   Pki.createDFSP(envId, body)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -45,8 +45,8 @@ exports.createDFSP = function createDFSP (req, res, next) {
 };
 
 exports.deleteDFSP = function createDFSP (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
+  const envId = req.swagger.params.envId.value;
+  const dfspId = req.swagger.params.dfspId.value;
   Pki.deleteDFSP(envId, dfspId)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -57,7 +57,7 @@ exports.deleteDFSP = function createDFSP (req, res, next) {
 };
 
 exports.createEnvironment = function createEnvironment (req, res, next) {
-  var body = req.swagger.params['body'].value;
+  const body = req.swagger.params.body.value;
   Pki.createEnvironment(body)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -68,7 +68,7 @@ exports.createEnvironment = function createEnvironment (req, res, next) {
 };
 
 exports.getCurrentCARootCert = function getCurrentCARootCert (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
+  const envId = req.swagger.params.envId.value;
   Pki.getCurrentCARootCert(envId)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -79,7 +79,7 @@ exports.getCurrentCARootCert = function getCurrentCARootCert (req, res, next) {
 };
 
 exports.getEnvironmentById = function getEnvironmentById (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
+  const envId = req.swagger.params.envId.value;
   Pki.getEnvironmentById(envId)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -100,7 +100,7 @@ exports.getEnvironments = function getEnvironments (req, res, next) {
 };
 
 exports.deleteEnvironment = function deleteEnvironment (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
+  const envId = req.swagger.params.envId.value;
   Pki.deleteEnvironment(envId)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -111,7 +111,7 @@ exports.deleteEnvironment = function deleteEnvironment (req, res, next) {
 };
 
 exports.getEnvironmentDFSPs = function getDFSPs (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
+  const envId = req.swagger.params.envId.value;
   Pki.getEnvironmentDFSPs(envId)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -122,9 +122,9 @@ exports.getEnvironmentDFSPs = function getDFSPs (req, res, next) {
 };
 
 exports.setDFSPca = function setDFSPca (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  var body = req.swagger.params['body'].value;
+  const envId = req.swagger.params.envId.value;
+  const dfspId = req.swagger.params.dfspId.value;
+  const body = req.swagger.params.body.value;
   Pki.setDFSPca(envId, dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -135,8 +135,8 @@ exports.setDFSPca = function setDFSPca (req, res, next) {
 };
 
 exports.getDFSPca = function getDFSPca (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
+  const envId = req.swagger.params.envId.value;
+  const dfspId = req.swagger.params.dfspId.value;
   Pki.getDFSPca(envId, dfspId)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -147,9 +147,9 @@ exports.getDFSPca = function getDFSPca (req, res, next) {
 };
 
 exports.updateDFSP = (req, res, next) => {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  var body = req.swagger.params['body'].value;
+  const envId = req.swagger.params.envId.value;
+  const dfspId = req.swagger.params.dfspId.value;
+  const body = req.swagger.params.body.value;
   Pki.updateDFSP(envId, dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -160,8 +160,8 @@ exports.updateDFSP = (req, res, next) => {
 };
 
 exports.getDfspsByMonetaryZones = (req, res, next) => {
-  var envId = req.swagger.params['envId'].value;
-  var monetaryZoneId = req.swagger.params['monetaryZoneId'].value;
+  const envId = req.swagger.params.envId.value;
+  const monetaryZoneId = req.swagger.params.monetaryZoneId.value;
   Pki.getDfspsByMonetaryZones(envId, monetaryZoneId)
     .then(function (response) {
       utils.writeJson(res, response);

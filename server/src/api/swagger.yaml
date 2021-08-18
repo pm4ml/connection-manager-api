@@ -757,7 +757,7 @@ paths:
         description: "TBD"
         required: true
         schema:
-          $ref: "#/definitions/BaseServerCert"
+          $ref: "#/definitions/CSRParameters"
       responses:
         200:
           description: "successful operation"
@@ -797,29 +797,6 @@ paths:
       responses:
         204:
           description: "no content"
-      x-swagger-router-controller: "HubServerCerts"
-    put:
-      tags:
-      - "Hub-server-certificates-configuration"
-      summary: "put server certificate"
-      description: "TBD"
-      operationId: "updateHubServerCerts"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "TBD"
-        required: true
-        schema:
-          $ref: "#/definitions/BaseServerCert"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/ServerCert"
       x-swagger-router-controller: "HubServerCerts"
   /environments/{envId}/hub/cas:
     parameters:
@@ -1288,47 +1265,6 @@ paths:
           description: "validation error"
         422:
           description: "don't have internal CA"
-      x-swagger-router-controller: "DfspInbound"
-  /environments/{envId}/dfsps/{dfspId}/enrollments/inbound/{enId}/certificate:
-    post:
-      tags:
-      - "DFSP-client-certificate"
-      summary: "Sets the enrollment certificate. Validates that the certificate issuer matches the leaf ( either the root and or the intermediate) of the Hub CA"
-      security:
-        - OAuth2: [ pta ]
-      description: "Sets the enrollment certificate and updates its state to CERT_SIGNED"
-      operationId: "addDFSPInboundEnrollmentCertificate"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "envId"
-        in: "path"
-        description: "ID of environment"
-        required: true
-        type: "string"
-      - name: "dfspId"
-        in: "path"
-        description: "DFSP id"
-        required: true
-        type: "string"
-      - name: "enId"
-        in: "path"
-        description: "Enrollment id"
-        required: true
-        type: "string"
-      - in: "body"
-        name: "body"
-        description: "certificate"
-        required: true
-        schema:
-          $ref: "#/definitions/InboundCertificate"
-      responses:
-        200:
-          description: "Updated InboundEnrollment"
-          schema:
-            $ref: "#/definitions/InboundEnrollment"
-        400:
-          description: "validation error ( example if certificate issuer is not the CA )"
       x-swagger-router-controller: "DfspInbound"
   /environments/{envId}/dfsps/{dfspId}/enrollments/outbound:
     parameters:
@@ -3053,7 +2989,7 @@ definitions:
           CN:
             type: "string"
             description: Common Name
-          emailAddress:
+          E:
             type: "string"
             description: email address
           O:
@@ -3101,7 +3037,7 @@ definitions:
           CN:
             type: "string"
             description: Common Name
-          emailAddress:
+          E:
             type: "string"
             description: email address
           O:
@@ -3125,7 +3061,7 @@ definitions:
           CN:
             type: "string"
             description: Common Name
-          emailAddress:
+          E:
             type: "string"
             description: email address
           O:
@@ -3171,7 +3107,7 @@ definitions:
           CN:
             type: "string"
             description: Common Name
-          emailAddress:
+          E:
             type: "string"
             description: email address
           O:

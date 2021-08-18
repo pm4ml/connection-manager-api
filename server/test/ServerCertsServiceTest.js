@@ -59,57 +59,30 @@ describe('ServerCertsService', () => {
 
     it('should create a HubServerCerts entry', async () => {
       let body = {
-        rootCertificate: fs.readFileSync(path.join(__dirname, AMAZON_ROOT_CA_PATH)).toString(),
-        intermediateChain: fs.readFileSync(path.join(__dirname, AMAZON_CHAIN_PATH)).toString(),
-        serverCertificate: fs.readFileSync(path.join(__dirname, AMAZON_SERVER_CERT_PATH)).toString(),
+        subject: {
+          CN: 'example.com',
+        },
       };
       let result = await ServerCertsService.createHubServerCerts(envId, body);
-      assert.isNotNull(result.id);
-      assert.equal('15058517296766393462896129580106245339', result.serverCertificateInfo.serialNumber);
-      assert.equal('2017-11-06T00:00:00Z', result.intermediateChainInfo[0].notBefore);
-      assert.equal('2013-08-01T12:00:00Z', result.intermediateChainInfo[1].notBefore);
-      assert.equal('2006-11-08T00:00:00Z', result.rootCertificateInfo.notBefore);
+      assert.isNotNull(result.serverCertificate);
+      assert.isNotNull(result.rootCertificate);
     }).timeout(30000);
 
     it('should create and delete a HubServerCerts entry', async () => {
       let body = {
-        rootCertificate: fs.readFileSync(path.join(__dirname, AMAZON_ROOT_CA_PATH)).toString(),
-        intermediateChain: fs.readFileSync(path.join(__dirname, AMAZON_CHAIN_PATH)).toString(),
-        serverCertificate: fs.readFileSync(path.join(__dirname, AMAZON_SERVER_CERT_PATH)).toString(),
+        subject: {
+          CN: 'example.com',
+        },
       };
       let result = await ServerCertsService.createHubServerCerts(envId, body);
-      assert.isNotNull(result.id);
-      await await ServerCertsService.deleteHubServerCerts(envId);
+      assert.isNotNull(result.serverCertificate);
+      await ServerCertsService.deleteHubServerCerts(envId);
       try {
         await ServerCertsService.getHubServerCerts(envId);
         assert.fail('Should have throw NotFoundError');
       } catch (error) {
         assert.instanceOf(error, NotFoundError);
       }
-    }).timeout(30000);
-
-    it('should update a HubServerCerts entry', async () => {
-      let body = {
-        rootCertificate: fs.readFileSync(path.join(__dirname, AMAZON_ROOT_CA_PATH)).toString(),
-        intermediateChain: fs.readFileSync(path.join(__dirname, AMAZON_CHAIN_PATH)).toString(),
-        serverCertificate: fs.readFileSync(path.join(__dirname, AMAZON_SERVER_CERT_PATH)).toString(),
-      };
-      let result = await ServerCertsService.createHubServerCerts(envId, body);
-      assert.isNotNull(result.id);
-      assert.equal('15058517296766393462896129580106245339', result.serverCertificateInfo.serialNumber);
-      assert.equal('2017-11-06T00:00:00Z', result.intermediateChainInfo[0].notBefore);
-      assert.equal('2013-08-01T12:00:00Z', result.intermediateChainInfo[1].notBefore);
-      assert.equal('2006-11-08T00:00:00Z', result.rootCertificateInfo.notBefore);
-
-      let newBody = {
-        rootCertificate: null,
-        intermediateChain: fs.readFileSync(path.join(__dirname, GOOGLE_CHAIN_PATH)).toString(),
-        serverCertificate: fs.readFileSync(path.join(__dirname, GOOGLE_SERVER_CERT_PATH)).toString(),
-      };
-      let resultAfter = await ServerCertsService.updateHubServerCerts(envId, newBody);
-      assert.isNotNull(resultAfter.id);
-      assert.equal('18944596908869286147063540593588663900', resultAfter.serverCertificateInfo.serialNumber);
-      assert.equal('149685795415515161014990164765', resultAfter.intermediateChainInfo[0].serialNumber);
     }).timeout(30000);
   });
 

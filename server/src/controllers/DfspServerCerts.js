@@ -17,14 +17,14 @@
 
 'use strict';
 
-var utils = require('../utils/writer.js');
-var ServerCertsService = require('../service/ServerCertsService');
+const utils = require('../utils/writer.js');
+const ServerCertsService = require('../service/ServerCertsService');
 
 exports.createDfspServerCerts = function createDfspServerCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
+  const envId = req.swagger.params.envId.value;
+  const dfspId = req.swagger.params.dfspId.value;
 
-  var body = req.swagger.params['body'].value;
+  const body = req.swagger.params.body.value;
   ServerCertsService.createDfspServerCerts(envId, dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -35,10 +35,10 @@ exports.createDfspServerCerts = function createDfspServerCerts (req, res, next) 
 };
 
 exports.updateDfspServerCerts = function updateDfspServerCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
+  const envId = req.swagger.params.envId.value;
+  const dfspId = req.swagger.params.dfspId.value;
 
-  var body = req.swagger.params['body'].value;
+  const body = req.swagger.params.body.value;
   ServerCertsService.updateDfspServerCerts(envId, dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -49,8 +49,8 @@ exports.updateDfspServerCerts = function updateDfspServerCerts (req, res, next) 
 };
 
 exports.getDfspServerCerts = function getDfspServerCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
+  const envId = req.swagger.params.envId.value;
+  const dfspId = req.swagger.params.dfspId.value;
 
   ServerCertsService.getDfspServerCerts(envId, dfspId)
     .then(function (response) {
@@ -62,7 +62,7 @@ exports.getDfspServerCerts = function getDfspServerCerts (req, res, next) {
 };
 
 exports.getAllDfspServerCerts = function getAllDfspServerCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
+  const envId = req.swagger.params.envId.value;
 
   ServerCertsService.getAllDfspServerCerts(envId)
     .then(function (response) {
@@ -74,8 +74,8 @@ exports.getAllDfspServerCerts = function getAllDfspServerCerts (req, res, next) 
 };
 
 exports.deleteDfspServerCerts = function deleteDfspServerCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
+  const envId = req.swagger.params.envId.value;
+  const dfspId = req.swagger.params.dfspId.value;
 
   ServerCertsService.deleteDfspServerCerts(envId, dfspId)
     .then(function (response) {

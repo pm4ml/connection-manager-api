@@ -45,7 +45,8 @@ exports.createDFSPInboundEnrollment = async function (envId, dfspId, body) {
 
   let csrInfo;
   try {
-    csrInfo = await PKIEngine.getCSRInfo(body.clientCSR);
+    const pkiEngine = new PKIEngine(Constants.vault);
+    csrInfo = pkiEngine.getCSRInfo(body.clientCSR);
   } catch (error) {
     throw new ValidationError('Could not parse the CSR content', error);
   }
@@ -122,8 +123,8 @@ exports.signDFSPInboundEnrollment = async function (envId, dfspId, enId) {
 
   const { csr } = enrollment;
 
-  let newCert = await pkiEngine.sign(csr);
-  let certInfo = await PKIEngine.getCertInfo(newCert);
+  const newCert = await pkiEngine.sign(csr);
+  const certInfo = pkiEngine.getCertInfo(newCert);
 
   const inboundEnrollment = {
     csr,
@@ -131,7 +132,7 @@ exports.signDFSPInboundEnrollment = async function (envId, dfspId, enId) {
     caType: CAType.EXTERNAL
   };
 
-  let { validations, validationState } = await pkiEngine.validateInboundEnrollment(inboundEnrollment);
+  const { validations, validationState } = await pkiEngine.validateInboundEnrollment(inboundEnrollment);
 
   const values = {
     ...enrollment,
@@ -140,60 +141,6 @@ exports.signDFSPInboundEnrollment = async function (envId, dfspId, enId) {
     state: 'CERT_SIGNED',
     validations,
     validationState
-  };
-
-  await pkiEngine.setDFSPInboundEnrollment(dbDfspId, values.id, values);
-  return values;
-};
-
-/**
- * Adds the certificate to the enrollment and updates its state to CERT_SIGNED
- *
- * envId String ID of environment
- * dfspId String DFSP id
- * enId String Enrollment id
- * body Certificate Certificate
- * returns the enrollment
- **/
-exports.addDFSPInboundEnrollmentCertificate = async function (envId, dfspId, enId, body) {
-  await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
-
-  const result = Joi.validate(body, enrollmentCertificate);
-  if (result.error) {
-    throw new ValidationError('Invalid Enrollment Certificate Input', result.error.details);
-  }
-
-  let certificate = body.certificate;
-  let hubCAId = body.hubCAId;
-
-  let certInfo;
-  try {
-    certInfo = await PKIEngine.getCertInfo(certificate);
-  } catch (error) {
-    throw new ValidationError('Could not parse the Certificate content', error);
-  }
-
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
-  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
-  const inboundEnrollment = await pkiEngine.getDFSPInboundEnrollment(dbDfspId, enId);
-  if (!inboundEnrollment) {
-    throw new InvalidEntityError(`Could not retrieve current CA for the endpoint ${enId}, dfsp id ${dfspId}, environment id ${envId}`);
-  }
-
-  const validationEnrollment = JSON.parse(JSON.stringify(inboundEnrollment));
-  validationEnrollment.certificate = certificate;
-
-  const { validations, validationState } = await pkiEngine.validateInboundEnrollment(validationEnrollment);
-
-  const values = {
-    ...inboundEnrollment,
-    certificate,
-    certInfo,
-    state: 'CERT_SIGNED',
-    validations,
-    validationState,
-    hubCAId
   };
 
   await pkiEngine.setDFSPInboundEnrollment(dbDfspId, values.id, values);

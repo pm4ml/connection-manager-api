@@ -17,12 +17,12 @@
 
 'use strict';
 
-var utils = require('../utils/writer.js');
-var Login = require('../service/LoginService');
+const utils = require('../utils/writer.js');
+const Login = require('../service/LoginService');
 
 exports.loginUser = function login (req, res, next) {
-  var username = req.swagger.params['username'].value;
-  var password = req.swagger.params['password'].value;
+  const username = req.swagger.params.username.value;
+  const password = req.swagger.params.password.value;
   Login.loginUser(username, password, req, res)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -43,9 +43,9 @@ exports.logoutUser = function login (req, res, next) {
 };
 
 exports.login2step = function login2step (req, res, next) {
-  var username = req.swagger.params['username'].value;
-  var password = req.swagger.params['password'].value;
-  var generatedToken = req.swagger.params['generatedToken'].value;
+  const username = req.swagger.params.username.value;
+  const password = req.swagger.params.password.value;
+  const generatedToken = req.swagger.params.generatedToken.value;
 
   Login.login2step(username, password, generatedToken, req, res)
     .then(function (response) {
@@ -57,9 +57,9 @@ exports.login2step = function login2step (req, res, next) {
 };
 
 exports.resetPassword = function resetPassword (req, res) {
-  var username = req.swagger.params['username'].value;
-  var newPassword = req.swagger.params['newPassword'].value;
-  var userguid = req.swagger.params['userguid'].value;
+  const username = req.swagger.params.username.value;
+  const newPassword = req.swagger.params.newPassword.value;
+  const userguid = req.swagger.params.userguid.value;
 
   Login.resetPassword(username, newPassword, userguid)
     .then(function (response) {

@@ -31,7 +31,7 @@ exports.createDfspJWSCerts = async (envId, dfspId, body) => {
 
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  let { validations, validationState } = await pkiEngine.validateJWSCertificate(body.publicKey);
+  let { validations, validationState } = pkiEngine.validateJWSCertificate(body.publicKey);
   const jwsData = {
     dfspId,
     publicKey: body.publicKey,

@@ -28,7 +28,7 @@
     Country (C)
     Email Address (emailAddress)
   */
-const MANDATORY_DISTINGUISHED_NAMES = ['CN', 'OU', 'O', 'L', 'ST', 'C', 'emailAddress'];
+const MANDATORY_DISTINGUISHED_NAMES = ['CN', 'OU', 'O', 'L', 'ST', 'C', 'E'];
 
 // https://oidref.com/1.2.840.113549.1.9.1
 // http://www.oid-info.com/get/1.2.840.113549.1.9.1

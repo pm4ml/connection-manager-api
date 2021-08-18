@@ -37,16 +37,16 @@ exports.createHubCA = async (envId, body) => {
     throw new ValidationError('Invalid Hub CA Input', result.error.details);
   }
 
-  let rootCertificate = body.rootCertificate || null;
-  let intermediateChain = body.intermediateChain || null;
+  const rootCertificate = body.rootCertificate || null;
+  const intermediateChain = body.intermediateChain || null;
 
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  let { validations, validationState } = await pkiEngine.validateCACertificate(rootCertificate, intermediateChain);
+  const { validations, validationState } = await pkiEngine.validateCACertificate(rootCertificate, intermediateChain);
 
   const info = {
     id: await createID(),
-    ...(await formatBody(body)),
+    ...formatBody(body),
     validations,
     validationState,
   };
@@ -85,13 +85,13 @@ exports.deleteHubCA = async (envId, hubCAId) => {
   await pkiEngine.deleteHubIssuerCACert(hubCAId);
 };
 
-const formatBody = async (body) => {
+const formatBody = (body) => {
   return {
     name: body.name,
     type: body.type,
     rootCertificate: body.rootCertificate,
-    rootCertificateInfo: body.rootCertificate && await PKIEngine.getCertInfo(body.rootCertificate),
+    rootCertificateInfo: body.rootCertificate && PKIEngine.getCertInfo(body.rootCertificate),
     intermediateChain: body.intermediateChain,
-    intermediateChainInfo: await PkiService.splitChainIntermediateCertificate(body),
+    intermediateChainInfo: PkiService.splitChainIntermediateCertificateInfo(body),
   };
 };

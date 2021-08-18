@@ -35,7 +35,7 @@ exports.createDfspServerCerts = async (envId, dfspId, body) => {
   const certData = {
     id: await createID(),
     dfspId,
-    ...(await formatBody(body)),
+    ...formatBody(body),
     validations,
     validationState,
   };
@@ -73,7 +73,7 @@ exports.getAllDfspServerCerts = async (envId) => {
 };
 
 /**
- * Sets the server certificates
+ * Creates the server certificates
  */
 exports.createHubServerCerts = async (envId, body) => {
   if (body === null || typeof body === 'undefined') {
@@ -82,20 +82,26 @@ exports.createHubServerCerts = async (envId, body) => {
   await PkiService.validateEnvironment(envId);
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  let { validations, validationState } = await pkiEngine.validateServerCertificate(body.serverCertificate, body.intermediateChain, body.rootCertificate);
+  let cert = {};
+  const serverCertData = await pkiEngine.createHubServerCert(body);
+  cert.rootCertificate = await pkiEngine.getRootCaCert();
+  cert.rootCertificateInfo = PKIEngine.getCertInfo(cert.rootCertificate);
+  if (serverCertData.ca_chain) {
+    cert.intermediateChain = serverCertData.ca_chain;
+    cert.intermediateChainInfo = cert.intermediateChain.map(PKIEngine.getCertInfo);
+  }
+  cert.serverCertificate = serverCertData.certificate;
+  cert.serverCertificateInfo = PKIEngine.getCertInfo(cert.serverCertificate);
 
+  const { validations, validationState } = await pkiEngine.validateServerCertificate(cert.serverCertificate, cert.intermediateChain, cert.rootCertificate);
   const certData = {
-    ...(await formatBody(body)),
+    ...cert,
     validations,
     validationState,
   };
 
   await pkiEngine.setHubServerCert(certData);
   return certData;
-};
-
-exports.updateHubServerCerts = async (envId, body) => {
-  return exports.createHubServerCerts(envId, body);
 };
 
 exports.getHubServerCerts = async (envId) => {
@@ -112,13 +118,13 @@ exports.deleteHubServerCerts = async (envId) => {
   await pkiEngine.deleteHubServerCert();
 };
 
-const formatBody = async (body) => {
+const formatBody = (body) => {
   return {
     rootCertificate: body.rootCertificate,
-    rootCertificateInfo: body.rootCertificate && await PKIEngine.getCertInfo(body.rootCertificate),
+    rootCertificateInfo: body.rootCertificate && PKIEngine.getCertInfo(body.rootCertificate),
     intermediateChain: body.intermediateChain,
-    intermediateChainInfo: await PkiService.splitChainIntermediateCertificate(body),
+    intermediateChainInfo: PkiService.splitChainIntermediateCertificateInfo(body),
     serverCertificate: body.serverCertificate,
-    serverCertificateInfo: body.serverCertificate && await PKIEngine.getCertInfo(body.serverCertificate),
+    serverCertificateInfo: body.serverCertificate && PKIEngine.getCertInfo(body.serverCertificate),
   };
 };

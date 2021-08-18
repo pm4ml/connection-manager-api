@@ -44,7 +44,7 @@ describe('DfspInboundService', async function () {
 
     beforeEach('creating ENV and DFSP', async function () {
       this.timeout(10000);
-      let env = {
+      const env = {
         name: 'DFSP_TEST_ENV_INBOUND',
         defaultDN: {
           ST: 'Street',
@@ -55,19 +55,19 @@ describe('DfspInboundService', async function () {
           O: 'Organization'
         }
       };
-      let result = await PkiService.createEnvironment(env);
+      const result = await PkiService.createEnvironment(env);
       assert.property(result, 'id');
       assert.isNotNull(result.id);
       envId = result.id;
 
-      let caBody = ROOT_CA;
+      const caBody = ROOT_CA;
       await PkiService.createCA(envId, caBody);
 
-      let dfsp = {
+      const dfsp = {
         dfspId: DFSP_TEST_INBOUND,
         name: 'DFSP used to test inbound flow'
       };
-      let resultDfsp = await PkiService.createDFSP(envId, dfsp);
+      const resultDfsp = await PkiService.createDFSP(envId, dfsp);
       dfspId = resultDfsp.id;
       /*
       cat hub-tls-client.csr | jq -Rs .
@@ -81,62 +81,33 @@ describe('DfspInboundService', async function () {
     });
 
     it('should create an enrollment from a CSR', async () => {
-      let enrollmentResult = await DfspInboundService.createDFSPInboundEnrollment(envId, dfspId, { clientCSR: csr });
+      const enrollmentResult = await DfspInboundService.createDFSPInboundEnrollment(envId, dfspId, { clientCSR: csr });
       assert.property(enrollmentResult, 'id');
       assert.isNotNull(enrollmentResult.id);
-      let enrollmentId = enrollmentResult.id;
+      const enrollmentId = enrollmentResult.id;
 
-      let retrievedEnrollment = await DfspInboundService.getDFSPInboundEnrollment(envId, dfspId, enrollmentId);
+      const retrievedEnrollment = await DfspInboundService.getDFSPInboundEnrollment(envId, dfspId, enrollmentId);
       assert.equal(retrievedEnrollment.id, enrollmentId);
       assert.equal(retrievedEnrollment.csr, csr);
       assert.equal(retrievedEnrollment.state, 'CSR_LOADED');
 
-      let signResponse = await DfspInboundService.signDFSPInboundEnrollment(envId, dfspId, enrollmentId);
+      const signResponse = await DfspInboundService.signDFSPInboundEnrollment(envId, dfspId, enrollmentId);
       assert.equal(signResponse.state, 'CERT_SIGNED');
 
-      let certifiedEnrollment = await DfspInboundService.getDFSPInboundEnrollment(envId, dfspId, enrollmentId);
+      const certifiedEnrollment = await DfspInboundService.getDFSPInboundEnrollment(envId, dfspId, enrollmentId);
       assert.equal(certifiedEnrollment.id, enrollmentId);
       assert.isNotNull(certifiedEnrollment.cert);
       assert.equal(certifiedEnrollment.state, 'CERT_SIGNED');
     });
 
-    it('should create an enrollment from a CSR and upload a certificate - no CA', async () => {
-      let csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
-      let enrollmentResult = await DfspInboundService.createDFSPInboundEnrollment(envId, dfspId, { clientCSR: csr });
-      assert.property(enrollmentResult, 'id');
-      assert.isNotNull(enrollmentResult.id);
-      let enrollmentId = enrollmentResult.id;
-
-      let retrievedEnrollment = await DfspInboundService.getDFSPInboundEnrollment(envId, dfspId, enrollmentId);
-      assert.equal(retrievedEnrollment.id, enrollmentId);
-      assert.equal(retrievedEnrollment.csr, csr);
-      assert.equal(retrievedEnrollment.state, 'CSR_LOADED');
-      assert.equal(retrievedEnrollment.validationState, 'VALID');
-
-      // upload the cert
-      let cert = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.pem'), 'utf8');
-      let uploadResponse = await DfspInboundService.addDFSPInboundEnrollmentCertificate(envId, dfspId, enrollmentId, { certificate: cert, hubCAId: 1 });
-      assert.equal(uploadResponse.state, 'CERT_SIGNED');
-      assert.equal(uploadResponse.validationState, ValidationCodes.VALID_STATES.VALID, JSON.stringify(uploadResponse, null, 2));
-      for (const validation of uploadResponse.validations) {
-        if (validation.validationCode === 'CERTIFICATE_SIGNATURE_ALGORITHM') {
-          assert.equal(validation.result, ValidationCodes.VALID_STATES.VALID, JSON.stringify(validation, null, 2));
-        } else if (validation.validationCode === 'CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH') {
-          assert.equal(validation.result, ValidationCodes.VALID_STATES.NOT_AVAILABLE, JSON.stringify(validation, null, 2));
-        } else {
-          assert.equal(validation.result, ValidationCodes.VALID_STATES.VALID, JSON.stringify(validation, null, 2));
-        }
-      }
-    });
-
     it('should create an enrollment from a CSR with correct validations', async () => {
-      let csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
-      let enrollmentResult = await DfspInboundService.createDFSPInboundEnrollment(envId, dfspId, { clientCSR: csr });
+      const csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
+      const enrollmentResult = await DfspInboundService.createDFSPInboundEnrollment(envId, dfspId, { clientCSR: csr });
       assert.property(enrollmentResult, 'id');
       assert.isNotNull(enrollmentResult.id);
-      let enrollmentId = enrollmentResult.id;
+      const enrollmentId = enrollmentResult.id;
 
-      let retrievedEnrollment = await DfspInboundService.getDFSPInboundEnrollment(envId, dfspId, enrollmentId);
+      const retrievedEnrollment = await DfspInboundService.getDFSPInboundEnrollment(envId, dfspId, enrollmentId);
       assert.equal(retrievedEnrollment.id, enrollmentId);
       assert.equal(retrievedEnrollment.csr, csr);
       assert.equal(retrievedEnrollment.state, 'CSR_LOADED');
@@ -144,7 +115,7 @@ describe('DfspInboundService', async function () {
     });
 
     it('should throw a ValidationError on an enrollment from a CSR with invalid content', async () => {
-      let csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/some-serial.srl'), 'utf8');
+      const csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/some-serial.srl'), 'utf8');
       try {
         await DfspInboundService.createDFSPInboundEnrollment(envId, dfspId, { clientCSR: csr });
         assert.fail('Should have throw ValidationError');
@@ -161,7 +132,7 @@ describe('DfspInboundService', async function () {
     const DFSP_TEST_INBOUND = 'dfsp.inbound.io';
 
     beforeEach('creating ENV and DFSP', async () => {
-      let env = {
+      const env = {
         name: 'DFSP_TEST_ENV_INBOUND',
         defaultDN: {
           ST: 'Street',
@@ -172,16 +143,16 @@ describe('DfspInboundService', async function () {
           O: 'Organization'
         }
       };
-      let result = await PkiService.createEnvironment(env);
+      const result = await PkiService.createEnvironment(env);
       assert.property(result, 'id');
       assert.isNotNull(result.id);
       envId = result.id;
 
-      let dfsp = {
+      const dfsp = {
         dfspId: DFSP_TEST_INBOUND,
         name: 'DFSP used to test inbound flow'
       };
-      let resultDfsp = await PkiService.createDFSP(envId, dfsp);
+      const resultDfsp = await PkiService.createDFSP(envId, dfsp);
       dfspId = resultDfsp.id;
       csr = '-----BEGIN CERTIFICATE REQUEST-----\nMIIFfzCCA2cCAQAwgbIxCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJXQTEQMA4GA1UE\nBxMHU2VhdHRsZTERMA8GA1UEChMITW9kdXNib3gxFDASBgNVBAsTC0VuZ2luZWVy\naW5nMR0wGwYDVQQDExRodWIuZGV2Lm1vZHVzYm94LmNvbTE8MDoGCSqGSIb3DQEJ\nAQwtY29ubmVjdGlvbi1tYW5hZ2VyLWFkbWluQGh1Yi5kZXYubW9kdXNib3guY29t\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA9aGgGgJkvv2JfWzvaei4\n5+Vf7VicajqvEjqO/KjWQwZLUXRAq3shIm2onN67ftDWj5uo8k2CsR8l/bNPeML8\nTHyfq5OHrV1i/BX8V4/Dy82caOUnUoq0Rvl7daNSz7McrA+hvMjWD7r9FN8qO4o7\nnGxLmZ6AMlThVwTcr8UGR9Z5tKC4RjhHljH5NTSWchmLZj+kQohnK1Gz9zT3ZRhA\nynEkv7jH2oi4YCJNMu/yKgCaUSH11JU+eHJTXePNqKslMNyAPR71aAkGyqJaOPHo\ni833m9EkDTSPg+dJTzzW/y8/T7o+kvucFLoF+bpQ1LA8EgY4Z5jAxB9Hy7Nns+z+\nSw74S4+ad5KrXcqwdpHe+uhhRRBBC1bF4UHLQ5+kpvCY8is+KNUCcki8NFb0rh0L\nBNK3vbU/a5iUlKCDmebtmB20TEfrLqGdS2b+CvNPDzHDTBt6m61FiA8M1WoWvzgE\n8cjYyEG2/lZIQHJ6nzAJ0kFcal8mu7OibkQMEnxHQmsxMi4/NQ4i+SVSWqVb+n3o\nYMSLvfOxe8kXYpnOulbbG87ocFL6Y/6ceRYHo9vLVxSVmuS6UOTbMF2JAFWRbkqI\nRAOkEeipxvkHy6GLz9UhVMqxK4OmxQ1bLI/Gpk3ULPhBx1lXtyRFeBfk1YjGZlFp\nsT9ar3pGdPcRCa0feFkUzOMCAwEAAaCBhjCBgwYJKoZIhvcNAQkOMXYwdDByBgNV\nHREEazBpghVodWIxLmRldi5tb2R1c2JveC5jb22CFWh1YjIuZGV2Lm1vZHVzYm94\nLmNvbYEtY29ubmVjdGlvbi1tYW5hZ2VyLWFkbWluQGh1Yi5kZXYubW9kdXNib3gu\nY29thwSjCgUYhwSjCgUVMA0GCSqGSIb3DQEBDQUAA4ICAQDzGBiYTjwgXnu1+y7y\n8HRKLny0EYMpVOrAf/sSrVKsh2ExS3o10VzV+KyewPsSDfew/S7VDxWqZcJlZrEJ\nXW/ZgZGkDjsVTgCSMQ/IVPDXKyQIEzCWB8Ne5UnC9oIjUlB5l3Svld4Q0DtS6hE6\n3azz8TIYSivwIE8OG/TXQxqtjjJMC2sCcHA9KZsZZwes1vezXR3LIy4R8GBLYpVV\nDGiQnNsXnIqcx2nH3kP/l00PK9Kk/jOJxKGbQbs79ntaAJ9AXuQHYxg13q4ppGG+\nSCWkEx3LDQTPi+WWhlcETnpvkT1jAH1SWV3ld8c7TcXPpcj0DYTaBYovL6baeCCD\nPDObXFU4A0QFivwgvrKicc85JWtg4Y10UCcPRfAxpnT8afV9KY+sX6oZo1cKcCWL\n+SDc3Ikyd3Vf3nPvDy/ZqyGx/h5UpFKwgG9usYEzz57LVBxEnaOfRLN2E6sNvuse\nrr1yejFQXRqxBPj0PniiNyRy+dsFeCIflAa/cmzYch/lWgpM8pEj4XsYSu7lRMqx\nihmpmqpClZYx0Mu4CTaHW85S0aV6EhMOZgJmRnm+R+QNB4Q44ssnfyeb9TipKCE0\nkMCix1EqPoucgIekQzedwe32wDR0oGYMOdA1w44maDC9QaIKLjhu2f+8m+CqeD4Q\nvr97InCotkF5yL/eQtiSkUhUjg==\n-----END CERTIFICATE REQUEST-----\n';
     });
@@ -192,12 +163,12 @@ describe('DfspInboundService', async function () {
     });
 
     it('should throw an error because there\'s no CA', async () => {
-      let enrollmentResult = await DfspInboundService.createDFSPInboundEnrollment(envId, dfspId, { clientCSR: csr });
+      const enrollmentResult = await DfspInboundService.createDFSPInboundEnrollment(envId, dfspId, { clientCSR: csr });
       assert.property(enrollmentResult, 'id');
       assert.isNotNull(enrollmentResult.id);
-      let enrollmentId = enrollmentResult.id;
+      const enrollmentId = enrollmentResult.id;
 
-      let retrievedEnrollment = await DfspInboundService.getDFSPInboundEnrollment(envId, dfspId, enrollmentId);
+      const retrievedEnrollment = await DfspInboundService.getDFSPInboundEnrollment(envId, dfspId, enrollmentId);
       assert.equal(retrievedEnrollment.id, enrollmentId);
       assert.equal(retrievedEnrollment.csr, csr);
       assert.equal(retrievedEnrollment.state, 'CSR_LOADED');
@@ -218,7 +189,7 @@ describe('DfspInboundService', async function () {
 
     beforeEach('creating ENV and DFSP', async function () {
       this.timeout(10000);
-      let env = {
+      const env = {
         name: 'DFSP_TEST_ENV_INBOUND',
         defaultDN: {
           ST: 'Street',
@@ -229,16 +200,16 @@ describe('DfspInboundService', async function () {
           O: 'Organization'
         }
       };
-      let result = await PkiService.createEnvironment(env);
+      const result = await PkiService.createEnvironment(env);
       assert.property(result, 'id');
       assert.isNotNull(result.id);
       envId = result.id;
 
-      let dfsp = {
+      const dfsp = {
         dfspId: DFSP_TEST_INBOUND,
         name: 'DFSP used to test inbound flow'
       };
-      let resultDfsp = await PkiService.createDFSP(envId, dfsp);
+      const resultDfsp = await PkiService.createDFSP(envId, dfsp);
       dfspId = resultDfsp.id;
     });
 
@@ -248,44 +219,44 @@ describe('DfspInboundService', async function () {
     });
 
     it('should create a cert with SHA256 if specified as the signature_algorithm on the ca_config for a 2048bits csr', async () => {
-      let caBody = {
-        'default': {
-          'expiry': '43800h',
-          'usages': ['signing', 'key encipherment', 'client auth'],
-          'signature_algorithm': 'SHA256WithRSA'
+      const caBody = {
+        default: {
+          expiry: '43800h',
+          usages: ['signing', 'key encipherment', 'client auth'],
+          signature_algorithm: 'SHA256WithRSA'
         },
-        'csr': {
-          'key': {
-            'algo': 'rsa',
-            'size': 4096
+        csr: {
+          key: {
+            algo: 'rsa',
+            size: 4096
           },
-          'hosts': ['hub1.test.modusbox.com', 'hub2.test.modusbox.com', '163.10.5.24', '163.10.5.22'],
-          'names': [
+          hosts: ['hub1.test.modusbox.com', 'hub2.test.modusbox.com', '163.10.5.24', '163.10.5.22'],
+          names: [
             {
-              'CN': 'Mojaloop PKI',
-              'O': 'Mojaloop',
-              'OU': 'PKI'
+              CN: 'Mojaloop PKI',
+              O: 'Mojaloop',
+              OU: 'PKI'
             }
           ]
         }
       };
       await PkiService.createCA(envId, caBody);
 
-      let csr = fs.readFileSync(path.join(__dirname, 'resources/signing_algo/sha256-2048bits.csr'), 'utf8');
-      let enrollmentResult = await DfspInboundService.createDFSPInboundEnrollment(envId, dfspId, { clientCSR: csr });
+      const csr = fs.readFileSync(path.join(__dirname, 'resources/signing_algo/sha256-2048bits.csr'), 'utf8');
+      const enrollmentResult = await DfspInboundService.createDFSPInboundEnrollment(envId, dfspId, { clientCSR: csr });
       assert.property(enrollmentResult, 'id');
       assert.isNotNull(enrollmentResult.id);
-      let enrollmentId = enrollmentResult.id;
+      const enrollmentId = enrollmentResult.id;
 
-      let retrievedEnrollment = await DfspInboundService.getDFSPInboundEnrollment(envId, dfspId, enrollmentId);
+      const retrievedEnrollment = await DfspInboundService.getDFSPInboundEnrollment(envId, dfspId, enrollmentId);
       assert.equal(retrievedEnrollment.id, enrollmentId);
       assert.equal(retrievedEnrollment.csr, csr);
       assert.equal(retrievedEnrollment.state, 'CSR_LOADED');
 
-      let signResponse = await DfspInboundService.signDFSPInboundEnrollment(envId, dfspId, enrollmentId);
+      const signResponse = await DfspInboundService.signDFSPInboundEnrollment(envId, dfspId, enrollmentId);
       assert.equal(signResponse.state, 'CERT_SIGNED');
 
-      let certifiedEnrollment = await DfspInboundService.getDFSPInboundEnrollment(envId, dfspId, enrollmentId);
+      const certifiedEnrollment = await DfspInboundService.getDFSPInboundEnrollment(envId, dfspId, enrollmentId);
       assert.equal(certifiedEnrollment.id, enrollmentId);
       assert.isNotNull(certifiedEnrollment.cert);
       assert.equal(certifiedEnrollment.state, 'CERT_SIGNED');
@@ -298,44 +269,44 @@ describe('DfspInboundService', async function () {
     }).timeout(15000);
 
     it('should create a cert with SHA256 if specified as the signature_algorithm on the ca_config for a 4096bits csr', async () => {
-      let caBody = {
-        'default': {
-          'expiry': '43800h',
-          'usages': ['signing', 'key encipherment', 'client auth'],
-          'signature_algorithm': 'SHA256WithRSA'
+      const caBody = {
+        default: {
+          expiry: '43800h',
+          usages: ['signing', 'key encipherment', 'client auth'],
+          signature_algorithm: 'SHA256WithRSA'
         },
-        'csr': {
-          'key': {
-            'algo': 'rsa',
-            'size': 4096
+        csr: {
+          key: {
+            algo: 'rsa',
+            size: 4096
           },
-          'hosts': ['hub1.test.modusbox.com', 'hub2.test.modusbox.com', '163.10.5.24', '163.10.5.22'],
-          'names': [
+          hosts: ['hub1.test.modusbox.com', 'hub2.test.modusbox.com', '163.10.5.24', '163.10.5.22'],
+          names: [
             {
-              'CN': 'Mojaloop PKI',
-              'O': 'Mojaloop',
-              'OU': 'PKI'
+              CN: 'Mojaloop PKI',
+              O: 'Mojaloop',
+              OU: 'PKI'
             }
           ]
         }
       };
       await PkiService.createCA(envId, caBody);
 
-      let csr = fs.readFileSync(path.join(__dirname, 'resources/signing_algo/sha256-4096bits.csr'), 'utf8');
-      let enrollmentResult = await DfspInboundService.createDFSPInboundEnrollment(envId, dfspId, { clientCSR: csr });
+      const csr = fs.readFileSync(path.join(__dirname, 'resources/signing_algo/sha256-4096bits.csr'), 'utf8');
+      const enrollmentResult = await DfspInboundService.createDFSPInboundEnrollment(envId, dfspId, { clientCSR: csr });
       assert.property(enrollmentResult, 'id');
       assert.isNotNull(enrollmentResult.id);
-      let enrollmentId = enrollmentResult.id;
+      const enrollmentId = enrollmentResult.id;
 
-      let retrievedEnrollment = await DfspInboundService.getDFSPInboundEnrollment(envId, dfspId, enrollmentId);
+      const retrievedEnrollment = await DfspInboundService.getDFSPInboundEnrollment(envId, dfspId, enrollmentId);
       assert.equal(retrievedEnrollment.id, enrollmentId);
       assert.equal(retrievedEnrollment.csr, csr);
       assert.equal(retrievedEnrollment.state, 'CSR_LOADED');
 
-      let signResponse = await DfspInboundService.signDFSPInboundEnrollment(envId, dfspId, enrollmentId);
+      const signResponse = await DfspInboundService.signDFSPInboundEnrollment(envId, dfspId, enrollmentId);
       assert.equal(signResponse.state, 'CERT_SIGNED');
 
-      let certifiedEnrollment = await DfspInboundService.getDFSPInboundEnrollment(envId, dfspId, enrollmentId);
+      const certifiedEnrollment = await DfspInboundService.getDFSPInboundEnrollment(envId, dfspId, enrollmentId);
       assert.equal(certifiedEnrollment.id, enrollmentId);
       assert.isNotNull(certifiedEnrollment.cert);
       assert.equal(certifiedEnrollment.state, 'CERT_SIGNED');

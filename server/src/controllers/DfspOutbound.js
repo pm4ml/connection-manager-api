@@ -17,13 +17,13 @@
 
 'use strict';
 
-var utils = require('../utils/writer.js');
-var DfspOutbound = require('../service/DfspOutboundService');
+const utils = require('../utils/writer.js');
+const DfspOutbound = require('../service/DfspOutboundService');
 
 exports.createDFSPOutboundEnrollment = function createDFSPOutboundEnrollment (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  var body = req.swagger.params['body'].value;
+  const envId = req.swagger.params.envId.value;
+  const dfspId = req.swagger.params.dfspId.value;
+  const body = req.swagger.params.body.value;
   DfspOutbound.createDFSPOutboundEnrollment(envId, dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -34,9 +34,9 @@ exports.createDFSPOutboundEnrollment = function createDFSPOutboundEnrollment (re
 };
 
 exports.createCSRAndDFSPOutboundEnrollment = function createCSRAndDFSPOutboundEnrollment (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  var body = req.swagger.params['body'].value;
+  const envId = req.swagger.params.envId.value;
+  const dfspId = req.swagger.params.dfspId.value;
+  const body = req.swagger.params.body.value;
   DfspOutbound.createCSRAndDFSPOutboundEnrollment(envId, dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -47,9 +47,9 @@ exports.createCSRAndDFSPOutboundEnrollment = function createCSRAndDFSPOutboundEn
 };
 
 exports.getDFSPOutboundEnrollments = function getDFSPOutboundEnrollments (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  var state = req.swagger.params['state'].value;
+  const envId = req.swagger.params.envId.value;
+  const dfspId = req.swagger.params.dfspId.value;
+  const state = req.swagger.params.state.value;
   DfspOutbound.getDFSPOutboundEnrollments(envId, dfspId, state)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -60,9 +60,9 @@ exports.getDFSPOutboundEnrollments = function getDFSPOutboundEnrollments (req, r
 };
 
 exports.getDFSPOutboundEnrollment = function getDFSPOutboundEnrollment (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  var enId = req.swagger.params['enId'].value;
+  const envId = req.swagger.params.envId.value;
+  const dfspId = req.swagger.params.dfspId.value;
+  const enId = req.swagger.params.enId.value;
   DfspOutbound.getDFSPOutboundEnrollment(envId, dfspId, enId)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -73,10 +73,10 @@ exports.getDFSPOutboundEnrollment = function getDFSPOutboundEnrollment (req, res
 };
 
 exports.addDFSPOutboundEnrollmentCertificate = function addDFSPOutboundEnrollmentCertificate (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  var enId = req.swagger.params['enId'].value;
-  var body = req.swagger.params['body'].value;
+  const envId = req.swagger.params.envId.value;
+  const dfspId = req.swagger.params.dfspId.value;
+  const enId = req.swagger.params.enId.value;
+  const body = req.swagger.params.body.value;
   DfspOutbound.addDFSPOutboundEnrollmentCertificate(envId, dfspId, enId, body)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -87,9 +87,9 @@ exports.addDFSPOutboundEnrollmentCertificate = function addDFSPOutboundEnrollmen
 };
 
 exports.validateDFSPOutboundEnrollmentCertificate = function validateDFSPOutboundEnrollmentCertificate (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  var enId = req.swagger.params['enId'].value;
+  const envId = req.swagger.params.envId.value;
+  const dfspId = req.swagger.params.dfspId.value;
+  const enId = req.swagger.params.enId.value;
   DfspOutbound.validateDFSPOutboundEnrollmentCertificate(envId, dfspId, enId)
     .then(function (response) {
       utils.writeJson(res, response);

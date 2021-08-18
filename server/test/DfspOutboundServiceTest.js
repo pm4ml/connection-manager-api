@@ -22,11 +22,39 @@ const path = require('path');
 const PkiService = require('../src/service/PkiService');
 const DfspOutboundService = require('../src/service/DfspOutboundService');
 const assert = require('chai').assert;
-const spawnProcess = require('../src/process/spawner');
 const ROOT_CA = require('./Root_CA.js');
 const Constants = require('../src/constants/Constants');
+const forge = require('node-forge');
 
 const ValidationCodes = require('../src/pki_engine/ValidationCodes');
+
+// Sign CSR and return certificate ( what the DFSP would do )
+const createCertFromCSR = (csrPem) => {
+  let certPath = path.join(__dirname, 'resources/modusbox/ca.pem');
+  let keyPath = path.join(__dirname, 'resources/modusbox/ca-key.pem');
+
+  const caCert = forge.pki.certificateFromPem(fs.readFileSync(certPath));
+  const privateKey = forge.pki.privateKeyFromPem(fs.readFileSync(keyPath));
+  const csr = forge.pki.certificationRequestFromPem(csrPem);
+
+  const cert = forge.pki.createCertificate();
+  cert.serialNumber = '02';
+
+  cert.validity.notBefore = new Date();
+  cert.validity.notAfter = new Date();
+  cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
+
+  // subject from CSR
+  cert.setSubject(csr.subject.attributes);
+  // issuer from CA
+  cert.setIssuer(caCert.subject.attributes);
+  cert.setExtensions(csr.getAttribute('extensionRequest').extensions);
+
+  cert.publicKey = csr.publicKey;
+  cert.sign(privateKey, forge.md.sha256.create());
+
+  return forge.pki.certificateToPem(cert);
+};
 
 describe('DfspOutboundService', function () {
   before(async () => {
@@ -91,15 +119,7 @@ describe('DfspOutboundService', function () {
       assert.equal(newEnrollment.csr, body.hubCSR);
       assert.equal(newEnrollment.state, 'CSR_LOADED');
 
-      let csr = newEnrollment.csr;
-
-      // Let's sign the CSR ( what the DFSP would do )
-      let certPath = path.join(__dirname, 'resources/modusbox/ca.pem');
-      let keyPath = path.join(__dirname, 'resources/modusbox/ca-key.pem');
-      const cfsslResult = await spawnProcess(Constants.CFSSL.COMMAND_PATH, ['sign', '-loglevel', '1', '-ca', certPath, '-ca-key', keyPath, '-'], csr);
-
-      let cfsslOutput = JSON.parse(cfsslResult.stdout);
-      let { cert: newCert } = cfsslOutput;
+      const newCert = createCertFromCSR(newEnrollment.csr);
 
       // Now push the certificate to the Connection-Manager
       let certAddedEnrollment = await DfspOutboundService.addDFSPOutboundEnrollmentCertificate(envId, dfspId, enrollmentId, { certificate: newCert });
@@ -141,7 +161,7 @@ describe('DfspOutboundService', function () {
       let body = {
         'subject': {
           'CN': 'dfspendpoint1.test.modusbox.com',
-          'emailAddress': 'connection-manager@modusbox.com',
+          'E': 'connection-manager@modusbox.com',
           'O': 'Modusbox',
           'OU': 'PKI',
           'ST': 'XX',
@@ -171,15 +191,10 @@ describe('DfspOutboundService', function () {
       assert.equal(newEnrollment.state, 'CSR_LOADED');
       assert.notProperty(newEnrollment, 'key');
 
-      let csr = newEnrollment.csr;
+      const VaultPKIEngine = require('../src/pki_engine/VaultPKIEngine');
+      VaultPKIEngine.validateCsrSignatureValid(newEnrollment.csr);
 
-      // Let's sign the CSR ( what the DFSP would do )
-      let certPath = path.join(__dirname, 'resources/modusbox/ca.pem');
-      let keyPath = path.join(__dirname, 'resources/modusbox/ca-key.pem');
-      const cfsslResult = await spawnProcess(Constants.CFSSL.COMMAND_PATH, ['sign', '-loglevel', '1', '-ca', certPath, '-ca-key', keyPath, '-'], csr);
-
-      let cfsslOutput = JSON.parse(cfsslResult.stdout);
-      let { cert: newCert } = cfsslOutput;
+      const newCert = createCertFromCSR(newEnrollment.csr);
 
       // Now push the certificate to the Connection-Manager
       let certAddedEnrollment = await DfspOutboundService.addDFSPOutboundEnrollmentCertificate(envId, dfspId, enrollmentId, { certificate: newCert });
@@ -217,6 +232,6 @@ describe('DfspOutboundService', function () {
 
       // 'VALID' key and signing 'VALID' should give a valid state
       assert.equal(afterCertValidatedEnrollmentWithCA.state, 'CERT_SIGNED', JSON.stringify(afterCertValidatedEnrollmentWithCA, null, 2));
-    }).timeout(1500000);
-  }).timeout(3000000);
-}).timeout(4500000);
+    }).timeout(15000);
+  }).timeout(30000);
+}).timeout(45000);

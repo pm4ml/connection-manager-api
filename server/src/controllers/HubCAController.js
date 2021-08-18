@@ -17,12 +17,12 @@
 
 'use strict';
 
-var utils = require('../utils/writer.js');
-var HubCAService = require('../service/HubCAService');
+const utils = require('../utils/writer.js');
+const HubCAService = require('../service/HubCAService');
 
-exports.createHubCA = function login (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var body = req.swagger.params['body'].value;
+exports.createHubCA = function (req, res, next) {
+  const envId = req.swagger.params.envId.value;
+  const body = req.swagger.params.body.value;
   HubCAService.createHubCA(envId, body)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -32,8 +32,8 @@ exports.createHubCA = function login (req, res, next) {
     });
 };
 
-exports.getHubCAs = function login (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
+exports.getHubCAs = function (req, res, next) {
+  const envId = req.swagger.params.envId.value;
   HubCAService.getHubCAs(envId)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -43,9 +43,9 @@ exports.getHubCAs = function login (req, res, next) {
     });
 };
 
-exports.getHubCA = function login (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var hubCAId = req.swagger.params['hubCAId'].value;
+exports.getHubCA = function (req, res, next) {
+  const envId = req.swagger.params.envId.value;
+  const hubCAId = req.swagger.params.hubCAId.value;
   HubCAService.getHubCA(envId, hubCAId)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -55,9 +55,9 @@ exports.getHubCA = function login (req, res, next) {
     });
 };
 
-exports.deleteHubCA = function login (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var hubCAId = req.swagger.params['hubCAId'].value;
+exports.deleteHubCA = function (req, res, next) {
+  const envId = req.swagger.params.envId.value;
+  const hubCAId = req.swagger.params.hubCAId.value;
   HubCAService.deleteHubCA(envId, hubCAId)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -67,10 +67,10 @@ exports.deleteHubCA = function login (req, res, next) {
     });
 };
 
-exports.updateHubCA = function login (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var hubCAId = req.swagger.params['hubCAId'].value;
-  var body = req.swagger.params['body'].value;
+exports.updateHubCA = function (req, res, next) {
+  const envId = req.swagger.params.envId.value;
+  const hubCAId = req.swagger.params.hubCAId.value;
+  const body = req.swagger.params.body.value;
   HubCAService.updateHubCA(envId, hubCAId, body)
     .then(function (response) {
       utils.writeJson(res, response);

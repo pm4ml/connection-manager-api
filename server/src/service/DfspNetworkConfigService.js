@@ -23,9 +23,9 @@ const PkiService = require('./PkiService');
 const DFSPModel = require('../models/DFSPModel');
 const DFSPEndpointItemModel = require('../models/DFSPEndpointItemModel');
 
-const StatusEnum = Object.freeze({"NOT_STARTED":"NOT_STARTED", "IN_PROGRESS":"IN_PROGRESS", "COMPLETED":"COMPLETED"});
-const PhaseEnum = Object.freeze({"BUSINESS_SETUP":"BUSINESS_SETUP", "TECNICAL_SETUP":"TECNICAL_SETUP"});
-const StepEnum = Object.freeze({"ID_GENERATION":"ID_GENERATION", "ENDPOINTS":"ENDPOINTS", "CSR_EXCHANGE":"CSR_EXCHANGE", "CERTIFICATE_AUTHORITY":"CERTIFICATE_AUTHORITY", "SERVER_CERTIFICATES_EXCHANGE":"SERVER_CERTIFICATES_EXCHANGE", "JWS_CERTIFICATES":"JWS_CERTIFICATES"});
+const StatusEnum = Object.freeze({ NOT_STARTED: 'NOT_STARTED', IN_PROGRESS: 'IN_PROGRESS', COMPLETED: 'COMPLETED' });
+const PhaseEnum = Object.freeze({ BUSINESS_SETUP: 'BUSINESS_SETUP', TECNICAL_SETUP: 'TECNICAL_SETUP' });
+const StepEnum = Object.freeze({ ID_GENERATION: 'ID_GENERATION', ENDPOINTS: 'ENDPOINTS', CSR_EXCHANGE: 'CSR_EXCHANGE', CERTIFICATE_AUTHORITY: 'CERTIFICATE_AUTHORITY', SERVER_CERTIFICATES_EXCHANGE: 'SERVER_CERTIFICATES_EXCHANGE', JWS_CERTIFICATES: 'JWS_CERTIFICATES' });
 
 /**
  * Returns the Environment DFSP Status based on configured information for given envId and dfspId
@@ -34,7 +34,7 @@ const StepEnum = Object.freeze({"ID_GENERATION":"ID_GENERATION", "ENDPOINTS":"EN
  * returns inline_response_200_1
  **/
 exports.getEnvironmentDfspStatus = async function (envId, dfspId) {
-  let envStatus = [
+  const envStatus = [
     {
       phase: 'BUSINESS_SETUP',
       steps: [
@@ -69,26 +69,26 @@ exports.getEnvironmentDfspStatus = async function (envId, dfspId) {
         }
       ]
     }
-   ];
-   let dfsp = [];
-   let endpoints = [];
-   let csrexch = [];
-   let csrexchin = [];
-   let csrexchout = [];
-   let ca = [];
-   let servercerts = [];
-   let jwscerts = [];
+  ];
+  let dfsp = [];
+  let endpoints = [];
+  const csrexch = [];
+  const csrexchin = [];
+  const csrexchout = [];
+  const ca = [];
+  const servercerts = [];
+  const jwscerts = [];
 
-   try {
-     // ID_GENERATION
-     dfsp = await DFSPModel.findByDfspId(envId, dfspId);
+  try {
+    // ID_GENERATION
+    dfsp = await DFSPModel.findByDfspId(envId, dfspId);
 
-     // ENDPOINTS
-     endpoints = await DFSPEndpointItemModel.findObjectAll(envId, dfspId);
-     console.log('endpoints:');
-     console.log(endpoints);
-     console.log('endpoints stringify:');
-     console.log(JSON.stringify(endpoints));
+    // ENDPOINTS
+    endpoints = await DFSPEndpointItemModel.findObjectAll(envId, dfspId);
+    console.log('endpoints:');
+    console.log(endpoints);
+    console.log('endpoints stringify:');
+    console.log(JSON.stringify(endpoints));
 
     // CSR
     // csrexchout = await DfspOutboundEnrollmentModel.findAllDfsp(envId, dfspId);
@@ -103,7 +103,7 @@ exports.getEnvironmentDfspStatus = async function (envId, dfspId) {
     //  console.log('csrexchin stringify:');
     //  console.log(JSON.stringify(csrexchin));
 
-     // CA
+    // CA
     //  ca = await CertificatesAuthoritiesModel.findCurrentForEnv(envId);
     //  console.log('ca:');
     //  console.log(ca);
@@ -117,13 +117,12 @@ exports.getEnvironmentDfspStatus = async function (envId, dfspId) {
     //  console.log('servercerts stringify:');
     //  console.log(JSON.stringify(servercerts));
 
-     // JWS_CERTIFICATES
+    // JWS_CERTIFICATES
     //  jwscerts = await DfspJWSCertsModel.findByEnvIdDfspId(envId, dfspId);
     //  console.log('jwscerts:');
     //  console.log(jwscerts);
     //  console.log('jwscerts stringify:');
     //  console.log(JSON.stringify(jwscerts));
-
   } catch (error) {
     if (error instanceof NotFoundError) {
       throw new NotFoundError(`Status for environment: ${envId} and dfsp: ${dfspId} not found`);
@@ -131,13 +130,13 @@ exports.getEnvironmentDfspStatus = async function (envId, dfspId) {
     throw error;
   }
 
-   if(dfsp.id != null && dfsp.name != null) {
-    let bs = envStatus.filter(phase => phase.phase == PhaseEnum.BUSINESS_SETUP);
-    let s = bs[0].steps.filter(step => step.identifier == StepEnum.ID_GENERATION);
-     s[0].status = StatusEnum.COMPLETED;
-   }
+  if (dfsp.id != null && dfsp.name != null) {
+    const bs = envStatus.filter(phase => phase.phase == PhaseEnum.BUSINESS_SETUP);
+    const s = bs[0].steps.filter(step => step.identifier == StepEnum.ID_GENERATION);
+    s[0].status = StatusEnum.COMPLETED;
+  }
 
-   return envStatus;
+  return envStatus;
 };
 
 /**
@@ -150,7 +149,7 @@ exports.getEnvironmentDfspStatus = async function (envId, dfspId) {
  */
 const createDFSPIp = async function (envId, dfspId, body, direction) {
   await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
-  let inputIpEntry = body.value;
+  const inputIpEntry = body.value;
   if (!inputIpEntry.address) {
     throw new ValidationError('No address received');
   }
@@ -166,7 +165,7 @@ const createDFSPIp = async function (envId, dfspId, body, direction) {
   validateIPAddressInput(inputIpEntry.address);
   validatePorts(inputIpEntry.ports);
 
-  let endpointItem = {
+  const endpointItem = {
     state: 'NEW',
     type: 'IP',
     value: JSON.stringify(inputIpEntry),
@@ -185,8 +184,8 @@ const createDFSPIp = async function (envId, dfspId, body, direction) {
  * returns DFSPEndPointIp
  **/
 exports.createDFSPEgressIp = async function (envId, dfspId, body) {
-  let endpointItem = await createDFSPIp(envId, dfspId, body, 'EGRESS');
-  let id = await DFSPEndpointItemModel.create(envId, endpointItem);
+  const endpointItem = await createDFSPIp(envId, dfspId, body, 'EGRESS');
+  const id = await DFSPEndpointItemModel.create(envId, endpointItem);
   return DFSPEndpointItemModel.findObjectById(id);
 };
 
@@ -199,8 +198,8 @@ exports.createDFSPEgressIp = async function (envId, dfspId, body) {
  * returns DFSPEndPointIp
  **/
 exports.createDFSPIngressIp = async function (envId, dfspId, body) {
-  let endpointItem = await createDFSPIp(envId, dfspId, body, 'INGRESS');
-  let id = await DFSPEndpointItemModel.create(envId, endpointItem);
+  const endpointItem = await createDFSPIp(envId, dfspId, body, 'INGRESS');
+  const id = await DFSPEndpointItemModel.create(envId, endpointItem);
   return DFSPEndpointItemModel.findObjectById(id);
 };
 
@@ -231,20 +230,20 @@ exports.getDFSPIngressIps = async function getDFSPIngressIps (envId, dfspId) {
  **/
 exports.createDFSPIngressUrl = async function (envId, dfspId, body) {
   await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
-  let inputURLAddress = body.value;
+  const inputURLAddress = body.value;
   if (!inputURLAddress.url) {
     throw new ValidationError('No URL received');
   }
   validateURLInput(inputURLAddress.url);
 
-  let endpointItem = {
+  const endpointItem = {
     state: 'NEW',
     type: 'URL',
     value: JSON.stringify(inputURLAddress),
     dfspId: dfspId,
     direction: 'INGRESS',
   };
-  let id = await DFSPEndpointItemModel.create(envId, endpointItem);
+  const id = await DFSPEndpointItemModel.create(envId, endpointItem);
   return DFSPEndpointItemModel.findObjectById(id);
 };
 
@@ -254,13 +253,13 @@ exports.getDFSPIngressUrls = async function getDFSPIngressUrls (envId, dfspId) {
 };
 
 exports.getUnprocessedEndpointItems = async function (envId) {
-  let items = await DFSPEndpointItemModel.findAllEnvState(envId, 'NEW');
+  const items = await DFSPEndpointItemModel.findAllEnvState(envId, 'NEW');
   return items;
 };
 
 exports.getUnprocessedDfspItems = async function (envId, dfspId) {
   await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
-  let items = await DFSPEndpointItemModel.findAllDfspState(envId, dfspId, 'NEW');
+  const items = await DFSPEndpointItemModel.findAllDfspState(envId, dfspId, 'NEW');
   return items;
 };
 
@@ -295,14 +294,14 @@ exports.updateDFSPEndpoint = async function (envId, dfspId, epId, body) {
     validateURLInput(body.value.url);
   }
 
-  let endpointItem = { ...body };
+  const endpointItem = { ...body };
   if (endpointItem.value) {
     endpointItem.value = JSON.stringify(endpointItem.value);
   }
-  let id = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const id = await DFSPModel.findIdByDfspId(envId, dfspId);
   endpointItem.dfsp_id = id;
 
-  let updatedEndpoint = await DFSPEndpointItemModel.update(epId, endpointItem);
+  const updatedEndpoint = await DFSPEndpointItemModel.update(epId, endpointItem);
   return updatedEndpoint;
 };
 
@@ -322,7 +321,7 @@ exports.deleteDFSPEndpoint = async function (envId, dfspId, epId) {
  * @param {Integer} envId Environment id
  */
 const validateDirectionType = async (direction, type, epId, dfspId, envId) => {
-  let endpoint = await exports.getDFSPEndpoint(envId, dfspId, epId);
+  const endpoint = await exports.getDFSPEndpoint(envId, dfspId, epId);
   if (endpoint.direction !== direction) {
     throw new ValidationError(`Wrong direction ${direction}, endpoint has already ${endpoint.direction}`);
   }
@@ -417,5 +416,3 @@ exports.deleteDFSPIngressUrlEndpoint = async (envId, dfspId, epId) => {
   await validateDirectionType('INGRESS', 'URL', epId, dfspId, envId);
   return exports.deleteDFSPEndpoint(envId, dfspId, epId);
 };
-
-
