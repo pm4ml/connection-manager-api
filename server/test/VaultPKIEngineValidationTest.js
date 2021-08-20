@@ -46,7 +46,7 @@ describe('VaultPKIEngine', () => {
 
     it('should validate a server certificate with its chain and root', async () => {
       const cert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/www.amazon.com.pem'), 'utf8');
-      const rootCert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/VeriSign-Class-3-Public-Primary-Certification-Authority-G5.pem'), 'utf8');
+      const rootCert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/RootCA.pem'), 'utf8');
       const certChain = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/amazon.chain.pem'), 'utf8');
       const validation = VaultPKIEngine.validateCertificateChain(cert, certChain, rootCert);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
@@ -56,7 +56,7 @@ describe('VaultPKIEngine', () => {
       const cert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/www.amazon.com.pem'), 'utf8');
       const certChain = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/amazon.chain.pem'), 'utf8');
       const validation = VaultPKIEngine.validateCertificateChain(cert, certChain);
-      assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
+      assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID, validation.message);
     }).timeout(15000);
 
     it('should not validate an expired certificate', async () => {
@@ -119,7 +119,7 @@ describe('VaultPKIEngine', () => {
     }).timeout(15000);
 
     it('AMAZON - verifyIntermediateChain for first cert in chain', async () => {
-      const rootCert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/www.amazon.com.pem'), 'utf8');
+      const rootCert = null;
       const certChain = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/amazon.chain.pem'), 'utf8');
       const validation = VaultPKIEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);

@@ -22,11 +22,89 @@ const ValidationError = require('../src/errors/ValidationError');
 const PkiService = require('../src/service/PkiService');
 const fs = require('fs');
 const path = require('path');
+const { pki } = require('node-forge');
 
 const rootCert = fs.readFileSync(path.join(__dirname, 'resources/google.com/google.com.pem'), 'utf8');
 const intermediateChain = fs.readFileSync(path.join(__dirname, 'resources/google.com/google.chain.pem'), 'utf8');
-const amazonRootCert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/VeriSign-Class-3-Public-Primary-Certification-Authority-G5.pem'), 'utf8');
+const amazonRootCert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/RootCA.pem'), 'utf8');
 const amazonIntermediateChain = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/amazon.chain.pem'), 'utf8');
+
+const createSelfSignedCA = () => {
+  const keys = pki.rsa.generateKeyPair(2048);
+  const cert = pki.createCertificate();
+  cert.publicKey = keys.publicKey;
+  cert.serialNumber = '01';
+  cert.validity.notBefore = new Date();
+  cert.validity.notAfter = new Date();
+  cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
+  const attrs = [{
+    name: 'commonName',
+    value: 'example.org'
+  }, {
+    name: 'countryName',
+    value: 'US'
+  }, {
+    shortName: 'ST',
+    value: 'Virginia'
+  }, {
+    name: 'localityName',
+    value: 'Blacksburg'
+  }, {
+    name: 'organizationName',
+    value: 'Test'
+  }, {
+    shortName: 'OU',
+    value: 'Test'
+  }];
+  cert.setSubject(attrs);
+  cert.setIssuer(attrs);
+  cert.setExtensions([{
+    name: 'basicConstraints',
+    cA: true
+  }, {
+    name: 'keyUsage',
+    keyCertSign: true,
+    digitalSignature: true,
+    nonRepudiation: true,
+    keyEncipherment: true,
+    dataEncipherment: true
+  }, {
+    name: 'extKeyUsage',
+    serverAuth: true,
+    clientAuth: true,
+    codeSigning: true,
+    emailProtection: true,
+    timeStamping: true
+  }, {
+    name: 'nsCertType',
+    client: true,
+    server: true,
+    email: true,
+    objsign: true,
+    sslCA: true,
+    emailCA: true,
+    objCA: true
+  }, {
+    name: 'subjectAltName',
+    altNames: [{
+      type: 6, // URI
+      value: 'http://example.org/webid#me'
+    }, {
+      type: 7, // IP
+      ip: '127.0.0.1'
+    }]
+  }, {
+    name: 'subjectKeyIdentifier'
+  }]);
+
+  // self-sign certificate
+  cert.sign(keys.privateKey);
+
+  return {
+    cert: pki.certificateToPem(cert),
+    key: pki.privateKeyToPem(keys.privateKey),
+  };
+};
 
 describe('HubCAServiceTest', () => {
   before(async () => {
@@ -41,10 +119,10 @@ describe('HubCAServiceTest', () => {
     let envId = null;
 
     beforeEach('creating hook Environment', async () => {
-      let env = {
+      const env = {
         name: 'HUB_TEST_ENV'
       };
-      let result = await PkiService.createEnvironment(env);
+      const result = await PkiService.createEnvironment(env);
       assert.property(result, 'id');
       assert.isNotNull(result.id);
       envId = result.id;
@@ -54,40 +132,33 @@ describe('HubCAServiceTest', () => {
       await PkiService.deleteEnvironment(envId);
     });
 
-    it('should accept a valid HubCAInput', async () => {
-      let body = {
-        'rootCertificate': amazonRootCert,
-        'intermediateChain': amazonIntermediateChain,
-        'name': 'string',
-        'type': 'EXTERNAL'
+    it('should create external CA', async () => {
+      const { cert, key } = createSelfSignedCA();
+      const body = {
+        rootCertificate: cert,
+        privateKey: key,
+        type: 'EXTERNAL',
       };
-      await HubCAService.createHubCA(envId, body);
+
+      await HubCAService.createHubCA(body);
     }).timeout(15000);
 
-    it('should not accept an HubCAInput with INTERNAL type', async () => {
-      let body = {
-        'rootCertificate': rootCert,
-        'intermediateChain': intermediateChain,
-        'name': 'string',
-        'type': 'INTERNAL'
+    it('should create internal CA', async () => {
+      const body = {
+        csr: {
+          hosts: ['example.com'],
+          names: [
+            {
+              CN: 'Example CA',
+              O: 'Example Company'
+            }
+          ],
+          key: {
+            algo: 'rsa',
+          }
+        }
       };
-      try {
-        await HubCAService.createHubCA(envId, body);
-        assert.fail('Should have throw NotFoundError');
-      } catch (error) {
-        assert.instanceOf(error, ValidationError);
-      }
-    }).timeout(15000);
-
-    it('should not accept an HubCAInput with no name', async () => {
-      let body = {
-        'type': 'EXTERNAL'
-      };
-      try {
-        await HubCAService.createHubCA(envId, body);
-      } catch (error) {
-        assert.instanceOf(error, ValidationError);
-      }
+      await HubCAService.createHubCA(body);
     }).timeout(15000);
   });
 });

@@ -21,9 +21,8 @@ const utils = require('../utils/writer.js');
 const HubCAService = require('../service/HubCAService');
 
 exports.createHubCA = function (req, res, next) {
-  const envId = req.swagger.params.envId.value;
   const body = req.swagger.params.body.value;
-  HubCAService.createHubCA(envId, body)
+  HubCAService.createHubCA(body)
     .then(function (response) {
       utils.writeJson(res, response);
     })

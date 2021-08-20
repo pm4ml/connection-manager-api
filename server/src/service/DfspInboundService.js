@@ -21,15 +21,9 @@ const InvalidEntityError = require('../errors/InvalidEntityError');
 const ValidationError = require('../errors/ValidationError');
 const CAType = require('../models/CAType');
 const PKIEngine = require('../pki_engine/VaultPKIEngine');
-const Joi = require('joi');
 const Constants = require('../constants/Constants');
 const { createID } = require('../models/GID');
 const DFSPModel = require('../models/DFSPModel');
-
-const enrollmentCertificate = Joi.object().description('Enrollment Certificate').keys({
-  certificate: Joi.string().description('certificate').required(),
-  hubCAId: Joi.number().description('the id of the selected EXTERNAL Hub CA').required(),
-});
 
 /**
  * Create DFSP Inbound enrollment ( DFSP API )

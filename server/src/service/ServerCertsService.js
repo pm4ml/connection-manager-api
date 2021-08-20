@@ -21,7 +21,6 @@ const PKIEngine = require('../pki_engine/VaultPKIEngine');
 const PkiService = require('./PkiService');
 const ValidationError = require('../errors/ValidationError');
 const Constants = require('../constants/Constants');
-const { createID } = require('../models/GID');
 
 exports.createDfspServerCerts = async (envId, dfspId, body) => {
   if (body === null || typeof body === 'undefined') {
@@ -30,17 +29,17 @@ exports.createDfspServerCerts = async (envId, dfspId, body) => {
   await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  let { validations, validationState } = await pkiEngine.validateServerCertificate(body.serverCertificate, body.intermediateChain, body.rootCertificate);
+  const { validations, validationState } = await pkiEngine.validateServerCertificate(body.serverCertificate, body.intermediateChain, body.rootCertificate);
 
   const certData = {
-    id: await createID(),
     dfspId,
-    ...formatBody(body),
+    ...formatBody(body, pkiEngine),
     validations,
     validationState,
   };
 
-  await pkiEngine.setDFSPServerCerts(dfspId, certData);
+  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  await pkiEngine.setDFSPServerCerts(dbDfspId, certData);
   return certData;
 };
 
@@ -52,14 +51,16 @@ exports.getDfspServerCerts = async (envId, dfspId) => {
   await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  return pkiEngine.getDFSPServerCerts(dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  return pkiEngine.getDFSPServerCerts(dbDfspId);
 };
 
 exports.deleteDfspServerCerts = async (envId, dfspId) => {
   await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  await pkiEngine.deleteDFSPServerCerts(dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  await pkiEngine.deleteDFSPServerCerts(dbDfspId);
 };
 
 exports.getAllDfspServerCerts = async (envId) => {
@@ -67,9 +68,7 @@ exports.getAllDfspServerCerts = async (envId) => {
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
   const allDfsps = await DFSPModel.findAllByEnvironment(envId);
-  const certs = allDfsps.map(({ id: dfspId }) =>
-    pkiEngine.getDFSPServerCerts(dfspId).then(cert => ({ ...cert, dfspId })));
-  return Promise.all(certs);
+  return Promise.all(allDfsps.map(({ id }) => pkiEngine.getDFSPServerCerts(id)));
 };
 
 /**
@@ -82,16 +81,17 @@ exports.createHubServerCerts = async (envId, body) => {
   await PkiService.validateEnvironment(envId);
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  let cert = {};
+  const cert = {};
   const serverCertData = await pkiEngine.createHubServerCert(body);
   cert.rootCertificate = await pkiEngine.getRootCaCert();
-  cert.rootCertificateInfo = PKIEngine.getCertInfo(cert.rootCertificate);
+  cert.rootCertificateInfo = pkiEngine.getCertInfo(cert.rootCertificate);
   if (serverCertData.ca_chain) {
     cert.intermediateChain = serverCertData.ca_chain;
-    cert.intermediateChainInfo = cert.intermediateChain.map(PKIEngine.getCertInfo);
+    cert.intermediateChainInfo = cert.intermediateChain.map(pkiEngine.getCertInfo);
   }
   cert.serverCertificate = serverCertData.certificate;
-  cert.serverCertificateInfo = PKIEngine.getCertInfo(cert.serverCertificate);
+  cert.serverCertificateInfo = pkiEngine.getCertInfo(cert.serverCertificate);
+  cert.serverCertificateInfo.serialNumber = serverCertData.serial_number;
 
   const { validations, validationState } = await pkiEngine.validateServerCertificate(cert.serverCertificate, cert.intermediateChain, cert.rootCertificate);
   const certData = {
@@ -115,16 +115,20 @@ exports.deleteHubServerCerts = async (envId) => {
   await PkiService.validateEnvironment(envId);
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  await pkiEngine.deleteHubServerCert();
+  const cert = await pkiEngine.getHubServerCert();
+  if (cert) {
+    await pkiEngine.revokeHubServerCert(cert.serverCertificateInfo.serialNumber);
+    await pkiEngine.deleteHubServerCert();
+  }
 };
 
-const formatBody = (body) => {
+const formatBody = (body, pkiEngine) => {
   return {
     rootCertificate: body.rootCertificate,
-    rootCertificateInfo: body.rootCertificate && PKIEngine.getCertInfo(body.rootCertificate),
+    rootCertificateInfo: body.rootCertificate && pkiEngine.getCertInfo(body.rootCertificate),
     intermediateChain: body.intermediateChain,
-    intermediateChainInfo: PkiService.splitChainIntermediateCertificateInfo(body),
+    intermediateChainInfo: PkiService.splitChainIntermediateCertificateInfo(body.intermediateChain, pkiEngine),
     serverCertificate: body.serverCertificate,
-    serverCertificateInfo: body.serverCertificate && PKIEngine.getCertInfo(body.serverCertificate),
+    serverCertificateInfo: body.serverCertificate && pkiEngine.getCertInfo(body.serverCertificate),
   };
 };

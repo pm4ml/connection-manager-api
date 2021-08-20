@@ -26,9 +26,6 @@ const PKIEngine = require('../pki_engine/VaultPKIEngine');
 const ValidationCodes = require('../pki_engine/ValidationCodes');
 const Constants = require('../constants/Constants');
 
-const certificateStartDelimiter = '-----BEGIN CERTIFICATE-----';
-const certificateEndDelimiter = '-----END CERTIFICATE-----';
-
 /**
  * Returns all the environments
  *
@@ -79,8 +76,7 @@ exports.getEnvironmentById = async function (envId) {
     throw new ValidationError(`Invalid envId ${envId}`);
   }
   const row = await EnvironmentModel.findById(envId);
-  const environment = EnvironmentModel.mapRowToObject(row);
-  return environment;
+  return EnvironmentModel.mapRowToObject(row);
 };
 
 exports.deleteEnvironment = async function (envId) {
@@ -89,50 +85,6 @@ exports.deleteEnvironment = async function (envId) {
     throw new NotFoundError();
   }
   return { id: envId };
-};
-
-/**
- * Creates a CA for the environment. This CA will be used to sign the CSRs it
- * receives from the DFSPs on the Inbound flow.
- *
- *
- * Since there will usually be just once CA per environment,
- * this operation establish the newly created CA as the current CA,
- * replacing previously created ones.
- *
- * @param {CAInitialInfo} body Initial configuration to use for the engine
- *
- */
-exports.createCA = async function (envId, body) {
-  const caOptions = body;
-
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
-  const { cert } = await pkiEngine.createCA(caOptions);
-  const certInfo = pkiEngine.getCertInfo(cert);
-
-  return {
-    certificate: cert,
-    certInfo,
-  };
-};
-
-/**
- * Returns the CA root certificate
- * Returns the certificate that was created with the createCA operation
- * envId String ID of environment
- * returns inline_response_200_1
- **/
-exports.getCurrentCARootCert = async function (envId) {
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
-  const cert = await pkiEngine.getRootCaCert();
-  const certInfo = pkiEngine.getCertInfo(cert);
-  return {
-    certificate: cert,
-    certInfo,
-    id: 1,
-  };
 };
 
 /**
@@ -240,19 +192,11 @@ exports.updateDFSP = async (envId, dfspId, newDfsp) => {
   return DFSPModel.update(envId, dfspId, values);
 };
 
-exports.splitCertificateChain = (chain) => {
-  const beginCertRegex = /(?=-----BEGIN)/g;
-
-  return chain.split(beginCertRegex)
-    .filter(cert => cert.match(/BEGIN/g))
-    .map(cert => cert.slice(0, cert.indexOf(certificateEndDelimiter)) + certificateEndDelimiter);
-};
-
 /**
  *
  */
-exports.splitChainIntermediateCertificateInfo = (body) => {
-  return exports.splitCertificateChain(body.intermediateChain || '').map(PKIEngine.getCertInfo);
+exports.splitChainIntermediateCertificateInfo = (intermediateChain, pkiEngine) => {
+  return pkiEngine.splitCertificateChain(intermediateChain || '').map(cert => pkiEngine.getCertInfo(cert));
 };
 
 /**
@@ -266,7 +210,8 @@ exports.deleteDFSP = async function (envId, dfspId) {
   await exports.validateEnvironmentAndDfsp(envId, dfspId);
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  await pkiEngine.deleteAllDFSPData(dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  await pkiEngine.deleteAllDFSPData(dbDfspId);
   return DFSPModel.delete(envId, dfspId);
 };
 
@@ -279,8 +224,8 @@ exports.deleteDFSP = async function (envId, dfspId) {
 exports.setDFSPca = async function (envId, dfspId, body) {
   await exports.validateEnvironmentAndDfsp(envId, dfspId);
 
-  const rootCertificate = body.rootCertificate || null;
-  const intermediateChain = body.intermediateChain || null;
+  const rootCertificate = body.rootCertificate || '';
+  const intermediateChain = body.intermediateChain || '';
 
   const validatingPkiEngine = new PKIEngine(Constants.vault);
   await validatingPkiEngine.connect();

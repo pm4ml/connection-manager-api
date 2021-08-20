@@ -31,7 +31,7 @@ exports.createDfspJWSCerts = async (envId, dfspId, body) => {
 
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  let { validations, validationState } = pkiEngine.validateJWSCertificate(body.publicKey);
+  const { validations, validationState } = pkiEngine.validateJWSCertificate(body.publicKey);
   const jwsData = {
     dfspId,
     publicKey: body.publicKey,
@@ -63,8 +63,7 @@ exports.deleteDfspJWSCerts = async (envId, dfspId) => {
   await pkiEngine.deleteDFSPJWSCerts(dbDfspId);
 };
 
-exports.getAllDfspJWSCerts = async (envId) => {
-  await PkiService.validateEnvironment(envId);
+exports.getAllDfspJWSCerts = async () => {
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
   return pkiEngine.getAllDFSPJWSCerts();

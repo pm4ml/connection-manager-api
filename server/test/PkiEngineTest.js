@@ -17,9 +17,11 @@
 
 const CSRInfo = require('../src/pki_engine/CSRInfo');
 const CertInfo = require('../src/pki_engine/CertInfo');
-const PKIEngine = require('../src/pki_engine/PKIEngine');
+const Constants = require('../src/constants/Constants');
+const VaultPKIEngine = require('../src/pki_engine/VaultPKIEngine');
 
 const assert = require('chai').assert;
+const PKIEngine = new VaultPKIEngine(Constants.vault);
 
 describe('verify CSRInfo subject is the same of the CertInfo', () => {
   it('should validate a CSRinfo subject is equals Certinfo subject', async () => {

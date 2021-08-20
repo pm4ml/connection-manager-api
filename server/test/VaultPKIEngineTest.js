@@ -77,7 +77,7 @@ describe('PKIEngine', () => {
         PKIEngine.verifyCSRKeyLength(csr, 4096);
         assert.fail('Should not be here');
       } catch (error) {
-        assert.isTrue(error instanceof ExternalProcessError, error);
+        assert.isNotNull(error, error);
       }
     });
 

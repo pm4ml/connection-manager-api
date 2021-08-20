@@ -47,7 +47,7 @@ class PKIEngine {
   }
 
   /**
-   * Signs the CSR with the Engine CA.
+   * Signs the DFSP CSR with the Engine CA.
    *
    * @param {String} csr CSR, PEM encoded
    * @returns A PEM-encoded certificate
@@ -96,11 +96,15 @@ class PKIEngine {
    *
    * @param {String} intermediateChain PEM-encoded certificate chain
    * @param {String} rootCertificate PEM-encoded root certificate
+   * @param {String} [key] PEM-encoded certificate private key
    * @returns { validations, validationState } validations list and validationState, where validationState = VALID if all the validations are VALID or NOT_AVAIABLE; INVALID otherwise
    */
-  validateCACertificate (rootCertificate, intermediateChain) {
+  validateCACertificate (rootCertificate, intermediateChain, key) {
     const validationCodes = ValidationsConfiguration.dfspCaValidations;
-    return this.performCAValidations(validationCodes, intermediateChain, rootCertificate);
+    if (key) {
+      validationCodes.push(ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code);
+    }
+    return this.performCAValidations(validationCodes, intermediateChain, rootCertificate, key);
   }
 
   /**
@@ -155,10 +159,18 @@ class PKIEngine {
           break;
       }
     }
-    const validationState = validations.reduce((accum, current) => { return accum && current.result !== ValidationCodes.VALID_STATES.INVALID; }, true)
-      ? ValidationCodes.VALID_STATES.VALID
-      : ValidationCodes.VALID_STATES.INVALID;
+    const valid = !validations.some((e) => e.result === ValidationCodes.VALID_STATES.INVALID);
+    const validationState = valid ? ValidationCodes.VALID_STATES.VALID : ValidationCodes.VALID_STATES.INVALID;
     return { validations, validationState };
+  }
+
+  verifyCertificateChainPublicKeyMatchPrivateKey (certificateChain, key, code) {
+    if (this.splitCertificateChain(certificateChain)
+      .map(cert => this.verifyCertificatePublicKeyMatchPrivateKey(cert, key, code))
+      .some(({ result }) => result === ValidationCodes.VALID_STATES.VALID)) {
+      return new Validation(code, true, ValidationCodes.VALID_STATES.VALID);
+    }
+    return new Validation(code, true, ValidationCodes.VALID_STATES.INVALID);
   }
 
   /**
@@ -167,9 +179,10 @@ class PKIEngine {
    * @param {String[]} validationCodes List of validation codes to perform
    * @param {String} intermediateChain PEM-encoded certificate chain
    * @param {String} rootCertificate PEM-encoded root certificate
+   * @param {String} key PEM-encoded CA private key
    * @returns { validations, validationState } validations list and validationState, where validationState = VALID if all the validations are VALID or NOT_AVAIABLE; INVALID otherwise
    */
-  performCAValidations (validationCodes, intermediateChain, rootCertificate) {
+  performCAValidations (validationCodes, intermediateChain, rootCertificate, key) {
     const validations = [];
     for (const validationCode of validationCodes) {
       switch (validationCode) {
@@ -182,14 +195,16 @@ class PKIEngine {
         case ValidationCodes.VALIDATION_CODES.CA_CERTIFICATE_USAGE.code:
           validations.push(this.validateCertificateUsageCA(rootCertificate, intermediateChain, ValidationCodes.VALIDATION_CODES.CA_CERTIFICATE_USAGE.code));
           break;
+        case ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code:
+          validations.push(this.verifyCertificateChainPublicKeyMatchPrivateKey(rootCertificate + intermediateChain, key, ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code));
+          break;
         default:
           console.log(`Validation not yet implemented: ${validationCode}`);
           break;
       }
     }
-    const validationState = validations.reduce((accum, current) => { return accum && current.result !== ValidationCodes.VALID_STATES.INVALID; }, true)
-      ? ValidationCodes.VALID_STATES.VALID
-      : ValidationCodes.VALID_STATES.INVALID;
+    const valid = !validations.some((e) => e.result === ValidationCodes.VALID_STATES.INVALID);
+    const validationState = valid ? ValidationCodes.VALID_STATES.VALID : ValidationCodes.VALID_STATES.INVALID;
     return { validations, validationState };
   }
 
@@ -461,9 +476,10 @@ class PKIEngine {
    * the Connection Manager, and there's no private key associated, this will be set the state to NOT_AVAILABLE
    *
    * @param {String} code Validation code
+   * @param {String} key PEM-encoded key.
    * @param {String} certificate PEM-encoded certificate
    */
-  verifyCertificatePublicKeyMatchPrivateKey (certificate, code) {
+  verifyCertificatePublicKeyMatchPrivateKey (certificate, key, code) {
   }
 
   /**

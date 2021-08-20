@@ -19,11 +19,10 @@ const CAType = require('../models/CAType');
 const PKIEngine = require('./PKIEngine');
 const InvalidEntityError = require('../errors/InvalidEntityError');
 const NotFoundError = require('../errors/NotFoundError');
-const PkiService = require('../service/PkiService');
 const util = require('util');
 const fs = require('fs');
 const { file } = require('tmp-promise');
-const { splitCertificateChain } = require('../service/PkiService');
+const tls = require('tls');
 
 // TODO: find and link document containing rules on allowable paths
 const vaultPaths = {
@@ -32,7 +31,7 @@ const vaultPaths = {
   JWS_CERTS: 'dfsp-jws-certs',
   HUB_ENDPOINTS: 'hub-endpoints',
   DFSP_CA: 'dfsp-ca',
-  HUB_ISSUER_CA: 'hub-issuer-ca',
+  HUB_CA_DETAILS: 'hub-ca-details',
   DFSP_OUTBOUND_ENROLLMENT: 'dfsp-outbound-enrollment',
   DFSP_INBOUND_ENROLLMENT: 'dfsp-inbound-enrollment',
 };
@@ -49,6 +48,10 @@ class VaultPKIEngine extends PKIEngine {
     this.vault = vault({ endpoint });
     this.pkiBaseDomain = pkiBaseDomain;
     this.mounts = mounts;
+
+    this.trustedCaStore = forge.pki.createCaStore(tls.rootCertificates.filter(cert => {
+      try { forge.pki.certificateFromPem(cert); } catch { return false; } return true;
+    }));
   }
 
   async connect () {
@@ -213,21 +216,16 @@ class VaultPKIEngine extends PKIEngine {
     return this.deleteSecret(vaultPaths.HUB_SERVER_CERT);
   }
 
-  async setHubIssuerCACert (id, value) {
-    return this.setSecret(`${vaultPaths.HUB_ISSUER_CA}/${id}`, value);
+  async setHubCACertDetails (value) {
+    return this.setSecret(vaultPaths.HUB_CA_DETAILS, value);
   }
 
-  async getHubIssuerCACert (id) {
-    return this.getSecret(`${vaultPaths.HUB_ISSUER_CA}/${id}`);
+  async getHubCACertDetails () {
+    return this.getSecret(vaultPaths.HUB_CA_DETAILS);
   }
 
-  async getHubIssuerCACerts (id) {
-    const secrets = await this.listSecrets(vaultPaths.HUB_ISSUER_CA);
-    return Promise.all(secrets.map(id => this.getHubIssuerCACert(id)));
-  }
-
-  async deleteHubIssuerCACert (id) {
-    return this.deleteSecret(`${vaultPaths.HUB_ISSUER_CA}/${id}`);
+  async deleteHubCACertDetails () {
+    return this.deleteSecret(vaultPaths.HUB_CA_DETAILS);
   }
   // endregion
 
@@ -316,6 +314,17 @@ class VaultPKIEngine extends PKIEngine {
       path: `/${this.mounts.pki}/issue/${this.pkiBaseDomain}`,
       method: 'POST',
       json: reqJson,
+    });
+    return data;
+  }
+
+  async revokeHubServerCert (serial) {
+    const { data } = await this.client.request({
+      path: `/${this.mounts.pki}/revoke`,
+      method: 'POST',
+      json: {
+        serial_number: serial
+      },
     });
     return data;
   }
@@ -442,7 +451,7 @@ class VaultPKIEngine extends PKIEngine {
   }
 
   /**
-   * Sign Hub CSR
+   * Sign Client (DFSP) CSR and return client certificate
    * @param csr
    * @returns {Promise<*>}
    */
@@ -460,12 +469,12 @@ class VaultPKIEngine extends PKIEngine {
     return data.certificate;
   }
 
-  async setHubCaCert (certPem, privateKeyPem) {
+  async setHubCaCertChain (certChainPem, privateKeyPem) {
     await this.client.request({
       path: `/${this.mounts.pki}/config/ca`,
       method: 'POST',
       json: {
-        pem_bundle: `${privateKeyPem}\n${certPem}`,
+        pem_bundle: `${privateKeyPem}\n${certChainPem}`,
       },
     });
 
@@ -474,20 +483,17 @@ class VaultPKIEngine extends PKIEngine {
     // https://vault.koudingspawn.de/supported-secret-types/secret-type-cert
   }
 
-  async getRootCaCert () {
+  async getHubCaCertChain () {
     return this.client.request({
-      path: `/${this.mounts.pki}/ca/pem`,
+      path: `/${this.mounts.pki}/ca_chain`,
       method: 'GET',
     });
   }
 
-  async setIntermediateCACert (certPem) {
-    await this.client.request({
-      path: `/${this.mounts.intermediatePki}/intermediate/set-signed`,
-      method: 'POST',
-      json: {
-        certificate: certPem,
-      },
+  async getRootCaCert () {
+    return this.client.request({
+      path: `/${this.mounts.pki}/ca/pem`,
+      method: 'GET',
     });
   }
 
@@ -585,27 +591,34 @@ class VaultPKIEngine extends PKIEngine {
       'Certificate has the "TLS WWW server authentication" key usage extension');
   }
 
+  splitCertificateChain (chain) {
+    // const certificateStartDelimiter = '-----BEGIN CERTIFICATE-----';
+    const certificateEndDelimiter = '-----END CERTIFICATE-----';
+
+    const beginCertRegex = /(?=-----BEGIN)/g;
+
+    return chain.split(beginCertRegex)
+      .filter(cert => cert.match(/BEGIN/g))
+      .map(cert => cert.slice(0, cert.indexOf(certificateEndDelimiter)) + certificateEndDelimiter);
+  };
+
   /**
    * Validates ValidationCodes.VALIDATION_CODES.CERTIFICATE_CHAIN
    *
    * @param {String} serverCert PEM-encoded certificate
    * @param {String} intermediateChain PEM-encoded intermediate chain
-   * @param {String} rootCertificate PEM-encoded root certificate
+   * @param {String} [rootCertificate] PEM-encoded root certificate
    */
   validateCertificateChain (serverCert, intermediateChain, rootCertificate) {
-    const chain = [rootCertificate, ...splitCertificateChain(intermediateChain || '')].filter(cert => cert);
+    const chain = [rootCertificate, ...this.splitCertificateChain(intermediateChain || '')].filter(cert => cert);
     const caStore = forge.pki.createCaStore(chain);
-    let valid;
     try {
-      valid = forge.pki.verifyCertificateChain(caStore, [serverCert]);
+      const cert = forge.pki.certificateFromPem(serverCert);
+      forge.pki.verifyCertificateChain(caStore, [cert]);
     } catch (e) {
-      valid = false;
+      return new Validation(ValidationCodes.VALIDATION_CODES.CERTIFICATE_CHAIN.code, true, ValidationCodes.VALID_STATES.INVALID, e.message);
     }
-    if (!valid) {
-      return new Validation(ValidationCodes.VALIDATION_CODES.CERTIFICATE_CHAIN.code, true, ValidationCodes.VALID_STATES.INVALID, 'Certificate chain invalid', output);
-    } else {
-      return new Validation(ValidationCodes.VALIDATION_CODES.CERTIFICATE_CHAIN.code, true, ValidationCodes.VALID_STATES.VALID, 'Certificate chain valid', output);
-    }
+    return new Validation(ValidationCodes.VALIDATION_CODES.CERTIFICATE_CHAIN.code, true, ValidationCodes.VALID_STATES.VALID, 'Certificate chain valid');
   }
 
   /**
@@ -694,7 +707,7 @@ class VaultPKIEngine extends PKIEngine {
       const { valid, reason } = this.verifyCSRAlgorithm(csr, algo);
       if (valid) {
         return new Validation(code, true, ValidationCodes.VALID_STATES.VALID,
-          `CSR has a valid Signature Algorithm : ${algo}`);
+          `CSR has a valid Signature Algorithm : ${reason.actualAlgorithm}`);
       } else {
         return new Validation(code, true, ValidationCodes.VALID_STATES.INVALID,
           `CSR has a an invalid Signature Algorithm ${reason.actualAlgorithm}`
@@ -774,14 +787,15 @@ class VaultPKIEngine extends PKIEngine {
     if (dfspCA.validationState === 'INVALID') {
       return new Validation(code, true, ValidationCodes.VALID_STATES.INVALID, 'Invalid dfsp ca root or chain');
     } else {
-      const caStore = forge.pki.createCaStore([dfspCA.rootCertificate, ...splitCertificateChain(dfspCA.intermediateChain)]);
-      let valid;
+      const chain = [dfspCA.rootCertificate, ...this.splitCertificateChain(dfspCA.intermediateChain || '')].filter(cert => cert);
+      const caStore = forge.pki.createCaStore(chain);
       try {
-        valid = forge.pki.verifyCertificateChain(caStore, [certificate]);
+        const cert = forge.pki.certificateFromPem(certificate);
+        forge.pki.verifyCertificateChain(caStore, [cert]);
       } catch (e) {
-        valid = false;
+        return new Validation(code, true, ValidationCodes.VALID_STATES.INVALID, e.message);
       }
-      return new Validation(code, true, valid ? ValidationCodes.VALID_STATES.VALID : ValidationCodes.VALID_STATES.INVALID, 'The Certificate is signed by the DFSP CA');
+      return new Validation(code, true, ValidationCodes.VALID_STATES.VALID, 'The Certificate is signed by the DFSP CA');
     }
   }
 
@@ -863,7 +877,7 @@ class VaultPKIEngine extends PKIEngine {
     const csrInfo = this.getCSRInfo(enrollment.csr);
     const certInfo = this.getCertInfo(enrollment.certificate);
 
-    const { valid, reason } = PKIEngine.compareSubjectBetweenCSRandCert(csrInfo, certInfo);
+    const { valid, reason } = this.compareSubjectBetweenCSRandCert(csrInfo, certInfo);
 
     if (!valid) {
       return new Validation(code, true, ValidationCodes.VALID_STATES.INVALID,
@@ -951,10 +965,8 @@ class VaultPKIEngine extends PKIEngine {
    */
   verifyCSRAlgorithm (csr, algorithms) {
     const csrInfo = this.getCSRInfo(csr);
-    if (!algorithms.includes(csrInfo.signatureAlgorithm)) {
-      return { valid: false, reason: { actualAlgorithm: csrInfo.signatureAlgorithm, algorithms } };
-    }
-    return { valid: true };
+    const valid = algorithms.includes(csrInfo.signatureAlgorithm);
+    return { valid, reason: { actualAlgorithm: csrInfo.signatureAlgorithm, algorithms } };
   }
 
   /**
@@ -1032,6 +1044,65 @@ class VaultPKIEngine extends PKIEngine {
       'The root certificate has the CA basic contraint extension ( CA = true )');
   }
 
+  /*
+  isRSACertificate (certPem) {
+    const cert = forge.pki.certificateFromPem(certPem);
+
+    const { asn1 } = forge;
+    const publicKeyValidator = {
+      name: 'SubjectPublicKeyInfo',
+      tagClass: asn1.Class.UNIVERSAL,
+      type: asn1.Type.SEQUENCE,
+      constructed: true,
+      captureAsn1: 'subjectPublicKeyInfo',
+      value: [{
+        name: 'SubjectPublicKeyInfo.AlgorithmIdentifier',
+        tagClass: asn1.Class.UNIVERSAL,
+        type: asn1.Type.SEQUENCE,
+        constructed: true,
+        value: [{
+          name: 'AlgorithmIdentifier.algorithm',
+          tagClass: asn1.Class.UNIVERSAL,
+          type: asn1.Type.OID,
+          constructed: false,
+          capture: 'publicKeyOid'
+        }]
+      }, {
+        // subjectPublicKey
+        name: 'SubjectPublicKeyInfo.subjectPublicKey',
+        tagClass: asn1.Class.UNIVERSAL,
+        type: asn1.Type.BITSTRING,
+        constructed: false,
+        value: [{
+          // RSAPublicKey
+          name: 'SubjectPublicKeyInfo.subjectPublicKey.RSAPublicKey',
+          tagClass: asn1.Class.UNIVERSAL,
+          type: asn1.Type.SEQUENCE,
+          constructed: true,
+          optional: true,
+          captureAsn1: 'rsaPublicKey'
+        }]
+      }]
+    };
+
+    const subjectPublicKeyInfo = forge.pki.publicKeyToAsn1(cert.publicKey);
+
+    const capture = {};
+    const errors = [];
+    if (!asn1.validate(
+      publicKeyValidator, subjectPublicKeyInfo, validator, capture, errors)) {
+      throw 'ASN.1 object is not a SubjectPublicKeyInfo.';
+    }
+    // capture.subjectPublicKeyInfo contains the full ASN.1 object
+    // capture.rsaPublicKey contains the full ASN.1 object for the RSA public key
+    // capture.publicKeyOid only contains the value for the OID
+    const oid = asn1.derToOid(capture.publicKeyOid);
+    if (oid !== pki.oids.rsaEncryption) {
+      throw 'Unsupported OID.';
+    }
+  }
+*/
+
   /**
    *
    * @param {String} rootCertificate PEM-encoded string
@@ -1046,9 +1117,15 @@ class VaultPKIEngine extends PKIEngine {
 
     try {
       const cert = forge.pki.certificateFromPem(rootCertificate);
+      let state;
+      if (cert.subject.hash === cert.issuer.hash) {
+        state = VALID_SELF_SIGNED;
+      } else {
+        forge.pki.verifyCertificateChain(this.trustedCaStore, [cert]);
+        state = VALID_SIGNED;
+      }
       return new Validation(code, true, ValidationCodes.VALID_STATES.VALID,
-        `The root certificate is valid with ${state} state.`,
-        cert.subject.uniqueId === cert.issuer.uniqueId ? VALID_SELF_SIGNED : VALID_SIGNED);
+        `The root certificate is valid with ${state} state.`, state);
     } catch (e) {
       return new Validation(code, true, ValidationCodes.VALID_STATES.INVALID,
         'The root certificate must be valid and be self-signed or signed by a global root.');
@@ -1064,15 +1141,15 @@ class VaultPKIEngine extends PKIEngine {
    * @returns {Validation} validation
    */
   verifyIntermediateChain (rootCertificate, intermediateChain, code) {
-    const intermediateCerts = PkiService.splitCertificateChain(intermediateChain);
+    const intermediateCerts = this.splitCertificateChain(intermediateChain || '');
     if (!intermediateCerts.length) {
       return new Validation(code, false, ValidationCodes.VALID_STATES.NOT_AVAILABLE,
         'No intermediate chain');
     }
 
-    const caStore = forge.pki.createCaStore([rootCertificate]);
+    const caStore = rootCertificate ? forge.pki.createCaStore([rootCertificate]) : this.trustedCaStore;
     try {
-      forge.pki.verifyCertificateChain(caStore, intermediateCerts.map(forge.pki.certificateFromPem));
+      forge.pki.verifyCertificateChain(caStore, intermediateCerts.map(cert => forge.pki.certificateFromPem(cert)));
       return new Validation(code, true, ValidationCodes.VALID_STATES.VALID,
         'The intermediateChain is made of valid CAs and at the top of the chain is signed by the root.');
     } catch (e) {

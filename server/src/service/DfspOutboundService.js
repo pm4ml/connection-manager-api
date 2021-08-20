@@ -28,48 +28,6 @@ const REQUIRED_KEY_LENGTH = 4096;
 const PKIEngine = new VaultPKIEngine(Constants.vault);
 
 /**
- * Create an OutboundEnrollment, associate the CSR to it, and set its state to CSR_LOADED.
- *
- * envId String ID of environment
- * dfspId String DFSP id
- * body DFSPOutboundCreate DFSP outbound initial info
- * returns ObjectCreatedResponse
- **/
-exports.createDFSPOutboundEnrollment = async function (envId, dfspId, body, key) {
-  await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
-
-  let csrInfo;
-  try {
-    const pkiEngine = new VaultPKIEngine(Constants.vault);
-    csrInfo = pkiEngine.getCSRInfo(body.hubCSR);
-  } catch (error) {
-    throw new ValidationError('Could not parse the CSR content', error);
-  }
-
-  const enrollment = {
-    csr: body.hubCSR
-  };
-
-  const { validations, validationState } = PKIEngine.validateOutboundEnrollment(enrollment);
-
-  const values = {
-    id: await createID(),
-    csr: body.hubCSR,
-    csrInfo,
-    state: 'CSR_LOADED',
-    validations,
-    validationState,
-    key,
-  };
-
-  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
-  const pkiEngine = new VaultPKIEngine(Constants.vault);
-  await pkiEngine.connect();
-  await pkiEngine.setDFSPOutboundEnrollment(dbDfspId, values.id, values);
-  return values;
-};
-
-/**
  * Creates a CSR, signed by the environment CA. Creates an OutboundEnrollment, associate the CSR to it, and set its state to CSR_LOADED.
  */
 exports.createCSRAndDFSPOutboundEnrollment = async function (envId, dfspId, body) {
@@ -98,8 +56,21 @@ exports.createCSRAndDFSPOutboundEnrollment = async function (envId, dfspId, body
   const pkiEngine = new VaultPKIEngine(Constants.vault);
   await pkiEngine.connect();
 
-  const keyCSRPair = await pkiEngine.createCSR(csrParameters, REQUIRED_KEY_LENGTH);
-  return exports.createDFSPOutboundEnrollment(envId, dfspId, { hubCSR: keyCSRPair.csr }, keyCSRPair.key);
+  const { csr, privateKey } = await pkiEngine.createCSR(csrParameters, REQUIRED_KEY_LENGTH);
+  const csrInfo = pkiEngine.getCSRInfo(csr);
+
+  const values = {
+    id: await createID(),
+    csr,
+    csrInfo,
+    state: 'CSR_LOADED',
+    key: privateKey,
+  };
+
+  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  await pkiEngine.setDFSPOutboundEnrollment(dbDfspId, values.id, values);
+  const { key, ...en } = values;
+  return en;
 };
 
 /**
@@ -159,8 +130,8 @@ exports.addDFSPOutboundEnrollmentCertificate = async function (envId, dfspId, en
 
   const enrollment = {
     csr: outboundEnrollment.csr,
-    certificate,
     key: outboundEnrollment.key,
+    certificate,
     dfspCA
   };
 
@@ -211,9 +182,7 @@ exports.validateDFSPOutboundEnrollmentCertificate = async function (envId, dfspI
     dfspCA
   };
 
-  const validatingPkiEngine = new PKIEngine(Constants.vault);
-  await validatingPkiEngine.connect();
-  const { validations, validationState } = validatingPkiEngine.validateOutboundEnrollment(enrollment);
+  const { validations, validationState } = pkiEngine.validateOutboundEnrollment(enrollment);
 
   const values = {
     ...outboundEnrollment,
