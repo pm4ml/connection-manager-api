@@ -20,31 +20,7 @@ const sinon = require('sinon');
 const assert = require('assert');
 
 describe('Server start', () => {
-  it('Should call createEnvironment with the correct arguments', async () => {
-    const createEnvironmentSpy = sinon.fake(() => ({ id: 'meh' }));
-    const constants = {
-      ENVIRONMENT_INIT: {
-        initEnvironment: true,
-        config: 'whatever'
-      },
-      USER_INIT: {},
-    };
-    await run({
-      constants,
-      http: {
-        createServer: () => ({
-          listen: () => {}
-        })
-      },
-      createEnvironment: createEnvironmentSpy,
-      connect: () => {}
-    });
-    assert(createEnvironmentSpy.calledOnceWith(constants.ENVIRONMENT_INIT.config));
-  });
-
-  it('Should call createEnvironment and createDFSP with the correct arguments', async () => {
-    const fakeEnvId = 'fakeEnvId';
-    const createEnvironmentSpy = sinon.fake(() => ({ id: fakeEnvId }));
+  it('Should call createDFSP with the correct arguments', async () => {
     const createDFSPSpy = sinon.spy();
     const constants = {
       ENVIRONMENT_INIT: {
@@ -65,35 +41,9 @@ describe('Server start', () => {
           listen: () => {}
         })
       },
-      createEnvironment: createEnvironmentSpy,
       createDFSP: createDFSPSpy,
       connect: () => {}
     });
-    assert(createEnvironmentSpy.calledOnceWith(constants.ENVIRONMENT_INIT.config));
-    assert(createDFSPSpy.calledOnceWith(fakeEnvId, constants.USER_INIT));
-  });
-
-  it('Should initialise in correct order', async () => {
-    const httpListenSpy = sinon.spy();
-    const createEnvironmentSpy = sinon.fake(() => ({ id: 'meh' }));
-    const appLoaderConnectSpy = sinon.spy();
-    await run({
-      http: {
-        createServer: () => ({
-          listen: httpListenSpy
-        })
-      },
-      constants: {
-        ENVIRONMENT_INIT: {
-          initEnvironment: true,
-          config: 'whatever'
-        },
-        USER_INIT: {},
-      },
-      createEnvironment: createEnvironmentSpy,
-      connect: appLoaderConnectSpy
-    })
-    assert(appLoaderConnectSpy.calledBefore(createEnvironmentSpy));
-    assert(createEnvironmentSpy.calledBefore(httpListenSpy));
+    assert(createDFSPSpy.calledOnceWith(constants.USER_INIT));
   });
 });

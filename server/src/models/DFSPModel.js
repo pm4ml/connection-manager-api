@@ -24,36 +24,27 @@ exports.findAll = () => {
   return knex.table(DFSP_TABLE).select();
 };
 
-exports.findAllByEnvironment = (envId) => {
-  return knex.table(DFSP_TABLE).where({ env_id: envId }).select();
-};
-
 exports.findByRawId = async (id) => {
-  return findByField(null, 'id', id);
+  return findByField('id', id);
 };
 
-exports.findIdByDfspId = async (envId, dfspId) => {
-  const dfspRow = await exports.findByDfspId(envId, dfspId);
+exports.findIdByDfspId = async (dfspId) => {
+  const dfspRow = await exports.findByDfspId(dfspId);
   return dfspRow.id;
 };
 
-exports.findByDfspId = async (envId, dfspId) => {
-  return findByField(envId, 'dfsp_id', dfspId);
+exports.findByDfspId = async (dfspId) => {
+  return findByField('dfsp_id', dfspId);
 };
 
-exports.getDfspsByMonetaryZones = async (envId, monetaryZoneId) => {
-  return findAllByField(envId, 'monetaryZoneId', monetaryZoneId);
+exports.getDfspsByMonetaryZones = async (monetaryZoneId) => {
+  return findAllByField('monetaryZoneId', monetaryZoneId);
 };
 
-const findByField = async (envId, columnName, value) => {
-  let rows;
-  if (envId != null) {
-    rows = await knex.table(DFSP_TABLE).where('env_id', envId).where(columnName, value).select();
-  } else {
-    rows = await knex.table(DFSP_TABLE).where(columnName, value).select();
-  }
+const findByField = async (columnName, value) => {
+  const rows = await knex.table(DFSP_TABLE).where(columnName, value).select();
   if (rows.length === 0) {
-    throw new NotFoundError(`dfsp with ${columnName} = ${value} , env_id: ${envId}`);
+    throw new NotFoundError(`dfsp with ${columnName} = ${value}`);
   } else if (rows.length === 1) {
     return rows[0];
   } else {
@@ -61,15 +52,11 @@ const findByField = async (envId, columnName, value) => {
   }
 };
 
-const findAllByField = async (envId, columnName, value) => {
+const findAllByField = async (columnName, value) => {
   let rows;
-  if (envId != null) {
-    rows = await knex.table(DFSP_TABLE).where('env_id', envId).where(columnName, value).select();
-  } else {
-    rows = await knex.table(DFSP_TABLE).where(columnName, value).select();
-  }
+  rows = await knex.table(DFSP_TABLE).where(columnName, value).select();
   if (rows.length === 0) {
-    throw new NotFoundError(`dfsp with ${columnName} = ${value} , env_id: ${envId}`);
+    throw new NotFoundError(`dfsp with ${columnName} = ${value}`);
   } else {
     return rows;
   }
@@ -83,16 +70,16 @@ exports.deleteByRawId = async (id) => {
   return knex.table(DFSP_TABLE).where({ id: id }).del();
 };
 
-exports.delete = async (envId, dfspId) => {
-  return knex.table(DFSP_TABLE).where('env_id', envId).where({ dfsp_id: dfspId }).del();
+exports.delete = async (dfspId) => {
+  return knex.table(DFSP_TABLE).where({ dfsp_id: dfspId }).del();
 };
 
-exports.update = async (envId, dfspId, newDfsp) => {
-  const result = await knex.table(DFSP_TABLE).where('env_id', envId).where({ dfsp_id: dfspId }).update(newDfsp);
+exports.update = async (dfspId, newDfsp) => {
+  const result = await knex.table(DFSP_TABLE).where({ dfsp_id: dfspId }).update(newDfsp);
   if (result === 0) {
-    throw new NotFoundError(`dfsp with ${dfspId}, env_id: ${envId}`);
+    throw new NotFoundError(`dfsp with ${dfspId}`);
   } else if (result === 1) {
-    const dfsp = await exports.findByDfspId(envId, dfspId);
+    const dfsp = await exports.findByDfspId(dfspId);
     // return { dfspId: dfsp.dfsp_id, name: dfsp.name, monetaryZoneId: dfsp.monetaryZoneId, securityGroup: dfsp.security_group };
     return rowToObject(dfsp);
   } else {

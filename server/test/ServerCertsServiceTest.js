@@ -42,32 +42,17 @@ describe('ServerCertsService', () => {
 
   after(async () => {
     await tearDownTestDB();
+    await deleteHubCA();
   });
 
   describe('Hub Server Certificates', () => {
-    let envId = null;
-
-    beforeEach('creating hook Environment', async () => {
-      const env = {
-        name: 'HUB_TEST_ENV'
-      };
-      const result = await PkiService.createEnvironment(env);
-      assert.property(result, 'id');
-      assert.isNotNull(result.id);
-      envId = result.id;
-    });
-
-    afterEach('tearing down hook CA', async () => {
-      await PkiService.deleteEnvironment(envId);
-    });
-
     it('should create a HubServerCerts entry', async () => {
       const body = {
         subject: {
           CN: 'example.com',
         },
       };
-      const result = await ServerCertsService.createHubServerCerts(envId, body);
+      const result = await ServerCertsService.createHubServerCerts(body);
       assert.isNotNull(result.serverCertificate);
       assert.isNotNull(result.rootCertificate);
     }).timeout(30000);
@@ -78,11 +63,11 @@ describe('ServerCertsService', () => {
           CN: 'example.com',
         },
       };
-      const result = await ServerCertsService.createHubServerCerts(envId, body);
+      const result = await ServerCertsService.createHubServerCerts(body);
       assert.isNotNull(result.serverCertificate);
-      await ServerCertsService.deleteHubServerCerts(envId);
+      await ServerCertsService.deleteHubServerCerts();
       try {
-        await ServerCertsService.getHubServerCerts(envId);
+        await ServerCertsService.getHubServerCerts();
         assert.fail('Should have throw NotFoundError');
       } catch (error) {
         assert.instanceOf(error, NotFoundError);
@@ -91,22 +76,7 @@ describe('ServerCertsService', () => {
   }).timeout(30000);
 
   describe('DFSP Server Certificates', () => {
-    let envId = null;
     let dfspId = null;
-
-    beforeEach('creating Environment and DFSP', async () => {
-      const env = {
-        name: 'DFSP_TEST_ENV'
-      };
-      const result = await PkiService.createEnvironment(env);
-      assert.property(result, 'id');
-      assert.isNotNull(result.id);
-      envId = result.id;
-    });
-
-    afterEach('tearing down ENV and DFSP', async () => {
-      await PkiService.deleteEnvironment(envId);
-    });
 
     it('should create a DfspServerCerts entry', async () => {
       const body = {
@@ -118,13 +88,13 @@ describe('ServerCertsService', () => {
         dfspId: 'DFSP_TEST',
         name: 'DFSP'
       };
-      const resultDfsp = await PkiService.createDFSP(envId, dfsp);
+      const resultDfsp = await PkiService.createDFSP(dfsp);
       dfspId = resultDfsp.id;
-      const result = await ServerCertsService.createDfspServerCerts(envId, dfspId, body);
+      const result = await ServerCertsService.createDfspServerCerts(dfspId, body);
       assert.isNotNull(result);
       assert.equal(result.serverCertificateInfo.serialNumber, '0e4098bddd80b0d3394a0e1487d7765c');
       assert.equal(result.intermediateChainInfo[0].notBefore.toISOString(), '2017-06-15T00:00:42.000Z');
-      await PkiService.deleteDFSP(envId, dfspId);
+      await PkiService.deleteDFSP(dfspId);
     }).timeout(30000);
 
     it('should create and delete a DfspServerCerts entry', async () => {
@@ -137,18 +107,18 @@ describe('ServerCertsService', () => {
         dfspId: 'DFSP_TEST',
         name: 'DFSP'
       };
-      const resultDfsp = await PkiService.createDFSP(envId, dfsp);
+      const resultDfsp = await PkiService.createDFSP(dfsp);
       dfspId = resultDfsp.id;
-      const result = await ServerCertsService.createDfspServerCerts(envId, dfspId, body);
+      const result = await ServerCertsService.createDfspServerCerts(dfspId, body);
       assert.isNotNull(result);
-      await ServerCertsService.deleteDfspServerCerts(envId, dfspId);
+      await ServerCertsService.deleteDfspServerCerts(dfspId);
       try {
-        await ServerCertsService.getDfspServerCerts(envId, dfspId);
+        await ServerCertsService.getDfspServerCerts(dfspId);
         assert.fail('Should have throw NotFoundError');
       } catch (error) {
         assert.instanceOf(error, NotFoundError);
       }
-      await PkiService.deleteDFSP(envId, dfspId);
+      await PkiService.deleteDFSP(dfspId);
     }).timeout(30000);
 
     it('should update a DfspServerCerts entry', async () => {
@@ -161,9 +131,9 @@ describe('ServerCertsService', () => {
         dfspId: 'DFSP_TEST',
         name: 'DFSP'
       };
-      const resultDfsp = await PkiService.createDFSP(envId, dfsp);
+      const resultDfsp = await PkiService.createDFSP(dfsp);
       dfspId = resultDfsp.id;
-      const result = await ServerCertsService.createDfspServerCerts(envId, dfspId, body);
+      const result = await ServerCertsService.createDfspServerCerts(dfspId, body);
       assert.isNotNull(result);
       assert.equal(result.serverCertificateInfo.serialNumber, '0e4098bddd80b0d3394a0e1487d7765c');
       assert.equal(result.intermediateChainInfo[0].notBefore.toISOString(), '2017-06-15T00:00:42.000Z');
@@ -173,10 +143,10 @@ describe('ServerCertsService', () => {
         intermediateChain: fs.readFileSync(path.join(__dirname, AMAZON_CHAIN_PATH)).toString(),
         serverCertificate: fs.readFileSync(path.join(__dirname, AMAZON_SERVER_CERT_PATH)).toString(),
       };
-      const resultAfter = await ServerCertsService.updateDfspServerCerts(envId, dfspId, newBody);
+      const resultAfter = await ServerCertsService.updateDfspServerCerts(dfspId, newBody);
       assert.isNotNull(resultAfter.id);
       assert.equal('0c8ee0c90d6a89158804061ee241f9af', resultAfter.intermediateChainInfo[0].serialNumber);
-      await PkiService.deleteDFSP(envId, dfspId);
+      await PkiService.deleteDFSP(dfspId);
     }).timeout(30000);
 
     it('should create and find several dfsps certs', async () => {
@@ -193,21 +163,21 @@ describe('ServerCertsService', () => {
           dfspId: 'DFSP_TEST' + i,
           name: 'DFSP'
         };
-        const resultDfsp = await PkiService.createDFSP(envId, dfsp);
+        const resultDfsp = await PkiService.createDFSP(dfsp);
         const eachId = resultDfsp.id;
         dfspIds.push(eachId);
 
-        const result = await ServerCertsService.createDfspServerCerts(envId, dfsp.dfspId, body);
+        const result = await ServerCertsService.createDfspServerCerts(dfsp.dfspId, body);
         assert.isNotNull(result);
       }
 
-      const certs = await ServerCertsService.getAllDfspServerCerts(envId);
+      const certs = await ServerCertsService.getAllDfspServerCerts();
       certs.forEach(cert => {
         assert.equal(cert.serverCertificateInfo.serialNumber, '0e4098bddd80b0d3394a0e1487d7765c');
         assert.equal(cert.intermediateChainInfo[0].notBefore, '2017-06-15T00:00:42.000Z');
       });
 
-      await Promise.all(dfspIds.map(id => PkiService.deleteDFSP(envId, id)));
+      await Promise.all(dfspIds.map(id => PkiService.deleteDFSP(id)));
     }).timeout(30000);
 
     it('should create and find several dfsps certs with dfsp_id not null', async () => {
@@ -224,22 +194,22 @@ describe('ServerCertsService', () => {
           dfspId: 'DFSP_TEST' + i,
           name: 'DFSP'
         };
-        const resultDfsp = await PkiService.createDFSP(envId, dfsp);
+        const resultDfsp = await PkiService.createDFSP(dfsp);
         const eachId = resultDfsp.id;
         dfspIds.push(eachId);
 
-        const result = await ServerCertsService.createDfspServerCerts(envId, eachId, body);
+        const result = await ServerCertsService.createDfspServerCerts(eachId, body);
         assert.isNotNull(result);
       }
 
-      const certs = await ServerCertsService.getAllDfspServerCerts(envId);
+      const certs = await ServerCertsService.getAllDfspServerCerts();
 
       certs.forEach(cert => {
         assert.isNotNull(cert.dfspId);
         assert.include(dfspIds, cert.dfspId);
       });
 
-      await Promise.all(dfspIds.map(id => PkiService.deleteDFSP(envId, id)));
+      await Promise.all(dfspIds.map(id => PkiService.deleteDFSP(id)));
     }).timeout(30000);
   }).timeout(30000);
 }).timeout(30000);

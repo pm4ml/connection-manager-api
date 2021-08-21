@@ -11,8 +11,8 @@ security:
   - OAuth2:
       - pta
 tags:
-  - name: env-dfsp-config
-    description: Environments and DFSPs setup
+  - name: dfsp-config
+    description: DFSPs setup
   - name: DFSP-client-certificate
     description: DFSP - Client Certificates PKI
   - name: Hub-client-certificate
@@ -158,110 +158,13 @@ paths:
           description: external process error
           content: {}
       x-swagger-router-controller: Login
-  /environments:
-    get:
-      tags:
-        - env-dfsp-config
-      summary: Returns all the environments
-      operationId: getEnvironments
-      responses:
-        200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Environment'
-      security:
-        - OAuth2:
-            - everyone
-      x-swagger-router-controller: Pki
-    post:
-      tags:
-        - env-dfsp-config
-      summary: Creates an environment on the Connection Manager
-      operationId: createEnvironment
-      requestBody:
-        description: Environment initial info
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/InboundEnvironment'
-        required: true
-      responses:
-        200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Environment'
-      x-swagger-router-controller: Pki
-      x-codegen-request-body-name: body
-  /environments/{envId}:
-    get:
-      tags:
-        - env-dfsp-config
-      summary: Find an environment by its id
-      description: Returns an environment
-      operationId: getEnvironmentById
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Environment'
-        404:
-          description: Environment not found
-          content: {}
-      security:
-        - OAuth2:
-            - everyone
-      x-swagger-router-controller: Pki
-    delete:
-      tags:
-        - env-dfsp-config
-      summary: Deletes an environment and its data
-      description: Removes the environment and all its configuration ( DFSPs, enrollments,
-        keys, etc).
-      operationId: deleteEnvironment
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
-      responses:
-        204:
-          description: successful operation
-          content: {}
-        404:
-          description: Environment not found
-          content: {}
-      x-swagger-router-controller: Pki
 
-  /environments/{envId}/hub/endpoints:
+  /hub/endpoints:
     get:
       tags:
         - Hub-Endpoint-configuration
       summary: Returns all Hub endpoints
       operationId: getHubEndpoints
-      parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
       responses:
         200:
           description: successful operation
@@ -275,19 +178,13 @@ paths:
         - OAuth2:
             - everyone
       x-swagger-router-controller: HubNetworkConfig
-  /environments/{envId}/hub/endpoints/ingress/ips:
+  /hub/endpoints/ingress/ips:
     get:
       tags:
         - Hub-Endpoint-configuration
       summary: Get the Hub Ingress IPs
       operationId: getHubIngressIps
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
+
       responses:
         200:
           description: successful operation
@@ -307,13 +204,7 @@ paths:
       summary: Adds a new IP entry to the Hub Ingress endpoint
       description: Adds the entry with state NEW
       operationId: createHubIngressIp
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
+
       requestBody:
         description: Hub ingress IP entry
         content:
@@ -330,19 +221,13 @@ paths:
                 $ref: '#/components/schemas/EndPointIp'
       x-swagger-router-controller: HubNetworkConfig
       x-codegen-request-body-name: body
-  /environments/{envId}/hub/endpoints/ingress/ips/{epId}:
+  /hub/endpoints/ingress/ips/{epId}:
     get:
       tags:
         - Hub-Endpoint-configuration
       summary: Get an endpoint entry
       operationId: getHubIngressIpEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: epId
           in: path
           description: Endpoint entry id
@@ -366,12 +251,6 @@ paths:
       summary: Update an endpoint entry
       operationId: updateHubIngressIpEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: epId
           in: path
           description: Endpoint entry id
@@ -400,12 +279,6 @@ paths:
       summary: Delete an endpoint entry
       operationId: deleteHubIngressIpEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: epId
           in: path
           description: Endpoint entry id
@@ -417,19 +290,13 @@ paths:
           description: successful operation
           content: {}
       x-swagger-router-controller: HubNetworkConfig
-  /environments/{envId}/hub/endpoints/ingress/urls:
+  /hub/endpoints/ingress/urls:
     get:
       tags:
         - Hub-Endpoint-configuration
       summary: Get the Hub Ingress URLs
       operationId: getHubIngressUrls
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
+
       responses:
         200:
           description: successful operation
@@ -449,13 +316,7 @@ paths:
       summary: Adds a Hub Ingress URL
       description: Adds a Hub ingress URL with state NEW
       operationId: createHubIngressUrl
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
+
       requestBody:
         description: Hub ingress URL
         content:
@@ -472,19 +333,13 @@ paths:
                 $ref: '#/components/schemas/EndPointURL'
       x-swagger-router-controller: HubNetworkConfig
       x-codegen-request-body-name: body
-  /environments/{envId}/hub/endpoints/ingress/urls/{epId}:
+  /hub/endpoints/ingress/urls/{epId}:
     get:
       tags:
         - Hub-Endpoint-configuration
       summary: Get an endpoint entry
       operationId: getHubIngressUrlEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: epId
           in: path
           description: Endpoint entry id
@@ -508,12 +363,6 @@ paths:
       summary: Update an endpoint entry
       operationId: updateHubIngressUrlEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: epId
           in: path
           description: Endpoint entry id
@@ -542,12 +391,6 @@ paths:
       summary: Delete an endpoint entry
       operationId: deleteHubIngressUrlEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: epId
           in: path
           description: Endpoint entry id
@@ -559,19 +402,13 @@ paths:
           description: successful operation
           content: {}
       x-swagger-router-controller: HubNetworkConfig
-  /environments/{envId}/hub/endpoints/egress/ips:
+  /hub/endpoints/egress/ips:
     get:
       tags:
         - Hub-Endpoint-configuration
       summary: Get the Hub Egress IPs
       operationId: getHubEgressIps
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
+
       responses:
         200:
           description: successful operation
@@ -591,13 +428,7 @@ paths:
       summary: Adds a new IP entry to the Hub Egress endpoint
       description: Adds the entry with state NEW
       operationId: createHubEgressIp
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
+
       requestBody:
         description: Hub egress IP entry
         content:
@@ -614,19 +445,13 @@ paths:
                 $ref: '#/components/schemas/EndPointIp'
       x-swagger-router-controller: HubNetworkConfig
       x-codegen-request-body-name: body
-  /environments/{envId}/hub/endpoints/egress/ips/{epId}:
+  /hub/endpoints/egress/ips/{epId}:
     get:
       tags:
         - Hub-Endpoint-configuration
       summary: Get an endpoint entry
       operationId: getHubEgressIpEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: epId
           in: path
           description: Endpoint entry id
@@ -650,12 +475,6 @@ paths:
       summary: Update an endpoint entry
       operationId: updateHubEgressIpEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: epId
           in: path
           description: Endpoint entry id
@@ -684,12 +503,6 @@ paths:
       summary: Delete an endpoint entry
       operationId: deleteHubEgressIpEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: epId
           in: path
           description: Endpoint entry id
@@ -701,19 +514,13 @@ paths:
           description: successful operation
           content: {}
       x-swagger-router-controller: HubNetworkConfig
-  /environments/{envId}/hub/endpoints/{epId}:
+  /hub/endpoints/{epId}:
     get:
       tags:
         - Hub-Endpoint-configuration
       summary: Get an endpoint entry
       operationId: getHubEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: epId
           in: path
           description: Endpoint entry id
@@ -737,12 +544,6 @@ paths:
       summary: Update an endpoint entry
       operationId: updateHubEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: epId
           in: path
           description: Endpoint entry id
@@ -771,12 +572,6 @@ paths:
       summary: Delete an endpoint entry
       operationId: deleteHubEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: epId
           in: path
           description: Endpoint entry id
@@ -788,20 +583,14 @@ paths:
           description: successful operation
           content: {}
       x-swagger-router-controller: HubNetworkConfig
-  /environments/{envId}/hub/servercerts:
+  /hub/servercerts:
     get:
       tags:
         - Hub-server-certificates-configuration
       summary: get server certificate
       description: TBD
       operationId: getHubServerCerts
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
+
       responses:
         200:
           description: successful operation
@@ -822,13 +611,7 @@ paths:
       summary: post server certificate
       description: TBD
       operationId: createHubServerCerts
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
+
       requestBody:
         description: TBD
         content:
@@ -851,31 +634,19 @@ paths:
       summary: delete server certificate
       description: TBD
       operationId: deleteHubServerCerts
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
+
       responses:
         204:
           description: no content
           content: {}
       x-swagger-router-controller: HubServerCerts
-  /environments/{envId}/hub/ca:
+  /hub/ca:
     get:
       tags:
         - Hub-Certificate-Authority
       summary: Returns the Hub CA
       operationId: getHubCA
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
+
       responses:
         200:
           description: successful operation
@@ -908,13 +679,7 @@ paths:
         * no rootCertificate and intermediateChain: The Hub uses a chain of intermediate certificates ultimately signed by a trusted CA to sign its certificates.
         * rootCertificate and intermediateChain: The Hub uses a chain of intermediate certificates ultimately signed by a self-signed CA to sign its certificates.
       operationId: createHubCA
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
+
       requestBody:
         description: CA info
         content:
@@ -945,13 +710,7 @@ paths:
         - Hub-Certificate-Authority
       summary: Deletes the Hub CA
       operationId: deleteHubCA
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
+
       responses:
         204:
           description: successful operation
@@ -963,20 +722,14 @@ paths:
         - OAuth2:
             - pta
       x-swagger-router-controller: HubCAController
-  /environments/{envId}/dfsps/jwscerts:
+  /dfsps/jwscerts:
     get:
       tags:
         - JWS-certificates-configuration
-      summary: get JWS certificates for all DFSPs in the environment
+      summary: get JWS certificates for all DFSPs
       description: TBD
       operationId: getAllDfspJWSCerts
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
+
       responses:
         200:
           description: successful operation
@@ -994,19 +747,13 @@ paths:
             - mta
             - pta
       x-swagger-router-controller: JWSCerts
-  /environments/{envId}/dfsps:
+  /dfsps:
     get:
       tags:
-        - env-dfsp-config
-      summary: Returns a list with all the DFSPs in the environment
-      operationId: getEnvironmentDFSPs
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
+        - dfsp-config
+      summary: Returns a list with all the DFSPs
+      operationId: getDFSPs
+
       responses:
         200:
           description: List of DFSPs
@@ -1022,20 +769,14 @@ paths:
       x-swagger-router-controller: Pki
     post:
       tags:
-        - env-dfsp-config
+        - dfsp-config
       summary: Creates an entry to store DFSP related info
       description: |
         Creates an entry to store DFSP related info
 
         Returns the newly created object's id
       operationId: createDFSP
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
+
       requestBody:
         description: DFSP initial info
         content:
@@ -1052,19 +793,13 @@ paths:
                 $ref: '#/components/schemas/ObjectCreatedResponse'
       x-swagger-router-controller: Pki
       x-codegen-request-body-name: body
-  /environments/{envId}/dfsps/endpoints/unprocessed:
+  /dfsps/endpoints/unprocessed:
     get:
       tags:
         - DFSP-Endpoint-configuration
       summary: Returns the unprocessed endpoint items
       operationId: getUnprocessedEndpointItems
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
+
       responses:
         200:
           description: successful operation
@@ -1075,20 +810,14 @@ paths:
                 items:
                   $ref: '#/components/schemas/EndPointAny'
       x-swagger-router-controller: DfspNetworkConfig
-  /environments/{envId}/dfsps/servercerts:
+  /dfsps/servercerts:
     get:
       tags:
         - DFSP-server-certificates-configuration
-      summary: get server certificates for all DFSPs in the environment
+      summary: get server certificates for all DFSPs
       description: TBD
       operationId: getAllDfspServerCerts
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
+
       responses:
         200:
           description: successful operation
@@ -1105,20 +834,14 @@ paths:
         - OAuth2:
             - pta
       x-swagger-router-controller: DfspServerCerts
-  /environments/{envId}/dfsps/{dfspId}:
+  /dfsps/{dfspId}:
     put:
       tags:
-        - env-dfsp-config
+        - dfsp-config
       summary: Updates DFSP related info
       description: Updates DFSP related info
       operationId: updateDFSP
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: ID of dfsp
@@ -1144,19 +867,13 @@ paths:
             - pta
       x-swagger-router-controller: Pki
       x-codegen-request-body-name: body
-  /environments/{envId}/dfsps/{dfspId}/ca:
+  /dfsps/{dfspId}/ca:
     get:
       tags:
         - DFSP-Certificate-Authority
       summary: Returns the DFSP CA certificates
       operationId: getDFSPca
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1196,12 +913,6 @@ paths:
         * rootCertificate and intermediateChain: The DFSP uses a chain of intermediate certificates ultimately signed by a self-signed CA to sign its certificates.
       operationId: setDFSPca
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1231,19 +942,13 @@ paths:
             - pta
       x-swagger-router-controller: Pki
       x-codegen-request-body-name: body
-  /environments/{envId}/dfsps/{dfspId}/enrollments/inbound:
+  /dfsps/{dfspId}/enrollments/inbound:
     get:
       tags:
         - DFSP-client-certificate
       summary: Get a list of DFSP Inbound enrollments
       operationId: getDFSPInboundEnrollments
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1273,12 +978,6 @@ paths:
         4096 bits and that the CSR signature algorithm is 'sha256WithRSAEncryption'
       operationId: createDFSPInboundEnrollment
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1308,19 +1007,13 @@ paths:
             - pta
       x-swagger-router-controller: DfspInbound
       x-codegen-request-body-name: body
-  /environments/{envId}/dfsps/{dfspId}/enrollments/inbound/{enId}:
+  /dfsps/{dfspId}/enrollments/inbound/{enId}:
     get:
       tags:
         - DFSP-client-certificate
       summary: Get a DFSP Inbound enrollment
       operationId: getDFSPInboundEnrollment
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1345,22 +1038,16 @@ paths:
             - mta
             - pta
       x-swagger-router-controller: DfspInbound
-  /environments/{envId}/dfsps/{dfspId}/enrollments/inbound/{enId}/sign:
+  /dfsps/{dfspId}/enrollments/inbound/{enId}/sign:
     post:
       tags:
         - DFSP-client-certificate
       summary: Creates a new certificate using the info in the CSR and adds it to
         the enrollment
       description: |
-        The Connection Manager creates a Certificate based on the CSR, using the internal environment CA. It adds this certificate to the enrollment and updates its state to CERT_SIGNED
+        The Connection Manager creates a Certificate based on the CSR, using the internal CA. It adds this certificate to the enrollment and updates its state to CERT_SIGNED
       operationId: signDFSPInboundEnrollment
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1390,19 +1077,13 @@ paths:
         - OAuth2:
             - pta
       x-swagger-router-controller: DfspInbound
-  /environments/{envId}/dfsps/{dfspId}/enrollments/outbound:
+  /dfsps/{dfspId}/enrollments/outbound:
     get:
       tags:
         - Hub-client-certificate
       summary: Get a list of DFSP Outbound enrollments
       operationId: getDFSPOutboundEnrollments
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1431,21 +1112,15 @@ paths:
             - mta
             - pta
       x-swagger-router-controller: DfspOutbound
-  /environments/{envId}/dfsps/{dfspId}/enrollments/outbound/csr:
+  /dfsps/{dfspId}/enrollments/outbound/csr:
     post:
       tags:
         - Hub-client-certificate
       summary: Creates a CSR and a DFSP Outbound enrollment with it
-      description: Creates a CSR, signed by the environment CA. Creates an OutboundEnrollment,
+      description: Creates a CSR, signed by the CA. Creates an OutboundEnrollment,
         associate the CSR to it, and set its state to CSR_LOADED.
       operationId: createCSRAndDFSPOutboundEnrollment
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1474,19 +1149,13 @@ paths:
             - pta
       x-swagger-router-controller: DfspOutbound
       x-codegen-request-body-name: body
-  /environments/{envId}/dfsps/{dfspId}/enrollments/outbound/{enId}:
+  /dfsps/{dfspId}/enrollments/outbound/{enId}:
     get:
       tags:
         - Hub-client-certificate
       summary: Get a DFSP Outbound enrollment
       operationId: getDFSPOutboundEnrollment
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1511,7 +1180,7 @@ paths:
             - mta
             - pta
       x-swagger-router-controller: DfspOutbound
-  /environments/{envId}/dfsps/{dfspId}/enrollments/outbound/{enId}/certificate:
+  /dfsps/{dfspId}/enrollments/outbound/{enId}/certificate:
     post:
       tags:
         - Hub-client-certificate
@@ -1521,12 +1190,6 @@ paths:
         POST ./validate
       operationId: addDFSPOutboundEnrollmentCertificate
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1562,7 +1225,7 @@ paths:
             - pta
       x-swagger-router-controller: DfspOutbound
       x-codegen-request-body-name: body
-  /environments/{envId}/dfsps/{dfspId}/enrollments/outbound/{enId}/validate:
+  /dfsps/{dfspId}/enrollments/outbound/{enId}/validate:
     post:
       tags:
         - Hub-client-certificate
@@ -1570,12 +1233,6 @@ paths:
       description: Validate a DFSP Outbound enrollment
       operationId: validateDFSPOutboundEnrollmentCertificate
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1599,19 +1256,13 @@ paths:
         - OAuth2:
             - pta
       x-swagger-router-controller: DfspOutbound
-  /environments/{envId}/dfsps/{dfspId}/endpoints:
+  /dfsps/{dfspId}/endpoints:
     get:
       tags:
         - DFSP-Endpoint-configuration
       summary: Returns all DFSP endpoints
       operationId: getDFSPEndpoints
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1632,19 +1283,13 @@ paths:
             - mta
             - pta
       x-swagger-router-controller: DfspNetworkConfig
-  /environments/{envId}/dfsps/{dfspId}/endpoints/unprocessed:
+  /dfsps/{dfspId}/endpoints/unprocessed:
     get:
       tags:
         - DFSP-Endpoint-configuration
       summary: Returns the unprocessed dfsp items
       operationId: getUnprocessedDfspItems
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1665,19 +1310,13 @@ paths:
             - mta
             - pta
       x-swagger-router-controller: DfspNetworkConfig
-  /environments/{envId}/dfsps/{dfspId}/endpoints/ingress/ips:
+  /dfsps/{dfspId}/endpoints/ingress/ips:
     get:
       tags:
         - DFSP-Endpoint-configuration
       summary: Get the DFSP Ingress IPs
       operationId: getDFSPIngressIps
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1705,12 +1344,6 @@ paths:
       description: Adds the entry with state NEW
       operationId: createDFSPIngressIp
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1737,19 +1370,13 @@ paths:
             - pta
       x-swagger-router-controller: DfspNetworkConfig
       x-codegen-request-body-name: body
-  /environments/{envId}/dfsps/{dfspId}/endpoints/ingress/ips/{epId}:
+  /dfsps/{dfspId}/endpoints/ingress/ips/{epId}:
     get:
       tags:
         - DFSP-Endpoint-configuration
       summary: Get an endpoint entry
       operationId: getDFSPIngressIpEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1780,12 +1407,6 @@ paths:
       summary: Update an endpoint entry
       operationId: updateDFSPIngressIpEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1824,12 +1445,6 @@ paths:
       summary: Delete an endpoint entry
       operationId: deleteDFSPIngressIpEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1851,19 +1466,13 @@ paths:
             - mta
             - pta
       x-swagger-router-controller: DfspNetworkConfig
-  /environments/{envId}/dfsps/{dfspId}/endpoints/ingress/urls:
+  /dfsps/{dfspId}/endpoints/ingress/urls:
     get:
       tags:
         - DFSP-Endpoint-configuration
       summary: Get the DFSP Ingress URLs
       operationId: getDFSPIngressUrls
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1891,12 +1500,6 @@ paths:
       description: Adds a DFSP ingress URL with state NEW
       operationId: createDFSPIngressUrl
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1923,19 +1526,13 @@ paths:
             - pta
       x-swagger-router-controller: DfspNetworkConfig
       x-codegen-request-body-name: body
-  /environments/{envId}/dfsps/{dfspId}/endpoints/ingress/urls/{epId}:
+  /dfsps/{dfspId}/endpoints/ingress/urls/{epId}:
     get:
       tags:
         - DFSP-Endpoint-configuration
       summary: Get an endpoint entry
       operationId: getDFSPIngressUrlEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -1966,12 +1563,6 @@ paths:
       summary: Update an endpoint entry
       operationId: updateDFSPIngressUrlEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -2010,12 +1601,6 @@ paths:
       summary: Delete an endpoint entry
       operationId: deleteDFSPIngressUrlEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -2037,19 +1622,13 @@ paths:
             - mta
             - pta
       x-swagger-router-controller: DfspNetworkConfig
-  /environments/{envId}/dfsps/{dfspId}/endpoints/egress/ips:
+  /dfsps/{dfspId}/endpoints/egress/ips:
     get:
       tags:
         - DFSP-Endpoint-configuration
       summary: Get the DFSP Egress IPs
       operationId: getDFSPEgressIps
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -2077,12 +1656,6 @@ paths:
       description: Adds the entry with state NEW
       operationId: createDFSPEgressIp
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -2109,19 +1682,13 @@ paths:
             - pta
       x-swagger-router-controller: DfspNetworkConfig
       x-codegen-request-body-name: body
-  /environments/{envId}/dfsps/{dfspId}/endpoints/egress/ips/{epId}:
+  /dfsps/{dfspId}/endpoints/egress/ips/{epId}:
     get:
       tags:
         - DFSP-Endpoint-configuration
       summary: Get an endpoint entry
       operationId: getDFSPEgressIpEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -2152,12 +1719,6 @@ paths:
       summary: Update an endpoint entry
       operationId: updateDFSPEgressIpEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -2196,12 +1757,6 @@ paths:
       summary: Delete an endpoint entry
       operationId: deleteDFSPEgressIpEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -2223,19 +1778,13 @@ paths:
             - mta
             - pta
       x-swagger-router-controller: DfspNetworkConfig
-  /environments/{envId}/dfsps/{dfspId}/endpoints/{epId}:
+  /dfsps/{dfspId}/endpoints/{epId}:
     get:
       tags:
         - DFSP-Endpoint-configuration
       summary: Get an endpoint entry
       operationId: getDFSPEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -2266,12 +1815,6 @@ paths:
       summary: Update an endpoint entry
       operationId: updateDFSPEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -2310,12 +1853,6 @@ paths:
       summary: Delete an endpoint entry
       operationId: deleteDFSPEndpoint
       parameters:
-        - name: envId
-          in: path
-          description: Environment id
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -2337,19 +1874,13 @@ paths:
             - mta
             - pta
       x-swagger-router-controller: DfspNetworkConfig
-  /environments/{envId}/dfsps/{dfspId}/endpoints/{epId}/confirmation:
+  /dfsps/{dfspId}/endpoints/{epId}/confirmation:
     post:
       tags:
         - DFSP-Endpoint-configuration
       summary: Updates the endpoint as confirmed
       operationId: confirmEndpointItem
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -2373,7 +1904,7 @@ paths:
         - OAuth2:
             - pta
       x-swagger-router-controller: DfspNetworkConfig
-  /environments/{envId}/dfsps/{dfspId}/servercerts:
+  /dfsps/{dfspId}/servercerts:
     get:
       tags:
         - DFSP-server-certificates-configuration
@@ -2381,12 +1912,6 @@ paths:
       description: TBD
       operationId: getDfspServerCerts
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -2415,12 +1940,6 @@ paths:
       description: TBD
       operationId: updateDfspServerCerts
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -2454,12 +1973,6 @@ paths:
       description: TBD
       operationId: createDfspServerCerts
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -2493,12 +2006,6 @@ paths:
       description: TBD
       operationId: deleteDfspServerCerts
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -2514,7 +2021,7 @@ paths:
             - mta
             - pta
       x-swagger-router-controller: DfspServerCerts
-  /environments/{envId}/dfsps/{dfspId}/jwscerts:
+  /dfsps/{dfspId}/jwscerts:
     get:
       tags:
         - JWS-certificates-configuration
@@ -2522,12 +2029,6 @@ paths:
       description: TBD
       operationId: getDfspJWSCerts
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -2556,12 +2057,6 @@ paths:
       description: TBD
       operationId: createDfspJWSCerts
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -2595,12 +2090,6 @@ paths:
       description: TBD
       operationId: deleteDfspJWSCerts
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: DFSP id
@@ -2616,18 +2105,12 @@ paths:
             - mta
             - pta
       x-swagger-router-controller: JWSCerts
-  /environments/{envId}/dfsps/{dfspId}/status:
+  /dfsps/{dfspId}/status:
     get:
-      summary: Retrieves Environment dfsp status
-      description: Retrieves Environment dfsp status by phase and step completion
-      operationId: getEnvironmentDfspStatus
+      summary: Retrieves dfsp status
+      description: Retrieves dfsp status by phase and step completion
+      operationId: getDfspStatus
       parameters:
-        - name: envId
-          in: path
-          description: ID of the environment to get satus
-          required: true
-          schema:
-            type: string
         - name: dfspId
           in: path
           description: ID of the dfsp to get satus
@@ -2640,7 +2123,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EnvironmentDfspStatus'
+                $ref: '#/components/schemas/DfspStatus'
       security:
         - OAuth2:
             - everyone
@@ -2661,19 +2144,13 @@ paths:
                 items:
                   $ref: '#/components/schemas/MonetaryZone'
       x-swagger-router-controller: MonetaryZonesController
-  /environments/{envId}/monetaryzones/{monetaryZoneId}/dfsps:
+  /monetaryzones/{monetaryZoneId}/dfsps:
     get:
       tags:
         - monetaryzones
       summary: Returns all the dfsps for that monetary zone
       operationId: getDfspsByMonetaryZones
       parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
         - name: monetaryZoneId
           in: path
           description: ID of monetaryZone
@@ -3026,9 +2503,6 @@ components:
         id:
           type: string
           description: DFSP identifier on Hub
-        envId:
-          type: integer
-          description: Environment id
         name:
           type: string
           description: Informal name
@@ -3039,7 +2513,6 @@ components:
           type: string
           description: DFSP Security group
       example:
-        envId: 24,
         id: DFSP2
         name: DFSP2
         monetaryZoneId: EUR
@@ -3064,56 +2537,6 @@ components:
             hubCAId:
               type: integer
               description: Hub CA Id which created the Certificate
-    InboundEnvironment:
-      required:
-        - name
-      type: object
-      properties:
-        name:
-          type: string
-          description: Dev, test, pre-prod, etc
-        defaultDN:
-          type: object
-          properties:
-            CN:
-              type: string
-              description: Common Name
-            O:
-              type: string
-              description: Organization
-            OU:
-              type: string
-              description: Organizational Unit
-            C:
-              type: string
-              description: Country
-            ST:
-              type: string
-              description: State
-            L:
-              type: string
-              description: Location
-      example:
-        name: DEV
-        defaultDN:
-          CN: tes1.centralhub.modusbox.live
-          O: Modusbox
-          OU: MCM
-    Environment:
-      required:
-        - id
-        - name
-      type: object
-      properties:
-        id:
-          type: integer
-          description: Object ID
-        name:
-          type: string
-          description: Dev, test, pre-prod, etc
-      example:
-        id: 42
-        name: DEV
     InboundEnrollment:
       type: object
       properties:
@@ -3184,7 +2607,7 @@ components:
         intermediateChain:
           type: string
           description: PEM-encoded certificate
-        privateKey: string
+        privateKey:
           type: string
           description: PEM-encoded private key
         validations:
@@ -3586,7 +3009,7 @@ components:
         - CERTIFICATE_AUTHORITY
         - SERVER_CERTIFICATES_EXCHANGE
         - JWS_CERTIFICATES
-    EnvironmentDfspStatus:
+    DfspStatus:
       type: object
       properties:
         phase:
@@ -3709,10 +3132,3 @@ x-components:
       required: true
       schema:
         $ref: '#/components/schemas/DFSPInboundCreate'
-    Environment:
-      description: Environment initial info
-      in: body
-      name: body
-      required: true
-      schema:
-        $ref: '#/components/schemas/Environment'

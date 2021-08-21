@@ -20,22 +20,8 @@
 const utils = require('../utils/writer.js');
 const Pki = require('../service/PkiService');
 
-exports.createCA = function createCA (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  const body = req.swagger.params.body.value;
-  Pki.createCA(envId, body)
-    .then(function (response) {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response) {
-      utils.writeJson(res, response, response.status);
-    });
-};
-
 exports.createDFSP = function createDFSP (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  const body = req.swagger.params.body.value;
-  Pki.createDFSP(envId, body)
+  Pki.createDFSP(req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -44,10 +30,8 @@ exports.createDFSP = function createDFSP (req, res, next) {
     });
 };
 
-exports.deleteDFSP = function createDFSP (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  Pki.deleteDFSP(envId, dfspId)
+exports.deleteDFSP = function createDFSP (req, res, next, dfspId) {
+  Pki.deleteDFSP(dfspId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -56,9 +40,8 @@ exports.deleteDFSP = function createDFSP (req, res, next) {
     });
 };
 
-exports.createEnvironment = function createEnvironment (req, res, next) {
-  const body = req.swagger.params.body.value;
-  Pki.createEnvironment(body)
+exports.getDFSPs = function getDFSPs (req, res, next) {
+  Pki.getDFSPs()
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -67,9 +50,8 @@ exports.createEnvironment = function createEnvironment (req, res, next) {
     });
 };
 
-exports.getCurrentCARootCert = function getCurrentCARootCert (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  Pki.getCurrentCARootCert(envId)
+exports.setDFSPca = function setDFSPca (req, res, next, dfspId) {
+  Pki.setDFSPca(dfspId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -78,9 +60,8 @@ exports.getCurrentCARootCert = function getCurrentCARootCert (req, res, next) {
     });
 };
 
-exports.getEnvironmentById = function getEnvironmentById (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  Pki.getEnvironmentById(envId)
+exports.getDFSPca = function getDFSPca (req, res, next, dfspId) {
+  Pki.getDFSPca(dfspId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -89,8 +70,8 @@ exports.getEnvironmentById = function getEnvironmentById (req, res, next) {
     });
 };
 
-exports.getEnvironments = function getEnvironments (req, res, next) {
-  Pki.getEnvironments()
+exports.updateDFSP = (req, res, next, dfspId) => {
+  Pki.updateDFSP(dfspId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -99,70 +80,8 @@ exports.getEnvironments = function getEnvironments (req, res, next) {
     });
 };
 
-exports.deleteEnvironment = function deleteEnvironment (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  Pki.deleteEnvironment(envId)
-    .then(function (response) {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response) {
-      utils.writeJson(res, response, response.status);
-    });
-};
-
-exports.getEnvironmentDFSPs = function getDFSPs (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  Pki.getEnvironmentDFSPs(envId)
-    .then(function (response) {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response) {
-      utils.writeJson(res, response, response.status);
-    });
-};
-
-exports.setDFSPca = function setDFSPca (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  const body = req.swagger.params.body.value;
-  Pki.setDFSPca(envId, dfspId, body)
-    .then(function (response) {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response) {
-      utils.writeJson(res, response, response.status);
-    });
-};
-
-exports.getDFSPca = function getDFSPca (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  Pki.getDFSPca(envId, dfspId)
-    .then(function (response) {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response) {
-      utils.writeJson(res, response, response.status);
-    });
-};
-
-exports.updateDFSP = (req, res, next) => {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  const body = req.swagger.params.body.value;
-  Pki.updateDFSP(envId, dfspId, body)
-    .then(function (response) {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response) {
-      utils.writeJson(res, response, response.status);
-    });
-};
-
-exports.getDfspsByMonetaryZones = (req, res, next) => {
-  const envId = req.swagger.params.envId.value;
-  const monetaryZoneId = req.swagger.params.monetaryZoneId.value;
-  Pki.getDfspsByMonetaryZones(envId, monetaryZoneId)
+exports.getDfspsByMonetaryZones = (req, res, next, monetaryZoneId) => {
+  Pki.getDfspsByMonetaryZones(monetaryZoneId)
     .then(function (response) {
       utils.writeJson(res, response);
     })

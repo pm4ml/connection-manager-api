@@ -116,20 +116,10 @@ describe('HubCAServiceTest', () => {
   });
 
   describe('input parameters validation', () => {
-    let envId = null;
-
     beforeEach('creating hook Environment', async () => {
-      const env = {
-        name: 'HUB_TEST_ENV'
-      };
-      const result = await PkiService.createEnvironment(env);
-      assert.property(result, 'id');
-      assert.isNotNull(result.id);
-      envId = result.id;
     });
 
     afterEach('tearing down hook CA', async () => {
-      await PkiService.deleteEnvironment(envId);
     });
 
     it('should create external CA', async () => {

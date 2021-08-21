@@ -30,8 +30,8 @@ const PKIEngine = new VaultPKIEngine(Constants.vault);
 /**
  * Creates a CSR, signed by the environment CA. Creates an OutboundEnrollment, associate the CSR to it, and set its state to CSR_LOADED.
  */
-exports.createCSRAndDFSPOutboundEnrollment = async function (envId, dfspId, body) {
-  await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
+exports.createCSRAndDFSPOutboundEnrollment = async function (dfspId, body) {
+  await PkiService.validateDfsp(dfspId);
   const csrParameters = body;
   if (!csrParameters.subject) {
     throw new ValidationError('No subject specified');
@@ -67,7 +67,7 @@ exports.createCSRAndDFSPOutboundEnrollment = async function (envId, dfspId, body
     key: privateKey,
   };
 
-  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   await pkiEngine.setDFSPOutboundEnrollment(dbDfspId, values.id, values);
   const { key, ...en } = values;
   return en;
@@ -76,11 +76,11 @@ exports.createCSRAndDFSPOutboundEnrollment = async function (envId, dfspId, body
 /**
  * Get a list of DFSP Outbound enrollments
  */
-exports.getDFSPOutboundEnrollments = async function (envId, dfspId, state) {
-  await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
+exports.getDFSPOutboundEnrollments = async function (dfspId, state) {
+  await PkiService.validateDfsp(dfspId);
   const pkiEngine = new VaultPKIEngine(Constants.vault);
   await pkiEngine.connect();
-  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   const enrollments = await pkiEngine.getDFSPOutboundEnrollments(dbDfspId);
   return enrollments.filter((en) => en.state === state).map(({ key, ...en }) => en);
 };
@@ -88,16 +88,15 @@ exports.getDFSPOutboundEnrollments = async function (envId, dfspId, state) {
 /**
  * Get a DFSP Outbound enrollment
  *
- * envId String ID of environment
  * dfspId String DFSP id
  * enId String Enrollment id
  * returns OutboundEnrollment
  **/
-exports.getDFSPOutboundEnrollment = async function (envId, dfspId, enId) {
-  await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
+exports.getDFSPOutboundEnrollment = async function (dfspId, enId) {
+  await PkiService.validateDfsp(dfspId);
   const pkiEngine = new VaultPKIEngine(Constants.vault);
   await pkiEngine.connect();
-  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   const { key, ...en } = await pkiEngine.getDFSPOutboundEnrollment(dbDfspId, enId);
   return en;
 };
@@ -105,14 +104,13 @@ exports.getDFSPOutboundEnrollment = async function (envId, dfspId, enId) {
 /**
  * Sets the certificate, and change the enrollment state to CERT_SIGNED. Returns the enrollment.
  *
- * envId String ID of environment
  * dfspId String DFSP id
  * enId String Enrollment id
  * body DFSPOutboundCertificate DFSP outbound certificate
  * returns the enrollment
  **/
-exports.addDFSPOutboundEnrollmentCertificate = async function (envId, dfspId, enId, body) {
-  await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
+exports.addDFSPOutboundEnrollmentCertificate = async function (dfspId, enId, body) {
+  await PkiService.validateDfsp(dfspId);
   const certificate = body.certificate;
   let certInfo;
   try {
@@ -123,10 +121,10 @@ exports.addDFSPOutboundEnrollmentCertificate = async function (envId, dfspId, en
 
   const pkiEngine = new VaultPKIEngine(Constants.vault);
   await pkiEngine.connect();
-  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   const outboundEnrollment = await pkiEngine.getDFSPOutboundEnrollment(dbDfspId, enId);
 
-  const dfspCA = await PkiService.getDFSPca(envId, dfspId);
+  const dfspCA = await PkiService.getDFSPca(dfspId);
 
   const enrollment = {
     csr: outboundEnrollment.csr,
@@ -160,20 +158,19 @@ exports.addDFSPOutboundEnrollmentCertificate = async function (envId, dfspId, en
  * - It will also update the keyValidationResult property to either 'OK', 'INVALID' or 'NO_KEY', and signingValidationResult to either 'OK' or 'INVALID'.
  * - The details of the validation are stored in keyValidationOutput and signingValidationOutput
  *
- * envId String ID of environment
  * dfspId String DFSP id
  * enId String Enrollment id
  * returns the enrollment
  **/
-exports.validateDFSPOutboundEnrollmentCertificate = async function (envId, dfspId, enId) {
-  await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
+exports.validateDFSPOutboundEnrollmentCertificate = async function (dfspId, enId) {
+  await PkiService.validateDfsp(dfspId);
 
   const pkiEngine = new VaultPKIEngine(Constants.vault);
   await pkiEngine.connect();
-  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   const outboundEnrollment = await pkiEngine.getDFSPOutboundEnrollment(dbDfspId, enId);
 
-  const dfspCA = await PkiService.getDFSPca(envId, dfspId);
+  const dfspCA = await PkiService.getDFSPca(dfspId);
 
   const enrollment = {
     csr: outboundEnrollment.csr,

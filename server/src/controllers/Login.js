@@ -20,9 +20,7 @@
 const utils = require('../utils/writer.js');
 const Login = require('../service/LoginService');
 
-exports.loginUser = function login (req, res, next) {
-  const username = req.swagger.params.username.value;
-  const password = req.swagger.params.password.value;
+exports.loginUser = function login (req, res, next, username, password) {
   Login.loginUser(username, password, req, res)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -42,11 +40,7 @@ exports.logoutUser = function login (req, res, next) {
     });
 };
 
-exports.login2step = function login2step (req, res, next) {
-  const username = req.swagger.params.username.value;
-  const password = req.swagger.params.password.value;
-  const generatedToken = req.swagger.params.generatedToken.value;
-
+exports.login2step = function login2step (req, res, next, username, password, generatedToken) {
   Login.login2step(username, password, generatedToken, req, res)
     .then(function (response) {
       utils.writeJson(res, response);
@@ -56,11 +50,7 @@ exports.login2step = function login2step (req, res, next) {
     });
 };
 
-exports.resetPassword = function resetPassword (req, res) {
-  const username = req.swagger.params.username.value;
-  const newPassword = req.swagger.params.newPassword.value;
-  const userguid = req.swagger.params.userguid.value;
-
+exports.resetPassword = function resetPassword (req, res, username, newPassword, userguid) {
   Login.resetPassword(username, newPassword, userguid)
     .then(function (response) {
       utils.writeJson(res, response, 204);

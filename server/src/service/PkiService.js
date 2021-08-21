@@ -16,7 +16,6 @@
  ******************************************************************************/
 
 'use strict';
-const EnvironmentModel = require('../models/EnvironmentModel');
 const DFSPModel = require('../models/DFSPModel');
 const InternalError = require('../errors/InternalError');
 const ValidationError = require('../errors/ValidationError');
@@ -27,94 +26,22 @@ const ValidationCodes = require('../pki_engine/ValidationCodes');
 const Constants = require('../constants/Constants');
 
 /**
- * Returns all the environments
- *
- * returns Environment[]
- **/
-exports.getEnvironments = function () {
-  return EnvironmentModel.findAll();
-};
-
-/**
- * Creates an environment on the TSP
- *
- * body Environment Environment initial info
- * returns { id: <the newly created object id> }
- **/
-exports.createEnvironment = async function (body) {
-  // FIXME remove defaultDNs
-  const values = {
-    name: body.name,
-    CN: body.defaultDN ? body.defaultDN.CN : null,
-    C: body.defaultDN ? body.defaultDN.C : null,
-    L: body.defaultDN ? body.defaultDN.L : null,
-    O: body.defaultDN ? body.defaultDN.O : null,
-    OU: body.defaultDN ? body.defaultDN.OU : null,
-    ST: body.defaultDN ? body.defaultDN.ST : null,
-  };
-  try {
-    const result = await EnvironmentModel.create(values);
-    if (result.length === 1) {
-      const id = result[0];
-      const row = await EnvironmentModel.findById(id);
-      return EnvironmentModel.mapRowToObject(row);
-    }
-  } catch (err) {
-    throw new InternalError(err.message);
-  }
-};
-
-/**
- * Find and environment by its id
- * Returns an environment
- *
- * envId String ID of environment
- * returns Environment
- **/
-exports.getEnvironmentById = async function (envId) {
-  if (envId === null || typeof envId === 'undefined') {
-    throw new ValidationError(`Invalid envId ${envId}`);
-  }
-  const row = await EnvironmentModel.findById(envId);
-  return EnvironmentModel.mapRowToObject(row);
-};
-
-exports.deleteEnvironment = async function (envId) {
-  const affectedRows = await EnvironmentModel.delete(envId);
-  if (affectedRows === 0) {
-    throw new NotFoundError();
-  }
-  return { id: envId };
-};
-
-/**
  * Creates an entry to store DFSP related info
  * Returns the newly created object id
  *
- * envId String ID of environment
  * body DFSPCreate DFSP initial info
  * returns ObjectCreatedResponse
  **/
-exports.createDFSP = async function (envId, body) {
+exports.createDFSP = async function (body) {
   const regex = / /gi;
   const dfspIdNoSpaces = body.dfspId ? body.dfspId.replace(regex, '-') : null;
 
   const values = {
-    env_id: envId,
     dfsp_id: body.dfspId,
     name: body.name,
     monetaryZoneId: body.monetaryZoneId ? body.monetaryZoneId : undefined,
     security_group: body.securityGroup || 'Application/DFSP:' + dfspIdNoSpaces
   };
-
-  try {
-    await exports.getEnvironmentById(envId);
-  } catch (error) {
-    if (error instanceof NotFoundError) {
-      throw new ValidationError('Environment id not found');
-    }
-    throw error;
-  }
 
   try {
     const result = await DFSPModel.create(values);
@@ -132,53 +59,39 @@ exports.createDFSP = async function (envId, body) {
  *
  * returns DFSP[]
  **/
-exports.getEnvironmentDFSPs = function (envId) {
-  return DFSPModel.findAllByEnvironment(envId).map(r => dfspRowToObject(r));
+exports.getDFSPs = function () {
+  return DFSPModel.findAll().map(r => dfspRowToObject(r));
 };
 
 /**
  * Validates that both env and dfsp exist, and that the dfsp belongs to the env
  */
-exports.validateEnvironmentAndDfsp = async function (envId, dfspId) {
-  return exports.getDFSPById(envId, dfspId);
-};
-
-/**
- * Validates that the env exists
- */
-exports.validateEnvironment = async function (envId) {
-  return exports.getEnvironmentById(envId);
+exports.validateDfsp = async function (dfspId) {
+  return exports.getDFSPById(dfspId);
 };
 
 /**
  * Returns a DFSP by its id
  *
- * envId String ID of environment
  * dfspId String ID of dfsp
  * returns DFSP
  **/
-exports.getDFSPById = async function (envId, dfspId) {
-  if (envId === null || typeof envId === 'undefined') {
-    throw new ValidationError(`Invalid envId ${envId}`);
-  }
+exports.getDFSPById = async function (dfspId) {
   if (dfspId === null || typeof dfspId === 'undefined') {
     throw new ValidationError(`Invalid dfspId ${dfspId}`);
   }
   try {
-    const result = await DFSPModel.findByDfspId(envId, dfspId);
+    const result = await DFSPModel.findByDfspId(dfspId);
     return dfspRowToObject(result);
   } catch (error) {
     if (error instanceof NotFoundError) {
-      throw new NotFoundError(`DFSP with id ${dfspId} for environment ${envId} not found`);
+      throw new NotFoundError(`DFSP with id ${dfspId} not found`);
     }
     throw error;
   }
 };
 
-exports.updateDFSP = async (envId, dfspId, newDfsp) => {
-  if (envId === null || typeof envId === 'undefined') {
-    throw new ValidationError(`Invalid envId ${envId}`);
-  }
+exports.updateDFSP = async (dfspId, newDfsp) => {
   if (dfspId === null || typeof dfspId === 'undefined') {
     throw new ValidationError(`Invalid dfspId ${dfspId}`);
   }
@@ -189,7 +102,7 @@ exports.updateDFSP = async (envId, dfspId, newDfsp) => {
     security_group: newDfsp.securityGroup
   };
 
-  return DFSPModel.update(envId, dfspId, values);
+  return DFSPModel.update(dfspId, values);
 };
 
 /**
@@ -202,17 +115,16 @@ exports.splitChainIntermediateCertificateInfo = (intermediateChain, pkiEngine) =
 /**
  * Delete a DFSP by its id
  *
- * envId String ID of environment
  * dfspId String ID of dfsp
  * returns DFSP
  **/
-exports.deleteDFSP = async function (envId, dfspId) {
-  await exports.validateEnvironmentAndDfsp(envId, dfspId);
+exports.deleteDFSP = async function (dfspId) {
+  await exports.validateDfsp(dfspId);
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   await pkiEngine.deleteAllDFSPData(dbDfspId);
-  return DFSPModel.delete(envId, dfspId);
+  return DFSPModel.delete(dfspId);
 };
 
 /**
@@ -221,15 +133,15 @@ exports.deleteDFSP = async function (envId, dfspId) {
  * rootCertificate: a root certificate used by the DFSP. Can be a self-signed certificate, or a globally trusted CA like Digicert.
  * intermediateChain: list of intermediate certificates.
  */
-exports.setDFSPca = async function (envId, dfspId, body) {
-  await exports.validateEnvironmentAndDfsp(envId, dfspId);
+exports.setDFSPca = async function (dfspId, body) {
+  await exports.validateDfsp(dfspId);
 
   const rootCertificate = body.rootCertificate || '';
   const intermediateChain = body.intermediateChain || '';
 
-  const validatingPkiEngine = new PKIEngine(Constants.vault);
-  await validatingPkiEngine.connect();
-  const { validations, validationState } = await validatingPkiEngine.validateCACertificate(rootCertificate, intermediateChain);
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  const { validations, validationState } = await pkiEngine.validateCACertificate(rootCertificate, intermediateChain);
 
   const values = {
     rootCertificate,
@@ -238,22 +150,24 @@ exports.setDFSPca = async function (envId, dfspId, body) {
     validationState,
   };
 
-  await validatingPkiEngine.setDFSPCA(dfspId, values);
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
+  await pkiEngine.setDFSPCA(dbDfspId, values);
 
   return values;
 };
 
-exports.getDfspsByMonetaryZones = async (envId, monetaryZoneId) => {
-  const dfsps = await DFSPModel.getDfspsByMonetaryZones(envId, monetaryZoneId);
+exports.getDfspsByMonetaryZones = async (monetaryZoneId) => {
+  const dfsps = await DFSPModel.getDfspsByMonetaryZones(monetaryZoneId);
   return dfsps.map(r => dfspRowToObject(r));
 };
 
-exports.getDFSPca = async function (envId, dfspId) {
-  await exports.validateEnvironmentAndDfsp(envId, dfspId);
+exports.getDFSPca = async function (dfspId) {
+  await exports.validateDfsp(dfspId);
   try {
     const pkiEngine = new PKIEngine(Constants.vault);
     await pkiEngine.connect();
-    return await pkiEngine.getDFSPCA(dfspId);
+    const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
+    return await pkiEngine.getDFSPCA(dbDfspId);
   } catch (error) {
     if (error instanceof NotFoundError) {
       return {
@@ -267,6 +181,14 @@ exports.getDFSPca = async function (envId, dfspId) {
   }
 };
 
+exports.deleteDFSPca = async function (dfspId) {
+  await exports.validateDfsp(dfspId);
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
+  return pkiEngine.deleteDFSPCA(dbDfspId);
+};
+
 /**
  * Returns a DFSP with the proper attributes as defined in the API mapping them from the internal representation.
  * It doesn't return the internal id
@@ -275,7 +197,6 @@ exports.getDFSPca = async function (envId, dfspId) {
  */
 const dfspRowToObject = (row) => {
   return {
-    envId: row.env_id,
     id: row.dfsp_id,
     name: row.name,
     monetaryZoneId: row.monetaryZoneId ? row.monetaryZoneId : undefined,

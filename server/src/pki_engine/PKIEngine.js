@@ -100,10 +100,10 @@ class PKIEngine {
    * @returns { validations, validationState } validations list and validationState, where validationState = VALID if all the validations are VALID or NOT_AVAIABLE; INVALID otherwise
    */
   validateCACertificate (rootCertificate, intermediateChain, key) {
-    const validationCodes = ValidationsConfiguration.dfspCaValidations;
-    if (key) {
-      validationCodes.push(ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code);
-    }
+    const validationCodes = [
+      ...ValidationsConfiguration.dfspCaValidations,
+      ...key ? [ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code] : []
+    ];
     return this.performCAValidations(validationCodes, intermediateChain, rootCertificate, key);
   }
 

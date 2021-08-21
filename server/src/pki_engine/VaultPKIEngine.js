@@ -81,6 +81,10 @@ class VaultPKIEngine extends PKIEngine {
     return this.client.write(path, value);
   }
 
+  validateId (id, name) {
+    if (isNaN(id)) throw new Error(`${name} is not a number`);
+  }
+
   async getSecret (key) {
     const path = `${this.mounts.kv}/${key}`;
     try {
@@ -113,6 +117,7 @@ class VaultPKIEngine extends PKIEngine {
   }
 
   async deleteAllDFSPData (dfspId) {
+    this.validateId(dfspId, 'dfspId');
     return Promise.all([
       this.deleteAllDFSPOutboundEnrollments(dfspId),
       this.deleteAllDFSPInboundEnrollments(dfspId),
@@ -124,23 +129,31 @@ class VaultPKIEngine extends PKIEngine {
 
   // region DFSP Outbound Enrollment
   async setDFSPOutboundEnrollment (dfspId, enId, value) {
+    this.validateId(dfspId, 'dfspId');
+    this.validateId(enId, 'enId');
     return this.setSecret(`${vaultPaths.DFSP_OUTBOUND_ENROLLMENT}/${dfspId}/${enId}`, value);
   }
 
   async getDFSPOutboundEnrollment (dfspId, enId) {
+    this.validateId(dfspId, 'dfspId');
+    this.validateId(enId, 'enId');
     return this.getSecret(`${vaultPaths.DFSP_OUTBOUND_ENROLLMENT}/${dfspId}/${enId}`);
   }
 
   async deleteDFSPOutboundEnrollment (dfspId, enId) {
+    this.validateId(dfspId, 'dfspId');
+    this.validateId(enId, 'enId');
     return this.deleteSecret(`${vaultPaths.DFSP_OUTBOUND_ENROLLMENT}/${dfspId}/${enId}`);
   }
 
   async deleteAllDFSPOutboundEnrollments (dfspId) {
+    this.validateId(dfspId, 'dfspId');
     const secrets = await this.listSecrets(`${vaultPaths.DFSP_OUTBOUND_ENROLLMENT}/${dfspId}`);
     return Promise.all(secrets.map(enId => this.deleteDFSPOutboundEnrollment(dfspId, enId)));
   }
 
   async getDFSPOutboundEnrollments (dfspId) {
+    this.validateId(dfspId, 'dfspId');
     const secrets = await this.listSecrets(`${vaultPaths.DFSP_OUTBOUND_ENROLLMENT}/${dfspId}`);
     return Promise.all(secrets.map(enId => this.getDFSPOutboundEnrollment(dfspId, enId)));
   }
@@ -148,23 +161,31 @@ class VaultPKIEngine extends PKIEngine {
 
   // region DFSP Inbound Enrollment
   async setDFSPInboundEnrollment (dfspId, enId, value) {
+    this.validateId(dfspId, 'dfspId');
+    this.validateId(enId, 'enId');
     return this.setSecret(`${vaultPaths.DFSP_INBOUND_ENROLLMENT}/${dfspId}/${enId}`, value);
   }
 
   async getDFSPInboundEnrollments (dfspId) {
+    this.validateId(dfspId, 'dfspId');
     const secrets = await this.listSecrets(`${vaultPaths.DFSP_INBOUND_ENROLLMENT}/${dfspId}`);
     return Promise.all(secrets.map(enId => this.getDFSPInboundEnrollment(dfspId, enId)));
   }
 
   async getDFSPInboundEnrollment (dfspId, enId) {
+    this.validateId(dfspId, 'dfspId');
+    this.validateId(enId, 'enId');
     return this.getSecret(`${vaultPaths.DFSP_INBOUND_ENROLLMENT}/${dfspId}/${enId}`);
   }
 
   async deleteDFSPInboundEnrollment (dfspId, enId) {
+    this.validateId(dfspId, 'dfspId');
+    this.validateId(enId, 'enId');
     return this.deleteSecret(`${vaultPaths.DFSP_INBOUND_ENROLLMENT}/${dfspId}/${enId}`);
   }
 
   async deleteAllDFSPInboundEnrollments (dfspId) {
+    this.validateId(dfspId, 'dfspId');
     const secrets = await this.listSecrets(`${vaultPaths.DFSP_INBOUND_ENROLLMENT}/${dfspId}`);
     return Promise.all(secrets.map(enId => this.deleteDFSPInboundEnrollment(dfspId, enId)));
   }
@@ -172,24 +193,29 @@ class VaultPKIEngine extends PKIEngine {
 
   // region DFSP CA
   async setDFSPCA (dfspId, value) {
+    this.validateId(dfspId, 'dfspId');
     return this.setSecret(`${vaultPaths.DFSP_CA}/${dfspId}`, value);
   }
 
   async getDFSPCA (dfspId) {
+    this.validateId(dfspId, 'dfspId');
     return this.getSecret(`${vaultPaths.DFSP_CA}/${dfspId}`);
   }
 
   async deleteDFSPCA (dfspId) {
+    this.validateId(dfspId, 'dfspId');
     return this.deleteSecret(`${vaultPaths.DFSP_CA}/${dfspId}`);
   }
   // endregion
 
   // region DFSP JWS
   async setDFSPJWSCerts (dfspId, value) {
+    this.validateId(dfspId, 'dfspId');
     return this.setSecret(`${vaultPaths.JWS_CERTS}/${dfspId}`, value);
   }
 
   async getDFSPJWSCerts (dfspId) {
+    this.validateId(dfspId, 'dfspId');
     return this.getSecret(`${vaultPaths.JWS_CERTS}/${dfspId}`);
   }
 
@@ -199,6 +225,7 @@ class VaultPKIEngine extends PKIEngine {
   }
 
   async deleteDFSPJWSCerts (dfspId) {
+    this.validateId(dfspId, 'dfspId');
     return this.deleteSecret(`${vaultPaths.JWS_CERTS}/${dfspId}`);
   }
   // endregion
@@ -231,14 +258,17 @@ class VaultPKIEngine extends PKIEngine {
 
   // region DFSP Server Cert
   async setDFSPServerCerts (dfspId, value) {
+    this.validateId(dfspId, 'dfspId');
     return this.setSecret(`${vaultPaths.DFSP_SERVER_CERT}/${dfspId}`, value);
   }
 
   async getDFSPServerCerts (dfspId) {
+    this.validateId(dfspId, 'dfspId');
     return this.getSecret(`${vaultPaths.DFSP_SERVER_CERT}/${dfspId}`);
   }
 
   async deleteDFSPServerCerts (dfspId) {
+    this.validateId(dfspId, 'dfspId');
     return this.deleteSecret(`${vaultPaths.DFSP_SERVER_CERT}/${dfspId}`);
   }
   // endregion
@@ -600,7 +630,7 @@ class VaultPKIEngine extends PKIEngine {
     return chain.split(beginCertRegex)
       .filter(cert => cert.match(/BEGIN/g))
       .map(cert => cert.slice(0, cert.indexOf(certificateEndDelimiter)) + certificateEndDelimiter);
-  };
+  }
 
   /**
    * Validates ValidationCodes.VALIDATION_CODES.CERTIFICATE_CHAIN
@@ -682,7 +712,7 @@ class VaultPKIEngine extends PKIEngine {
   /**
    * Verifies the signature on the CSR ( from https://www.openssl.org/docs/man1.1.1/man1/openssl-req.html ).
    *
-   * @param {String} csr PEM-encoded CSR
+   * @param {String} csrPem PEM-encoded CSR
    * @returns {Validation} validation
    */
   validateCsrSignatureValid (csrPem) {
@@ -784,7 +814,7 @@ class VaultPKIEngine extends PKIEngine {
         'No dfsp CA');
     }
 
-    if (dfspCA.validationState === 'INVALID') {
+    if (dfspCA.validationState === INVALID) {
       return new Validation(code, true, ValidationCodes.VALID_STATES.INVALID, 'Invalid dfsp ca root or chain');
     } else {
       const chain = [dfspCA.rootCertificate, ...this.splitCertificateChain(dfspCA.intermediateChain || '')].filter(cert => cert);
@@ -1127,6 +1157,7 @@ class VaultPKIEngine extends PKIEngine {
       return new Validation(code, true, ValidationCodes.VALID_STATES.VALID,
         `The root certificate is valid with ${state} state.`, state);
     } catch (e) {
+      console.trace(e, rootCertificate);
       return new Validation(code, true, ValidationCodes.VALID_STATES.INVALID,
         'The root certificate must be valid and be self-signed or signed by a global root.');
     }

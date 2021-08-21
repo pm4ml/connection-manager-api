@@ -24,10 +24,12 @@ const DfspOutboundService = require('../src/service/DfspOutboundService');
 const assert = require('chai').assert;
 const ROOT_CA = require('./Root_CA.js');
 const Constants = require('../src/constants/Constants');
+const DFSPModel = require('../src/models/DFSPModel');
 const forge = require('node-forge');
 
 const ValidationCodes = require('../src/pki_engine/ValidationCodes');
 const { createHubCA } = require('../src/service/HubCAService');
+const PKIEngine = require('../src/pki_engine/VaultPKIEngine');
 
 // Sign CSR and return certificate ( what the DFSP would do )
 const createCertFromCSR = (csrPem) => {
@@ -67,26 +69,10 @@ describe('DfspOutboundService', function () {
   });
 
   describe('DfspOutboundService flow', function () {
-    let envId = null;
     let dfspId = null;
     const DFSP_TEST_OUTBOUND = 'dfsp.outbound.io';
     beforeEach('creating ENV and DFSP', async function () {
       this.timeout(10000);
-      const env = {
-        name: 'DFSP_TEST_ENV_OUTBOUND',
-        defaultDN: {
-          ST: 'Street',
-          C: 'Country',
-          OU: 'Organizational Unit',
-          CN: 'Common Name',
-          L: 'Location',
-          O: 'Organization'
-        }
-      };
-      const result = await PkiService.createEnvironment(env);
-      assert.property(result, 'id');
-      assert.isNotNull(result.id);
-      envId = result.id;
 
       await createHubCA(ROOT_CA);
 
@@ -94,13 +80,17 @@ describe('DfspOutboundService', function () {
         dfspId: DFSP_TEST_OUTBOUND,
         name: 'DFSP used to test outbound flow'
       };
-      const resultDfsp = await PkiService.createDFSP(envId, dfsp);
+      const resultDfsp = await PkiService.createDFSP(dfsp);
       dfspId = resultDfsp.id;
+
+      const pkiEngine = new PKIEngine(Constants.vault);
+      await pkiEngine.connect();
+      const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
+      try { await pkiEngine.deleteAllDFSPData(dbDfspId); } catch (e) { }
     });
 
     afterEach('tearing down ENV and DFSP', async () => {
-      await PkiService.deleteDFSP(envId, dfspId);
-      await PkiService.deleteEnvironment(envId);
+      await PkiService.deleteDFSP(dfspId);
     });
 
     it('should create an OutboundEnrollment and its CSR and get a VALIDATED when validating the signed certificate', async () => {
@@ -127,12 +117,12 @@ describe('DfspOutboundService', function () {
           }
         }
       };
-      const enrollmentResult = await DfspOutboundService.createCSRAndDFSPOutboundEnrollment(envId, dfspId, body);
+      const enrollmentResult = await DfspOutboundService.createCSRAndDFSPOutboundEnrollment(dfspId, body);
       assert.property(enrollmentResult, 'id');
       assert.isNotNull(enrollmentResult.id);
       const enrollmentId = enrollmentResult.id;
 
-      const newEnrollment = await DfspOutboundService.getDFSPOutboundEnrollment(envId, dfspId, enrollmentId);
+      const newEnrollment = await DfspOutboundService.getDFSPOutboundEnrollment(dfspId, enrollmentId);
       assert.equal(newEnrollment.id, enrollmentId);
       assert.equal(newEnrollment.state, 'CSR_LOADED');
       assert.notProperty(newEnrollment, 'key');
@@ -140,20 +130,20 @@ describe('DfspOutboundService', function () {
       const newCert = createCertFromCSR(newEnrollment.csr);
 
       // Now push the certificate to the Connection-Manager
-      const certAddedEnrollment = await DfspOutboundService.addDFSPOutboundEnrollmentCertificate(envId, dfspId, enrollmentId, { certificate: newCert });
+      const certAddedEnrollment = await DfspOutboundService.addDFSPOutboundEnrollmentCertificate(dfspId, enrollmentId, { certificate: newCert });
       // Validate its state
       assert.equal(certAddedEnrollment.id, enrollmentId);
       assert.equal(certAddedEnrollment.certificate, newCert);
       assert.equal(certAddedEnrollment.state, 'CERT_SIGNED');
 
       // Validate its state again
-      const afterCertAddedEnrollment = await DfspOutboundService.getDFSPOutboundEnrollment(envId, dfspId, enrollmentId);
+      const afterCertAddedEnrollment = await DfspOutboundService.getDFSPOutboundEnrollment(dfspId, enrollmentId);
       assert.equal(afterCertAddedEnrollment.id, enrollmentId);
       assert.equal(afterCertAddedEnrollment.certificate, newCert);
       assert.equal(afterCertAddedEnrollment.state, 'CERT_SIGNED');
 
       // Now ask the TSP to validate the cert
-      const afterCertValidatedEnrollment = await DfspOutboundService.validateDFSPOutboundEnrollmentCertificate(envId, dfspId, enrollmentId);
+      const afterCertValidatedEnrollment = await DfspOutboundService.validateDFSPOutboundEnrollmentCertificate(dfspId, enrollmentId);
 
       // Since I didn't upload the dfsp ca, it can't validate the cert
       assert.equal(afterCertValidatedEnrollment.validationState, 'VALID');
@@ -163,12 +153,12 @@ describe('DfspOutboundService', function () {
       assert.equal(validationSignedByDFSPCA.result, 'NOT_AVAILABLE');
 
       // let's upload it
-      await PkiService.setDFSPca(envId, dfspId, {
+      await PkiService.setDFSPca(dfspId, {
         rootCertificate: fs.readFileSync(path.join(__dirname, 'resources/modusbox/ca.pem')).toString()
       });
 
       // Now ask the TSP to validate the cert, again
-      const afterCertValidatedEnrollmentWithCA = await DfspOutboundService.validateDFSPOutboundEnrollmentCertificate(envId, dfspId, enrollmentId);
+      const afterCertValidatedEnrollmentWithCA = await DfspOutboundService.validateDFSPOutboundEnrollmentCertificate(dfspId, enrollmentId);
 
       // Should be ok now
       assert.equal(afterCertValidatedEnrollmentWithCA.validationState, 'VALID', JSON.stringify(afterCertValidatedEnrollmentWithCA, null, 2));

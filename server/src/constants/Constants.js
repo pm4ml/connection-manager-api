@@ -34,7 +34,6 @@ if (process.env.TEST) {
     VAULT_ROLE_SECRET_ID_FILE: '.vault/secret-id',
     VAULT_ENDPOINT: 'http://127.0.0.1:8233',
     VAULT_PKI_BASE_DOMAIN: 'example.com',
-    CFSSL_COMMAND_PATH: './cfssl'
   };
 }
 
@@ -137,10 +136,6 @@ module.exports = {
       .get('DATA_CONFIGURATION_FILE')
       .default('./data/sampleConfiguration.json')
       .asString(),
-  },
-  CFSSL: {
-    VERSION: env.get('CFSSL_VERSION').default('1.3.4').asString(),
-    COMMAND_PATH: env.get('CFSSL_COMMAND_PATH').default('cfssl').asString(),
   },
   ENVIRONMENT_INIT: {
     initEnvironment: env.get('ENV_INIT_NAME').asString(),

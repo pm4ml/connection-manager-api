@@ -22,12 +22,12 @@ const PkiService = require('./PkiService');
 const ValidationError = require('../errors/ValidationError');
 const Constants = require('../constants/Constants');
 
-exports.createDfspJWSCerts = async (envId, dfspId, body) => {
+exports.createDfspJWSCerts = async (dfspId, body) => {
   if (body === null || typeof body === 'undefined') {
     throw new ValidationError(`Invalid body ${body}`);
   }
 
-  await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
+  await PkiService.validateDfsp(dfspId);
 
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
@@ -38,28 +38,28 @@ exports.createDfspJWSCerts = async (envId, dfspId, body) => {
     validations,
     validationState,
   };
-  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   await pkiEngine.setDFSPJWSCerts(dbDfspId, jwsData);
   return jwsData;
 };
 
-exports.updateDfspJWSCerts = async (envId, dfspId, body) => {
-  return exports.createDfspJWSCerts(envId, dfspId, body);
+exports.updateDfspJWSCerts = async (dfspId, body) => {
+  return exports.createDfspJWSCerts(dfspId, body);
 };
 
-exports.getDfspJWSCerts = async (envId, dfspId) => {
-  await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
+exports.getDfspJWSCerts = async (dfspId) => {
+  await PkiService.validateDfsp(dfspId);
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   return pkiEngine.getDFSPJWSCerts(dbDfspId);
 };
 
-exports.deleteDfspJWSCerts = async (envId, dfspId) => {
-  await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
+exports.deleteDfspJWSCerts = async (dfspId) => {
+  await PkiService.validateDfsp(dfspId);
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   await pkiEngine.deleteDFSPJWSCerts(dbDfspId);
 };
 

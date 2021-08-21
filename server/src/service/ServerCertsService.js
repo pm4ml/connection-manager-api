@@ -22,11 +22,11 @@ const PkiService = require('./PkiService');
 const ValidationError = require('../errors/ValidationError');
 const Constants = require('../constants/Constants');
 
-exports.createDfspServerCerts = async (envId, dfspId, body) => {
+exports.createDfspServerCerts = async (dfspId, body) => {
   if (body === null || typeof body === 'undefined') {
     throw new ValidationError(`Invalid body ${body}`);
   }
-  await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
+  await PkiService.validateDfsp(dfspId);
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
   const { validations, validationState } = await pkiEngine.validateServerCertificate(body.serverCertificate, body.intermediateChain, body.rootCertificate);
@@ -38,47 +38,45 @@ exports.createDfspServerCerts = async (envId, dfspId, body) => {
     validationState,
   };
 
-  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   await pkiEngine.setDFSPServerCerts(dbDfspId, certData);
   return certData;
 };
 
-exports.updateDfspServerCerts = async (envId, dfspId, body) => {
-  return exports.createDfspServerCerts(envId, dfspId, body);
+exports.updateDfspServerCerts = async (dfspId, body) => {
+  return exports.createDfspServerCerts(dfspId, body);
 };
 
-exports.getDfspServerCerts = async (envId, dfspId) => {
-  await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
+exports.getDfspServerCerts = async (dfspId) => {
+  await PkiService.validateDfsp(dfspId);
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   return pkiEngine.getDFSPServerCerts(dbDfspId);
 };
 
-exports.deleteDfspServerCerts = async (envId, dfspId) => {
-  await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
+exports.deleteDfspServerCerts = async (dfspId) => {
+  await PkiService.validateDfsp(dfspId);
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   await pkiEngine.deleteDFSPServerCerts(dbDfspId);
 };
 
-exports.getAllDfspServerCerts = async (envId) => {
-  await PkiService.validateEnvironment(envId);
+exports.getAllDfspServerCerts = async () => {
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  const allDfsps = await DFSPModel.findAllByEnvironment(envId);
+  const allDfsps = await DFSPModel.findAll();
   return Promise.all(allDfsps.map(({ id }) => pkiEngine.getDFSPServerCerts(id)));
 };
 
 /**
  * Creates the server certificates
  */
-exports.createHubServerCerts = async (envId, body) => {
+exports.createHubServerCerts = async (body) => {
   if (body === null || typeof body === 'undefined') {
     throw new ValidationError(`Invalid body ${body}`);
   }
-  await PkiService.validateEnvironment(envId);
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
   const cert = {};
@@ -104,15 +102,13 @@ exports.createHubServerCerts = async (envId, body) => {
   return certData;
 };
 
-exports.getHubServerCerts = async (envId) => {
-  await PkiService.validateEnvironment(envId);
+exports.getHubServerCerts = async () => {
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
   return pkiEngine.getHubServerCert();
 };
 
-exports.deleteHubServerCerts = async (envId) => {
-  await PkiService.validateEnvironment(envId);
+exports.deleteHubServerCerts = async () => {
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
   const cert = await pkiEngine.getHubServerCert();

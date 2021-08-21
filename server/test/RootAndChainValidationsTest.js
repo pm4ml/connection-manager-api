@@ -25,6 +25,9 @@ const ROOT_CA = require('./Root_CA.js');
 
 const ValidationCodes = require('../src/pki_engine/ValidationCodes');
 const { createHubCA } = require('../src/service/HubCAService');
+const PKIEngine = require('../src/pki_engine/VaultPKIEngine');
+const Constants = require('../src/constants/Constants');
+const DFSPModel = require('../src/models/DFSPModel');
 
 describe('DfspPkiService', () => {
   before(async function () {
@@ -36,26 +39,10 @@ describe('DfspPkiService', () => {
     await tearDownTestDB();
   });
 
-  let envId = null;
   let dfspId = null;
   const DFSP_TEST_OUTBOUND = 'dfsp.outbound.io';
   beforeEach('creating ENV and DFSP', async function () {
     this.timeout(30000);
-    const env = {
-      name: 'ENV_' + DFSP_TEST_OUTBOUND,
-      defaultDN: {
-        ST: 'Street',
-        C: 'Country',
-        OU: 'Organizational Unit',
-        CN: 'Common Name',
-        L: 'Location',
-        O: 'Organization'
-      }
-    };
-    const result = await PkiService.createEnvironment(env);
-    assert.property(result, 'id');
-    assert.isNotNull(result.id);
-    envId = result.id;
 
     await createHubCA(ROOT_CA);
 
@@ -63,13 +50,17 @@ describe('DfspPkiService', () => {
       dfspId: DFSP_TEST_OUTBOUND,
       name: 'DFSP used to test outbound flow'
     };
-    const resultDfsp = await PkiService.createDFSP(envId, dfsp);
+    const resultDfsp = await PkiService.createDFSP(dfsp);
     dfspId = resultDfsp.id;
+
+    const pkiEngine = new PKIEngine(Constants.vault);
+    await pkiEngine.connect();
+    const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
+    try { await pkiEngine.deleteAllDFSPData(dbDfspId); } catch (e) { }
   });
 
   afterEach('tearing down ENV and DFSP', async () => {
-    await PkiService.deleteDFSP(envId, dfspId);
-    await PkiService.deleteEnvironment(envId);
+    await PkiService.deleteDFSP(dfspId);
   });
 
   const ROOT_CA_PATH = './resources/digicert/digicert.global.root.pem';
@@ -81,7 +72,7 @@ describe('DfspPkiService', () => {
     const body = {
       rootCertificate: fs.readFileSync(path.join(__dirname, ROOT_CA_PATH)).toString(),
     };
-    const result = await PkiService.setDFSPca(envId, dfspId, body);
+    const result = await PkiService.setDFSPca(dfspId, body);
     const validationRootCertificate = result.validations.find((element) =>
       element.validationCode === ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code
     );
@@ -93,7 +84,7 @@ describe('DfspPkiService', () => {
     const body = {
       rootCertificate: fs.readFileSync(path.join(__dirname, SELF_SIGNED_INTERMEDIATE_PATH)).toString(),
     };
-    const result = await PkiService.setDFSPca(envId, dfspId, body);
+    const result = await PkiService.setDFSPca(dfspId, body);
     assert.equal(result.validationState, 'INVALID');
   }).timeout(15000);
 
@@ -102,7 +93,7 @@ describe('DfspPkiService', () => {
       rootCertificate: null,
       intermediateChain: fs.readFileSync(path.join(__dirname, INTERMEDIATE_CERT_PATH)).toString()
     };
-    const result = await PkiService.setDFSPca(envId, dfspId, body);
+    const result = await PkiService.setDFSPca(dfspId, body);
     const validationIntermediateChainCertificate = result.validations.find((element) =>
       element.validationCode === ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code
     );
@@ -116,7 +107,7 @@ describe('DfspPkiService', () => {
       rootCertificate: fs.readFileSync(path.join(__dirname, SELF_SIGNED_ROOT_CA_PATH)).toString(),
       intermediateChain: fs.readFileSync(path.join(__dirname, SELF_SIGNED_INTERMEDIATE_PATH)).toString()
     };
-    const result = await PkiService.setDFSPca(envId, dfspId, body);
+    const result = await PkiService.setDFSPca(dfspId, body);
     const validationRootCertificate = result.validations.find((element) =>
       element.validationCode === ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code
     );

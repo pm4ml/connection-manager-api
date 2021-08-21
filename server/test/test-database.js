@@ -20,16 +20,13 @@ const initialConfiguration = require('../src/db/InitialDataConfiguration');
 
 const { Model } = require('objection');
 
-let knexOptions = {
+const knexOptions = {
   client: 'sqlite3',
   connection: {
     filename: ':memory:',
   },
   migrations: {
     directory: path.join(__dirname, '/../src/db/migrations')
-  },
-  seeds: {
-    directory: path.join(__dirname, '/./resources/knex/seeds')
   },
   useNullAsDefault: true,
   pool: {
@@ -56,7 +53,6 @@ exports.setupTestDB = async () => {
   await knex.initialize();
   await runKnexMigrations();
   await initialConfiguration.runInitialConfigurations();
-  await knex.seed.run();
 };
 
 exports.tearDownTestDB = async () => {

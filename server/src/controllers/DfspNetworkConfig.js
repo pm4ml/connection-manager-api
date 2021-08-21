@@ -20,10 +20,8 @@
 const utils = require('../utils/writer.js');
 const DfspNetworkConfig = require('../service/DfspNetworkConfigService');
 
-exports.getEnvironmentDfspStatus = function getEnvironmentDfspStatus (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  DfspNetworkConfig.getEnvironmentDfspStatus(envId, dfspId)
+exports.getEnvironmentDfspStatus = function getEnvironmentDfspStatus (req, res, next, dfspId) {
+  DfspNetworkConfig.getEnvironmentDfspStatus(dfspId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -32,11 +30,8 @@ exports.getEnvironmentDfspStatus = function getEnvironmentDfspStatus (req, res, 
     });
 };
 
-exports.createDFSPEgressIp = function createDFSPEgressIp (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  const body = req.swagger.params.body.value;
-  DfspNetworkConfig.createDFSPEgressIp(envId, dfspId, body)
+exports.createDFSPEgressIp = function createDFSPEgressIp (req, res, next, dfspId) {
+  DfspNetworkConfig.createDFSPEgressIp(dfspId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -45,11 +40,8 @@ exports.createDFSPEgressIp = function createDFSPEgressIp (req, res, next) {
     });
 };
 
-exports.createDFSPIngressIp = function createDFSPIngressIp (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  const body = req.swagger.params.body.value;
-  DfspNetworkConfig.createDFSPIngressIp(envId, dfspId, body)
+exports.createDFSPIngressIp = function createDFSPIngressIp (req, res, next, dfspId) {
+  DfspNetworkConfig.createDFSPIngressIp(dfspId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -58,11 +50,8 @@ exports.createDFSPIngressIp = function createDFSPIngressIp (req, res, next) {
     });
 };
 
-exports.createDFSPIngressUrl = function createDFSPIngressUrl (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  const body = req.swagger.params.body.value;
-  DfspNetworkConfig.createDFSPIngressUrl(envId, dfspId, body)
+exports.createDFSPIngressUrl = function createDFSPIngressUrl (req, res, next, dfspId) {
+  DfspNetworkConfig.createDFSPIngressUrl(dfspId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -72,8 +61,7 @@ exports.createDFSPIngressUrl = function createDFSPIngressUrl (req, res, next) {
 };
 
 exports.getUnprocessedEndpointItems = function getUnprocessedEndpointItems (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  DfspNetworkConfig.getUnprocessedEndpointItems(envId)
+  DfspNetworkConfig.getUnprocessedEndpointItems()
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -82,10 +70,8 @@ exports.getUnprocessedEndpointItems = function getUnprocessedEndpointItems (req,
     });
 };
 
-exports.getUnprocessedDfspItems = function getUnprocessedDfspItems (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  DfspNetworkConfig.getUnprocessedDfspItems(envId, dfspId)
+exports.getUnprocessedDfspItems = function getUnprocessedDfspItems (req, res, next, dfspId) {
+  DfspNetworkConfig.getUnprocessedDfspItems(dfspId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -94,10 +80,8 @@ exports.getUnprocessedDfspItems = function getUnprocessedDfspItems (req, res, ne
     });
 };
 
-exports.confirmEndpointItem = function getUnprocessedEndpointItems (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  const epId = req.swagger.params.epId.value;
-  DfspNetworkConfig.confirmEndpointItem(envId, epId)
+exports.confirmEndpointItem = function getUnprocessedEndpointItems (req, res, next, epId) {
+  DfspNetworkConfig.confirmEndpointItem(epId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -106,10 +90,8 @@ exports.confirmEndpointItem = function getUnprocessedEndpointItems (req, res, ne
     });
 };
 
-exports.getDFSPIngressUrls = function getDFSPIngressUrls (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  DfspNetworkConfig.getDFSPIngressUrls(envId, dfspId)
+exports.getDFSPIngressUrls = function getDFSPIngressUrls (req, res, next, dfspId) {
+  DfspNetworkConfig.getDFSPIngressUrls(dfspId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -118,10 +100,8 @@ exports.getDFSPIngressUrls = function getDFSPIngressUrls (req, res, next) {
     });
 };
 
-exports.getDFSPIngressIps = function getDFSPIngressIps (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  DfspNetworkConfig.getDFSPIngressIps(envId, dfspId)
+exports.getDFSPIngressIps = function getDFSPIngressIps (req, res, next, dfspId) {
+  DfspNetworkConfig.getDFSPIngressIps(dfspId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -130,10 +110,8 @@ exports.getDFSPIngressIps = function getDFSPIngressIps (req, res, next) {
     });
 };
 
-exports.getDFSPEgressIps = function getDFSPEgressIps (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  DfspNetworkConfig.getDFSPEgressIps(envId, dfspId)
+exports.getDFSPEgressIps = function getDFSPEgressIps (req, res, next, dfspId) {
+  DfspNetworkConfig.getDFSPEgressIps(dfspId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -142,12 +120,8 @@ exports.getDFSPEgressIps = function getDFSPEgressIps (req, res, next) {
     });
 };
 
-exports.updateDFSPEndpoint = function updateDFSPEndpoint (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  const epId = req.swagger.params.epId.value;
-  const body = req.swagger.params.body.value;
-  DfspNetworkConfig.updateDFSPEndpoint(envId, dfspId, epId, body)
+exports.updateDFSPEndpoint = function updateDFSPEndpoint (req, res, next, dfspId, epId) {
+  DfspNetworkConfig.updateDFSPEndpoint(dfspId, epId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -156,11 +130,8 @@ exports.updateDFSPEndpoint = function updateDFSPEndpoint (req, res, next) {
     });
 };
 
-exports.deleteDFSPEndpoint = function deleteDFSPEndpoint (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  const epId = req.swagger.params.epId.value;
-  DfspNetworkConfig.deleteDFSPEndpoint(envId, dfspId, epId)
+exports.deleteDFSPEndpoint = function deleteDFSPEndpoint (req, res, next, dfspId, epId) {
+  DfspNetworkConfig.deleteDFSPEndpoint(dfspId, epId)
     .then(function (response) {
       utils.writeJson(res, response, 204);
     })
@@ -169,10 +140,8 @@ exports.deleteDFSPEndpoint = function deleteDFSPEndpoint (req, res, next) {
     });
 };
 
-exports.getDFSPEndpoints = function getDFSPEndpoints (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  DfspNetworkConfig.getDFSPEndpoints(envId, dfspId)
+exports.getDFSPEndpoints = function getDFSPEndpoints (req, res, next, dfspId) {
+  DfspNetworkConfig.getDFSPEndpoints(dfspId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -181,11 +150,8 @@ exports.getDFSPEndpoints = function getDFSPEndpoints (req, res, next) {
     });
 };
 
-exports.getDFSPEndpoint = function getDFSPEndpoint (req, res, next) {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  const epId = req.swagger.params.epId.value;
-  DfspNetworkConfig.getDFSPEndpoint(envId, dfspId, epId)
+exports.getDFSPEndpoint = function getDFSPEndpoint (req, res, next, dfspId, epId) {
+  DfspNetworkConfig.getDFSPEndpoint(dfspId, epId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -194,11 +160,8 @@ exports.getDFSPEndpoint = function getDFSPEndpoint (req, res, next) {
     });
 };
 
-exports.getDFSPIngressIpEndpoint = (req, res, next) => {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  const epId = req.swagger.params.epId.value;
-  DfspNetworkConfig.getDFSPIngressIpEndpoint(envId, dfspId, epId)
+exports.getDFSPIngressIpEndpoint = (req, res, next, dfspId, epId) => {
+  DfspNetworkConfig.getDFSPIngressIpEndpoint(dfspId, epId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -207,12 +170,8 @@ exports.getDFSPIngressIpEndpoint = (req, res, next) => {
     });
 };
 
-exports.updateDFSPIngressIpEndpoint = (req, res, next) => {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  const epId = req.swagger.params.epId.value;
-  const body = req.swagger.params.body.value;
-  DfspNetworkConfig.updateDFSPIngressIpEndpoint(envId, dfspId, epId, body)
+exports.updateDFSPIngressIpEndpoint = (req, res, next, dfspId, epId) => {
+  DfspNetworkConfig.updateDFSPIngressIpEndpoint(dfspId, epId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -221,11 +180,8 @@ exports.updateDFSPIngressIpEndpoint = (req, res, next) => {
     });
 };
 
-exports.deleteDFSPIngressIpEndpoint = (req, res, next) => {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  const epId = req.swagger.params.epId.value;
-  DfspNetworkConfig.deleteDFSPIngressIpEndpoint(envId, dfspId, epId)
+exports.deleteDFSPIngressIpEndpoint = (req, res, next, dfspId, epId) => {
+  DfspNetworkConfig.deleteDFSPIngressIpEndpoint(dfspId, epId)
     .then(function (response) {
       utils.writeJson(res, response, 204);
     })
@@ -234,11 +190,8 @@ exports.deleteDFSPIngressIpEndpoint = (req, res, next) => {
     });
 };
 
-exports.getDFSPEgressIpEndpoint = (req, res, next) => {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  const epId = req.swagger.params.epId.value;
-  DfspNetworkConfig.getDFSPEgressIpEndpoint(envId, dfspId, epId)
+exports.getDFSPEgressIpEndpoint = (req, res, next, dfspId, epId) => {
+  DfspNetworkConfig.getDFSPEgressIpEndpoint(dfspId, epId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -247,12 +200,8 @@ exports.getDFSPEgressIpEndpoint = (req, res, next) => {
     });
 };
 
-exports.updateDFSPEgressIpEndpoint = (req, res, next) => {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  const epId = req.swagger.params.epId.value;
-  const body = req.swagger.params.body.value;
-  DfspNetworkConfig.updateDFSPEgressIpEndpoint(envId, dfspId, epId, body)
+exports.updateDFSPEgressIpEndpoint = (req, res, next, dfspId, epId) => {
+  DfspNetworkConfig.updateDFSPEgressIpEndpoint(dfspId, epId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -261,11 +210,8 @@ exports.updateDFSPEgressIpEndpoint = (req, res, next) => {
     });
 };
 
-exports.deleteDFSPEgressIpEndpoint = (req, res, next) => {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  const epId = req.swagger.params.epId.value;
-  DfspNetworkConfig.deleteDFSPEgressIpEndpoint(envId, dfspId, epId)
+exports.deleteDFSPEgressIpEndpoint = (req, res, next, dfspId, epId) => {
+  DfspNetworkConfig.deleteDFSPEgressIpEndpoint(dfspId, epId)
     .then(function (response) {
       utils.writeJson(res, response, 204);
     })
@@ -274,11 +220,8 @@ exports.deleteDFSPEgressIpEndpoint = (req, res, next) => {
     });
 };
 
-exports.getDFSPIngressUrlEndpoint = (req, res, next) => {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  const epId = req.swagger.params.epId.value;
-  DfspNetworkConfig.getDFSPIngressUrlEndpoint(envId, dfspId, epId)
+exports.getDFSPIngressUrlEndpoint = (req, res, next, dfspId, epId) => {
+  DfspNetworkConfig.getDFSPIngressUrlEndpoint(dfspId, epId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -287,12 +230,8 @@ exports.getDFSPIngressUrlEndpoint = (req, res, next) => {
     });
 };
 
-exports.updateDFSPIngressUrlEndpoint = (req, res, next) => {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  const epId = req.swagger.params.epId.value;
-  const body = req.swagger.params.body.value;
-  DfspNetworkConfig.updateDFSPIngressUrlEndpoint(envId, dfspId, epId, body)
+exports.updateDFSPIngressUrlEndpoint = (req, res, next, dfspId, epId) => {
+  DfspNetworkConfig.updateDFSPIngressUrlEndpoint(dfspId, epId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -301,11 +240,8 @@ exports.updateDFSPIngressUrlEndpoint = (req, res, next) => {
     });
 };
 
-exports.deleteDFSPIngressUrlEndpoint = (req, res, next) => {
-  const envId = req.swagger.params.envId.value;
-  const dfspId = req.swagger.params.dfspId.value;
-  const epId = req.swagger.params.epId.value;
-  DfspNetworkConfig.deleteDFSPIngressUrlEndpoint(envId, dfspId, epId)
+exports.deleteDFSPIngressUrlEndpoint = (req, res, next, dfspId, epId) => {
+  DfspNetworkConfig.deleteDFSPIngressUrlEndpoint(dfspId, epId)
     .then(function (response) {
       utils.writeJson(res, response, 204);
     })

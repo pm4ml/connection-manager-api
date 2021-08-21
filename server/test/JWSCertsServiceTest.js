@@ -34,25 +34,10 @@ describe('JWSCertsService', () => {
   });
 
   describe('JWS Certificates', () => {
-    let envId = null;
     let dfspId = null;
 
     const keypair = forge.rsa.generateKeyPair({ bits: 2048 });
     const publicKey = forge.pki.publicKeyToPem(keypair.publicKey, 72);
-
-    beforeEach('creating Environment and DFSP', async () => {
-      const env = {
-        name: 'DFSP_TEST_ENV'
-      };
-      const result = await PkiService.createEnvironment(env);
-      assert.property(result, 'id');
-      assert.isNotNull(result.id);
-      envId = result.id;
-    });
-
-    afterEach('tearing down ENV and DFSP', async () => {
-      await PkiService.deleteEnvironment(envId);
-    });
 
     it('should create a DfspJWSCerts entry', async () => {
       const body = { publicKey };
@@ -60,14 +45,14 @@ describe('JWSCertsService', () => {
         dfspId: 'DFSP_TEST',
         name: 'DFSP'
       };
-      const resultDfsp = await PkiService.createDFSP(envId, dfsp);
+      const resultDfsp = await PkiService.createDFSP(dfsp);
       dfspId = resultDfsp.id;
-      const result = await JWSCertsService.createDfspJWSCerts(envId, dfspId, body);
+      const result = await JWSCertsService.createDfspJWSCerts(dfspId, body);
       assert.equal(publicKey, result.publicKey);
-      const certs = await JWSCertsService.getAllDfspJWSCerts(envId);
+      const certs = await JWSCertsService.getAllDfspJWSCerts();
       console.log(certs);
-      await PkiService.deleteDFSP(envId, dfspId);
-      const certs2 = await JWSCertsService.getAllDfspJWSCerts(envId);
+      await PkiService.deleteDFSP(dfspId);
+      const certs2 = await JWSCertsService.getAllDfspJWSCerts();
       console.log(certs2);
     }).timeout(30000);
 
@@ -77,17 +62,17 @@ describe('JWSCertsService', () => {
         dfspId: 'DFSP_TEST',
         name: 'DFSP'
       };
-      const resultDfsp = await PkiService.createDFSP(envId, dfsp);
+      const resultDfsp = await PkiService.createDFSP(dfsp);
       dfspId = resultDfsp.id;
-      await JWSCertsService.createDfspJWSCerts(envId, dfspId, body);
-      await JWSCertsService.deleteDfspJWSCerts(envId, dfspId);
+      await JWSCertsService.createDfspJWSCerts(dfspId, body);
+      await JWSCertsService.deleteDfspJWSCerts(dfspId);
       try {
-        await JWSCertsService.getDfspJWSCerts(envId, dfspId);
+        await JWSCertsService.getDfspJWSCerts(dfspId);
         assert.fail('Should have throw NotFoundError');
       } catch (error) {
         assert.instanceOf(error, NotFoundError);
       }
-      await PkiService.deleteDFSP(envId, dfspId);
+      await PkiService.deleteDFSP(dfspId);
     }).timeout(30000);
 
     it('should create and find several dfsps certs', async () => {
@@ -100,18 +85,18 @@ describe('JWSCertsService', () => {
           dfspId: 'DFSP_TEST' + i,
           name: 'DFSP'
         };
-        await PkiService.createDFSP(envId, dfsp);
+        await PkiService.createDFSP(dfsp);
         dfspIds.push(dfsp.dfspId);
 
-        await JWSCertsService.createDfspJWSCerts(envId, dfsp.dfspId, body);
+        await JWSCertsService.createDfspJWSCerts(dfsp.dfspId, body);
       }
 
-      const certs = await JWSCertsService.getAllDfspJWSCerts(envId);
+      const certs = await JWSCertsService.getAllDfspJWSCerts();
       certs.forEach(cert => {
         assert.equal(publicKey, cert.publicKey);
       });
 
-      await Promise.all(dfspIds.map(id => PkiService.deleteDFSP(envId, id)));
+      await Promise.all(dfspIds.map(id => PkiService.deleteDFSP(id)));
     }).timeout(30000);
 
     it('should create and find several dfsps certs and dfspId shouldnt be null', async () => {
@@ -124,10 +109,10 @@ describe('JWSCertsService', () => {
           dfspId: 'DFSP_TEST' + i,
           name: 'DFSP'
         };
-        await PkiService.createDFSP(envId, dfsp);
+        await PkiService.createDFSP(dfsp);
         dfspIds.push(dfsp.dfspId);
 
-        await JWSCertsService.createDfspJWSCerts(envId, dfsp.dfspId, body);
+        await JWSCertsService.createDfspJWSCerts(dfsp.dfspId, body);
       }
 
       const certs = await JWSCertsService.getAllDfspJWSCerts();
@@ -136,7 +121,7 @@ describe('JWSCertsService', () => {
         assert.include(dfspIds, cert.dfspId);
       });
 
-      await Promise.all(dfspIds.map(id => PkiService.deleteDFSP(envId, id)));
+      await Promise.all(dfspIds.map(id => PkiService.deleteDFSP(id)));
     }).timeout(30000);
 
     it('should throw an error with a wrong key size', async () => {
@@ -145,13 +130,13 @@ describe('JWSCertsService', () => {
         dfspId: 'DFSP_TEST',
         name: 'DFSP'
       };
-      const resultDfsp = await PkiService.createDFSP(envId, dfsp);
+      const resultDfsp = await PkiService.createDFSP(dfsp);
       dfspId = resultDfsp.id;
-      const result = await JWSCertsService.createDfspJWSCerts(envId, dfspId, body);
+      const result = await JWSCertsService.createDfspJWSCerts(dfspId, body);
       assert.isNotNull(result.validations);
       assert.isNotNull(result.validationState);
       assert.strictEqual(result.validationState, ValidationCodes.VALID_STATES.INVALID);
-      await PkiService.deleteDFSP(envId, dfspId);
+      await PkiService.deleteDFSP(dfspId);
     }).timeout(30000);
   });
 });

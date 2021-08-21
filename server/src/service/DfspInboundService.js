@@ -29,13 +29,12 @@ const DFSPModel = require('../models/DFSPModel');
  * Create DFSP Inbound enrollment ( DFSP API )
  * The DFSP operator sends the info needed to configure the inbound PKI infra
  * Saves the enrollment info and sets its state to 'CSR_LOADED'
- * envId String ID of environment
  * dfspId String DFSP id
  * body DFSPInboundCreate DFSP inbound initial info
  * returns ObjectCreatedResponse
  **/
-exports.createDFSPInboundEnrollment = async function (envId, dfspId, body) {
-  await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
+exports.createDFSPInboundEnrollment = async function (dfspId, body) {
+  await PkiService.validateDfsp(dfspId);
 
   let csrInfo;
   try {
@@ -63,7 +62,7 @@ exports.createDFSPInboundEnrollment = async function (envId, dfspId, body) {
     validationState
   };
 
-  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   await pkiEngine.setDFSPInboundEnrollment(dbDfspId, values.id, values);
   return values;
 };
@@ -71,27 +70,26 @@ exports.createDFSPInboundEnrollment = async function (envId, dfspId, body) {
 /**
  * Get a list of DFSP Inbound enrollments
  */
-exports.getDFSPInboundEnrollments = async function (envId, dfspId) {
-  await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
+exports.getDFSPInboundEnrollments = async function (dfspId) {
+  await PkiService.validateDfsp(dfspId);
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   return pkiEngine.getDFSPInboundEnrollments(dbDfspId);
 };
 
 /**
  * Get a DFSP Inbound enrollment
  *
- * envId String ID of environment
  * dfspId String DFSP id
  * enId String Enrollment id
  * returns InboundEnrollment
  **/
-exports.getDFSPInboundEnrollment = async function (envId, dfspId, enId) {
-  await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
+exports.getDFSPInboundEnrollment = async function (dfspId, enId) {
+  await PkiService.validateDfsp(dfspId);
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   return pkiEngine.getDFSPInboundEnrollment(dbDfspId, enId);
 };
 
@@ -99,20 +97,19 @@ exports.getDFSPInboundEnrollment = async function (envId, dfspId, enId) {
  * Signs the CSR and adds the certificate to the enrollment
  * The TSP signs the CSR with the environment CA, creating a certificate. It adds this certificate to the enrollment and updates its state to CERT_SIGNED
  *
- * envId String ID of environment
  * dfspId String DFSP id
  * enId String Enrollment id
  * returns ApiResponse
  **/
-exports.signDFSPInboundEnrollment = async function (envId, dfspId, enId) {
-  await PkiService.validateEnvironmentAndDfsp(envId, dfspId);
+exports.signDFSPInboundEnrollment = async function (dfspId, enId) {
+  await PkiService.validateDfsp(dfspId);
 
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
-  const dbDfspId = await DFSPModel.findIdByDfspId(envId, dfspId);
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   const enrollment = await pkiEngine.getDFSPInboundEnrollment(dbDfspId, enId);
   if (!enrollment) {
-    throw new InvalidEntityError(`Could not retrieve current CA for the endpoint ${enId}, dfsp id ${dfspId}, environment id ${envId}`);
+    throw new InvalidEntityError(`Could not retrieve current CA for the endpoint ${enId}, dfsp id ${dfspId}`);
   }
 
   const { csr } = enrollment;

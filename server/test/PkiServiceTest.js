@@ -61,88 +61,7 @@ describe('PkiService', () => {
     await tearDownTestDB();
   });
 
-  describe('Environment', () => {
-    it('should create an Environment and delete it', async () => {
-      const env = {
-        name: 'DEV_A',
-        defaultDN: {
-          ST: 'Street',
-          C: 'Country',
-          OU: 'Organizational Unit',
-          CN: 'Common Name',
-          L: 'Location',
-          O: 'Organization'
-        }
-      };
-      const result = await PkiService.createEnvironment(env);
-      assert.property(result, 'id');
-      assert.isNotNull(result.id);
-      assert.equal(result.name, env.name);
-      assert.equal(result.defaultDN.ST, env.defaultDN.ST);
-      const savedEnv = await PkiService.getEnvironmentById(result.id);
-      assert.equal(savedEnv.name, env.name);
-      assert.equal(savedEnv.defaultDN.ST, env.defaultDN.ST);
-      const deleted = await PkiService.deleteEnvironment(result.id);
-      assert.equal(deleted.id, result.id);
-    });
-
-    it('should throw a 404 when trying to delete a non existent Environment', async () => {
-      try {
-        await PkiService.deleteEnvironment(-666);
-        assert.fail('Should not happen');
-      } catch (error) {
-        assert(error instanceof NotFoundError);
-      }
-    });
-
-    it('should find newly created environment in getEnvironments', async () => {
-      const env = {
-        name: 'DEV_A',
-        defaultDN: {
-          ST: 'Street',
-          C: 'Country',
-          OU: 'Organizational Unit',
-          CN: 'Common Name',
-          L: 'Location',
-          O: 'Organization'
-        }
-      };
-      const result = await PkiService.createEnvironment(env);
-      assert.property(result, 'id');
-      assert.isNotNull(result.id);
-      const allEnvs = await PkiService.getEnvironments();
-      const found = allEnvs.find((elem) => elem.id === result.id);
-      assert.isDefined(found);
-      const deleted = await PkiService.deleteEnvironment(result.id);
-      assert.equal(deleted.id, result.id);
-    });
-  });
-
   describe('CA', () => {
-    let envId = null;
-
-    beforeEach('creating hook Environment', async () => {
-      const env = {
-        name: 'CA_TEST_ENV',
-        defaultDN: {
-          ST: 'Street',
-          C: 'Country',
-          OU: 'Organizational Unit',
-          CN: 'Common Name',
-          L: 'Location',
-          O: 'Organization'
-        }
-      };
-      const result = await PkiService.createEnvironment(env);
-      assert.property(result, 'id');
-      assert.isNotNull(result.id);
-      envId = result.id;
-    });
-
-    afterEach('tearing down hook CA', async () => {
-      await PkiService.deleteEnvironment(envId);
-    });
-
     it('should throw ValidationError while creating a CA with bogus data', async () => {
       // Bad input
       const caBody = {
@@ -206,28 +125,10 @@ describe('PkiService', () => {
   });
 
   describe('DFSP', () => {
-    let envId = null;
-
     beforeEach('creating hook Environment', async () => {
-      const env = {
-        name: 'DFSP_TEST_ENV',
-        defaultDN: {
-          ST: 'Street',
-          C: 'Country',
-          OU: 'Organizational Unit',
-          CN: 'Common Name',
-          L: 'Location',
-          O: 'Organization'
-        }
-      };
-      const result = await PkiService.createEnvironment(env);
-      assert.property(result, 'id');
-      assert.isNotNull(result.id);
-      envId = result.id;
     });
 
     afterEach('tearing down hook CA', async () => {
-      await PkiService.deleteEnvironment(envId);
     });
 
     it('should create a DFSP and delete it', async () => {
@@ -235,59 +136,28 @@ describe('PkiService', () => {
         dfspId: 'DFSP_B',
         name: 'DFSP_B_description'
       };
-      const result = await PkiService.createDFSP(envId, dfsp);
+      const result = await PkiService.createDFSP(dfsp);
       assert.property(result, 'id');
       assert.isNotNull(result.id);
-      const saved = await PkiService.getDFSPById(envId, result.id);
+      const saved = await PkiService.getDFSPById(result.id);
       assert.equal(saved.name, dfsp.name);
-      const deleted = await PkiService.deleteDFSP(envId, result.id);
+      const deleted = await PkiService.deleteDFSP(result.id);
       assert.equal(deleted, 1);
-    });
-
-    it('should detect that a DFSP cann\'t be accesed from another Env than its own', async () => {
-      const dfsp = {
-        dfspId: 'DFSP_B',
-        name: 'DFSP_B_description'
-      };
-      const result = await PkiService.createDFSP(envId, dfsp);
-      assert.property(result, 'id');
-      assert.isNotNull(result.id);
-      try {
-        await PkiService.getDFSPById(envId + 11, result.id);
-        assert.fail();
-      } catch (error) {
-        assert(error instanceof NotFoundError, 'Error is: ' + error);
-      } finally {
-        const deleted = await PkiService.deleteDFSP(envId, result.id);
-        assert.equal(deleted, 1);
-      }
-    });
-
-    it('should not allow a DFSP to be created with an invalid envId', async () => {
-      const dfsp = {
-        dfspId: 'DFSP_C',
-        name: 'DFSP_C_description'
-      };
-      try {
-        await PkiService.createDFSP(-666, dfsp);
-        assert.fail('Shouldn\'t have got here');
-      } catch (error) {
-        assert(error instanceof ValidationError, 'Error is: ' + error);
-      }
     });
 
     it('should create a DFSP with an space and use dashed for the security group', async () => {
       const dfsp = {
         dfspId: 'MTN CI',
-        name: 'DFSP_B_description'
+        name: 'DFSP_B_description',
       };
-      const result = await PkiService.createDFSP(envId, dfsp);
+      const dd = await PkiService.getDFSPs();
+      const result = await PkiService.createDFSP(dfsp);
       assert.property(result, 'id');
       assert.isNotNull(result.id);
-      const saved = await PkiService.getDFSPById(envId, result.id);
+      const saved = await PkiService.getDFSPById(result.id);
       assert.equal(saved.name, dfsp.name);
       assert.equal(saved.securityGroup, 'Application/DFSP:MTN-CI');
-      const deleted = await PkiService.deleteDFSP(envId, result.id);
+      const deleted = await PkiService.deleteDFSP(result.id);
       assert.equal(deleted, 1);
     });
 
@@ -298,13 +168,13 @@ describe('PkiService', () => {
         monetaryZoneId: 'EUR'
 
       };
-      const result = await PkiService.createDFSP(envId, dfsp);
+      const result = await PkiService.createDFSP(dfsp);
       assert.property(result, 'id');
       assert.isNotNull(result.id);
-      const saved = await PkiService.getDFSPById(envId, result.id);
+      const saved = await PkiService.getDFSPById(result.id);
       assert.equal(saved.name, dfsp.name);
       assert.equal(saved.monetaryZoneId, dfsp.monetaryZoneId);
-      const deleted = await PkiService.deleteDFSP(envId, result.id);
+      const deleted = await PkiService.deleteDFSP(result.id);
       assert.equal(deleted, 1);
     });
 
@@ -314,18 +184,18 @@ describe('PkiService', () => {
         name: 'dfsp1'
       };
 
-      await PkiService.createDFSP(envId, dfsp);
+      await PkiService.createDFSP(dfsp);
 
       // remove the mz
       const newDfsp = { dfspId: dfsp.dfspId, monetaryZoneId: 'MAD' };
-      const result = await PkiService.updateDFSP(envId, dfsp.dfspId, newDfsp);
+      const result = await PkiService.updateDFSP(dfsp.dfspId, newDfsp);
       assert.equal(result.name, dfsp.name);
       assert.equal(result.monetaryZoneId, 'MAD');
 
-      const saved = await PkiService.getDFSPById(envId, dfsp.dfspId);
+      const saved = await PkiService.getDFSPById(dfsp.dfspId);
       assert.equal(saved.name, dfsp.name);
       assert.equal(saved.monetaryZoneId, 'MAD');
-      const deleted = await PkiService.deleteDFSP(envId, dfsp.dfspId);
+      const deleted = await PkiService.deleteDFSP(dfsp.dfspId);
       assert.equal(deleted, 1);
     });
 
@@ -336,19 +206,19 @@ describe('PkiService', () => {
         monetaryZoneId: 'EUR'
 
       };
-      await PkiService.createDFSP(envId, dfsp);
+      await PkiService.createDFSP(dfsp);
 
       // remove the mz
       const newDfsp = { ...dfsp, monetaryZoneId: null };
-      const result = await PkiService.updateDFSP(envId, dfsp.dfspId, newDfsp);
+      const result = await PkiService.updateDFSP(dfsp.dfspId, newDfsp);
       assert.equal(result.name, dfsp.name);
       assert.equal(result.monetaryZoneId, null);
 
-      const saved = await PkiService.getDFSPById(envId, dfsp.dfspId);
+      const saved = await PkiService.getDFSPById(dfsp.dfspId);
       assert.equal(saved.name, dfsp.name);
       assert.equal(saved.monetaryZoneId, null);
 
-      const deleted = await PkiService.deleteDFSP(envId, dfsp.dfspId);
+      const deleted = await PkiService.deleteDFSP(dfsp.dfspId);
       assert.equal(deleted, 1);
     });
   });
