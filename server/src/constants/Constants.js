@@ -168,6 +168,7 @@ module.exports = {
     },
     pkiBaseDomain: env.get('VAULT_PKI_BASE_DOMAIN').required().asString(),
     auth: vaultAuth,
+    signExpiryHours: env.get('VAULT_SIGN_EXPIRY_HOURS').default('43800').asString(),
   },
   auth: {
     enabled: env.get('AUTH_ENABLED').asBoolStrict(),

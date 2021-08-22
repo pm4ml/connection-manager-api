@@ -41,13 +41,14 @@ const VALID_SELF_SIGNED = 'VALID(SELF_SIGNED)';
 const INVALID = 'INVALID';
 
 class VaultPKIEngine extends PKIEngine {
-  constructor ({ endpoint, mounts, auth, pkiBaseDomain }) {
+  constructor ({ endpoint, mounts, auth, pkiBaseDomain, signExpiryHours }) {
     super();
     this.auth = auth;
     this.endpoint = endpoint;
     this.vault = vault({ endpoint });
     this.pkiBaseDomain = pkiBaseDomain;
     this.mounts = mounts;
+    this.signExpiryHours = signExpiryHours;
 
     this.trustedCaStore = forge.pki.createCaStore(tls.rootCertificates.filter(cert => {
       try { forge.pki.certificateFromPem(cert); } catch { return false; } return true;
@@ -493,7 +494,7 @@ class VaultPKIEngine extends PKIEngine {
       json: {
         common_name: csrInfo.subject.getField('CN').value,
         csr,
-        ttl: '600h',
+        ttl: `${this.signExpiryHours}h`,
       },
     });
     return data.certificate;
