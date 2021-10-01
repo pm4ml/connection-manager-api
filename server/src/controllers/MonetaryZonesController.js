@@ -17,8 +17,8 @@
 
 'use strict';
 
-var utils = require('../utils/writer.js');
-var MonetaryZonesService = require('../service/MonetaryZoneService');
+const utils = require('../utils/writer.js');
+const MonetaryZonesService = require('../service/MonetaryZoneService');
 
 module.exports.getMonetaryZones = function getMonetaryZones (req, res) {
   MonetaryZonesService.getMonetaryZones()

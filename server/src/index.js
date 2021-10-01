@@ -20,14 +20,12 @@ const nodeHttp = require('http');
 const serverPort = Constants.SERVER.PORT;
 const appLoader = require('./appLoader');
 const {
-  createEnvironment: defaultCreateEnvironment,
   createDFSP: defaultCreateDFSP,
 } = require('./service/PkiService');
 
 const run = async ({
   connect = appLoader.connect,
   constants = Constants,
-  createEnvironment = defaultCreateEnvironment,
   createDFSP = defaultCreateDFSP,
   http = nodeHttp,
 } = {}) => {
@@ -41,15 +39,10 @@ const run = async ({
 
   // Initialise state
   if (constants.ENVIRONMENT_INIT.initEnvironment) {
-    console.log('Creating environment with config:');
-    console.log(constants.ENVIRONMENT_INIT.config);
-    const { id: newEnvId } = await createEnvironment(constants.ENVIRONMENT_INIT.config);
-    console.log(`New environment ID: ${newEnvId}`);
-
     if (constants.USER_INIT.dfspId && constants.USER_INIT.name) {
       console.log('Creating user with config:');
       console.log(constants.USER_INIT);
-      const result = await createDFSP(newEnvId, constants.USER_INIT);
+      const result = await createDFSP(constants.USER_INIT);
       console.log('Created user:');
       console.log(result);
     }

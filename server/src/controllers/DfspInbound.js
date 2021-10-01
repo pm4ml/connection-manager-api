@@ -17,14 +17,11 @@
 
 'use strict';
 
-var utils = require('../utils/writer.js');
-var DfspInbound = require('../service/DfspInboundService');
+const utils = require('../utils/writer.js');
+const DfspInbound = require('../service/DfspInboundService');
 
-exports.createDFSPInboundEnrollment = function createDFSPInboundEnrollment (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  var body = req.swagger.params['body'].value;
-  DfspInbound.createDFSPInboundEnrollment(envId, dfspId, body)
+exports.createDFSPInboundEnrollment = function createDFSPInboundEnrollment (req, res, next, dfspId) {
+  DfspInbound.createDFSPInboundEnrollment(dfspId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -33,10 +30,8 @@ exports.createDFSPInboundEnrollment = function createDFSPInboundEnrollment (req,
     });
 };
 
-exports.getDFSPInboundEnrollments = function getDFSPInboundEnrollments (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  DfspInbound.getDFSPInboundEnrollments(envId, dfspId)
+exports.getDFSPInboundEnrollments = function getDFSPInboundEnrollments (req, res, next, dfspId) {
+  DfspInbound.getDFSPInboundEnrollments(dfspId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -45,11 +40,8 @@ exports.getDFSPInboundEnrollments = function getDFSPInboundEnrollments (req, res
     });
 };
 
-exports.getDFSPInboundEnrollment = function getDFSPInboundEnrollment (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  var enId = req.swagger.params['enId'].value;
-  DfspInbound.getDFSPInboundEnrollment(envId, dfspId, enId)
+exports.getDFSPInboundEnrollment = function getDFSPInboundEnrollment (req, res, next, dfspId, enId) {
+  DfspInbound.getDFSPInboundEnrollment(dfspId, enId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -58,25 +50,8 @@ exports.getDFSPInboundEnrollment = function getDFSPInboundEnrollment (req, res, 
     });
 };
 
-exports.signDFSPInboundEnrollment = function signDFSPInboundEnrollment (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  var enId = req.swagger.params['enId'].value;
-  DfspInbound.signDFSPInboundEnrollment(envId, dfspId, enId)
-    .then(function (response) {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response) {
-      utils.writeJson(res, response, response.status);
-    });
-};
-
-exports.addDFSPInboundEnrollmentCertificate = function addDFSPInboundEnrollmentCertificate (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  var enId = req.swagger.params['enId'].value;
-  var body = req.swagger.params['body'].value;
-  DfspInbound.addDFSPInboundEnrollmentCertificate(envId, dfspId, enId, body)
+exports.signDFSPInboundEnrollment = function signDFSPInboundEnrollment (req, res, next, dfspId, enId) {
+  DfspInbound.signDFSPInboundEnrollment(dfspId, enId)
     .then(function (response) {
       utils.writeJson(res, response);
     })

@@ -17,92 +17,78 @@
 
 'use strict';
 const PkiService = require('./PkiService');
-const Joi = require('joi');
+const PKIEngine = require('../pki_engine/VaultPKIEngine');
+const Constants = require('../constants/Constants');
+const ValidationCodes = require('../pki_engine/ValidationCodes');
 const ValidationError = require('../errors/ValidationError');
-const HubIssuerCasModel = require('../models/HubIssuerCAsModel');
-const PKIEngine = require('../pki_engine/EmbeddedPKIEngine');
 
-const hubCAInputSchema = Joi.object().description('Hub CA Input').keys({
-  rootCertificate: Joi.string().description('CA root certificate'),
-  intermediateChain: Joi.string().description('CA intermediate certificates chain'),
-  name: Joi.string().description('CA name').required(),
-  type: Joi.string().required().valid(['EXTERNAL']),
-});
+const formatBody = (body, pkiEngine) => {
+  return {
+    type: body.type,
+    rootCertificate: body.rootCertificate,
+    rootCertificateInfo: body.rootCertificate && pkiEngine.getCertInfo(body.rootCertificate),
+    intermediateChain: body.intermediateChain,
+    intermediateChainInfo: PkiService.splitChainIntermediateCertificateInfo(body.intermediateChain, pkiEngine),
+  };
+};
 
-const hubIssuerCasModel = new HubIssuerCasModel();
+const createInternalHubCA = async (body) => {
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
 
-exports.createHubCA = async (envId, body) => {
-  await PkiService.validateEnvironment(envId);
-  const result = Joi.validate(body, hubCAInputSchema);
-  if (result.error) {
-    throw new ValidationError('Invalid Hub CA Input', result.error.details);
+  const { cert } = await pkiEngine.createCA(body);
+  const certInfo = pkiEngine.getCertInfo(cert);
+
+  const info = {
+    type: 'INTERNAL',
+    rootCertificate: cert,
+    rootCertificateInfo: certInfo,
+  };
+
+  await pkiEngine.setHubCACertDetails(info);
+
+  return info;
+};
+
+const createExternalHubCA = async (body) => {
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+
+  const rootCertificate = body.rootCertificate || '';
+  const intermediateChain = body.intermediateChain || '';
+  const { privateKey } = body;
+  if (!privateKey) {
+    throw new ValidationError('Missing "privateKey" property');
   }
 
-  let rootCertificate = body.rootCertificate || null;
-  let intermediateChain = body.intermediateChain || null;
+  const { validations, validationState } = await pkiEngine.validateCACertificate(rootCertificate, intermediateChain, privateKey);
 
-  const validatingPkiEngine = new PKIEngine();
-  let { validations, validationState } = await validatingPkiEngine.validateCACertificate(rootCertificate, intermediateChain);
-
-  let validationResult = {
-    validations: JSON.stringify(validations),
+  const info = {
+    ...formatBody(body, pkiEngine),
+    validations,
     validationState,
   };
 
-  let row = await bodyToRow(body, envId, validationResult);
-  await hubIssuerCasModel.create(row);
-  return rowToObject(row);
-};
-
-exports.getHubCAs = async (envId) => {
-  await PkiService.validateEnvironment(envId);
-
-  let hubCAs = await hubIssuerCasModel.findAllByEnvId(envId);
-  return hubCAs.map(hubCA => rowToObject(hubCA));
-};
-
-exports.getHubCA = async (envId, hubCAId) => {
-  await PkiService.validateEnvironment(envId);
-  if (hubCAId == null) {
-    throw new ValidationError('Invalid hubCAid');
+  if (validationState === ValidationCodes.VALID_STATES.VALID) {
+    await pkiEngine.setHubCaCertChain(rootCertificate + intermediateChain, privateKey);
+    await pkiEngine.setHubCACertDetails(info);
   }
-  let hubCA = await hubIssuerCasModel.findById(hubCAId);
-  return rowToObject(hubCA);
+  return info;
 };
 
-exports.deleteHubCA = async (envId, hubCAId) => {
-  await PkiService.validateEnvironment(envId);
-  if (hubCAId == null) {
-    throw new ValidationError('Invalid hubCAid');
-  }
-  await hubIssuerCasModel.delete(hubCAId);
+exports.createHubCA = async (body) => {
+  return (body.type === 'EXTERNAL') ? createExternalHubCA(body) : createInternalHubCA(body);
 };
 
-const bodyToRow = async (body, envId, validationResult) => {
-  let chainInfo = await PkiService.splitChainIntermediateCertificate(body);
-
-  return {
-    env_id: envId,
-    type: body.type,
-    name: body.name,
-    root_cert: body.rootCertificate,
-    chain: body.intermediateChain,
-    root_cert_info: body.rootCertificate ? JSON.stringify(await PKIEngine.getCertInfo(body.rootCertificate)) : body.rootCertificate,
-    chain_info: JSON.stringify(chainInfo),
-    ...validationResult
-  };
+exports.getHubCA = async () => {
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  return pkiEngine.getHubCACertDetails();
 };
 
-const rowToObject = (row) => {
-  return {
-    id: row.id,
-    type: row.type,
-    name: row.name,
-    rootCertificate: row.root_cert,
-    intermediateChain: row.chain,
-    rootCertificateInfo: row.root_cert_info && (typeof row.root_cert_info === 'string') ? JSON.parse(row.root_cert_info) : {},
-    intermediateChainInfo: row.chain_info && (typeof row.chain_info === 'string') ? JSON.parse(row.chain_info) : [],
-    validationState: row.validationState,
-    validations: row.validations && (typeof row.validations === 'string') ? JSON.parse(row.validations) : []
-  };
+exports.deleteHubCA = async () => {
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
+  await pkiEngine.deleteHubCACertDetails();
+  await pkiEngine.deleteCA();
 };

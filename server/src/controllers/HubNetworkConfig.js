@@ -17,14 +17,11 @@
 
 'use strict';
 
-var utils = require('../utils/writer.js');
-var HubNetworkConfig = require('../service/HubNetworkConfigService');
+const utils = require('../utils/writer.js');
+const HubNetworkConfig = require('../service/HubNetworkConfigService');
 
 exports.createHubEgressIp = function createHubEgressIp (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-
-  var body = req.swagger.params['body'].value;
-  HubNetworkConfig.createHubEgressIp(envId, body)
+  HubNetworkConfig.createHubEgressIp(req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -34,10 +31,7 @@ exports.createHubEgressIp = function createHubEgressIp (req, res, next) {
 };
 
 exports.createHubIngressIp = function createHubIngressIp (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-
-  var body = req.swagger.params['body'].value;
-  HubNetworkConfig.createHubIngressIp(envId, body)
+  HubNetworkConfig.createHubIngressIp(req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -47,10 +41,7 @@ exports.createHubIngressIp = function createHubIngressIp (req, res, next) {
 };
 
 exports.createHubIngressUrl = function createHubIngressUrl (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-
-  var body = req.swagger.params['body'].value;
-  HubNetworkConfig.createHubIngressUrl(envId, body)
+  HubNetworkConfig.createHubIngressUrl(req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -60,9 +51,7 @@ exports.createHubIngressUrl = function createHubIngressUrl (req, res, next) {
 };
 
 exports.getHubIngressUrls = function getHubIngressUrls (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-
-  HubNetworkConfig.getHubIngressUrls(envId)
+  HubNetworkConfig.getHubIngressUrls()
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -72,9 +61,7 @@ exports.getHubIngressUrls = function getHubIngressUrls (req, res, next) {
 };
 
 exports.getHubIngressIps = function getHubIngressIps (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-
-  HubNetworkConfig.getHubIngressIps(envId)
+  HubNetworkConfig.getHubIngressIps()
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -84,9 +71,7 @@ exports.getHubIngressIps = function getHubIngressIps (req, res, next) {
 };
 
 exports.getHubEgressIps = function getHubEgressIps (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-
-  HubNetworkConfig.getHubEgressIps(envId)
+  HubNetworkConfig.getHubEgressIps()
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -95,12 +80,8 @@ exports.getHubEgressIps = function getHubEgressIps (req, res, next) {
     });
 };
 
-exports.updateHubEndpoint = function updateHubEndpoint (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-
-  var epId = req.swagger.params['epId'].value;
-  var body = req.swagger.params['body'].value;
-  HubNetworkConfig.updateHubEndpoint(envId, epId, body)
+exports.updateHubEndpoint = function updateHubEndpoint (req, res, next, epId) {
+  HubNetworkConfig.updateHubEndpoint(epId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -109,11 +90,8 @@ exports.updateHubEndpoint = function updateHubEndpoint (req, res, next) {
     });
 };
 
-exports.deleteHubEndpoint = function deleteHubEndpoint (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-
-  var epId = req.swagger.params['epId'].value;
-  HubNetworkConfig.deleteHubEndpoint(envId, epId)
+exports.deleteHubEndpoint = function deleteHubEndpoint (req, res, next, epId) {
+  HubNetworkConfig.deleteHubEndpoint(epId)
     .then(function (response) {
       utils.writeJson(res, response, 204);
     })
@@ -123,8 +101,7 @@ exports.deleteHubEndpoint = function deleteHubEndpoint (req, res, next) {
 };
 
 exports.getHubEndpoints = function getHubEndpoints (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  HubNetworkConfig.getHubEndpoints(envId)
+  HubNetworkConfig.getHubEndpoints()
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -133,11 +110,8 @@ exports.getHubEndpoints = function getHubEndpoints (req, res, next) {
     });
 };
 
-exports.getHubEndpoint = function getHubEndpoint (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-
-  var epId = req.swagger.params['epId'].value;
-  HubNetworkConfig.getHubEndpoint(envId, epId)
+exports.getHubEndpoint = function getHubEndpoint (req, res, next, epId) {
+  HubNetworkConfig.getHubEndpoint(epId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -146,11 +120,8 @@ exports.getHubEndpoint = function getHubEndpoint (req, res, next) {
     });
 };
 
-exports.getHubIngressIpEndpoint = (req, res, next) => {
-  var envId = req.swagger.params['envId'].value;
-
-  var epId = req.swagger.params['epId'].value;
-  HubNetworkConfig.getHubIngressIpEndpoint(envId, epId)
+exports.getHubIngressIpEndpoint = (req, res, next, epId) => {
+  HubNetworkConfig.getHubIngressIpEndpoint(epId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -159,12 +130,8 @@ exports.getHubIngressIpEndpoint = (req, res, next) => {
     });
 };
 
-exports.updateHubIngressIpEndpoint = (req, res, next) => {
-  var envId = req.swagger.params['envId'].value;
-
-  var epId = req.swagger.params['epId'].value;
-  var body = req.swagger.params['body'].value;
-  HubNetworkConfig.updateHubIngressIpEndpoint(envId, epId, body)
+exports.updateHubIngressIpEndpoint = (req, res, next, epId) => {
+  HubNetworkConfig.updateHubIngressIpEndpoint(epId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -173,11 +140,8 @@ exports.updateHubIngressIpEndpoint = (req, res, next) => {
     });
 };
 
-exports.deleteHubIngressIpEndpoint = (req, res, next) => {
-  var envId = req.swagger.params['envId'].value;
-
-  var epId = req.swagger.params['epId'].value;
-  HubNetworkConfig.deleteHubIngressIpEndpoint(envId, epId)
+exports.deleteHubIngressIpEndpoint = (req, res, next, epId) => {
+  HubNetworkConfig.deleteHubIngressIpEndpoint(epId)
     .then(function (response) {
       utils.writeJson(res, response, 204);
     })
@@ -186,11 +150,8 @@ exports.deleteHubIngressIpEndpoint = (req, res, next) => {
     });
 };
 
-exports.getHubEgressIpEndpoint = (req, res, next) => {
-  var envId = req.swagger.params['envId'].value;
-
-  var epId = req.swagger.params['epId'].value;
-  HubNetworkConfig.getHubEgressIpEndpoint(envId, epId)
+exports.getHubEgressIpEndpoint = (req, res, next, epId) => {
+  HubNetworkConfig.getHubEgressIpEndpoint(epId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -199,12 +160,8 @@ exports.getHubEgressIpEndpoint = (req, res, next) => {
     });
 };
 
-exports.updateHubEgressIpEndpoint = (req, res, next) => {
-  var envId = req.swagger.params['envId'].value;
-
-  var epId = req.swagger.params['epId'].value;
-  var body = req.swagger.params['body'].value;
-  HubNetworkConfig.updateHubEgressIpEndpoint(envId, epId, body)
+exports.updateHubEgressIpEndpoint = (req, res, next, epId) => {
+  HubNetworkConfig.updateHubEgressIpEndpoint(epId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -213,11 +170,8 @@ exports.updateHubEgressIpEndpoint = (req, res, next) => {
     });
 };
 
-exports.deleteHubEgressIpEndpoint = (req, res, next) => {
-  var envId = req.swagger.params['envId'].value;
-
-  var epId = req.swagger.params['epId'].value;
-  HubNetworkConfig.deleteHubEgressIpEndpoint(envId, epId)
+exports.deleteHubEgressIpEndpoint = (req, res, next, epId) => {
+  HubNetworkConfig.deleteHubEgressIpEndpoint(epId)
     .then(function (response) {
       utils.writeJson(res, response, 204);
     })
@@ -226,11 +180,8 @@ exports.deleteHubEgressIpEndpoint = (req, res, next) => {
     });
 };
 
-exports.getHubIngressUrlEndpoint = (req, res, next) => {
-  var envId = req.swagger.params['envId'].value;
-
-  var epId = req.swagger.params['epId'].value;
-  HubNetworkConfig.getHubIngressUrlEndpoint(envId, epId)
+exports.getHubIngressUrlEndpoint = (req, res, next, epId) => {
+  HubNetworkConfig.getHubIngressUrlEndpoint(epId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -239,12 +190,8 @@ exports.getHubIngressUrlEndpoint = (req, res, next) => {
     });
 };
 
-exports.updateHubIngressUrlEndpoint = (req, res, next) => {
-  var envId = req.swagger.params['envId'].value;
-
-  var epId = req.swagger.params['epId'].value;
-  var body = req.swagger.params['body'].value;
-  HubNetworkConfig.updateHubIngressUrlEndpoint(envId, epId, body)
+exports.updateHubIngressUrlEndpoint = (req, res, next, epId) => {
+  HubNetworkConfig.updateHubIngressUrlEndpoint(epId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -253,11 +200,8 @@ exports.updateHubIngressUrlEndpoint = (req, res, next) => {
     });
 };
 
-exports.deleteHubIngressUrlEndpoint = (req, res, next) => {
-  var envId = req.swagger.params['envId'].value;
-
-  var epId = req.swagger.params['epId'].value;
-  HubNetworkConfig.deleteHubIngressUrlEndpoint(envId, epId)
+exports.deleteHubIngressUrlEndpoint = (req, res, next, epId) => {
+  HubNetworkConfig.deleteHubIngressUrlEndpoint(epId)
     .then(function (response) {
       utils.writeJson(res, response, 204);
     })

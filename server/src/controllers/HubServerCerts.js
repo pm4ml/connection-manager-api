@@ -17,27 +17,11 @@
 
 'use strict';
 
-var utils = require('../utils/writer.js');
-var ServerCertsService = require('../service/ServerCertsService');
+const utils = require('../utils/writer.js');
+const ServerCertsService = require('../service/ServerCertsService');
 
 exports.createHubServerCerts = function createHubServerCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-
-  var body = req.swagger.params['body'].value;
-  ServerCertsService.createHubServerCerts(envId, body)
-    .then(function (response) {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response) {
-      utils.writeJson(res, response, response.status);
-    });
-};
-
-exports.updateHubServerCerts = function updateHubServerCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-
-  var body = req.swagger.params['body'].value;
-  ServerCertsService.updateHubServerCerts(envId, body)
+  ServerCertsService.createHubServerCerts(req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -47,9 +31,7 @@ exports.updateHubServerCerts = function updateHubServerCerts (req, res, next) {
 };
 
 exports.getHubServerCerts = function getHubServerCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-
-  ServerCertsService.getHubServerCerts(envId)
+  ServerCertsService.getHubServerCerts()
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -59,9 +41,7 @@ exports.getHubServerCerts = function getHubServerCerts (req, res, next) {
 };
 
 exports.deleteHubServerCerts = function deleteHubServerCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-
-  ServerCertsService.deleteHubServerCerts(envId)
+  ServerCertsService.deleteHubServerCerts()
     .then(function (response) {
       utils.writeJson(res, response);
     })

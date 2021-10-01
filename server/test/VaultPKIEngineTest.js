@@ -17,16 +17,19 @@
 
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 
-const EmbeddedPKIEngine = require('../src/pki_engine/EmbeddedPKIEngine');
+const VaultPKIEngine = require('../src/pki_engine/VaultPKIEngine');
 
 const ExternalProcessError = require('../src/errors/ExternalProcessError');
 const ValidationError = require('../src/errors/ValidationError');
 
 const fs = require('fs');
 const path = require('path');
+const Constants = require('../src/constants/Constants');
 const assert = require('chai').assert;
 
-describe('EmbeddedPKIEngine', () => {
+const PKIEngine = new VaultPKIEngine(Constants.vault);
+
+describe('PKIEngine', () => {
   before(async () => {
     await setupTestDB();
   });
@@ -37,86 +40,87 @@ describe('EmbeddedPKIEngine', () => {
 
   describe('verify CSRs', () => {
     it('should validate a CSR key length', async () => {
-      let csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
-      let result = await EmbeddedPKIEngine.verifyCSRKeyLength(csr, 4096);
+      const csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
+      const result = PKIEngine.verifyCSRKeyLength(csr, 4096);
       assert.isTrue(result.valid);
     });
 
     it('should validate a CSR algorithm - 512', async () => {
-      let csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
+      const csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
       // cfssl generates CSRs with sha512
-      let result = await EmbeddedPKIEngine.verifyCSRAlgorithm(csr, 'sha512WithRSAEncryption');
+      const result = PKIEngine.verifyCSRAlgorithm(csr, 'sha512WithRSAEncryption');
       assert.isTrue(result.valid, JSON.stringify(result));
     });
 
     it('should validate a CSR algorithm - 256', async () => {
-      let csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
+      const csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
       // cfssl generates CSRs with sha512
-      let result = await EmbeddedPKIEngine.verifyCSRAlgorithm(csr, 'sha512WithRSAEncryption');
+      const result = PKIEngine.verifyCSRAlgorithm(csr, 'sha512WithRSAEncryption');
       assert.isTrue(result.valid, JSON.stringify(result));
     });
 
     it('should not validate a CSR with short key length', async () => {
-      let csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
-      let result = await EmbeddedPKIEngine.verifyCSRKeyLength(csr, 4097);
+      const csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
+      const result = PKIEngine.verifyCSRKeyLength(csr, 4097);
       assert.isFalse(result.valid);
     });
 
     it('should not validate a CSR with a 2048 key length', async () => {
-      let csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client-2048.csr'), 'utf8');
-      let result = await EmbeddedPKIEngine.verifyCSRKeyLength(csr, 4096);
+      const csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client-2048.csr'), 'utf8');
+      const result = PKIEngine.verifyCSRKeyLength(csr, 4096);
       assert.isFalse(result.valid);
     });
 
     it('should fail when sent a cert instead of a CSR', async () => {
-      let csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.pem'), 'utf8');
+      const csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.pem'), 'utf8');
       try {
-        await EmbeddedPKIEngine.verifyCSRKeyLength(csr, 4096);
+        PKIEngine.verifyCSRKeyLength(csr, 4096);
         assert.fail('Should not be here');
       } catch (error) {
-        assert.isTrue(error instanceof ExternalProcessError, error);
+        assert.isNotNull(error, error);
       }
     });
 
     it('should create a CSR from valid parameters', async () => {
-      let csrParameters = {
-        'subject': {
-          'CN': 'dfspendpoint1.test.modusbox.com',
-          'emailAddress': 'connection-manager@modusbox.com',
-          'O': 'Modusbox',
-          'OU': 'PKI'
+      const csrParameters = {
+        subject: {
+          CN: 'dfspendpoint1.test.modusbox.com',
+          E: 'connection-manager@modusbox.com',
+          O: 'Modusbox',
+          OU: 'PKI'
         },
-        'extensions': {
-          'subjectAltName': {
-            'dns': [
+        extensions: {
+          subjectAltName: {
+            dns: [
               'dfspendpoint1.test.modusbox.com',
               'dfspendpoint2.test.modusbox.com'
             ],
-            'ips': [
+            ips: [
               '163.10.5.24',
               '163.10.5.22'
             ]
           }
         }
       };
-      let pkiEngine = new EmbeddedPKIEngine();
-      let keyCSRPair = await pkiEngine.createCSR(csrParameters, 4096, 'rsa');
+      const pkiEngine = new VaultPKIEngine(Constants.vault);
+      await pkiEngine.connect();
+      const keyCSRPair = await pkiEngine.createCSR(csrParameters, 4096, 'rsa');
       assert.isNotNull(keyCSRPair.key);
       assert.isNotNull(keyCSRPair.csr);
     }).timeout(15000);
 
     it('should create parse a CSR and return its info', async () => {
-      let csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
-      let csrInfo = await EmbeddedPKIEngine.getCSRInfo(csr);
+      const csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
+      const csrInfo = PKIEngine.getCSRInfo(csr);
       assert.equal('hub1.dev.modusbox.com', csrInfo.extensions.subjectAltName.dns[0]);
     }).timeout(15000);
   });
 
   describe('verify Certs', () => {
     it('should create parse a Cert and return its info', async () => {
-      let cert = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.pem'), 'utf8');
-      let certInfo = await EmbeddedPKIEngine.getCertInfo(cert);
-      assert.equal('SHA256WithRSA', certInfo.signatureAlgorithm);
+      const cert = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.pem'), 'utf8');
+      const certInfo = PKIEngine.getCertInfo(cert);
+      assert.equal('sha256WithRSAEncryption', certInfo.signatureAlgorithm);
     }).timeout(15000);
   });
 
@@ -127,7 +131,7 @@ describe('EmbeddedPKIEngine', () => {
       // Thinking about this, a CA doesn't need hosts nor names, so we could
       // change the swagger api definition to not require a host at all, or even remove these entries for a CA
       // Have to check with the product team before making this change
-      let caOptionsDoc = {
+      const caOptionsDoc = {
         csr: {
           hosts: [],
           names: [],
@@ -138,7 +142,8 @@ describe('EmbeddedPKIEngine', () => {
         }
       };
 
-      let pkiEngine = new EmbeddedPKIEngine();
+      const pkiEngine = new VaultPKIEngine(Constants.vault);
+      await pkiEngine.connect();
       try {
         await pkiEngine.createCA(caOptionsDoc);
       } catch (error) {
@@ -152,7 +157,7 @@ describe('EmbeddedPKIEngine', () => {
       // Thinking about this, a CA doesn't need hosts nor names, so we could
       // change the swagger api definition to not require a host at all, or even remove these entries for a CA
       // Have to check with the product team before making this change
-      let caOptionsDoc = {
+      const caOptionsDoc = {
         csr: {
           hosts: [],
           names: [{ CN: 'test1', O: 'L' }, { CN: 'test2', O: 'L' }],
@@ -163,7 +168,8 @@ describe('EmbeddedPKIEngine', () => {
         }
       };
 
-      let pkiEngine = new EmbeddedPKIEngine();
+      const pkiEngine = new VaultPKIEngine(Constants.vault);
+      await pkiEngine.connect();
       try {
         await pkiEngine.createCA(caOptionsDoc);
       } catch (error) {
@@ -177,7 +183,7 @@ describe('EmbeddedPKIEngine', () => {
       // Thinking about this, a CA doesn't need hosts nor names, so we could
       // change the swagger api definition to not require a host at all, or even remove these entries for a CA
       // Have to check with the product team before making this change
-      let caOptionsDoc = {
+      const caOptionsDoc = {
         csr: {
           hosts: [],
           names: [{ O: 'L' }],
@@ -188,7 +194,8 @@ describe('EmbeddedPKIEngine', () => {
         }
       };
 
-      let pkiEngine = new EmbeddedPKIEngine();
+      const pkiEngine = new VaultPKIEngine(Constants.vault);
+      await pkiEngine.connect();
       try {
         await pkiEngine.createCA(caOptionsDoc);
       } catch (error) {

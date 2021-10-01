@@ -24,9 +24,14 @@ const assert = require('chai').assert;
 const ROOT_CA = require('./Root_CA.js');
 
 const ValidationCodes = require('../src/pki_engine/ValidationCodes');
+const { createHubCA } = require('../src/service/HubCAService');
+const PKIEngine = require('../src/pki_engine/VaultPKIEngine');
+const Constants = require('../src/constants/Constants');
+const DFSPModel = require('../src/models/DFSPModel');
 
 describe('DfspPkiService', () => {
-  before(async () => {
+  before(async function () {
+    this.timeout(10000);
     await setupTestDB();
   });
 
@@ -34,74 +39,61 @@ describe('DfspPkiService', () => {
     await tearDownTestDB();
   });
 
-  let envId = null;
   let dfspId = null;
   const DFSP_TEST_OUTBOUND = 'dfsp.outbound.io';
   beforeEach('creating ENV and DFSP', async function () {
-    this.timeout(10000);
-    let env = {
-      name: 'ENV_' + DFSP_TEST_OUTBOUND,
-      defaultDN: {
-        ST: 'Street',
-        C: 'Country',
-        OU: 'Organizational Unit',
-        CN: 'Common Name',
-        L: 'Location',
-        O: 'Organization'
-      }
-    };
-    let result = await PkiService.createEnvironment(env);
-    assert.property(result, 'id');
-    assert.isNotNull(result.id);
-    envId = result.id;
+    this.timeout(30000);
 
-    let caBody = ROOT_CA;
-    await PkiService.createCA(envId, caBody);
+    await createHubCA(ROOT_CA);
 
-    let dfsp = {
+    const dfsp = {
       dfspId: DFSP_TEST_OUTBOUND,
       name: 'DFSP used to test outbound flow'
     };
-    let resultDfsp = await PkiService.createDFSP(envId, dfsp);
+    const resultDfsp = await PkiService.createDFSP(dfsp);
     dfspId = resultDfsp.id;
+
+    const pkiEngine = new PKIEngine(Constants.vault);
+    await pkiEngine.connect();
+    const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
+    try { await pkiEngine.deleteAllDFSPData(dbDfspId); } catch (e) { }
   });
 
   afterEach('tearing down ENV and DFSP', async () => {
-    await PkiService.deleteDFSP(envId, dfspId);
-    await PkiService.deleteEnvironment(envId);
+    await PkiService.deleteDFSP(dfspId);
   });
 
   const ROOT_CA_PATH = './resources/digicert/digicert.global.root.pem';
-  const INTERMEDIATE_CERT_PATH = './resources/amazon.com/amazon.chain.2.pem';
+  const INTERMEDIATE_CERT_PATH = './resources/amazon.com/amazon.chain.pem';
   const SELF_SIGNED_ROOT_CA_PATH = './resources/orange/Orange_Internal_G2-ROOT.pem';
   const SELF_SIGNED_INTERMEDIATE_PATH = './resources/orange/Orange_Internal_G2-Server_CA.pem';
 
   it('should validate a rootCertificate', async () => {
-    let body = {
+    const body = {
       rootCertificate: fs.readFileSync(path.join(__dirname, ROOT_CA_PATH)).toString(),
     };
-    let result = await PkiService.setDFSPca(envId, dfspId, body);
+    const result = await PkiService.setDFSPca(dfspId, body);
     const validationRootCertificate = result.validations.find((element) =>
       element.validationCode === ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code
     );
     assert.equal(result.validationState, 'VALID');
-    assert.equal(validationRootCertificate.details, 'VALID(SIGNED)');
+    assert.equal(validationRootCertificate.details, 'VALID(SELF_SIGNED)');
   }).timeout(15000);
 
   it('should not validate an intermediate certificate signed by a non publicly trusted root certificate', async () => {
-    let body = {
+    const body = {
       rootCertificate: fs.readFileSync(path.join(__dirname, SELF_SIGNED_INTERMEDIATE_PATH)).toString(),
     };
-    let result = await PkiService.setDFSPca(envId, dfspId, body);
+    const result = await PkiService.setDFSPca(dfspId, body);
     assert.equal(result.validationState, 'INVALID');
   }).timeout(15000);
 
   it('should validate an intermediate signed by a globally trusted CA', async () => {
-    let body = {
+    const body = {
       rootCertificate: null,
       intermediateChain: fs.readFileSync(path.join(__dirname, INTERMEDIATE_CERT_PATH)).toString()
     };
-    let result = await PkiService.setDFSPca(envId, dfspId, body);
+    const result = await PkiService.setDFSPca(dfspId, body);
     const validationIntermediateChainCertificate = result.validations.find((element) =>
       element.validationCode === ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code
     );
@@ -111,11 +103,11 @@ describe('DfspPkiService', () => {
   }).timeout(15000);
 
   it('should validate an intermediate signed by a self-signed root', async () => {
-    let body = {
+    const body = {
       rootCertificate: fs.readFileSync(path.join(__dirname, SELF_SIGNED_ROOT_CA_PATH)).toString(),
       intermediateChain: fs.readFileSync(path.join(__dirname, SELF_SIGNED_INTERMEDIATE_PATH)).toString()
     };
-    let result = await PkiService.setDFSPca(envId, dfspId, body);
+    const result = await PkiService.setDFSPca(dfspId, body);
     const validationRootCertificate = result.validations.find((element) =>
       element.validationCode === ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code
     );

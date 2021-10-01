@@ -46,7 +46,7 @@ describe('first login', () => {
 
     wso2ClientTokenMock.callsFake((params) => { return loginResponseObj; });
 
-    Constants.OAUTH.AUTH_ENABLED = 'true';
+    Constants.OAUTH.AUTH_ENABLED = true;
 
     let response = await LoginService.loginUser('user1', 'password1');
 
@@ -76,7 +76,7 @@ describe('2step', () => {
   });
 
   it('should return a bad request error when AUTH_2FA_ENABLED is set to false', async () => {
-    Constants.AUTH_2FA.AUTH_2FA_ENABLED = 'false';
+    Constants.AUTH_2FA.AUTH_2FA_ENABLED = false;
 
     try {
       await LoginService.login2step('user1', 'pass1', 123456);
@@ -87,7 +87,7 @@ describe('2step', () => {
   });
 
   it('should return an UnauthorizedError when retrieving token to WSO2 server gives an error', async () => {
-    Constants.AUTH_2FA.AUTH_2FA_ENABLED = 'true';
+    Constants.AUTH_2FA.AUTH_2FA_ENABLED = true;
     wso2ClientTokenMock.callsFake((params) => { throw new UnauthorizedError(''); });
 
     try {
@@ -99,7 +99,7 @@ describe('2step', () => {
   });
 
   it('should return UnauthorizedError when trying to validateTotp with invalid parameters', async () => {
-    Constants.AUTH_2FA.AUTH_2FA_ENABLED = 'true';
+    Constants.AUTH_2FA.AUTH_2FA_ENABLED = true;
     let loginResponseObj = {
       access_token: 'XXXX',
       id_token: 'eyJ4NXQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJraWQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJhbGciOiJSUzI1NiJ9.eyJhdF9oYXNoIjoiWW91Y3c4dmpxdzFNeTdxb0d5dzd5QSIsImF1ZCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsInN1YiI6Ik1UTkJNb2JpbGVNb25leV9hZG1pbiIsIm5iZiI6MTU2NTI5NDc5MSwiYXpwIjoicGtpX2FkbWluX3BvcnRhbF9kZXZfcGtpIiwiYW1yIjpbInBhc3N3b3JkIl0sImlzcyI6Imh0dHBzOlwvXC9kZXZpbnQxd3NvMmlza20uY2FzYWh1Yi5saXZlOjk0NDNcL29hdXRoMlwvdG9rZW4iLCJncm91cHMiOlsiQXBwbGljYXRpb25cL01UQSIsIkFwcGxpY2F0aW9uXC9ERlNQOk1UTkJNb2JpbGVNb25leSIsIkludGVybmFsXC9ldmVyeW9uZSJdLCJleHAiOjE1NjUyOTgzOTEsImlhdCI6MTU2NTI5NDc5MX0.c4ytKGi32h1fIHkuycr2-QQP5KEWX237SpHEixbtEzydW3LA0DTqoOwTWGV1sL9XnqrAMbR6wAONQiAVsmrzyyaLCyAFpA5waqztDsMMj-6UIHAWjea13SOTNTjjU6H8B6ooP1Q9RjGM_BP-s-vtN9BS_28HniGo7XOH0Z-uHy29U7xlzM7gq1w8mb3km40t7nnaIDnuCnmDqyvmPRUtVazPUJkRxHePUfunZo_u4XYcgv-8uIhJkcfIu0Rk-NIsqjFLxF5wcC3iusXlhpQmJwPJdXtS00NgzuHBh5L3CfEGCQlRHa-KZ7MYAlpq0WN9Ww_qCf-w6sMKgnYceipUmQ'
@@ -116,7 +116,7 @@ describe('2step', () => {
   });
 
   it('should return error when setEnrolled call to WSO2 server fails', async () => {
-    Constants.AUTH_2FA.AUTH_2FA_ENABLED = 'true';
+    Constants.AUTH_2FA.AUTH_2FA_ENABLED = true;
     let loginResponseObj = {
       access_token: 'XXXX',
       id_token: 'eyJ4NXQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJraWQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJhbGciOiJSUzI1NiJ9.eyJhdF9oYXNoIjoiWW91Y3c4dmpxdzFNeTdxb0d5dzd5QSIsImF1ZCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsInN1YiI6Ik1UTkJNb2JpbGVNb25leV9hZG1pbiIsIm5iZiI6MTU2NTI5NDc5MSwiYXpwIjoicGtpX2FkbWluX3BvcnRhbF9kZXZfcGtpIiwiYW1yIjpbInBhc3N3b3JkIl0sImlzcyI6Imh0dHBzOlwvXC9kZXZpbnQxd3NvMmlza20uY2FzYWh1Yi5saXZlOjk0NDNcL29hdXRoMlwvdG9rZW4iLCJncm91cHMiOlsiQXBwbGljYXRpb25cL01UQSIsIkFwcGxpY2F0aW9uXC9ERlNQOk1UTkJNb2JpbGVNb25leSIsIkludGVybmFsXC9ldmVyeW9uZSJdLCJleHAiOjE1NjUyOTgzOTEsImlhdCI6MTU2NTI5NDc5MX0.c4ytKGi32h1fIHkuycr2-QQP5KEWX237SpHEixbtEzydW3LA0DTqoOwTWGV1sL9XnqrAMbR6wAONQiAVsmrzyyaLCyAFpA5waqztDsMMj-6UIHAWjea13SOTNTjjU6H8B6ooP1Q9RjGM_BP-s-vtN9BS_28HniGo7XOH0Z-uHy29U7xlzM7gq1w8mb3km40t7nnaIDnuCnmDqyvmPRUtVazPUJkRxHePUfunZo_u4XYcgv-8uIhJkcfIu0Rk-NIsqjFLxF5wcC3iusXlhpQmJwPJdXtS00NgzuHBh5L3CfEGCQlRHa-KZ7MYAlpq0WN9Ww_qCf-w6sMKgnYceipUmQ'

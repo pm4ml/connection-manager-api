@@ -17,15 +17,11 @@
 
 'use strict';
 
-var utils = require('../utils/writer.js');
-var JWSCertsService = require('../service/JWSCertsService');
+const utils = require('../utils/writer.js');
+const JWSCertsService = require('../service/JWSCertsService');
 
-exports.createDfspJWSCerts = function createDfspJWSCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-
-  var body = req.swagger.params['body'].value;
-  JWSCertsService.createDfspJWSCerts(envId, dfspId, body)
+exports.createDfspJWSCerts = function createDfspJWSCerts (req, res, next, dfspId) {
+  JWSCertsService.createDfspJWSCerts(dfspId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -34,12 +30,8 @@ exports.createDfspJWSCerts = function createDfspJWSCerts (req, res, next) {
     });
 };
 
-exports.updateDfspJWSCerts = function updateDfspJWSCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-
-  var body = req.swagger.params['body'].value;
-  JWSCertsService.updateDfspJWSCerts(envId, dfspId, body)
+exports.updateDfspJWSCerts = function updateDfspJWSCerts (req, res, next, dfspId) {
+  JWSCertsService.updateDfspJWSCerts(dfspId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -48,11 +40,8 @@ exports.updateDfspJWSCerts = function updateDfspJWSCerts (req, res, next) {
     });
 };
 
-exports.getDfspJWSCerts = function getDfspJWSCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-
-  JWSCertsService.getDfspJWSCerts(envId, dfspId)
+exports.getDfspJWSCerts = function getDfspJWSCerts (req, res, next, dfspId) {
+  JWSCertsService.getDfspJWSCerts(dfspId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -62,9 +51,7 @@ exports.getDfspJWSCerts = function getDfspJWSCerts (req, res, next) {
 };
 
 exports.getAllDfspJWSCerts = function getAllDfspJWSCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-
-  JWSCertsService.getAllDfspJWSCerts(envId)
+  JWSCertsService.getAllDfspJWSCerts()
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -73,11 +60,8 @@ exports.getAllDfspJWSCerts = function getAllDfspJWSCerts (req, res, next) {
     });
 };
 
-exports.deleteDfspJWSCerts = function deleteDfspJWSCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-
-  JWSCertsService.deleteDfspJWSCerts(envId, dfspId)
+exports.deleteDfspJWSCerts = function deleteDfspJWSCerts (req, res, next, dfspId) {
+  JWSCertsService.deleteDfspJWSCerts(dfspId)
     .then(function (response) {
       utils.writeJson(res, response);
     })

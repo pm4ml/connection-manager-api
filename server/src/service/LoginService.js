@@ -61,7 +61,7 @@ exports.loginUser = async function (username, password, req, res) {
     if (/true/i.test(decodedIdToken[PASSWORD_RESET])) {
       response = buildFirstLoginResponse(decodedIdToken);
     } else {
-      if ((/true/i).test(Constants.AUTH_2FA.AUTH_2FA_ENABLED)) {
+      if (Constants.AUTH_2FA.AUTH_2FA_ENABLED) {
         response = await build2FAResponse(decodedIdToken, username);
       } else {
         response = buildJWTResponse(decodedIdToken, loginResponseObj.access_token, req, res);
@@ -160,7 +160,7 @@ exports.logoutUser = async function (req, res) {
  * If successful, sets the JWT token in a cookie and returns the token payload
  */
 exports.login2step = async (username, password, generatedToken, req, res) => {
-  if (!(/true/i).test(Constants.AUTH_2FA.AUTH_2FA_ENABLED)) {
+  if (!Constants.AUTH_2FA.AUTH_2FA_ENABLED) {
     throw new BadRequestError('2FA is not enabled');
   }
 

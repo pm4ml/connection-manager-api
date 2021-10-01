@@ -23,8 +23,8 @@ const path = require('path');
 const util = require('util');
 
 function cookieExtractor (req) {
-  let cookies = new Cookies(req);
-  let token = cookies.get(Constants.OAUTH.JWT_COOKIE_NAME);
+  const cookies = new Cookies(req);
+  const token = cookies.get(Constants.OAUTH.JWT_COOKIE_NAME);
   return token;
 };
 
@@ -33,10 +33,10 @@ function cookieExtractor (req) {
  * @see http://www.passportjs.org/packages/passport-jwt/
  */
 function createJwtStrategy (extraExtractors) {
-  var JwtStrategy = require('passport-jwt').Strategy;
-  var ExtractJwt = require('passport-jwt').ExtractJwt;
+  const JwtStrategy = require('passport-jwt').Strategy;
+  const ExtractJwt = require('passport-jwt').ExtractJwt;
 
-  var jwtStrategyOpts = {};
+  const jwtStrategyOpts = {};
   let extractors = [];
   if (extraExtractors) {
     if (Array.isArray(extraExtractors)) {
@@ -58,14 +58,14 @@ function createJwtStrategy (extraExtractors) {
   } else if (Constants.OAUTH.CERTIFICATE_FILE_NAME) {
     console.log(`Setting Token Issuer certificate from Constants.OAUTH.CERTIFICATE_FILE_NAME: ${Constants.OAUTH.CERTIFICATE_FILE_NAME}`);
     if (Constants.OAUTH.CERTIFICATE_FILE_NAME.startsWith('/')) {
-      console.log(`Token Issuer Constants.OAUTH.CERTIFICATE_FILE_NAME absolute path`);
+      console.log('Token Issuer Constants.OAUTH.CERTIFICATE_FILE_NAME absolute path');
       certContent = fs.readFileSync(Constants.OAUTH.CERTIFICATE_FILE_NAME, 'utf8');
     } else {
-      console.log(`Token Issuer Constants.OAUTH.CERTIFICATE_FILE_NAME relative path`);
+      console.log('Token Issuer Constants.OAUTH.CERTIFICATE_FILE_NAME relative path');
       certContent = fs.readFileSync(path.join(__dirname, '..', Constants.OAUTH.CERTIFICATE_FILE_NAME), 'utf8');
     }
   } else {
-    console.warn(`No value specified for Constants.OAUTH.CERTIFICATE_FILE_NAME or Constants.OAUTH.EMBEDDED_CERTIFICATE. Auth will probably fail to validate the tokens`);
+    console.warn('No value specified for Constants.OAUTH.CERTIFICATE_FILE_NAME or Constants.OAUTH.EMBEDDED_CERTIFICATE. Auth will probably fail to validate the tokens');
   }
   console.log(`Token Issuer loaded: ${certContent}`);
 
@@ -74,8 +74,7 @@ function createJwtStrategy (extraExtractors) {
   };
   // jwtStrategyOpts.issuer = 'accounts.examplesoft.com';
   jwtStrategyOpts.audience = Constants.OAUTH.APP_OAUTH_CLIENT_KEY; // audience: If defined, the token audience (aud) will be verified against this value.
-  let jwtStrategy = new JwtStrategy(jwtStrategyOpts, verifyCallback);
-  return jwtStrategy;
+  return new JwtStrategy(jwtStrategyOpts, verifyCallback);
 }
 
 /**
@@ -90,37 +89,37 @@ function createJwtStrategy (extraExtractors) {
  */
 function verifyCallback (req, jwtPayload, done) {
   if (!jwtPayload.sub) {
-    let message = 'Invalid Authentication info: no sub';
+    const message = 'Invalid Authentication info: no sub';
     console.log(`OAuthHelper.verifyCallbak received ${jwtPayload}. Verification failed because ${message}`);
     return done(null, false, message);
   }
   if (!jwtPayload.iss) {
-    let message = 'Invalid Authentication info: no iss';
+    const message = 'Invalid Authentication info: no iss';
     console.log(`OAuthHelper.verifyCallbak received ${jwtPayload}. Verification failed because ${message}`);
     return done(null, false, message);
   }
-  let issuer = jwtPayload.iss;
+  const issuer = jwtPayload.iss;
   if (issuer !== Constants.OAUTH.OAUTH2_ISSUER && issuer !== Constants.OAUTH.OAUTH2_TOKEN_ISS) {
-    let message = `Invalid Authentication: wrong issuer ${issuer}, expecting: ${Constants.OAUTH.OAUTH2_ISSUER} or ${Constants.OAUTH.OAUTH2_TOKEN_ISS}`;
+    const message = `Invalid Authentication: wrong issuer ${issuer}, expecting: ${Constants.OAUTH.OAUTH2_ISSUER} or ${Constants.OAUTH.OAUTH2_TOKEN_ISS}`;
     console.log(`OAuthHelper.verifyCallbak received ${jwtPayload}. Verification failed because ${message}`);
     return done(null, false, message);
   }
   if (!jwtPayload.groups) {
-    let message = 'Invalid Authentication info: no groups';
+    const message = 'Invalid Authentication info: no groups';
     console.log(`OAuthHelper.verifyCallbak received ${jwtPayload}. Verification failed because ${message}`);
     return done(null, false, message);
   }
   console.log(`verifyCallback: user ${jwtPayload.sub} with roles ${jwtPayload.groups}`);
-  let foundMTA = jwtPayload.groups.includes(Constants.OAUTH.MTA_ROLE);
-  let foundPTA = jwtPayload.groups.includes(Constants.OAUTH.PTA_ROLE);
-  let foundEveryone = jwtPayload.groups.includes(Constants.OAUTH.EVERYONE_ROLE);
+  const foundMTA = jwtPayload.groups.includes(Constants.OAUTH.MTA_ROLE);
+  const foundPTA = jwtPayload.groups.includes(Constants.OAUTH.PTA_ROLE);
+  const foundEveryone = jwtPayload.groups.includes(Constants.OAUTH.EVERYONE_ROLE);
   let client = null;
   client = { name: jwtPayload.sub };
-  let roles = { mta: foundMTA, pta: foundPTA, everyone: foundEveryone };
+  const roles = { mta: foundMTA, pta: foundPTA, everyone: foundEveryone };
   for (const group of jwtPayload.groups) {
     roles[group] = true;
   }
-  let authInfo = { roles: roles };
+  const authInfo = { roles: roles };
   console.log(`verifyCallback: returning authInfo: ${JSON.stringify(authInfo)} `);
   return done(null, client, authInfo);
 }
@@ -131,8 +130,8 @@ function verifyCallback (req, jwtPayload, done) {
  * @returns a connect middleware that handles OAuth2
  */
 function getOAuth2Middleware () {
-  var passport = require('passport');
-  let jwtStrategy = createJwtStrategy();
+  const passport = require('passport');
+  const jwtStrategy = createJwtStrategy();
   passport.use(jwtStrategy);
   return (req, res, next) => {
     // Defined in connection-manager-api/server/node_modules/passport/lib/middleware/authenticate.js
@@ -175,10 +174,10 @@ const handleMiddleware = (middleware, app) => {
  * @param {(error)} callback function to call with the result. If unauthorized, send the error.
  */
 function oauth2PermissionsVerifier (req, securityDefinition, scopes, callback) {
-  let user = req.user;
-  let authInfo = req.authInfo;
-  let apiPath = req.swagger.apiPath;
-  let originalUrl = req.originalUrl;
+  const user = req.user;
+  const authInfo = req.authInfo;
+  const apiPath = req.swagger.apiPath;
+  const originalUrl = req.originalUrl;
   let error = null;
   console.log(`OAuthHelper.oauth2PermissionsVerifier: user ${util.inspect(user)} authInfo:  ${util.inspect(authInfo)} originalUrl: ${originalUrl} apiPath: ${apiPath}`);
   // Now check that the user has all the roles(scopes)
@@ -204,13 +203,12 @@ function oauth2PermissionsVerifier (req, securityDefinition, scopes, callback) {
   // Now check specific object access permissions
   // DFSP
   // /\/api\/environments\/(\S*)\/dfsps\/(\S*)/.test(originalUrl))  // doesn't work on http://localhost:3001/api/environments/4/dfsps/jwscerts
-  // /environments/{envId}/dfsps/jwscerts, /environments/{envId}/dfsps/{dfspId}/ca:
-  if (/\/environments\/{envId}\/dfsps\/{dfspId}/.test(apiPath)) {
-    var envId = req.swagger.params['envId'].value;
-    var dfspId = req.swagger.params['dfspId'].value;
-    PkiService.getDFSPById(envId, dfspId)
+  // /dfsps/jwscerts, /dfsps/{dfspId}/ca:
+  if (/\/dfsps\/{dfspId}/.test(apiPath)) {
+    const dfspId = req.swagger.params.dfspId.value;
+    PkiService.getDFSPById(dfspId)
       .then(dfsp => {
-        let groups = authInfo.roles ? authInfo.roles : {};
+        const groups = authInfo.roles ? authInfo.roles : {};
         if (!dfsp.securityGroup || groups[dfsp.securityGroup]) {
           callback();
         } else {
@@ -230,7 +228,7 @@ function oauth2PermissionsVerifier (req, securityDefinition, scopes, callback) {
   } else {
     callback(error);
   }
-};
+}
 
 module.exports = {
   getOAuth2Middleware,

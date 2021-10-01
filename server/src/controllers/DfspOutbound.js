@@ -17,14 +17,11 @@
 
 'use strict';
 
-var utils = require('../utils/writer.js');
-var DfspOutbound = require('../service/DfspOutboundService');
+const utils = require('../utils/writer.js');
+const DfspOutbound = require('../service/DfspOutboundService');
 
-exports.createDFSPOutboundEnrollment = function createDFSPOutboundEnrollment (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  var body = req.swagger.params['body'].value;
-  DfspOutbound.createDFSPOutboundEnrollment(envId, dfspId, body)
+exports.createDFSPOutboundEnrollment = function createDFSPOutboundEnrollment (req, res, next, dfspId) {
+  DfspOutbound.createDFSPOutboundEnrollment(dfspId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -33,11 +30,8 @@ exports.createDFSPOutboundEnrollment = function createDFSPOutboundEnrollment (re
     });
 };
 
-exports.createCSRAndDFSPOutboundEnrollment = function createCSRAndDFSPOutboundEnrollment (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  var body = req.swagger.params['body'].value;
-  DfspOutbound.createCSRAndDFSPOutboundEnrollment(envId, dfspId, body)
+exports.createCSRAndDFSPOutboundEnrollment = function createCSRAndDFSPOutboundEnrollment (req, res, next, dfspId) {
+  DfspOutbound.createCSRAndDFSPOutboundEnrollment(dfspId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -46,11 +40,8 @@ exports.createCSRAndDFSPOutboundEnrollment = function createCSRAndDFSPOutboundEn
     });
 };
 
-exports.getDFSPOutboundEnrollments = function getDFSPOutboundEnrollments (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  var state = req.swagger.params['state'].value;
-  DfspOutbound.getDFSPOutboundEnrollments(envId, dfspId, state)
+exports.getDFSPOutboundEnrollments = function getDFSPOutboundEnrollments (req, res, next, dfspId, state) {
+  DfspOutbound.getDFSPOutboundEnrollments(dfspId, state)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -59,11 +50,8 @@ exports.getDFSPOutboundEnrollments = function getDFSPOutboundEnrollments (req, r
     });
 };
 
-exports.getDFSPOutboundEnrollment = function getDFSPOutboundEnrollment (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  var enId = req.swagger.params['enId'].value;
-  DfspOutbound.getDFSPOutboundEnrollment(envId, dfspId, enId)
+exports.getDFSPOutboundEnrollment = function getDFSPOutboundEnrollment (req, res, next, dfspId, enId) {
+  DfspOutbound.getDFSPOutboundEnrollment(dfspId, enId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -72,12 +60,8 @@ exports.getDFSPOutboundEnrollment = function getDFSPOutboundEnrollment (req, res
     });
 };
 
-exports.addDFSPOutboundEnrollmentCertificate = function addDFSPOutboundEnrollmentCertificate (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  var enId = req.swagger.params['enId'].value;
-  var body = req.swagger.params['body'].value;
-  DfspOutbound.addDFSPOutboundEnrollmentCertificate(envId, dfspId, enId, body)
+exports.addDFSPOutboundEnrollmentCertificate = function addDFSPOutboundEnrollmentCertificate (req, res, next, dfspId, enId) {
+  DfspOutbound.addDFSPOutboundEnrollmentCertificate(dfspId, enId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -86,11 +70,8 @@ exports.addDFSPOutboundEnrollmentCertificate = function addDFSPOutboundEnrollmen
     });
 };
 
-exports.validateDFSPOutboundEnrollmentCertificate = function validateDFSPOutboundEnrollmentCertificate (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-  var enId = req.swagger.params['enId'].value;
-  DfspOutbound.validateDFSPOutboundEnrollmentCertificate(envId, dfspId, enId)
+exports.validateDFSPOutboundEnrollmentCertificate = function validateDFSPOutboundEnrollmentCertificate (req, res, next, dfspId, enId) {
+  DfspOutbound.validateDFSPOutboundEnrollmentCertificate(dfspId, enId)
     .then(function (response) {
       utils.writeJson(res, response);
     })

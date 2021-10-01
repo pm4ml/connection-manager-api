@@ -17,15 +17,11 @@
 
 'use strict';
 
-var utils = require('../utils/writer.js');
-var ServerCertsService = require('../service/ServerCertsService');
+const utils = require('../utils/writer.js');
+const ServerCertsService = require('../service/ServerCertsService');
 
-exports.createDfspServerCerts = function createDfspServerCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-
-  var body = req.swagger.params['body'].value;
-  ServerCertsService.createDfspServerCerts(envId, dfspId, body)
+exports.createDfspServerCerts = function createDfspServerCerts (req, res, next, dfspId) {
+  ServerCertsService.createDfspServerCerts(dfspId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -34,12 +30,8 @@ exports.createDfspServerCerts = function createDfspServerCerts (req, res, next) 
     });
 };
 
-exports.updateDfspServerCerts = function updateDfspServerCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-
-  var body = req.swagger.params['body'].value;
-  ServerCertsService.updateDfspServerCerts(envId, dfspId, body)
+exports.updateDfspServerCerts = function updateDfspServerCerts (req, res, next, dfspId) {
+  ServerCertsService.updateDfspServerCerts(dfspId, req.body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -48,11 +40,8 @@ exports.updateDfspServerCerts = function updateDfspServerCerts (req, res, next) 
     });
 };
 
-exports.getDfspServerCerts = function getDfspServerCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-
-  ServerCertsService.getDfspServerCerts(envId, dfspId)
+exports.getDfspServerCerts = function getDfspServerCerts (req, res, next, dfspId) {
+  ServerCertsService.getDfspServerCerts(dfspId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -62,9 +51,7 @@ exports.getDfspServerCerts = function getDfspServerCerts (req, res, next) {
 };
 
 exports.getAllDfspServerCerts = function getAllDfspServerCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-
-  ServerCertsService.getAllDfspServerCerts(envId)
+  ServerCertsService.getAllDfspServerCerts()
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -73,11 +60,8 @@ exports.getAllDfspServerCerts = function getAllDfspServerCerts (req, res, next) 
     });
 };
 
-exports.deleteDfspServerCerts = function deleteDfspServerCerts (req, res, next) {
-  var envId = req.swagger.params['envId'].value;
-  var dfspId = req.swagger.params['dfspId'].value;
-
-  ServerCertsService.deleteDfspServerCerts(envId, dfspId)
+exports.deleteDfspServerCerts = function deleteDfspServerCerts (req, res, next, dfspId) {
+  ServerCertsService.deleteDfspServerCerts(dfspId)
     .then(function (response) {
       utils.writeJson(res, response);
     })

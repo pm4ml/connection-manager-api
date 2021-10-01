@@ -17,35 +17,50 @@
 
 'use strict';
 const { enableCustomRootCAs } = require('./utils/tlsUtils');
-const { validateCfsslVersion } = require('./utils/cfssl');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-const app = require('connect')();
-const swaggerTools = require('swagger-tools');
+// const app = require('connect')();
+const oas3Tools = require('oas3-tools');
 const jsyaml = require('js-yaml');
 const logger = require('./log/logger');
 const OAuthHelper = require('./oauth/OAuthHelper');
 
 const db = require('./db/database');
-const printToolsVersion = require('./utils/printToolVersion');
 const corsUtils = require('./utils/corsUtils');
 
 const { Model } = require('objection');
+const Constants = require('./constants/Constants');
 
 exports.connect = async () => {
   await db.waitForConnection();
   Model.knex(db.knex);
   await db.runKnexMigrations();
   await executeSSLCustomLogic();
-  printToolsVersion.printToolsVersion();
+  // await pkiService.init(Constants.vault);
   setUpTempFilesManagement();
 
-  app.use(cors(corsUtils.getCorsOptions));
-  app.use(logger.createWinstonLogger());
+  // swaggerRouter configuration
+  const options = {
+    routing: {
+      controllers: path.join(__dirname, './controllers')
+    },
+    logging: {
+      format: 'combined',
+      errorLimit: 400
+    },
+    openApiValidator: {
+      validateSecurity: {
+        handlers: {
+          OAuth2: Constants.OAUTH.AUTH_ENABLED ? OAuthHelper.oauth2PermissionsVerifier : () => true,
+        }
+      }
+    }
+  };
 
   // Initialize the Swagger middleware
-  swaggerTools.initializeMiddleware(getSwaggerDoc(), function (middleware) {
+  const expressAppConfig = oas3Tools.expressAppConfig(path.join(__dirname, 'api/swagger.yaml'), options);
+  /* function (middleware) {
     // Interpret Swagger resources and attach metadata to request - must be first in swagger-tools middleware chain
     app.use(middleware.swaggerMetadata());
 
@@ -59,7 +74,7 @@ exports.connect = async () => {
 
     // Route validated requests to appropriate controller
     // Ref: https://github.com/apigee-127/swagger-tools/blob/master/docs/Middleware.md
-    var options = {
+    const options = {
       swaggerUi: path.join(__dirname, '/swagger.json'),
       controllers: path.join(__dirname, './controllers'),
       useStubs: false
@@ -71,6 +86,25 @@ exports.connect = async () => {
     // https://github.com/apigee-127/swagger-tools/blob/master/docs/Middleware.md#swagger-ui
     app.use(middleware.swaggerUi());
   });
+
+   */
+
+  const app = expressAppConfig.getApp();
+
+  let middlewares = 0;
+  app.use(cors(corsUtils.getCorsOptions)); middlewares++;
+  app.use(logger.createWinstonLogger()); middlewares++;
+
+  if (Constants.OAUTH.AUTH_ENABLED) {
+    app.use('/api/environments', OAuthHelper.getOAuth2Middleware()); middlewares++;
+  }
+
+  const stack = app._router.stack;
+  const lastEntries = stack.splice(app._router.stack.length - middlewares);
+  const firstEntries = stack.splice(0, 5);
+  app._router.stack = [...firstEntries, ...lastEntries, ...stack];
+  // console.log(app._router.stack);
+
   return app;
 };
 
@@ -79,13 +113,6 @@ exports.connect = async () => {
  */
 async function executeSSLCustomLogic () {
   enableCustomRootCAs();
-
-  try {
-    await validateCfsslVersion();
-  } catch (error) {
-    console.error('Error while validating Cfssl version:', error);
-    process.exit(-1);
-  }
 }
 
 /**
@@ -93,8 +120,8 @@ async function executeSSLCustomLogic () {
  *
  */
 function getSwaggerDoc () {
-  var spec = fs.readFileSync(path.join(__dirname, 'api/swagger.yaml'), 'utf8');
-  var swaggerDoc = jsyaml.safeLoad(spec);
+  const spec = fs.readFileSync(path.join(__dirname, 'api/swagger.yaml'), 'utf8');
+  const swaggerDoc = jsyaml.safeLoad(spec);
   return swaggerDoc;
 }
 

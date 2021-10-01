@@ -17,6 +17,8 @@
 
 const ValidationsConfiguration = require('./ValidationsConfiguration');
 const ValidationCodes = require('./ValidationCodes');
+const Validation = require('./Validation');
+const forge = require('node-forge');
 
 /**
  * PKI Engine interface
@@ -45,7 +47,7 @@ class PKIEngine {
   }
 
   /**
-   * Signs the CSR with the Engine CA.
+   * Signs the DFSP CSR with the Engine CA.
    *
    * @param {String} csr CSR, PEM encoded
    * @returns A PEM-encoded certificate
@@ -67,14 +69,26 @@ class PKIEngine {
   /**
    * Performs a set of validations on the JWS certificate.
    *
-   * @param {String} certificate PEM-encoded certificate
-   * @param {String} intermediateChain PEM-encoded certificate chain
-   * @param {String} rootCertificate PEM-encoded root certificate
+   * @param {String} publicKey PEM-encoded JWS public key
    * @returns { validations, validationState } validations list and validationState, where validationState = VALID if all the validations are VALID or NOT_AVAIABLE; INVALID otherwise
    */
-  async validateJWSCertificate (certificate, intermediateChain, rootCertificate) {
-    let validationCodes = ValidationsConfiguration.jwsCertValidations;
-    return this.performCertificateValidations(validationCodes, certificate, intermediateChain, rootCertificate);
+  validateJWSCertificate (publicKey) {
+    const validation = new Validation(ValidationsConfiguration.jwsCertValidations, true);
+    try {
+      forge.pki.publicKeyFromPem(publicKey);
+    } catch (e) {
+      validation.result = ValidationCodes.VALID_STATES.INVALID;
+      validation.message = e.message;
+      return {
+        validations: [validation],
+        validationState: ValidationCodes.VALID_STATES.INVALID,
+      };
+    }
+    validation.result = ValidationCodes.VALID_STATES.VALID;
+    return {
+      validations: [validation],
+      validationState: ValidationCodes.VALID_STATES.VALID,
+    };
   }
 
   /**
@@ -82,11 +96,15 @@ class PKIEngine {
    *
    * @param {String} intermediateChain PEM-encoded certificate chain
    * @param {String} rootCertificate PEM-encoded root certificate
+   * @param {String} [key] PEM-encoded certificate private key
    * @returns { validations, validationState } validations list and validationState, where validationState = VALID if all the validations are VALID or NOT_AVAIABLE; INVALID otherwise
    */
-  async validateCACertificate (rootCertificate, intermediateChain) {
-    let validationCodes = ValidationsConfiguration.dfspCaValidations;
-    return this.performCAValidations(validationCodes, intermediateChain, rootCertificate);
+  validateCACertificate (rootCertificate, intermediateChain, key) {
+    const validationCodes = [
+      ...ValidationsConfiguration.dfspCaValidations,
+      ...key ? [ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code] : []
+    ];
+    return this.performCAValidations(validationCodes, intermediateChain, rootCertificate, key);
   }
 
   /**
@@ -97,8 +115,8 @@ class PKIEngine {
    * @param {String} rootCertificate PEM-encoded root certificate
    * @returns { validations, validationState } validations list and validationState, where validationState = VALID if all the validations are VALID or NOT_AVAIABLE; INVALID otherwise
    */
-  async validateServerCertificate (serverCert, intermediateChain, rootCertificate) {
-    let validationCodes = ValidationsConfiguration.serverCertValidations;
+  validateServerCertificate (serverCert, intermediateChain, rootCertificate) {
+    const validationCodes = ValidationsConfiguration.serverCertValidations;
     return this.performCertificateValidations(validationCodes, serverCert, intermediateChain, rootCertificate);
   }
 
@@ -111,40 +129,48 @@ class PKIEngine {
    * @param {String} rootCertificate PEM-encoded root certificate
    * @returns { validations, validationState } validations list and validationState, where validationState = VALID if all the validations are VALID or NOT_AVAIABLE; INVALID otherwise
    */
-  async performCertificateValidations (validationCodes, serverCert, intermediateChain, rootCertificate) {
-    let validations = [];
+  performCertificateValidations (validationCodes, serverCert, intermediateChain, rootCertificate) {
+    const validations = [];
     for (const validationCode of validationCodes) {
       switch (validationCode) {
         case ValidationCodes.VALIDATION_CODES.CERTIFICATE_VALIDITY.code:
-          validations.push(await this.validateCertificateValidity(serverCert, ValidationCodes.VALIDATION_CODES.CERTIFICATE_VALIDITY.code));
+          validations.push(this.validateCertificateValidity(serverCert, ValidationCodes.VALIDATION_CODES.CERTIFICATE_VALIDITY.code));
           break;
         case ValidationCodes.VALIDATION_CODES.CERTIFICATE_USAGE_SERVER.code:
-          validations.push(await this.validateCertificateUsageServer(serverCert));
+          validations.push(this.validateCertificateUsageServer(serverCert));
           break;
         case ValidationCodes.VALIDATION_CODES.CERTIFICATE_CHAIN.code:
-          validations.push(await this.validateCertificateChain(serverCert, intermediateChain, rootCertificate));
+          validations.push(this.validateCertificateChain(serverCert, intermediateChain, rootCertificate));
           break;
         case ValidationCodes.VALIDATION_CODES.CERTIFICATE_PUBLIC_KEY_LENGTH_2048.code:
-          validations.push(await this.validateCertificateKeyLength(serverCert, 2048, ValidationCodes.VALIDATION_CODES.CERTIFICATE_PUBLIC_KEY_LENGTH_2048.code));
+          validations.push(this.validateCertificateKeyLength(serverCert, 2048, ValidationCodes.VALIDATION_CODES.CERTIFICATE_PUBLIC_KEY_LENGTH_2048.code));
           break;
         case ValidationCodes.VALIDATION_CODES.CERTIFICATE_PUBLIC_KEY_LENGTH_4096.code:
-          validations.push(await this.validateCertificateKeyLength(serverCert, 4096, ValidationCodes.VALIDATION_CODES.CERTIFICATE_PUBLIC_KEY_LENGTH_4096.code));
+          validations.push(this.validateCertificateKeyLength(serverCert, 4096, ValidationCodes.VALIDATION_CODES.CERTIFICATE_PUBLIC_KEY_LENGTH_4096.code));
           break;
         case ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code:
-          validations.push(await this.verifyRootCertificate(rootCertificate, ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code));
+          validations.push(this.verifyRootCertificate(rootCertificate, ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code));
           break;
         case ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code:
-          validations.push(await this.verifyIntermediateChain(rootCertificate, intermediateChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code));
+          validations.push(this.verifyIntermediateChain(rootCertificate, intermediateChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code));
           break;
         default:
           console.log(`Validation not yet implemented: ${validationCode}`);
           break;
       }
     }
-    let validationState = validations.reduce((accum, current) => { return accum && current.result !== ValidationCodes.VALID_STATES.INVALID; }, true)
-      ? ValidationCodes.VALID_STATES.VALID
-      : ValidationCodes.VALID_STATES.INVALID;
+    const valid = !validations.some((e) => e.result === ValidationCodes.VALID_STATES.INVALID);
+    const validationState = valid ? ValidationCodes.VALID_STATES.VALID : ValidationCodes.VALID_STATES.INVALID;
     return { validations, validationState };
+  }
+
+  verifyCertificateChainPublicKeyMatchPrivateKey (certificateChain, key, code) {
+    if (this.splitCertificateChain(certificateChain)
+      .map(cert => this.verifyCertificatePublicKeyMatchPrivateKey(cert, key, code))
+      .some(({ result }) => result === ValidationCodes.VALID_STATES.VALID)) {
+      return new Validation(code, true, ValidationCodes.VALID_STATES.VALID);
+    }
+    return new Validation(code, true, ValidationCodes.VALID_STATES.INVALID);
   }
 
   /**
@@ -153,29 +179,32 @@ class PKIEngine {
    * @param {String[]} validationCodes List of validation codes to perform
    * @param {String} intermediateChain PEM-encoded certificate chain
    * @param {String} rootCertificate PEM-encoded root certificate
+   * @param {String} key PEM-encoded CA private key
    * @returns { validations, validationState } validations list and validationState, where validationState = VALID if all the validations are VALID or NOT_AVAIABLE; INVALID otherwise
    */
-  async performCAValidations (validationCodes, intermediateChain, rootCertificate) {
-    let validations = [];
+  performCAValidations (validationCodes, intermediateChain, rootCertificate, key) {
+    const validations = [];
     for (const validationCode of validationCodes) {
       switch (validationCode) {
         case ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code:
-          validations.push(await this.verifyRootCertificate(rootCertificate, ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code));
+          validations.push(this.verifyRootCertificate(rootCertificate, ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code));
           break;
         case ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code:
-          validations.push(await this.verifyIntermediateChain(rootCertificate, intermediateChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code));
+          validations.push(this.verifyIntermediateChain(rootCertificate, intermediateChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code));
           break;
         case ValidationCodes.VALIDATION_CODES.CA_CERTIFICATE_USAGE.code:
-          validations.push(await this.validateCertificateUsageCA(rootCertificate, intermediateChain, ValidationCodes.VALIDATION_CODES.CA_CERTIFICATE_USAGE.code));
+          validations.push(this.validateCertificateUsageCA(rootCertificate, intermediateChain, ValidationCodes.VALIDATION_CODES.CA_CERTIFICATE_USAGE.code));
+          break;
+        case ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code:
+          validations.push(this.verifyCertificateChainPublicKeyMatchPrivateKey(rootCertificate + intermediateChain, key, ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code));
           break;
         default:
           console.log(`Validation not yet implemented: ${validationCode}`);
           break;
       }
     }
-    let validationState = validations.reduce((accum, current) => { return accum && current.result !== ValidationCodes.VALID_STATES.INVALID; }, true)
-      ? ValidationCodes.VALID_STATES.VALID
-      : ValidationCodes.VALID_STATES.INVALID;
+    const valid = !validations.some((e) => e.result === ValidationCodes.VALID_STATES.INVALID);
+    const validationState = valid ? ValidationCodes.VALID_STATES.VALID : ValidationCodes.VALID_STATES.INVALID;
     return { validations, validationState };
   }
 
@@ -185,7 +214,7 @@ class PKIEngine {
    * @param {String} serverCert PEM-encoded certificate
    * @param {String} code validation code
    */
-  async validateCertificateValidity (serverCert, code) {
+  validateCertificateValidity (serverCert, code) {
   }
 
   /**
@@ -193,7 +222,7 @@ class PKIEngine {
    *
    * @param {String} serverCert PEM-encoded certificate
    */
-  async validateCertificateUsageServer (serverCert) {
+  validateCertificateUsageServer (serverCert) {
   }
 
   /**
@@ -203,7 +232,7 @@ class PKIEngine {
    * @param {String} intermediateChain PEM-encoded certificate
    * @param {String} code validation code
    */
-  async validateCertificateUsageCA (rootCertificate, intermediateChain, code) {
+  validateCertificateUsageCA (rootCertificate, intermediateChain, code) {
   }
 
   /**
@@ -213,7 +242,7 @@ class PKIEngine {
    * @param {String} intermediateChain PEM-encoded intermediate chain
    * @param {String} rootCertificate PEM-encoded root certificate
    */
-  async validateCertificateChain (serverCert, intermediateChain, rootCertificate) {
+  validateCertificateChain (serverCert, intermediateChain, rootCertificate) {
   }
 
   /**
@@ -223,7 +252,7 @@ class PKIEngine {
    * @param {Integer} keyLength key length in bits
    * @param {String} code Validation code.
    */
-  async validateCertificateKeyLength (serverCert, keyLength, code) {
+  validateCertificateKeyLength (serverCert, keyLength, code) {
   }
 
   /**
@@ -233,8 +262,8 @@ class PKIEngine {
    * @param {String} certificate PEM-encoded certificate
    * @returns { validations, validationState } validations list and validationState, where validationState = VALID if all the validations are VALID or NOT_AVAIABLE; INVALID otherwise
    */
-  async validateInboundEnrollment (enrollment) {
-    let validationCodes = ValidationsConfiguration.inboundValidations;
+  validateInboundEnrollment (enrollment) {
+    const validationCodes = ValidationsConfiguration.inboundValidations;
     return this.performEnrollmentValidations(validationCodes, enrollment);
   }
 
@@ -245,8 +274,8 @@ class PKIEngine {
    * @param {String} certificate PEM-encoded certificate
    * @returns { validations, validationState } validations list and validationState, where validationState = VALID if all the validations are VALID or NOT_AVAIABLE; INVALID otherwise
    */
-  async validateOutboundEnrollment (enrollment) {
-    let validationCodes = ValidationsConfiguration.outboundValidations;
+  validateOutboundEnrollment (enrollment) {
+    const validationCodes = ValidationsConfiguration.outboundValidations;
     return this.performEnrollmentValidations(validationCodes, enrollment);
   }
 
@@ -258,56 +287,56 @@ class PKIEngine {
    * @param {String} certificate PEM-encoded certificate
    * @returns { validations, validationState } validations list and validationState, where validationState = VALID if all the validations are VALID or NOT_AVAIABLE; INVALID otherwise
    */
-  async performEnrollmentValidations (validationCodes, enrollment) {
-    let validations = [];
+  performEnrollmentValidations (validationCodes, enrollment) {
+    const validations = [];
     // FIXME: modify enrollment.XX for enrollment and from EmbeddedPkiEngine get what it needs
     for (const validationCode of validationCodes) {
       switch (validationCode) {
         case ValidationCodes.VALIDATION_CODES.CSR_SIGNATURE_VALID.code:
-          validations.push(await this.validateCsrSignatureValid(enrollment.csr));
+          validations.push(this.validateCsrSignatureValid(enrollment.csr));
           break;
         case ValidationCodes.VALIDATION_CODES.CSR_SIGNATURE_ALGORITHM_SHA256_512.code:
-          validations.push(await this.validateCsrSignatureAlgorithm(enrollment.csr, ValidationCodes.VALIDATION_CODES.CSR_SIGNATURE_ALGORITHM_SHA256_512.code, ValidationCodes.VALIDATION_CODES.CSR_SIGNATURE_ALGORITHM_SHA256_512.param));
+          validations.push(this.validateCsrSignatureAlgorithm(enrollment.csr, ValidationCodes.VALIDATION_CODES.CSR_SIGNATURE_ALGORITHM_SHA256_512.code, ValidationCodes.VALIDATION_CODES.CSR_SIGNATURE_ALGORITHM_SHA256_512.param));
           break;
         case ValidationCodes.VALIDATION_CODES.CSR_PUBLIC_KEY_LENGTH_4096.code:
-          validations.push(await this.validateCsrPublicKeyLength(enrollment.csr, ValidationCodes.VALIDATION_CODES.CSR_PUBLIC_KEY_LENGTH_4096.code, ValidationCodes.VALIDATION_CODES.CSR_PUBLIC_KEY_LENGTH_4096.param));
+          validations.push(this.validateCsrPublicKeyLength(enrollment.csr, ValidationCodes.VALIDATION_CODES.CSR_PUBLIC_KEY_LENGTH_4096.code, ValidationCodes.VALIDATION_CODES.CSR_PUBLIC_KEY_LENGTH_4096.param));
           break;
         case ValidationCodes.VALIDATION_CODES.CSR_PUBLIC_KEY_LENGTH_2048.code:
-          validations.push(await this.validateCsrPublicKeyLength(enrollment.csr, ValidationCodes.VALIDATION_CODES.CSR_PUBLIC_KEY_LENGTH_2048.code, ValidationCodes.VALIDATION_CODES.CSR_PUBLIC_KEY_LENGTH_2048.param));
+          validations.push(this.validateCsrPublicKeyLength(enrollment.csr, ValidationCodes.VALIDATION_CODES.CSR_PUBLIC_KEY_LENGTH_2048.code, ValidationCodes.VALIDATION_CODES.CSR_PUBLIC_KEY_LENGTH_2048.param));
           break;
         case ValidationCodes.VALIDATION_CODES.CSR_CERT_SAME_PUBLIC_KEY.code:
-          validations.push(await this.verifyCertificateCSRPublicKey(ValidationCodes.VALIDATION_CODES.CSR_CERT_SAME_PUBLIC_KEY.code, enrollment.certificate, enrollment.csr));
+          validations.push(this.verifyCertificateCSRPublicKey(ValidationCodes.VALIDATION_CODES.CSR_CERT_SAME_PUBLIC_KEY.code, enrollment.certificate, enrollment.csr));
           break;
         case ValidationCodes.VALIDATION_CODES.CSR_CERT_SAME_SUBJECT_INFO.code:
-          validations.push(await this.verifyCertificateCSRSameSubject(ValidationCodes.VALIDATION_CODES.CSR_CERT_SAME_SUBJECT_INFO.code, enrollment));
+          validations.push(this.verifyCertificateCSRSameSubject(ValidationCodes.VALIDATION_CODES.CSR_CERT_SAME_SUBJECT_INFO.code, enrollment));
           break;
         case ValidationCodes.VALIDATION_CODES.CSR_CERT_SAME_CN.code:
-          validations.push(await this.verifyCertificateCSRSameCN(ValidationCodes.VALIDATION_CODES.CSR_CERT_SAME_CN.code, enrollment));
+          validations.push(this.verifyCertificateCSRSameCN(ValidationCodes.VALIDATION_CODES.CSR_CERT_SAME_CN.code, enrollment));
           break;
         case ValidationCodes.VALIDATION_CODES.CSR_MANDATORY_DISTINGUISHED_NAME.code:
-          validations.push(await this.verifyCsrMandatoryDistinguishedNames(enrollment.csr, ValidationCodes.VALIDATION_CODES.CSR_MANDATORY_DISTINGUISHED_NAME.code));
+          validations.push(this.verifyCsrMandatoryDistinguishedNames(enrollment.csr, ValidationCodes.VALIDATION_CODES.CSR_MANDATORY_DISTINGUISHED_NAME.code));
           break;
         case ValidationCodes.VALIDATION_CODES.CERTIFICATE_USAGE_CLIENT.code:
-          validations.push(await this.verifyCertificateUsageClient(enrollment.certificate, ValidationCodes.VALIDATION_CODES.CERTIFICATE_USAGE_CLIENT.code));
+          validations.push(this.verifyCertificateUsageClient(enrollment.certificate, ValidationCodes.VALIDATION_CODES.CERTIFICATE_USAGE_CLIENT.code));
           break;
         case ValidationCodes.VALIDATION_CODES.CERTIFICATE_VALIDITY.code:
-          validations.push(await this.validateCertificateValidity(enrollment.certificate, ValidationCodes.VALIDATION_CODES.CERTIFICATE_VALIDITY.code));
+          validations.push(this.validateCertificateValidity(enrollment.certificate, ValidationCodes.VALIDATION_CODES.CERTIFICATE_VALIDITY.code));
           break;
         case ValidationCodes.VALIDATION_CODES.CERTIFICATE_ALGORITHM_SHA256.code:
-          validations.push(await this.validateCertificateSignatureAlgorithm(enrollment.certificate, ValidationCodes.VALIDATION_CODES.CERTIFICATE_ALGORITHM_SHA256.code, ValidationCodes.VALIDATION_CODES.CERTIFICATE_ALGORITHM_SHA256.param));
+          validations.push(this.validateCertificateSignatureAlgorithm(enrollment.certificate, ValidationCodes.VALIDATION_CODES.CERTIFICATE_ALGORITHM_SHA256.code, ValidationCodes.VALIDATION_CODES.CERTIFICATE_ALGORITHM_SHA256.param));
           break;
         case ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code:
-          validations.push(await this.verifyCertificatePublicKeyMatchPrivateKey(enrollment.certificate, enrollment.key, ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code));
+          validations.push(this.verifyCertificatePublicKeyMatchPrivateKey(enrollment.certificate, enrollment.key, ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code));
           break;
         case ValidationCodes.VALIDATION_CODES.CERTIFICATE_SIGNED_BY_DFSP_CA.code:
-          validations.push(await this.verifyCertificateSignedByDFSPCA(enrollment.certificate, enrollment.dfspCA, ValidationCodes.VALIDATION_CODES.CERTIFICATE_SIGNED_BY_DFSP_CA.code));
+          validations.push(this.verifyCertificateSignedByDFSPCA(enrollment.certificate, enrollment.dfspCA, ValidationCodes.VALIDATION_CODES.CERTIFICATE_SIGNED_BY_DFSP_CA.code));
           break;
         default:
           console.log(`Validation not yet implemented: ${validationCode}`);
           break;
       }
     }
-    let validationState = validations.reduce((accum, current) => { return accum && current.result !== ValidationCodes.VALID_STATES.INVALID; }, true)
+    const validationState = validations.reduce((accum, current) => { return accum && current.result !== ValidationCodes.VALID_STATES.INVALID; }, true)
       ? ValidationCodes.VALID_STATES.VALID
       : ValidationCodes.VALID_STATES.INVALID;
     return { validations, validationState };
@@ -319,15 +348,15 @@ class PKIEngine {
    * @param {CertInfo} certInfo
    * @returns { valid: true } or { valid: false, reason: 'message' }
    */
-  static compareSubjectBetweenCSRandCert (csrInfo, certInfo) {
-    for (let p in csrInfo.subject) {
+  compareSubjectBetweenCSRandCert (csrInfo, certInfo) {
+    for (const p in csrInfo.subject) {
       if (csrInfo.subject.hasOwnProperty(p)) {
         if (csrInfo.subject[p] !== certInfo.subject[p]) {
           return { valid: false, reason: `csr subject ${p}: ${csrInfo.subject[p]} is not equals cert subject ${p}: ${certInfo.subject[p]}` };
         }
       }
     }
-    for (let p in certInfo.subject) {
+    for (const p in certInfo.subject) {
       if (certInfo.subject.hasOwnProperty(p)) {
         if (csrInfo.subject[p] !== certInfo.subject[p]) {
           return { valid: false, reason: `csr subject ${p}: ${csrInfo.subject[p]} is not equals cert subject ${p}: ${certInfo.subject[p]}` };
@@ -343,7 +372,7 @@ class PKIEngine {
    * @param {CertInfo} certInfo
    * @returns { valid: true } or { valid: false, reason: 'message' }
    */
-  static compareCNBetweenCSRandCert (csrInfo, certInfo) {
+  compareCNBetweenCSRandCert (csrInfo, certInfo) {
     if (csrInfo.subject.CN !== certInfo.subject.CN) {
       return { valid: false, reason: `csr subject CN: ${csrInfo.subject.CN} and cert subject CN: ${certInfo.subject.CN} are different` };
     }
@@ -356,8 +385,8 @@ class PKIEngine {
    * @param {CertInfo} certInfo
    * @returns { valid: true } or { valid: false, reason: 'message' }
    */
-  static compareSubjectAltNameBetweenCSRandCert (csrInfo, certInfo) {
-    for (let p in csrInfo.extensions.subjectAltName) {
+  compareSubjectAltNameBetweenCSRandCert (csrInfo, certInfo) {
+    for (const p in csrInfo.extensions.subjectAltName) {
       if (JSON.stringify(csrInfo.extensions.subjectAltName[p].sort()) !== JSON.stringify(certInfo.extensions.subjectAltName[p].sort())) {
         return { valid: false, reason: `csr subject ${p}: ${csrInfo.extensions.subjectAltName[p]} is not equal to cert subject ${p}: ${certInfo.extensions.subjectAltName[p]}` };
       }
@@ -372,7 +401,7 @@ class PKIEngine {
    * @param {DFSPCAsModel} dfspCA
    * @param {String} code Validation code
    */
-  async verifyCertificateSignedByDFSPCA (certificate, dfspCA, code) {
+  verifyCertificateSignedByDFSPCA (certificate, dfspCA, code) {
   }
 
   /**
@@ -380,7 +409,7 @@ class PKIEngine {
    *
    * @param {String} csr PEM-encoded CSR
    */
-  async validateCsrSignatureValid (csr) {
+  validateCsrSignatureValid (csr) {
   }
 
   /**
@@ -389,7 +418,7 @@ class PKIEngine {
    * @param {String} csr PEM-encoded CSR
    * @param {String} code Validation code
    */
-  async verifyCsrMandatoryDistinguishedNames (csr, code) {
+  verifyCsrMandatoryDistinguishedNames (csr, code) {
   }
 
   /**
@@ -399,7 +428,7 @@ class PKIEngine {
    * @param {String} certificate PEM-encoded certificate
    * @param {String} code Validation code
    */
-  async verifyCertificateUsageClient (certificate, code) {
+  verifyCertificateUsageClient (certificate, code) {
   }
 
   /**
@@ -409,7 +438,7 @@ class PKIEngine {
    * @param {String} code Validation code
    * @param {String} algo algorithm
    */
-  async validateCsrSignatureAlgorithm (csr, code, algo) {
+  validateCsrSignatureAlgorithm (csr, code, algo) {
   }
 
   /**
@@ -419,7 +448,7 @@ class PKIEngine {
    * @param {String} code Validation code
    * @param {String} algo algorithm
    */
-  async validateCertificateSignatureAlgorithm (certificate, code, algo) {
+  validateCertificateSignatureAlgorithm (certificate, code, algo) {
   }
 
   /**
@@ -429,7 +458,7 @@ class PKIEngine {
    * @param {Object} enrollment
    * @returns {boolean} if they have the same
    */
-  async verifyCertificateCSRSameSubject (code, enrollment) {
+  verifyCertificateCSRSameSubject (code, enrollment) {
   }
 
   /**
@@ -437,7 +466,7 @@ class PKIEngine {
    * @param {String} code validation code
    * @param {Object} enrollment
    */
-  async verifyCertificateCSRSameCN (code, enrollment) {
+  verifyCertificateCSRSameCN (code, enrollment) {
 
   }
 
@@ -447,9 +476,10 @@ class PKIEngine {
    * the Connection Manager, and there's no private key associated, this will be set the state to NOT_AVAILABLE
    *
    * @param {String} code Validation code
+   * @param {String} key PEM-encoded key.
    * @param {String} certificate PEM-encoded certificate
    */
-  async verifyCertificatePublicKeyMatchPrivateKey (certificate, code) {
+  verifyCertificatePublicKeyMatchPrivateKey (certificate, key, code) {
   }
 
   /**
@@ -459,7 +489,7 @@ class PKIEngine {
    * @param {String} code Validation code
    * @param {Number} length key length
    */
-  async validateCsrPublicKeyLength (csr, code, length) {
+  validateCsrPublicKeyLength (csr, code, length) {
   }
 
   /**
@@ -469,7 +499,7 @@ class PKIEngine {
    * @param {String} csr PEM-encoded CSR.
    * @returns {boolean} if they have the same
    */
-  async verifyCertificateCSRPublicKey (code, certificate, csr) {
+  verifyCertificateCSRPublicKey (code, certificate, csr) {
   }
 
   /**
@@ -478,11 +508,11 @@ class PKIEngine {
    * minLength: Number
    * returns { valid: true } or { valid: false, reason: { actualKeySize: Number, minKeySize: Number } }
    */
-  static async verifyCSRKeyLength (csr, minLength) {
+  verifyCSRKeyLength (csr, minLength) {
     return { valid: true };
   }
 
-  static async verifyCertKeyLength (cert, minLength) {
+  verifyCertKeyLength (cert, minLength) {
     return { valid: true };
   }
 
@@ -493,11 +523,11 @@ class PKIEngine {
    * returns { valid: true } or { valid: false, reason: { actualAlgorithm : String, algorithm : String} }
    *
    */
-  static async verifyCSRAlgorithm (csr, algorithms) {
+  verifyCSRAlgorithm (csr, algorithms) {
     return { valid: true };
   }
 
-  static async verifyCertAlgorithm (cert, algorithms) {
+  verifyCertAlgorithm (cert, algorithms) {
     return { valid: true };
   }
 
@@ -511,7 +541,7 @@ class PKIEngine {
    * output: validation details
    * }
    */
-  static async verifyCertificateAgainstKey (certificate, key) {
+  verifyCertificateAgainstKey (certificate, key) {
     return undefined;
   }
 
@@ -521,18 +551,7 @@ class PKIEngine {
    * @param {String} code
    * @returns {Validation} validation
    */
-  async verifyRootCertificate (rootCertificate, code) {
-  }
-
-  /**
-   * Verifies the certificate as a root certificate. It can be self-signed or signed by a global root.
-   * Global root depends on the engine root certificates list, so this condition may change over time.
-   *
-   * @param {String} rootCertificate PEM-encoded string
-   * @returns {state: String, output: String} state: 'VALID(SELF_SIGNED)' | 'VALID(SIGNED)' | 'INVALID'. output: command output
-   */
-  static async validateRootCertificate (rootCertificate) {
-    return { state: null, output: null };
+  verifyRootCertificate (rootCertificate, code) {
   }
 
   /**
@@ -542,7 +561,7 @@ class PKIEngine {
    * @param {String} code
    * @returns {Validation} validation
    */
-  async verifyIntermediateChain (rootCertificate, intermediateChain, code) {
+  verifyIntermediateChain (rootCertificate, intermediateChain, code) {
   }
 
   /**
@@ -556,7 +575,7 @@ class PKIEngine {
    * output: validation details
    * }
    */
-  static async verifyCertificateSigning (certificate, rootCertificate, intermediateChain) {
+  verifyCertificateSigning (certificate, rootCertificate, intermediateChain) {
     return undefined;
   }
 
@@ -568,7 +587,7 @@ class PKIEngine {
    * @throws ExternalProcessError if error occurs while processing the CSR
    * @throws InvalidEntityError if the CSR is invalid
    */
-  static async getCSRInfo (csr) {
+  getCSRInfo (csr) {
     return undefined;
   }
 
@@ -580,9 +599,9 @@ class PKIEngine {
    * @throws ExternalProcessError if error occurs while processing the CSR
    * @throws InvalidEntityError if the CSR is invalid
    */
-  static async getCertInfo (cert) {
+  getCertInfo (cert) {
     return undefined;
   }
-};
+}
 
 module.exports = PKIEngine;
