@@ -20,8 +20,8 @@
 const utils = require('../utils/writer.js');
 const ServerCertsService = require('../service/ServerCertsService');
 
-exports.createDfspServerCerts = function createDfspServerCerts (req, res, next, dfspId) {
-  ServerCertsService.createDfspServerCerts(dfspId, req.body)
+exports.createDfspServerCerts = function createDfspServerCerts (req, res, next, body, dfspId) {
+  ServerCertsService.createDfspServerCerts(dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -30,8 +30,8 @@ exports.createDfspServerCerts = function createDfspServerCerts (req, res, next, 
     });
 };
 
-exports.updateDfspServerCerts = function updateDfspServerCerts (req, res, next, dfspId) {
-  ServerCertsService.updateDfspServerCerts(dfspId, req.body)
+exports.updateDfspServerCerts = function updateDfspServerCerts (req, res, next, body, dfspId) {
+  ServerCertsService.updateDfspServerCerts(dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })

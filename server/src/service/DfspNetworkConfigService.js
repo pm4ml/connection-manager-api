@@ -170,7 +170,7 @@ const createDFSPIp = async function (dfspId, body, direction) {
  * Adds a new IP entry to the DFSP Egress endpoint
  *
  * @param {String} dfspId DFSP id
- * body InputIP DFSP egress IP
+ * @param body {Object} InputIP DFSP egress IP
  * returns DFSPEndPointIp
  **/
 exports.createDFSPEgressIp = async function (dfspId, body) {
