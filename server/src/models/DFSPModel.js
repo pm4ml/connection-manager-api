@@ -53,8 +53,7 @@ const findByField = async (columnName, value) => {
 };
 
 const findAllByField = async (columnName, value) => {
-  let rows;
-  rows = await knex.table(DFSP_TABLE).where(columnName, value).select();
+  const rows = await knex.table(DFSP_TABLE).where(columnName, value).select();
   if (rows.length === 0) {
     throw new NotFoundError(`dfsp with ${columnName} = ${value}`);
   } else {

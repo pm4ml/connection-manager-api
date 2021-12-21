@@ -20,8 +20,8 @@
 const utils = require('../utils/writer.js');
 const Pki = require('../service/PkiService');
 
-exports.createDFSP = function createDFSP (req, res, next) {
-  Pki.createDFSP(req.body)
+exports.createDFSP = function createDFSP (req, res, next, body) {
+  Pki.createDFSP(body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -50,8 +50,8 @@ exports.getDFSPs = function getDFSPs (req, res, next) {
     });
 };
 
-exports.setDFSPca = function setDFSPca (req, res, next, dfspId) {
-  Pki.setDFSPca(dfspId, req.body)
+exports.setDFSPca = function setDFSPca (req, res, next, body, dfspId) {
+  Pki.setDFSPca(dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -70,8 +70,8 @@ exports.getDFSPca = function getDFSPca (req, res, next, dfspId) {
     });
 };
 
-exports.updateDFSP = (req, res, next, dfspId) => {
-  Pki.updateDFSP(dfspId, req.body)
+exports.updateDFSP = (req, res, next, body, dfspId) => {
+  Pki.updateDFSP(dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
