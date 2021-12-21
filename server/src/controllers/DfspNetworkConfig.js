@@ -30,8 +30,8 @@ exports.getEnvironmentDfspStatus = function getEnvironmentDfspStatus (req, res, 
     });
 };
 
-exports.createDFSPEgressIp = function createDFSPEgressIp (req, res, next, dfspId) {
-  DfspNetworkConfig.createDFSPEgressIp(dfspId, req.body)
+exports.createDFSPEgressIp = function createDFSPEgressIp (req, res, next, body, dfspId) {
+  DfspNetworkConfig.createDFSPEgressIp(dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -40,8 +40,8 @@ exports.createDFSPEgressIp = function createDFSPEgressIp (req, res, next, dfspId
     });
 };
 
-exports.createDFSPIngressIp = function createDFSPIngressIp (req, res, next, dfspId) {
-  DfspNetworkConfig.createDFSPIngressIp(dfspId, req.body)
+exports.createDFSPIngressIp = function createDFSPIngressIp (req, res, next, body, dfspId) {
+  DfspNetworkConfig.createDFSPIngressIp(dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -50,8 +50,8 @@ exports.createDFSPIngressIp = function createDFSPIngressIp (req, res, next, dfsp
     });
 };
 
-exports.createDFSPIngressUrl = function createDFSPIngressUrl (req, res, next, dfspId) {
-  DfspNetworkConfig.createDFSPIngressUrl(dfspId, req.body)
+exports.createDFSPIngressUrl = function createDFSPIngressUrl (req, res, next, body, dfspId) {
+  DfspNetworkConfig.createDFSPIngressUrl(dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -120,8 +120,8 @@ exports.getDFSPEgressIps = function getDFSPEgressIps (req, res, next, dfspId) {
     });
 };
 
-exports.updateDFSPEndpoint = function updateDFSPEndpoint (req, res, next, dfspId, epId) {
-  DfspNetworkConfig.updateDFSPEndpoint(dfspId, epId, req.body)
+exports.updateDFSPEndpoint = function updateDFSPEndpoint (req, res, next, body, dfspId, epId) {
+  DfspNetworkConfig.updateDFSPEndpoint(dfspId, epId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -170,8 +170,8 @@ exports.getDFSPIngressIpEndpoint = (req, res, next, dfspId, epId) => {
     });
 };
 
-exports.updateDFSPIngressIpEndpoint = (req, res, next, dfspId, epId) => {
-  DfspNetworkConfig.updateDFSPIngressIpEndpoint(dfspId, epId, req.body)
+exports.updateDFSPIngressIpEndpoint = (req, res, next, body, dfspId, epId) => {
+  DfspNetworkConfig.updateDFSPIngressIpEndpoint(dfspId, epId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -200,8 +200,8 @@ exports.getDFSPEgressIpEndpoint = (req, res, next, dfspId, epId) => {
     });
 };
 
-exports.updateDFSPEgressIpEndpoint = (req, res, next, dfspId, epId) => {
-  DfspNetworkConfig.updateDFSPEgressIpEndpoint(dfspId, epId, req.body)
+exports.updateDFSPEgressIpEndpoint = (req, res, next, body, dfspId, epId) => {
+  DfspNetworkConfig.updateDFSPEgressIpEndpoint(dfspId, epId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -230,8 +230,8 @@ exports.getDFSPIngressUrlEndpoint = (req, res, next, dfspId, epId) => {
     });
 };
 
-exports.updateDFSPIngressUrlEndpoint = (req, res, next, dfspId, epId) => {
-  DfspNetworkConfig.updateDFSPIngressUrlEndpoint(dfspId, epId, req.body)
+exports.updateDFSPIngressUrlEndpoint = (req, res, next, body, dfspId, epId) => {
+  DfspNetworkConfig.updateDFSPIngressUrlEndpoint(dfspId, epId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })

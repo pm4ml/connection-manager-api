@@ -2807,6 +2807,8 @@ components:
                 - $ref: '#/components/schemas/URLEntry'
     InputIPValue:
       type: object
+      required:
+        - value
       properties:
         value:
           $ref: '#/components/schemas/IPEntry'

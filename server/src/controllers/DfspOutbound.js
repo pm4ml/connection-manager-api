@@ -20,8 +20,8 @@
 const utils = require('../utils/writer.js');
 const DfspOutbound = require('../service/DfspOutboundService');
 
-exports.createDFSPOutboundEnrollment = function createDFSPOutboundEnrollment (req, res, next, dfspId) {
-  DfspOutbound.createDFSPOutboundEnrollment(dfspId, req.body)
+exports.createDFSPOutboundEnrollment = function createDFSPOutboundEnrollment (req, res, next, body, dfspId) {
+  DfspOutbound.createDFSPOutboundEnrollment(dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -30,8 +30,8 @@ exports.createDFSPOutboundEnrollment = function createDFSPOutboundEnrollment (re
     });
 };
 
-exports.createCSRAndDFSPOutboundEnrollment = function createCSRAndDFSPOutboundEnrollment (req, res, next, dfspId) {
-  DfspOutbound.createCSRAndDFSPOutboundEnrollment(dfspId, req.body)
+exports.createCSRAndDFSPOutboundEnrollment = function createCSRAndDFSPOutboundEnrollment (req, res, next, body, dfspId) {
+  DfspOutbound.createCSRAndDFSPOutboundEnrollment(dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -60,8 +60,8 @@ exports.getDFSPOutboundEnrollment = function getDFSPOutboundEnrollment (req, res
     });
 };
 
-exports.addDFSPOutboundEnrollmentCertificate = function addDFSPOutboundEnrollmentCertificate (req, res, next, dfspId, enId) {
-  DfspOutbound.addDFSPOutboundEnrollmentCertificate(dfspId, enId, req.body)
+exports.addDFSPOutboundEnrollmentCertificate = function addDFSPOutboundEnrollmentCertificate (req, res, next, body, dfspId, enId) {
+  DfspOutbound.addDFSPOutboundEnrollmentCertificate(dfspId, enId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })

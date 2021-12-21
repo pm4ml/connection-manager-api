@@ -20,8 +20,8 @@
 const utils = require('../utils/writer.js');
 const JWSCertsService = require('../service/JWSCertsService');
 
-exports.createDfspJWSCerts = function createDfspJWSCerts (req, res, next, dfspId) {
-  JWSCertsService.createDfspJWSCerts(dfspId, req.body)
+exports.createDfspJWSCerts = function createDfspJWSCerts (req, res, next, body, dfspId) {
+  JWSCertsService.createDfspJWSCerts(dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -30,8 +30,8 @@ exports.createDfspJWSCerts = function createDfspJWSCerts (req, res, next, dfspId
     });
 };
 
-exports.updateDfspJWSCerts = function updateDfspJWSCerts (req, res, next, dfspId) {
-  JWSCertsService.updateDfspJWSCerts(dfspId, req.body)
+exports.updateDfspJWSCerts = function updateDfspJWSCerts (req, res, next, body, dfspId) {
+  JWSCertsService.updateDfspJWSCerts(dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
