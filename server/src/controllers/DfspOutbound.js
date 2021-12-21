@@ -40,7 +40,7 @@ exports.createCSRAndDFSPOutboundEnrollment = function createCSRAndDFSPOutboundEn
     });
 };
 
-exports.getDFSPOutboundEnrollments = function getDFSPOutboundEnrollments (req, res, next, dfspId, state) {
+exports.getDFSPOutboundEnrollments = function getDFSPOutboundEnrollments (req, res, next, state, dfspId) {
   DfspOutbound.getDFSPOutboundEnrollments(dfspId, state)
     .then(function (response) {
       utils.writeJson(res, response);
