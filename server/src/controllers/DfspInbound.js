@@ -20,8 +20,8 @@
 const utils = require('../utils/writer.js');
 const DfspInbound = require('../service/DfspInboundService');
 
-exports.createDFSPInboundEnrollment = function createDFSPInboundEnrollment (req, res, next, dfspId) {
-  DfspInbound.createDFSPInboundEnrollment(dfspId, req.body)
+exports.createDFSPInboundEnrollment = function createDFSPInboundEnrollment (req, res, next, body, dfspId) {
+  DfspInbound.createDFSPInboundEnrollment(dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })

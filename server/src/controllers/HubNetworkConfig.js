@@ -20,8 +20,8 @@
 const utils = require('../utils/writer.js');
 const HubNetworkConfig = require('../service/HubNetworkConfigService');
 
-exports.createHubEgressIp = function createHubEgressIp (req, res, next) {
-  HubNetworkConfig.createHubEgressIp(req.body)
+exports.createHubEgressIp = function createHubEgressIp (req, res, next, body) {
+  HubNetworkConfig.createHubEgressIp(body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -30,8 +30,8 @@ exports.createHubEgressIp = function createHubEgressIp (req, res, next) {
     });
 };
 
-exports.createHubIngressIp = function createHubIngressIp (req, res, next) {
-  HubNetworkConfig.createHubIngressIp(req.body)
+exports.createHubIngressIp = function createHubIngressIp (req, res, next, body) {
+  HubNetworkConfig.createHubIngressIp(body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -40,8 +40,8 @@ exports.createHubIngressIp = function createHubIngressIp (req, res, next) {
     });
 };
 
-exports.createHubIngressUrl = function createHubIngressUrl (req, res, next) {
-  HubNetworkConfig.createHubIngressUrl(req.body)
+exports.createHubIngressUrl = function createHubIngressUrl (req, res, next, body) {
+  HubNetworkConfig.createHubIngressUrl(body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -80,8 +80,8 @@ exports.getHubEgressIps = function getHubEgressIps (req, res, next) {
     });
 };
 
-exports.updateHubEndpoint = function updateHubEndpoint (req, res, next, epId) {
-  HubNetworkConfig.updateHubEndpoint(epId, req.body)
+exports.updateHubEndpoint = function updateHubEndpoint (req, res, next, body, epId) {
+  HubNetworkConfig.updateHubEndpoint(epId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -130,8 +130,8 @@ exports.getHubIngressIpEndpoint = (req, res, next, epId) => {
     });
 };
 
-exports.updateHubIngressIpEndpoint = (req, res, next, epId) => {
-  HubNetworkConfig.updateHubIngressIpEndpoint(epId, req.body)
+exports.updateHubIngressIpEndpoint = (req, res, next, body, epId) => {
+  HubNetworkConfig.updateHubIngressIpEndpoint(epId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -160,8 +160,8 @@ exports.getHubEgressIpEndpoint = (req, res, next, epId) => {
     });
 };
 
-exports.updateHubEgressIpEndpoint = (req, res, next, epId) => {
-  HubNetworkConfig.updateHubEgressIpEndpoint(epId, req.body)
+exports.updateHubEgressIpEndpoint = (req, res, next, body, epId) => {
+  HubNetworkConfig.updateHubEgressIpEndpoint(epId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -190,8 +190,8 @@ exports.getHubIngressUrlEndpoint = (req, res, next, epId) => {
     });
 };
 
-exports.updateHubIngressUrlEndpoint = (req, res, next, epId) => {
-  HubNetworkConfig.updateHubIngressUrlEndpoint(epId, req.body)
+exports.updateHubIngressUrlEndpoint = (req, res, next, body, epId) => {
+  HubNetworkConfig.updateHubIngressUrlEndpoint(epId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })

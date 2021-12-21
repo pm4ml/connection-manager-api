@@ -20,8 +20,8 @@
 const utils = require('../utils/writer');
 const HubCAService = require('../service/HubCAService');
 
-exports.createHubCA = function (req, res, next) {
-  HubCAService.createHubCA(req.body)
+exports.createHubCA = function (req, res, next, body) {
+  HubCAService.createHubCA(body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -50,8 +50,8 @@ exports.deleteHubCA = function (req, res, next) {
     });
 };
 
-exports.updateHubCA = function (req, res, next) {
-  HubCAService.updateHubCA(req.body)
+exports.updateHubCA = function (req, res, next, body) {
+  HubCAService.updateHubCA(body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
