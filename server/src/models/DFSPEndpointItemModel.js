@@ -118,8 +118,9 @@ exports.findObjectByDirectionType = async (direction, type, dfspId) => {
   return endpoints;
 };
 
-exports.update = async (id, endpointItem) => {
-  const result = await knex.table(ENDPOINT_ITEMS_TABLE).where({ id: id }).update(endpointItem);
+exports.update = async (dfspId, id, endpointItem) => {
+  const dfspRawId = await DFSPModel.findIdByDfspId(dfspId);
+  const result = await knex.table(ENDPOINT_ITEMS_TABLE).where({ id, dfsp_id: dfspRawId }).update(endpointItem);
   if (result === 1) {
     return exports.findObjectById(id);
   } else throw new Error(result);

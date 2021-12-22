@@ -80,8 +80,8 @@ exports.getUnprocessedDfspItems = function getUnprocessedDfspItems (req, res, ne
     });
 };
 
-exports.confirmEndpointItem = function getUnprocessedEndpointItems (req, res, next, epId) {
-  DfspNetworkConfig.confirmEndpointItem(epId)
+exports.confirmEndpointItem = function getUnprocessedEndpointItems (req, res, next, dfspId, epId) {
+  DfspNetworkConfig.confirmEndpointItem(dfspId, epId)
     .then(function (response) {
       utils.writeJson(res, response);
     })

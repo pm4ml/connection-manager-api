@@ -123,8 +123,8 @@ exports.getDfspStatus = async function (dfspId) {
   }
 
   if (dfsp.id != null && dfsp.name != null) {
-    const bs = envStatus.filter(phase => phase.phase == PhaseEnum.BUSINESS_SETUP);
-    const s = bs[0].steps.filter(step => step.identifier == StepEnum.ID_GENERATION);
+    const bs = envStatus.filter(phase => phase.phase === PhaseEnum.BUSINESS_SETUP);
+    const s = bs[0].steps.filter(step => step.identifier === StepEnum.ID_GENERATION);
     s[0].status = StatusEnum.COMPLETED;
   }
 
@@ -251,8 +251,8 @@ exports.getUnprocessedDfspItems = async function (dfspId) {
   return items;
 };
 
-exports.confirmEndpointItem = async function (epId) {
-  return DFSPEndpointItemModel.update(epId, { state: 'CONFIRMED' });
+exports.confirmEndpointItem = async function (dfspId, epId, a, b, c) {
+  return DFSPEndpointItemModel.update(dfspId, epId, { state: 'CONFIRMED' });
 };
 
 exports.getDFSPEndpoint = async function (dfspId, epId) {

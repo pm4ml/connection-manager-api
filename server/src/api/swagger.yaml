@@ -1892,7 +1892,7 @@ paths:
           description: ID of the endpoint item
           required: true
           schema:
-            type: string
+            type: number
       responses:
         200:
           description: successful operation

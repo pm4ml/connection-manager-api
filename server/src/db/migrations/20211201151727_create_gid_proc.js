@@ -8,14 +8,18 @@
  *       Yevhen Kyriukha - yevhen.kyriukha@modusbox.com                   *
  ************************************************************************* */
 
-const { knex } = require('../db/database');
+exports.up = (knex) =>
+  knex.raw(`
+    CREATE PROCEDURE create_gid()
+    BEGIN
+        SET @update_id := 0;
+        UPDATE gid
+        SET id = id + 1,
+            id = (SELECT @update_id := id)
+        LIMIT 1;
+        SELECT @update_id as id;
+    END
+  `);
 
-exports.createID = async () => {
-  const result = await knex.raw('CALL create_gid');
-  return result?.[0]?.[0]?.[0]?.id;
-};
-
-if (process.env.TEST) {
-  exports.globalId = 1;
-  exports.createID = async () => exports.globalId++;
-}
+exports.down = (knex) =>
+  knex.raw('DROP PROCEDURE IF EXISTS create_gid');
