@@ -26,10 +26,6 @@ on:
   # published for a release.
   release:
     types: [published]
-  push:
-    branches:
-      - '**'
-  pull_request:
 
 jobs:
   main:
