@@ -39,7 +39,7 @@ describe('first login', () => {
   });
 
   it('should return first time login flag and userguid', async () => {
-    let loginResponseObj = {
+    const loginResponseObj = {
       access_token: 'XXXX',
       id_token: 'eyJ4NXQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJraWQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJhbGciOiJIUzUxMiJ9.eyJhdF9oYXNoIjoidFMzdkRvb1NkQmtaWkt1d2VCcGtGUSIsImFza1Bhc3N3b3JkIjoidHJ1ZSIsImF1ZCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsInN1YiI6ImdyZWcxIiwidXNlcmd1aWQiOiI2MjQ5MWUxNi03ZDRiLTQ1MDQtOTc1YS0wMzEzYzEzMjA5NGYiLCJuYmYiOjE1Njc3Njc5OTQsImF6cCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsImFtciI6WyJwYXNzd29yZCJdLCJpc3MiOiJodHRwczovL2RldmludDF3c28yaXNrbS5jYXNhaHViLmxpdmU6OTQ0My9vYXV0aDIvdG9rZW4iLCJncm91cHMiOiJJbnRlcm5hbC9ldmVyeW9uZSIsImV4cCI6MTU2Nzc3MTU5NCwiaWF0IjoxNTY3NzY3OTk0fQ._5bwdqhh07oyvw2gDDE8sFNbM7Gy6Cd0ohavWPUsGvIPxOcM_OcWWW0MjD59r15dtUwHlAAR8JqMjemjQ0SJxQ'
     };
@@ -48,7 +48,7 @@ describe('first login', () => {
 
     Constants.OAUTH.AUTH_ENABLED = true;
 
-    let response = await LoginService.loginUser('user1', 'password1');
+    const response = await LoginService.loginUser('user1', 'password1');
 
     // FIXME sending "true" string to UI
     assert.strictEqual(response.askPassword, true, 'Returning first time flag');
@@ -100,7 +100,7 @@ describe('2step', () => {
 
   it('should return UnauthorizedError when trying to validateTotp with invalid parameters', async () => {
     Constants.AUTH_2FA.AUTH_2FA_ENABLED = true;
-    let loginResponseObj = {
+    const loginResponseObj = {
       access_token: 'XXXX',
       id_token: 'eyJ4NXQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJraWQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJhbGciOiJSUzI1NiJ9.eyJhdF9oYXNoIjoiWW91Y3c4dmpxdzFNeTdxb0d5dzd5QSIsImF1ZCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsInN1YiI6Ik1UTkJNb2JpbGVNb25leV9hZG1pbiIsIm5iZiI6MTU2NTI5NDc5MSwiYXpwIjoicGtpX2FkbWluX3BvcnRhbF9kZXZfcGtpIiwiYW1yIjpbInBhc3N3b3JkIl0sImlzcyI6Imh0dHBzOlwvXC9kZXZpbnQxd3NvMmlza20uY2FzYWh1Yi5saXZlOjk0NDNcL29hdXRoMlwvdG9rZW4iLCJncm91cHMiOlsiQXBwbGljYXRpb25cL01UQSIsIkFwcGxpY2F0aW9uXC9ERlNQOk1UTkJNb2JpbGVNb25leSIsIkludGVybmFsXC9ldmVyeW9uZSJdLCJleHAiOjE1NjUyOTgzOTEsImlhdCI6MTU2NTI5NDc5MX0.c4ytKGi32h1fIHkuycr2-QQP5KEWX237SpHEixbtEzydW3LA0DTqoOwTWGV1sL9XnqrAMbR6wAONQiAVsmrzyyaLCyAFpA5waqztDsMMj-6UIHAWjea13SOTNTjjU6H8B6ooP1Q9RjGM_BP-s-vtN9BS_28HniGo7XOH0Z-uHy29U7xlzM7gq1w8mb3km40t7nnaIDnuCnmDqyvmPRUtVazPUJkRxHePUfunZo_u4XYcgv-8uIhJkcfIu0Rk-NIsqjFLxF5wcC3iusXlhpQmJwPJdXtS00NgzuHBh5L3CfEGCQlRHa-KZ7MYAlpq0WN9Ww_qCf-w6sMKgnYceipUmQ'
     };
@@ -117,7 +117,7 @@ describe('2step', () => {
 
   it('should return error when setEnrolled call to WSO2 server fails', async () => {
     Constants.AUTH_2FA.AUTH_2FA_ENABLED = true;
-    let loginResponseObj = {
+    const loginResponseObj = {
       access_token: 'XXXX',
       id_token: 'eyJ4NXQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJraWQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJhbGciOiJSUzI1NiJ9.eyJhdF9oYXNoIjoiWW91Y3c4dmpxdzFNeTdxb0d5dzd5QSIsImF1ZCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsInN1YiI6Ik1UTkJNb2JpbGVNb25leV9hZG1pbiIsIm5iZiI6MTU2NTI5NDc5MSwiYXpwIjoicGtpX2FkbWluX3BvcnRhbF9kZXZfcGtpIiwiYW1yIjpbInBhc3N3b3JkIl0sImlzcyI6Imh0dHBzOlwvXC9kZXZpbnQxd3NvMmlza20uY2FzYWh1Yi5saXZlOjk0NDNcL29hdXRoMlwvdG9rZW4iLCJncm91cHMiOlsiQXBwbGljYXRpb25cL01UQSIsIkFwcGxpY2F0aW9uXC9ERlNQOk1UTkJNb2JpbGVNb25leSIsIkludGVybmFsXC9ldmVyeW9uZSJdLCJleHAiOjE1NjUyOTgzOTEsImlhdCI6MTU2NTI5NDc5MX0.c4ytKGi32h1fIHkuycr2-QQP5KEWX237SpHEixbtEzydW3LA0DTqoOwTWGV1sL9XnqrAMbR6wAONQiAVsmrzyyaLCyAFpA5waqztDsMMj-6UIHAWjea13SOTNTjjU6H8B6ooP1Q9RjGM_BP-s-vtN9BS_28HniGo7XOH0Z-uHy29U7xlzM7gq1w8mb3km40t7nnaIDnuCnmDqyvmPRUtVazPUJkRxHePUfunZo_u4XYcgv-8uIhJkcfIu0Rk-NIsqjFLxF5wcC3iusXlhpQmJwPJdXtS00NgzuHBh5L3CfEGCQlRHa-KZ7MYAlpq0WN9Ww_qCf-w6sMKgnYceipUmQ'
     };
@@ -142,7 +142,7 @@ describe('change password', () => {
     userguid: '93f0b639-2d7e-4e99-84d0-eeff58c48283'
   };
   it('should call WSO2 change password endpoint once', async () => {
-    let wso2ClientPasswordMock = sinon.mock(Wso2Client)
+    const wso2ClientPasswordMock = sinon.mock(Wso2Client)
       .expects('resetPassword')
       .withExactArgs(testUser.username, testUser.newPassword, testUser.userguid)
       .returns({});

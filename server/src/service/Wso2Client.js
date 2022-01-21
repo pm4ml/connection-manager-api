@@ -29,12 +29,10 @@ exports.getToken = async (username, password) => {
   };
 
   try {
-    debugger;
-    let url = Constants.OAUTH.OAUTH2_ISSUER;
-    let loginResponse = await rp.post(url).form(form).auth(Constants.OAUTH.APP_OAUTH_CLIENT_KEY, Constants.OAUTH.APP_OAUTH_CLIENT_SECRET); // MP-757
+    const url = Constants.OAUTH.OAUTH2_ISSUER;
+    const loginResponse = await rp.post(url).form(form).auth(Constants.OAUTH.APP_OAUTH_CLIENT_KEY, Constants.OAUTH.APP_OAUTH_CLIENT_SECRET); // MP-757
     console.log(`Wso2Client.getToken received ${loginResponse}`);
-    let loginResponseObj = JSON.parse(loginResponse);
-    return loginResponseObj;
+    return JSON.parse(loginResponse);
   } catch (error) {
     if (error && error.statusCode === 400 && error.message.includes('Authentication failed')) {
       throw new UnauthorizedError(`Authentication failed for user ${username}`, error.error);
@@ -60,11 +58,11 @@ exports.resetPassword = async (username, newPassword, userguid) => {
       'Content-Type': 'application/json'
     },
     body: {
-      'userName': username,
-      'password': newPassword,
-      'EnterpriseUser':
+      userName: username,
+      password: newPassword,
+      EnterpriseUser:
         {
-          'askPassword': false
+          askPassword: false
         }
 
     },
@@ -75,7 +73,7 @@ exports.resetPassword = async (username, newPassword, userguid) => {
     },
   };
   try {
-    let response = await rp(options); // MP-757
+    const response = await rp(options); // MP-757
     return response;
   } catch (error) {
     if (error && (error.statusCode === 404 || error.statusCode === 400)) {
