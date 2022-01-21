@@ -137,28 +137,6 @@ module.exports = {
       .default('./data/sampleConfiguration.json')
       .asString(),
   },
-  ENVIRONMENT_INIT: {
-    initEnvironment: env.get('ENV_INIT_NAME').asString(),
-    config: {
-      name: env.get('ENV_INIT_NAME').asString(),
-      defaultDN: {
-        CN: env.get('ENV_INIT_CN').asString(),
-        C: env.get('ENV_INIT_C').asString(),
-        L: env.get('ENV_INIT_L').asString(),
-        O: env.get('ENV_INIT_O').asString(),
-        OU: env.get('ENV_INIT_OU').asString(),
-        ST: env.get('ENV_INIT_ST').asString(),
-      },
-    },
-  },
-  USER_INIT: {
-    // Required if user init is desirable
-    dfspId: env.get('USER_INIT_DFSP_ID').asString(),
-    name: env.get('USER_INIT_NAME').asString(),
-    // Optional
-    monetaryZone: env.get('USER_INIT_MONETARY_ZONE').asString(),
-    securityGroup: env.get('USER_INIT_SECURITY_GROUP').asString(),
-  },
   vault: {
     endpoint: env.get('VAULT_ENDPOINT').required().asString(),
     mounts: {

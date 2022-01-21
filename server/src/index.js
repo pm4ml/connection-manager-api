@@ -37,17 +37,6 @@ const run = async ({
 
   const appConnected = await connect();
 
-  // Initialise state
-  if (constants.ENVIRONMENT_INIT.initEnvironment) {
-    if (constants.USER_INIT.dfspId && constants.USER_INIT.name) {
-      console.log('Creating user with config:');
-      console.log(constants.USER_INIT);
-      const result = await createDFSP(constants.USER_INIT);
-      console.log('Created user:');
-      console.log(result);
-    }
-  }
-
   // Start the server
   http.createServer(appConnected).listen(serverPort, function () {
     console.log('Connection-Manager API server is listening on port %d (http://localhost:%d)', serverPort, serverPort);
