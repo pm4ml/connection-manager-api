@@ -20,8 +20,8 @@
 const utils = require('../utils/writer.js');
 const Login = require('../service/LoginService');
 
-exports.loginUser = function login (req, res, next, username, password) {
-  Login.loginUser(username, password, req, res)
+exports.loginUser = function login (req, res, next, body) {
+  Login.loginUser(body, req, res)
     .then(function (response) {
       utils.writeJson(res, response);
     })

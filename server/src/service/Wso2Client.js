@@ -73,8 +73,7 @@ exports.resetPassword = async (username, newPassword, userguid) => {
     },
   };
   try {
-    const response = await rp(options); // MP-757
-    return response;
+    return await rp(options); // MP-757
   } catch (error) {
     if (error && (error.statusCode === 404 || error.statusCode === 400)) {
       throw new UnauthorizedError(`Authentication failed for user ${username}`, error.error);

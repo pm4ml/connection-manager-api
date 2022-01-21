@@ -31,7 +31,8 @@ const PASSWORD_RESET = 'askPassword';
  * Logs the user in.
  * If successful, sets the JWT token in a cookie and returns the token payload
  */
-exports.loginUser = async function (username, password, req, res) {
+exports.loginUser = async function (body, req, res) {
+  const { username, password } = body;
   if (!Constants.OAUTH.AUTH_ENABLED) {
     return {
       ok: false,
@@ -80,12 +81,10 @@ exports.loginUser = async function (username, password, req, res) {
 
 // Just in case we need more information from WSO2 response, we created a new object
 const buildFirstLoginResponse = (decodedIdToken) => {
-  const response = {
+  return {
     askPassword: true,
     userguid: decodedIdToken.userguid
   };
-
-  return response;
 };
 
 const build2FAResponse = async (decodedIdToken, user) => {
@@ -177,8 +176,7 @@ exports.login2step = async (username, password, generatedToken, req, res) => {
       await wso2ManagerServiceClient.setUserClaimValue(username, ENROLLED_2FA, true);
     }
 
-    const response = buildJWTResponse(decodedIdToken, loginResponseObj.access_token, req, res);
-    return response;
+    return buildJWTResponse(decodedIdToken, loginResponseObj.access_token, req, res);
   } catch (error) {
     console.log('Error on LoginService.login2step: ', error);
     throw error;

@@ -48,7 +48,7 @@ describe('first login', () => {
 
     Constants.OAUTH.AUTH_ENABLED = true;
 
-    const response = await LoginService.loginUser('user1', 'password1');
+    const response = await LoginService.loginUser({ username: 'user1', password: 'password1' });
 
     // FIXME sending "true" string to UI
     assert.strictEqual(response.askPassword, true, 'Returning first time flag');

@@ -18,11 +18,9 @@
 'use strict';
 const { enableCustomRootCAs } = require('./utils/tlsUtils');
 const cors = require('cors');
-const fs = require('fs');
 const path = require('path');
 // const app = require('connect')();
 const oas3Tools = require('oas3-tools');
-const jsyaml = require('js-yaml');
 const logger = require('./log/logger');
 const OAuthHelper = require('./oauth/OAuthHelper');
 
@@ -38,7 +36,6 @@ exports.connect = async () => {
   await db.runKnexMigrations();
   await executeSSLCustomLogic();
   // await pkiService.init(Constants.vault);
-  setUpTempFilesManagement();
 
   // swaggerRouter configuration
   const options = {
@@ -52,7 +49,7 @@ exports.connect = async () => {
     openApiValidator: {
       validateSecurity: {
         handlers: {
-          OAuth2: Constants.OAUTH.AUTH_ENABLED ? OAuthHelper.oauth2PermissionsVerifier : () => true,
+          OAuth2: Constants.OAUTH.AUTH_ENABLED ? OAuthHelper.createOAuth2Handler() : () => true,
         }
       }
     }
@@ -95,10 +92,6 @@ exports.connect = async () => {
   app.use(cors(corsUtils.getCorsOptions)); middlewares++;
   app.use(logger.createWinstonLogger()); middlewares++;
 
-  if (Constants.OAUTH.AUTH_ENABLED) {
-    app.use('/api/environments', OAuthHelper.getOAuth2Middleware()); middlewares++;
-  }
-
   const stack = app._router.stack;
   const lastEntries = stack.splice(app._router.stack.length - middlewares);
   const firstEntries = stack.splice(0, 5);
@@ -113,22 +106,4 @@ exports.connect = async () => {
  */
 async function executeSSLCustomLogic () {
   enableCustomRootCAs();
-}
-
-/**
- * Returns the swagger doc to use
- *
- */
-function getSwaggerDoc () {
-  const spec = fs.readFileSync(path.join(__dirname, 'api/swagger.yaml'), 'utf8');
-  const swaggerDoc = jsyaml.safeLoad(spec);
-  return swaggerDoc;
-}
-
-/**
- * Configures the tmp module to clean up files on shutdon
- */
-function setUpTempFilesManagement () {
-  const tmp = require('tmp');
-  tmp.setGracefulCleanup();
 }
