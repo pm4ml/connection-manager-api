@@ -50,6 +50,7 @@ if (vaultAuthMethod === 'K8S') {
   vaultAuth = {
     k8s: {
       token: env.get('VAULT_K8S_TOKEN_FILE').default('/var/run/secrets/kubernetes.io/serviceaccount/token').asTextFileContent(),
+      mountPoint: env.get('VAULT_K8S_AUTH_MOUNT_POINT').default('kubernetes').asString(),
       role: env.get('VAULT_K8S_ROLE').required().asString(),
     },
   };

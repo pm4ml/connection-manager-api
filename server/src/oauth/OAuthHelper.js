@@ -145,7 +145,10 @@ const createOAuth2Handler = () => {
       if (err) {
         return reject(err);
       }
-      return resolve(info);
+      return resolve({
+        ...info,
+        user,
+      });
     })(req));
   return async (req, scopes, schema) => {
     const user = req.user;
@@ -153,7 +156,7 @@ const createOAuth2Handler = () => {
     const apiPath = req.openapi.openApiRoute;
     const originalUrl = req.originalUrl;
     let error = null;
-    console.log(`OAuthHelper.oauth2PermissionsVerifier: user ${util.inspect(user)} authInfo:  ${util.inspect(authInfo)} originalUrl: ${originalUrl} apiPath: ${apiPath}`);
+    console.log(`OAuthHelper.oauth2PermissionsVerifier: user ${util.inspect(authInfo.user)} authInfo:  ${util.inspect(authInfo)} originalUrl: ${originalUrl} apiPath: ${apiPath}`);
     // Now check that the user has all the roles(scopes)
     let rolesOk = false;
     if (scopes && Array.isArray(scopes) && authInfo && authInfo.roles) {

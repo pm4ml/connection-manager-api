@@ -65,6 +65,7 @@ class VaultPKIEngine extends PKIEngine {
       });
     } else if (this.auth.k8s) {
       creds = await this.vault.kubernetesLogin({
+        mount_point: this.auth.k8s.mountPoint,
         role: this.auth.k8s.role,
         jwt: this.auth.k8s.token,
       });
