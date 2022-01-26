@@ -247,11 +247,10 @@ exports.getUnprocessedEndpointItems = async function () {
 
 exports.getUnprocessedDfspItems = async function (dfspId) {
   await PkiService.validateDfsp(dfspId);
-  const items = await DFSPEndpointItemModel.findAllDfspState(dfspId, 'NEW');
-  return items;
+  return DFSPEndpointItemModel.findAllDfspState(dfspId, 'NEW');
 };
 
-exports.confirmEndpointItem = async function (dfspId, epId, a, b, c) {
+exports.confirmEndpointItem = async function (dfspId, epId) {
   return DFSPEndpointItemModel.update(dfspId, epId, { state: 'CONFIRMED' });
 };
 
@@ -286,11 +285,9 @@ exports.updateDFSPEndpoint = async function (dfspId, epId, body) {
   if (endpointItem.value) {
     endpointItem.value = JSON.stringify(endpointItem.value);
   }
-  const id = await DFSPModel.findIdByDfspId(dfspId);
-  endpointItem.dfsp_id = id;
+  endpointItem.dfsp_id = await DFSPModel.findIdByDfspId(dfspId);
 
-  const updatedEndpoint = await DFSPEndpointItemModel.update(epId, endpointItem);
-  return updatedEndpoint;
+  return DFSPEndpointItemModel.update(dfspId, epId, endpointItem);
 };
 
 exports.deleteDFSPEndpoint = async function (dfspId, epId) {

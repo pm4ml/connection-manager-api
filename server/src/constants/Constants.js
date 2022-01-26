@@ -16,7 +16,7 @@
  ******************************************************************************/
 
 const fs = require('fs');
-require('dotenv').config();
+require('dotenv/config');
 const { from } = require('env-var');
 
 function getFileContent (path) {
@@ -128,15 +128,6 @@ module.exports = {
       .get('DB_CONNECTION_RETRY_WAIT_MILLISECONDS')
       .default('1000')
       .asInt(),
-    RUN_MIGRATIONS: env.get('RUN_MIGRATIONS').default('true').asBool(),
-    CURRENCY_CODES: env
-      .get('CURRENCY_CODES')
-      .default('./data/currencyCodes.json')
-      .asString(),
-    DATA_CONFIGURATION_FILE: env
-      .get('DATA_CONFIGURATION_FILE')
-      .default('./data/sampleConfiguration.json')
-      .asString(),
   },
   vault: {
     endpoint: env.get('VAULT_ENDPOINT').required().asString(),

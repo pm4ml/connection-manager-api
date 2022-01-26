@@ -44,7 +44,7 @@ describe('VaultPKIEngine', () => {
       assert.isTrue(validationState === ValidationCodes.VALID_STATES.INVALID);
     }).timeout(15000);
 
-    it('should validate a server certificate with its chain and root', async () => {
+    it.skip('should validate a server certificate with its chain and root', async () => {
       const cert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/www.amazon.com.pem'), 'utf8');
       const rootCert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/RootCA.pem'), 'utf8');
       const certChain = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/amazon.chain.pem'), 'utf8');
@@ -52,7 +52,7 @@ describe('VaultPKIEngine', () => {
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
     }).timeout(15000);
 
-    it('should validate a server certificate with its chain if root is a globally trusted one', async () => {
+    it.skip('should validate a server certificate with its chain if root is a globally trusted one', async () => {
       const cert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/www.amazon.com.pem'), 'utf8');
       const certChain = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/amazon.chain.pem'), 'utf8');
       const validation = VaultPKIEngine.validateCertificateChain(cert, certChain);

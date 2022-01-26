@@ -17,7 +17,6 @@
 
 const Constants = require('../constants/Constants');
 const path = require('path');
-const initialConfiguration = require('./InitialDataConfiguration');
 const retry = require('async-retry');
 
 const knexOptions = {
@@ -47,16 +46,6 @@ const defaultKnex = require('knex')(knexOptions);
 
 exports.setKnex = (knexOptions) => {
   exports.knex = require('knex')(knexOptions);
-};
-
-exports.runKnexMigrations = async () => {
-  if (!Constants.DATABASE.RUN_MIGRATIONS) {
-    return;
-  }
-  console.log('Migrating');
-  await exports.knex.migrate.latest();
-  console.log('Migration done');
-  await initialConfiguration.runInitialConfigurations();
 };
 
 exports.waitForConnection = async () => {

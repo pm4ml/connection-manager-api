@@ -33,7 +33,6 @@ const Constants = require('./constants/Constants');
 exports.connect = async () => {
   await db.waitForConnection();
   Model.knex(db.knex);
-  await db.runKnexMigrations();
   await executeSSLCustomLogic();
   // await pkiService.init(Constants.vault);
 

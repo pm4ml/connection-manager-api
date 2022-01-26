@@ -152,7 +152,7 @@ describe('DfspInboundService', async function () {
     let dfspId = null;
     const DFSP_TEST_INBOUND = 'dfsp.inbound.io';
 
-    beforeEach('creating ENV and DFSP', async function () {
+    beforeEach('creating DFSP', async function () {
       this.timeout(10000);
 
       const dfsp = {
@@ -170,7 +170,7 @@ describe('DfspInboundService', async function () {
     it('should create a cert with SHA256 if specified as the signature_algorithm on the ca_config for a 2048bits csr', async () => {
       const caBody = {
         default: {
-          expiry: '43800h',
+          expiry: '44800h',
           usages: ['signing', 'key encipherment', 'client auth'],
           signature_algorithm: 'SHA256WithRSA'
         },
@@ -220,7 +220,7 @@ describe('DfspInboundService', async function () {
     it('should create a cert with SHA256 if specified as the signature_algorithm on the ca_config for a 4096bits csr', async () => {
       const caBody = {
         default: {
-          expiry: '43800h',
+          expiry: '44800h',
           usages: ['signing', 'key encipherment', 'client auth'],
           signature_algorithm: 'SHA256WithRSA'
         },

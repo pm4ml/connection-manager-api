@@ -271,7 +271,7 @@ describe('DfspNetworkConfigService', () => {
       const urlBody = { value: { url: 'http://www.sun.com' } };
       const result = await DfspNetworkConfigService.createDFSPIngressUrl(dfspId, urlBody);
 
-      const confirmed = await DfspNetworkConfigService.confirmEndpointItem(result.id);
+      const confirmed = await DfspNetworkConfigService.confirmEndpointItem(result.dfsp_id, result.id);
       assert.equal(confirmed.state, 'CONFIRMED');
     });
 

@@ -15,46 +15,20 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const path = require('path');
-const initialConfiguration = require('../src/db/InitialDataConfiguration');
-
 const { Model } = require('objection');
 
-const knexOptions = {
-  client: 'sqlite3',
-  connection: {
-    filename: ':memory:',
-  },
-  migrations: {
-    directory: path.join(__dirname, '/../src/db/migrations')
-  },
-  useNullAsDefault: true,
-  pool: {
-    afterCreate: (conn, cb) =>
-      conn.run('PRAGMA foreign_keys = ON', cb)
-  },
-};
+const db = require('../src/db/database');
 
-const { setKnex } = require('../src/db/database');
-setKnex(knexOptions);
-
-// Now set up the test DB
-
-const { knex } = require('../src/db/database');
-
-const runKnexMigrations = async () => {
-  console.log('Migrating');
-  await knex.migrate.latest();
-  console.log('Migration done');
-};
+let setup = false;
 
 exports.setupTestDB = async () => {
-  Model.knex(knex);
-  await knex.initialize();
-  await runKnexMigrations();
-  await initialConfiguration.runInitialConfigurations();
+  if (!setup) {
+    await db.waitForConnection();
+    Model.knex(db.knex);
+    setup = true;
+  }
 };
 
 exports.tearDownTestDB = async () => {
-  await knex.destroy();
+  // await db.knex.destroy();
 };

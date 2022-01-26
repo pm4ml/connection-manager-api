@@ -150,7 +150,6 @@ describe('PkiService', () => {
         dfspId: 'MTN CI',
         name: 'DFSP_B_description',
       };
-      const dd = await PkiService.getDFSPs();
       const result = await PkiService.createDFSP(dfsp);
       assert.property(result, 'id');
       assert.isNotNull(result.id);
@@ -166,7 +165,6 @@ describe('PkiService', () => {
         dfspId: 'dfsp1',
         name: 'dfsp1',
         monetaryZoneId: 'EUR'
-
       };
       const result = await PkiService.createDFSP(dfsp);
       assert.property(result, 'id');
