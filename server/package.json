@@ -38,7 +38,7 @@
     "knex": "^0.21.21",
     "moment": "^2.24.0",
     "mysql": "^2.16.0",
-    "node-forge": "^0.10.0",
+    "node-forge": "^1.0.0",
     "node-vault": "^0.9.22",
     "oas3-tools": "^2.2.3",
     "objection": "^1.6.9",
