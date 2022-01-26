@@ -130,7 +130,7 @@ describe('HubCAServiceTest', () => {
         type: 'EXTERNAL',
       };
 
-      await HubCAService.createHubCA(body);
+      await HubCAService.createExternalHubCA(body);
     }).timeout(15000);
 
     it('should create internal CA', async () => {
@@ -148,7 +148,7 @@ describe('HubCAServiceTest', () => {
           }
         }
       };
-      await HubCAService.createHubCA(body);
+      await HubCAService.createInternalHubCA(body);
     }).timeout(15000);
   });
 });

@@ -28,7 +28,7 @@ const DFSPModel = require('../src/models/DFSPModel');
 const forge = require('node-forge');
 
 const ValidationCodes = require('../src/pki_engine/ValidationCodes');
-const { createHubCA } = require('../src/service/HubCAService');
+const { createInternalHubCA } = require('../src/service/HubCAService');
 const PKIEngine = require('../src/pki_engine/VaultPKIEngine');
 
 // Sign CSR and return certificate ( what the DFSP would do )
@@ -74,7 +74,7 @@ describe('DfspOutboundService', function () {
     beforeEach('creating ENV and DFSP', async function () {
       this.timeout(10000);
 
-      await createHubCA(ROOT_CA);
+      await createInternalHubCA(ROOT_CA);
 
       const dfsp = {
         dfspId: DFSP_TEST_OUTBOUND,

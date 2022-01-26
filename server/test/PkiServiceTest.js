@@ -21,7 +21,7 @@ const PkiService = require('../src/service/PkiService');
 const assert = require('chai').assert;
 const NotFoundError = require('../src/errors/NotFoundError');
 const ValidationError = require('../src/errors/ValidationError');
-const { createHubCA, getHubCA } = require('../src/service/HubCAService');
+const { createInternalHubCA, getHubCA } = require('../src/service/HubCAService');
 
 const ROOT_CA = {
   csr: {
@@ -90,7 +90,7 @@ describe('PkiService', () => {
         }
       };
       try {
-        await createHubCA(caBody);
+        await createInternalHubCA(caBody);
         assert.fail();
       } catch (error) {
         assert.isTrue(error instanceof ValidationError);
@@ -98,7 +98,7 @@ describe('PkiService', () => {
     }).timeout(15000);
 
     it('should create a CA', async () => {
-      const result = await createHubCA(ROOT_CA);
+      const result = await createInternalHubCA(ROOT_CA);
       assert.isNotNull(result.id);
 
       const newCa = await getHubCA();
@@ -116,7 +116,7 @@ describe('PkiService', () => {
         }
       };
       try {
-        await createHubCA(caBody);
+        await createInternalHubCA(caBody);
         assert.fail();
       } catch (error) {
         assert.isTrue(error instanceof ValidationError);

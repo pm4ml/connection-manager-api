@@ -25,7 +25,7 @@ const fs = require('fs');
 const path = require('path');
 const ValidationCodes = require('../src/pki_engine/ValidationCodes');
 const ValidationError = require('../src/errors/ValidationError');
-const { createHubCA, deleteHubCA } = require('../src/service/HubCAService');
+const { createInternalHubCA, deleteHubCA } = require('../src/service/HubCAService');
 
 describe('DfspInboundService', async function () {
   before(async () => {
@@ -44,7 +44,7 @@ describe('DfspInboundService', async function () {
     beforeEach('creating ENV and DFSP', async function () {
       this.timeout(30000);
 
-      await createHubCA(ROOT_CA);
+      await createInternalHubCA(ROOT_CA);
 
       const dfsp = {
         dfspId: DFSP_TEST_INBOUND,
@@ -189,7 +189,7 @@ describe('DfspInboundService', async function () {
           ]
         }
       };
-      await createHubCA(caBody);
+      await createInternalHubCA(caBody);
 
       const csr = fs.readFileSync(path.join(__dirname, 'resources/signing_algo/sha256-2048bits.csr'), 'utf8');
       const enrollmentResult = await DfspInboundService.createDFSPInboundEnrollment(dfspId, { clientCSR: csr });
@@ -239,7 +239,7 @@ describe('DfspInboundService', async function () {
           ]
         }
       };
-      await createHubCA(caBody);
+      await createInternalHubCA(caBody);
 
       const csr = fs.readFileSync(path.join(__dirname, 'resources/signing_algo/sha256-4096bits.csr'), 'utf8');
       const enrollmentResult = await DfspInboundService.createDFSPInboundEnrollment(dfspId, { clientCSR: csr });

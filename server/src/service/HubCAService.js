@@ -32,7 +32,7 @@ const formatBody = (body, pkiEngine) => {
   };
 };
 
-const createInternalHubCA = async (body) => {
+exports.createInternalHubCA = async (body) => {
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
 
@@ -50,7 +50,7 @@ const createInternalHubCA = async (body) => {
   return info;
 };
 
-const createExternalHubCA = async (body) => {
+exports.createExternalHubCA = async (body) => {
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
 
@@ -74,10 +74,6 @@ const createExternalHubCA = async (body) => {
     await pkiEngine.setHubCACertDetails(info);
   }
   return info;
-};
-
-exports.createHubCA = async (body) => {
-  return (body.type === 'EXTERNAL') ? createExternalHubCA(body) : createInternalHubCA(body);
 };
 
 exports.getHubCA = async () => {

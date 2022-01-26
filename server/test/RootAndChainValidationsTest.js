@@ -24,7 +24,7 @@ const assert = require('chai').assert;
 const ROOT_CA = require('./Root_CA.js');
 
 const ValidationCodes = require('../src/pki_engine/ValidationCodes');
-const { createHubCA } = require('../src/service/HubCAService');
+const { createInternalHubCA } = require('../src/service/HubCAService');
 const PKIEngine = require('../src/pki_engine/VaultPKIEngine');
 const Constants = require('../src/constants/Constants');
 const DFSPModel = require('../src/models/DFSPModel');
@@ -44,7 +44,7 @@ describe('DfspPkiService', () => {
   beforeEach('creating ENV and DFSP', async function () {
     this.timeout(30000);
 
-    await createHubCA(ROOT_CA);
+    await createInternalHubCA(ROOT_CA);
 
     const dfsp = {
       dfspId: DFSP_TEST_OUTBOUND,

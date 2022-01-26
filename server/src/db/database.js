@@ -20,7 +20,7 @@ const path = require('path');
 const initialConfiguration = require('./InitialDataConfiguration');
 const retry = require('async-retry');
 
-let knexOptions = {
+const knexOptions = {
   client: 'mysql',
   version: '5.7',
   connection: {

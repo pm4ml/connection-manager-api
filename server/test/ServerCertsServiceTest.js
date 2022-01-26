@@ -24,7 +24,7 @@ const PkiService = require('../src/service/PkiService');
 const assert = require('chai').assert;
 const NotFoundError = require('../src/errors/NotFoundError');
 const ROOT_CA = require('./Root_CA');
-const { createHubCA, deleteHubCA } = require('../src/service/HubCAService');
+const { createInternalHubCA, deleteHubCA } = require('../src/service/HubCAService');
 
 const AMAZON_ROOT_CA_PATH = 'resources/amazon.com/RootCA.pem';
 const AMAZON_CHAIN_PATH = 'resources/amazon.com/amazon.chain.pem';
@@ -37,7 +37,7 @@ describe('ServerCertsService', () => {
   before(async function () {
     this.timeout(10000);
     await setupTestDB();
-    await createHubCA(ROOT_CA);
+    await createInternalHubCA(ROOT_CA);
   });
 
   after(async () => {

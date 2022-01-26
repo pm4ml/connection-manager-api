@@ -704,6 +704,35 @@ paths:
       summary: Creates a new Hub CA
       description: |
         Creates a new Hub CA.
+      operationId: createInternalHubCA
+      requestBody:
+        description: CA info
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CAInitialInfo"
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HubCAInfo'
+        400:
+          description: validation error
+          content: {}
+      security:
+      - OAuth2:
+        - pta
+      x-swagger-router-controller: HubCAController
+      x-codegen-request-body-name: body
+    put:
+      tags:
+      - Hub-Certificate-Authority
+      summary: Set a new Hub CA
+      description: |
+        Creates a new Hub CA.
 
         * rootCertificate: a root certificate used by the Hub. Can be a self-signed certificate, or a globally trusted CA like Digicert.
         * intermediateChain: list of intermediate certificates.
@@ -714,17 +743,13 @@ paths:
         * rootCertificate and no intermediateChain: The Hub uses a self-signed CA to sign its certificates.
         * no rootCertificate and intermediateChain: The Hub uses a chain of intermediate certificates ultimately signed by a trusted CA to sign its certificates.
         * rootCertificate and intermediateChain: The Hub uses a chain of intermediate certificates ultimately signed by a self-signed CA to sign its certificates.
-      operationId: createHubCA
-
+      operationId: createExternalHubCA
       requestBody:
         description: CA info
         content:
           application/json:
             schema:
-              type: object
-              oneOf:
-              - $ref: "#/components/schemas/HubCAInfoInput"
-              - $ref: "#/components/schemas/CAInitialInfo"
+              $ref: "#/components/schemas/HubCAInfoInput"
         required: true
       responses:
         200:
@@ -2387,8 +2412,6 @@ components:
       - INVALID
       - NOT_AVAILABLE
     HubCAInfoInput:
-      required:
-      - type
       type: object
       properties:
         privateKey:
@@ -2400,10 +2423,6 @@ components:
         intermediateChain:
           type: string
           description: PEM-encoded certificate
-        type:
-          type: string
-          enum:
-          - EXTERNAL
       description: Hub CA Input Body
     HubCAInfo:
       description: Hub CA Input

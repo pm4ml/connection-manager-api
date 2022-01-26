@@ -20,8 +20,18 @@
 const utils = require('../utils/writer');
 const HubCAService = require('../service/HubCAService');
 
-exports.createHubCA = function (req, res, next, body) {
-  HubCAService.createHubCA(body)
+exports.createInternalHubCA = function (req, res, next, body) {
+  HubCAService.createInternalHubCA(body)
+    .then(function (response) {
+      utils.writeJson(res, response);
+    })
+    .catch(function (response) {
+      utils.writeJson(res, response, response.status);
+    });
+};
+
+exports.createExternalHubCA = function (req, res, next, body) {
+  HubCAService.createExternalHubCA(body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
