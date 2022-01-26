@@ -59,8 +59,9 @@ exports.createDFSP = async function (body) {
  *
  * returns DFSP[]
  **/
-exports.getDFSPs = function () {
-  return DFSPModel.findAll().map(r => dfspRowToObject(r));
+exports.getDFSPs = async function () {
+  const rows = await DFSPModel.findAll();
+  return rows.map(r => dfspRowToObject(r));
 };
 
 /**
