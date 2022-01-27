@@ -72,7 +72,7 @@ exports.delete = async (id) => {
  * Gets a set of endpoints, parse the JSON in value, returning an Array of Objects
  */
 exports.findObjectByDirectionType = async (direction, type) => {
-  const rawObjects = knex.table(ENDPOINT_ITEMS_TABLE)
+  const rawObjects = await knex.table(ENDPOINT_ITEMS_TABLE)
     .where(`${ENDPOINT_ITEMS_TABLE}.direction`, direction)
     .where(`${ENDPOINT_ITEMS_TABLE}.type`, type)
     .select(`${ENDPOINT_ITEMS_TABLE}.*`);
