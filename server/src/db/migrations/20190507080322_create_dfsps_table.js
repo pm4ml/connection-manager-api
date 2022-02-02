@@ -17,9 +17,10 @@
 
 exports.up = function (knex, Promise) {
   return knex.schema.createTable('dfsps', (table) => {
-    table.increments('id', 11).primary();
+    table.increments('id').primary().unsigned().notNullable();
     table.string('name', 512).notNullable();
     table.string('identifier', 512).defaultTo(null);
+    table.index('id');
     if (!process.env.TEST) table.engine('InnoDB');
     if (!process.env.TEST) table.charset('utf8mb4');
   });

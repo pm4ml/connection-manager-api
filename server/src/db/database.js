@@ -16,12 +16,10 @@
  ******************************************************************************/
 
 const Constants = require('../constants/Constants');
-const path = require('path');
 const retry = require('async-retry');
 
 const knexOptions = {
-  client: 'mysql',
-  version: '5.7',
+  client: 'mysql2',
   connection: {
     host: Constants.DATABASE.DATABASE_HOST,
     port: Constants.DATABASE.DATABASE_PORT,
@@ -29,15 +27,10 @@ const knexOptions = {
     password: Constants.DATABASE.DATABASE_PASSWORD,
     database: Constants.DATABASE.DATABASE_SCHEMA,
     charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
   },
   pool: {
     min: 0,
     max: 10,
-  },
-  migrations: {
-    tableName: 'knex_migrations',
-    directory: path.join(__dirname, '/migrations')
   },
   asyncStackTraces: true
 };

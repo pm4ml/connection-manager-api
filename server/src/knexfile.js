@@ -12,8 +12,7 @@ const env = require('env-var');
 const path = require('path');
 
 module.exports = {
-  client: 'mysql',
-  version: '5.7',
+  client: 'mysql2',
   connection: {
     host: env.get('DATABASE_HOST').default('localhost').asString(),
     port: env.get('DATABASE_PORT').default(3306).asPortNumber(),
@@ -21,7 +20,6 @@ module.exports = {
     password: env.get('DATABASE_PASSWORD').default('mcm').asString(),
     database: env.get('DATABASE_SCHEMA').default('mcm').asString(),
     charset: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
   },
   pool: {
     min: 0,

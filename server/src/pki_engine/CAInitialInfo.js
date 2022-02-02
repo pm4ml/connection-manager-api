@@ -21,7 +21,7 @@ const Joi = require('joi');
 const caInitialInfoSchema = Joi.object().description('CA initial parameters').keys({
   default: Joi.object().description('To be used as default when generating keys, CSRs and certs').keys({
     expiry: Joi.string().description('Time duration in Go\'s time package format ( https://golang.org/pkg/time/#ParseDuration ). Example 8760h ( = 1 year )').required(),
-    usages: Joi.array().description('Key usages').required().items(Joi.string().valid(['signing', 'key encipherment', 'server auth', 'client auth'])),
+    usages: Joi.array().description('Key usages').required().items(Joi.string().valid('signing', 'key encipherment', 'server auth', 'client auth')),
     signature_algorithm: Joi.string().description('Signature algorithm to use when signing CSRs'),
   }),
   csr: Joi.object().description('CA root certificate parameters').required().keys({
@@ -36,7 +36,7 @@ const caInitialInfoSchema = Joi.object().description('CA initial parameters').ke
         L: Joi.string().description('Location'),
       })),
     key: Joi.object().description('Key generation parameters').required().keys({
-      algo: Joi.string().required().valid(['rsa', 'ecdsa']),
+      algo: Joi.string().required().valid('rsa', 'ecdsa'),
       size: Joi.number().integer().positive().multiple(256)
     })
   })
@@ -50,7 +50,7 @@ module.exports = class CAInitialInfo {
    * @param {Object} doc
    */
   constructor (doc) {
-    const result = Joi.validate(doc, caInitialInfoSchema);
+    const result = caInitialInfoSchema.validate(doc);
     if (result.error) {
       console.warn(result.error.details);
       throw new ValidationError('Invalid CAInitialInfo document', result.error.details);
