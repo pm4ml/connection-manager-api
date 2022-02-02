@@ -15,10 +15,11 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const assert = require('chai').assert;
+const { assert } = require('chai');
 const { createJwtStrategy } = require('../src/oauth/OAuthHelper');
 const passport = require('passport');
 const Constants = require('../src/constants/Constants');
+const { createContext, destroyContext } = require('./context');
 
 describe('PassportTokenVerifierTest tests', () => {
   before(() => {

@@ -20,62 +20,52 @@
 const utils = require('../utils/writer.js');
 const DfspOutbound = require('../service/DfspOutboundService');
 
-exports.createDFSPOutboundEnrollment = function createDFSPOutboundEnrollment (req, res, next, body, dfspId) {
-  DfspOutbound.createDFSPOutboundEnrollment(dfspId, body)
-    .then(function (response) {
+exports.createCSRAndDFSPOutboundEnrollment = (req, res, next, body, dfspId) => {
+  DfspOutbound.createCSRAndDFSPOutboundEnrollment(req.context, dfspId, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.createCSRAndDFSPOutboundEnrollment = function createCSRAndDFSPOutboundEnrollment (req, res, next, body, dfspId) {
-  DfspOutbound.createCSRAndDFSPOutboundEnrollment(dfspId, body)
-    .then(function (response) {
+exports.getDFSPOutboundEnrollments = (req, res, next, state, dfspId) => {
+  DfspOutbound.getDFSPOutboundEnrollments(req.context, dfspId, state)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getDFSPOutboundEnrollments = function getDFSPOutboundEnrollments (req, res, next, state, dfspId) {
-  DfspOutbound.getDFSPOutboundEnrollments(dfspId, state)
-    .then(function (response) {
+exports.getDFSPOutboundEnrollment = (req, res, next, dfspId, enId) => {
+  DfspOutbound.getDFSPOutboundEnrollment(req.context, dfspId, enId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getDFSPOutboundEnrollment = function getDFSPOutboundEnrollment (req, res, next, dfspId, enId) {
-  DfspOutbound.getDFSPOutboundEnrollment(dfspId, enId)
-    .then(function (response) {
+exports.addDFSPOutboundEnrollmentCertificate = (req, res, next, body, dfspId, enId) => {
+  DfspOutbound.addDFSPOutboundEnrollmentCertificate(req.context, dfspId, enId, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.addDFSPOutboundEnrollmentCertificate = function addDFSPOutboundEnrollmentCertificate (req, res, next, body, dfspId, enId) {
-  DfspOutbound.addDFSPOutboundEnrollmentCertificate(dfspId, enId, body)
-    .then(function (response) {
+exports.validateDFSPOutboundEnrollmentCertificate = (req, res, next, dfspId, enId) => {
+  DfspOutbound.validateDFSPOutboundEnrollmentCertificate(req.context, dfspId, enId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
-      utils.writeJson(res, response, response.status);
-    });
-};
-
-exports.validateDFSPOutboundEnrollmentCertificate = function validateDFSPOutboundEnrollmentCertificate (req, res, next, dfspId, enId) {
-  DfspOutbound.validateDFSPOutboundEnrollmentCertificate(dfspId, enId)
-    .then(function (response) {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };

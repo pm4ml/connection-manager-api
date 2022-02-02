@@ -24,7 +24,7 @@ const Constants = require('../constants/Constants');
  * Returns a claim of the user, if not find returns null
  */
 exports.getUserClaimValue = (userName, claim) => {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     soap.createClient(path.join(__dirname, '/../wsdl/RemoteUserStoreManagerService.wsdl'), (err, client) => {
       if (err) {
         return reject(new ExternalProcessError('error creating WSDL Client', null, err));
@@ -49,7 +49,7 @@ exports.getUserClaimValue = (userName, claim) => {
  * set a claim value to a user
  */
 exports.setUserClaimValue = (userName, claim, value) => {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     soap.createClient(path.join(__dirname, '/../wsdl/RemoteUserStoreManagerService.wsdl'), (err, client) => {
       if (err) {
         return reject(new ExternalProcessError('error creating WSDL Client', null, err));

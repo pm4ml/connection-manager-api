@@ -20,52 +20,52 @@
 const utils = require('../utils/writer');
 const HubCAService = require('../service/HubCAService');
 
-exports.createInternalHubCA = function (req, res, next, body) {
-  HubCAService.createInternalHubCA(body)
-    .then(function (response) {
+exports.createInternalHubCA = (req, res, next, body) => {
+  HubCAService.createInternalHubCA(req.context, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.createExternalHubCA = function (req, res, next, body) {
-  HubCAService.createExternalHubCA(body)
-    .then(function (response) {
+exports.createExternalHubCA = (req, res, next, body) => {
+  HubCAService.createExternalHubCA(req.context, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getHubCA = function (req, res, next) {
-  HubCAService.getHubCA()
-    .then(function (response) {
+exports.getHubCA = (req, res, next) => {
+  HubCAService.getHubCA(req.context)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.deleteHubCA = function (req, res, next) {
-  HubCAService.deleteHubCA()
-    .then(function (response) {
+exports.deleteHubCA = (req, res, next) => {
+  HubCAService.deleteHubCA(req.context)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.updateHubCA = function (req, res, next, body) {
-  HubCAService.updateHubCA(body)
-    .then(function (response) {
+exports.updateHubCA = (req, res, next, body) => {
+  HubCAService.updateHubCA(req.context, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };

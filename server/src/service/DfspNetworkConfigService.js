@@ -32,7 +32,7 @@ const StepEnum = Object.freeze({ ID_GENERATION: 'ID_GENERATION', ENDPOINTS: 'END
  * dfspId String ID of dfsp
  * returns inline_response_200_1
  **/
-exports.getDfspStatus = async function (dfspId) {
+exports.getDfspStatus = async (ctx, dfspId) => {
   const envStatus = [
     {
       phase: 'BUSINESS_SETUP',
@@ -138,8 +138,8 @@ exports.getDfspStatus = async function (dfspId) {
  * @param {IPEntry} body IPEntry
  * @param {String{'EGRESS'|'INGRESS'}} direction
  */
-const createDFSPIp = async function (dfspId, body, direction) {
-  await PkiService.validateDfsp(dfspId);
+const createDFSPIp = async (ctx, dfspId, body, direction) => {
+  await PkiService.validateDfsp(ctx, dfspId);
   const inputIpEntry = body.value;
   if (!inputIpEntry.address) {
     throw new ValidationError('No address received');
@@ -173,8 +173,8 @@ const createDFSPIp = async function (dfspId, body, direction) {
  * @param body {Object} InputIP DFSP egress IP
  * returns DFSPEndPointIp
  **/
-exports.createDFSPEgressIp = async function (dfspId, body) {
-  const endpointItem = await createDFSPIp(dfspId, body, 'EGRESS');
+exports.createDFSPEgressIp = async (ctx, dfspId, body) => {
+  const endpointItem = await createDFSPIp(ctx, dfspId, body, 'EGRESS');
   const id = await DFSPEndpointItemModel.create(endpointItem);
   return DFSPEndpointItemModel.findObjectById(id);
 };
@@ -186,8 +186,8 @@ exports.createDFSPEgressIp = async function (dfspId, body) {
  * body InputIP DFSP ingress IP
  * returns DFSPEndPointIp
  **/
-exports.createDFSPIngressIp = async function (dfspId, body) {
-  const endpointItem = await createDFSPIp(dfspId, body, 'INGRESS');
+exports.createDFSPIngressIp = async (ctx, dfspId, body) => {
+  const endpointItem = await createDFSPIp(ctx, dfspId, body, 'INGRESS');
   const id = await DFSPEndpointItemModel.create(endpointItem);
   return DFSPEndpointItemModel.findObjectById(id);
 };
@@ -195,16 +195,16 @@ exports.createDFSPIngressIp = async function (dfspId, body) {
 /**
  * returns DFSPEndPointIp
  */
-exports.getDFSPEgressIps = async function getDFSPEgressIp (dfspId) {
-  await PkiService.validateDfsp(dfspId);
+exports.getDFSPEgressIps = async (ctx, dfspId) => {
+  await PkiService.validateDfsp(ctx, dfspId);
   return DFSPEndpointItemModel.findObjectByDirectionType('EGRESS', 'IP', dfspId);
 };
 
 /**
  * returns DFSPEndPointIp
  */
-exports.getDFSPIngressIps = async function getDFSPIngressIps (dfspId) {
-  await PkiService.validateDfsp(dfspId);
+exports.getDFSPIngressIps = async (ctx, dfspId) => {
+  await PkiService.validateDfsp(ctx, dfspId);
   return DFSPEndpointItemModel.findObjectByDirectionType('INGRESS', 'IP', dfspId);
 };
 
@@ -216,8 +216,8 @@ exports.getDFSPIngressIps = async function getDFSPIngressIps (dfspId) {
  * body InputURL DFSP ingress URL
  * returns DFSPEndPointConfigItem
  **/
-exports.createDFSPIngressUrl = async function (dfspId, body) {
-  await PkiService.validateDfsp(dfspId);
+exports.createDFSPIngressUrl = async (ctx, dfspId, body) => {
+  await PkiService.validateDfsp(ctx, dfspId);
   const inputURLAddress = body.value;
   if (!inputURLAddress.url) {
     throw new ValidationError('No URL received');
@@ -235,40 +235,38 @@ exports.createDFSPIngressUrl = async function (dfspId, body) {
   return DFSPEndpointItemModel.findObjectById(id);
 };
 
-exports.getDFSPIngressUrls = async function getDFSPIngressUrls (dfspId) {
-  await PkiService.validateDfsp(dfspId);
+exports.getDFSPIngressUrls = async (ctx, dfspId) => {
+  await PkiService.validateDfsp(ctx, dfspId);
   return DFSPEndpointItemModel.findObjectByDirectionType('INGRESS', 'URL', dfspId);
 };
 
-exports.getUnprocessedEndpointItems = async function () {
+exports.getUnprocessedEndpointItems = async ctx => {
   const items = await DFSPEndpointItemModel.findAllEnvState('NEW');
   return items;
 };
 
-exports.getUnprocessedDfspItems = async function (dfspId) {
-  await PkiService.validateDfsp(dfspId);
+exports.getUnprocessedDfspItems = async (ctx, dfspId) => {
+  await PkiService.validateDfsp(ctx, dfspId);
   return DFSPEndpointItemModel.findAllDfspState(dfspId, 'NEW');
 };
 
-exports.confirmEndpointItem = async function (dfspId, epId) {
-  return DFSPEndpointItemModel.update(dfspId, epId, { state: 'CONFIRMED' });
-};
+exports.confirmEndpointItem = async (ctx, dfspId, epId) => DFSPEndpointItemModel.update(dfspId, epId, { state: 'CONFIRMED' });
 
-exports.getDFSPEndpoint = async function (dfspId, epId) {
-  await PkiService.validateDfsp(dfspId);
+exports.getDFSPEndpoint = async (ctx, dfspId, epId) => {
+  await PkiService.validateDfsp(ctx, dfspId);
   return DFSPEndpointItemModel.findObjectById(epId);
 };
 
-exports.getDFSPEndpoints = async function (dfspId) {
-  await PkiService.validateDfsp(dfspId);
+exports.getDFSPEndpoints = async (ctx, dfspId) => {
+  await PkiService.validateDfsp(ctx, dfspId);
   return DFSPEndpointItemModel.findObjectAll(dfspId);
 };
 
 /**
  *
  */
-exports.updateDFSPEndpoint = async function (dfspId, epId, body) {
-  await PkiService.validateDfsp(dfspId);
+exports.updateDFSPEndpoint = async (ctx, dfspId, epId, body) => {
+  await PkiService.validateDfsp(ctx, dfspId);
   await DFSPEndpointItemModel.findObjectById(epId);
 
   if (body.value && body.value.address) {
@@ -290,8 +288,8 @@ exports.updateDFSPEndpoint = async function (dfspId, epId, body) {
   return DFSPEndpointItemModel.update(dfspId, epId, endpointItem);
 };
 
-exports.deleteDFSPEndpoint = async function (dfspId, epId) {
-  await PkiService.validateDfsp(dfspId);
+exports.deleteDFSPEndpoint = async (ctx, dfspId, epId) => {
+  await PkiService.validateDfsp(ctx, dfspId);
   await DFSPEndpointItemModel.findObjectById(epId);
   await DFSPEndpointItemModel.delete(epId);
 };
@@ -314,12 +312,12 @@ const validateDirectionType = async (direction, type, epId, dfspId) => {
   }
 };
 
-exports.getDFSPIngressIpEndpoint = async (dfspId, epId) => {
+exports.getDFSPIngressIpEndpoint = async (ctx, dfspId, epId) => {
   await validateDirectionType('INGRESS', 'IP', epId, dfspId);
   return exports.getDFSPEndpoint(dfspId, epId);
 };
 
-exports.updateDFSPIngressIpEndpoint = async (dfspId, epId, body) => {
+exports.updateDFSPIngressIpEndpoint = async (ctx, dfspId, epId, body) => {
   if (body.direction) {
     if (body.direction !== 'INGRESS') {
       throw new ValidationError('Bad direction value');
@@ -338,17 +336,17 @@ exports.updateDFSPIngressIpEndpoint = async (dfspId, epId, body) => {
   return exports.updateDFSPEndpoint(dfspId, epId, body);
 };
 
-exports.deleteDFSPIngressIpEndpoint = async (dfspId, epId) => {
+exports.deleteDFSPIngressIpEndpoint = async (ctx, dfspId, epId) => {
   await validateDirectionType('INGRESS', 'IP', epId, dfspId);
   return exports.deleteDFSPEndpoint(dfspId, epId);
 };
 
-exports.getDFSPEgressIpEndpoint = async (dfspId, epId) => {
+exports.getDFSPEgressIpEndpoint = async (ctx, dfspId, epId) => {
   await validateDirectionType('EGRESS', 'IP', epId, dfspId);
   return exports.getDFSPEndpoint(dfspId, epId);
 };
 
-exports.updateDFSPEgressIpEndpoint = async (dfspId, epId, body) => {
+exports.updateDFSPEgressIpEndpoint = async (ctx, dfspId, epId, body) => {
   if (body.direction) {
     if (body.direction !== 'EGRESS') {
       throw new ValidationError('Bad direction value');
@@ -367,17 +365,17 @@ exports.updateDFSPEgressIpEndpoint = async (dfspId, epId, body) => {
   return exports.updateDFSPEndpoint(dfspId, epId, body);
 };
 
-exports.deleteDFSPEgressIpEndpoint = async (dfspId, epId) => {
+exports.deleteDFSPEgressIpEndpoint = async (ctx, dfspId, epId) => {
   await validateDirectionType('EGRESS', 'IP', epId, dfspId);
   return exports.deleteDFSPEndpoint(dfspId, epId);
 };
 
-exports.getDFSPIngressUrlEndpoint = async (dfspId, epId) => {
+exports.getDFSPIngressUrlEndpoint = async (ctx, dfspId, epId) => {
   await validateDirectionType('INGRESS', 'URL', epId, dfspId);
   return exports.getDFSPEndpoint(dfspId, epId);
 };
 
-exports.updateDFSPIngressUrlEndpoint = async (dfspId, epId, body) => {
+exports.updateDFSPIngressUrlEndpoint = async (ctx, dfspId, epId, body) => {
   if (body.direction) {
     if (body.direction !== 'INGRESS') {
       throw new ValidationError('Bad direction value');
@@ -396,7 +394,7 @@ exports.updateDFSPIngressUrlEndpoint = async (dfspId, epId, body) => {
   return exports.updateDFSPEndpoint(dfspId, epId, body);
 };
 
-exports.deleteDFSPIngressUrlEndpoint = async (dfspId, epId) => {
+exports.deleteDFSPIngressUrlEndpoint = async (ctx, dfspId, epId) => {
   await validateDirectionType('INGRESS', 'URL', epId, dfspId);
   return exports.deleteDFSPEndpoint(dfspId, epId);
 };

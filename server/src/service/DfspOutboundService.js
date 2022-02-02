@@ -18,20 +18,17 @@
 'use strict';
 const PkiService = require('./PkiService');
 const ValidationError = require('../errors/ValidationError');
-const VaultPKIEngine = require('../pki_engine/VaultPKIEngine');
 const Constants = require('../constants/Constants');
 const { createID } = require('../models/GID');
 const DFSPModel = require('../models/DFSPModel');
 
 const REQUIRED_KEY_LENGTH = 4096;
 
-const PKIEngine = new VaultPKIEngine(Constants.vault);
-
 /**
  * Creates a CSR, signed by the environment CA. Creates an OutboundEnrollment, associate the CSR to it, and set its state to CSR_LOADED.
  */
-exports.createCSRAndDFSPOutboundEnrollment = async function (dfspId, body) {
-  await PkiService.validateDfsp(dfspId);
+exports.createCSRAndDFSPOutboundEnrollment = async (ctx, dfspId, body) => {
+  await PkiService.validateDfsp(ctx, dfspId);
   const csrParameters = body;
   if (!csrParameters.subject) {
     throw new ValidationError('No subject specified');
@@ -53,8 +50,7 @@ exports.createCSRAndDFSPOutboundEnrollment = async function (dfspId, body) {
     throw new ValidationError('Must specify a DNS or IP subjectAltName');
   }
 
-  const pkiEngine = new VaultPKIEngine(Constants.vault);
-  await pkiEngine.connect();
+  const { pkiEngine } = ctx;
 
   const { csr, privateKey } = await pkiEngine.createCSR(csrParameters, REQUIRED_KEY_LENGTH);
   const csrInfo = pkiEngine.getCSRInfo(csr);
@@ -76,10 +72,9 @@ exports.createCSRAndDFSPOutboundEnrollment = async function (dfspId, body) {
 /**
  * Get a list of DFSP Outbound enrollments
  */
-exports.getDFSPOutboundEnrollments = async function (dfspId, state) {
-  await PkiService.validateDfsp(dfspId);
-  const pkiEngine = new VaultPKIEngine(Constants.vault);
-  await pkiEngine.connect();
+exports.getDFSPOutboundEnrollments = async (ctx, dfspId, state) => {
+  await PkiService.validateDfsp(ctx, dfspId);
+  const { pkiEngine } = ctx;
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   const enrollments = await pkiEngine.getDFSPOutboundEnrollments(dbDfspId);
   return enrollments.filter((en) => en.state === state).map(({ key, ...en }) => en);
@@ -92,10 +87,9 @@ exports.getDFSPOutboundEnrollments = async function (dfspId, state) {
  * enId String Enrollment id
  * returns OutboundEnrollment
  **/
-exports.getDFSPOutboundEnrollment = async function (dfspId, enId) {
-  await PkiService.validateDfsp(dfspId);
-  const pkiEngine = new VaultPKIEngine(Constants.vault);
-  await pkiEngine.connect();
+exports.getDFSPOutboundEnrollment = async (ctx, dfspId, enId) => {
+  await PkiService.validateDfsp(ctx, dfspId);
+  const { pkiEngine } = ctx;
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   const { key, ...en } = await pkiEngine.getDFSPOutboundEnrollment(dbDfspId, enId);
   return en;
@@ -109,22 +103,21 @@ exports.getDFSPOutboundEnrollment = async function (dfspId, enId) {
  * body DFSPOutboundCertificate DFSP outbound certificate
  * returns the enrollment
  **/
-exports.addDFSPOutboundEnrollmentCertificate = async function (dfspId, enId, body) {
-  await PkiService.validateDfsp(dfspId);
+exports.addDFSPOutboundEnrollmentCertificate = async (ctx, dfspId, enId, body) => {
+  await PkiService.validateDfsp(ctx, dfspId);
   const certificate = body.certificate;
   let certInfo;
+  const { pkiEngine } = ctx;
   try {
-    certInfo = PKIEngine.getCertInfo(certificate);
+    certInfo = pkiEngine.getCertInfo(certificate);
   } catch (error) {
     throw new ValidationError('Could not parse the Certificate content', error);
   }
 
-  const pkiEngine = new VaultPKIEngine(Constants.vault);
-  await pkiEngine.connect();
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   const outboundEnrollment = await pkiEngine.getDFSPOutboundEnrollment(dbDfspId, enId);
 
-  const dfspCA = await PkiService.getDFSPca(dfspId);
+  const dfspCA = await PkiService.getDFSPca(ctx, dfspId);
 
   const enrollment = {
     csr: outboundEnrollment.csr,
@@ -162,15 +155,14 @@ exports.addDFSPOutboundEnrollmentCertificate = async function (dfspId, enId, bod
  * enId String Enrollment id
  * returns the enrollment
  **/
-exports.validateDFSPOutboundEnrollmentCertificate = async function (dfspId, enId) {
-  await PkiService.validateDfsp(dfspId);
+exports.validateDFSPOutboundEnrollmentCertificate = async (ctx, dfspId, enId) => {
+  await PkiService.validateDfsp(ctx, dfspId);
 
-  const pkiEngine = new VaultPKIEngine(Constants.vault);
-  await pkiEngine.connect();
+  const { pkiEngine } = ctx;
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   const outboundEnrollment = await pkiEngine.getDFSPOutboundEnrollment(dbDfspId, enId);
 
-  const dfspCA = await PkiService.getDFSPca(dfspId);
+  const dfspCA = await PkiService.getDFSPca(ctx, dfspId);
 
   const enrollment = {
     csr: outboundEnrollment.csr,

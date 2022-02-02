@@ -31,7 +31,7 @@ const PASSWORD_RESET = 'askPassword';
  * Logs the user in.
  * If successful, sets the JWT token in a cookie and returns the token payload
  */
-exports.loginUser = async function (body, req, res) {
+exports.loginUser = async (ctx, body, req, res) => {
   const { username, password } = body;
   if (!Constants.OAUTH.AUTH_ENABLED) {
     return {
@@ -149,7 +149,7 @@ const buildJWTResponse = (decodedIdToken, accessToken, req, res) => {
 /**
  * Logs the user out.
  */
-exports.logoutUser = async function (req, res) {
+exports.logoutUser = async (ctx, req, res) => {
   const cookies = new Cookies(req, res);
   cookies.set(Constants.OAUTH.JWT_COOKIE_NAME);
 };
@@ -158,7 +158,7 @@ exports.logoutUser = async function (req, res) {
  * Logs the user in using two factor authentication.
  * If successful, sets the JWT token in a cookie and returns the token payload
  */
-exports.login2step = async (username, password, generatedToken, req, res) => {
+exports.login2step = async (ctx, username, password, generatedToken, req, res) => {
   if (!Constants.AUTH_2FA.AUTH_2FA_ENABLED) {
     throw new BadRequestError('2FA is not enabled');
   }
@@ -183,6 +183,6 @@ exports.login2step = async (username, password, generatedToken, req, res) => {
   }
 };
 
-exports.resetPassword = async (username, newPassword, userguid) => {
+exports.resetPassword = async (ctx, username, newPassword, userguid) => {
   await wso2Client.resetPassword(username, newPassword, userguid);
 };

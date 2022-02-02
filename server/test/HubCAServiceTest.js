@@ -17,12 +17,13 @@
 
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 const HubCAService = require('../src/service/HubCAService');
-const assert = require('chai').assert;
+const { assert } = require('chai');
 const ValidationError = require('../src/errors/ValidationError');
 const PkiService = require('../src/service/PkiService');
 const fs = require('fs');
 const path = require('path');
 const { pki } = require('node-forge');
+const { createContext, destroyContext } = require('./context');
 
 const rootCert = fs.readFileSync(path.join(__dirname, 'resources/google.com/google.com.pem'), 'utf8');
 const intermediateChain = fs.readFileSync(path.join(__dirname, 'resources/google.com/google.chain.pem'), 'utf8');
@@ -107,12 +108,15 @@ const createSelfSignedCA = () => {
 };
 
 describe('HubCAServiceTest', () => {
+  let ctx;
   before(async () => {
     await setupTestDB();
+    ctx = await createContext();
   });
 
   after(async () => {
     await tearDownTestDB();
+    destroyContext(ctx);
   });
 
   describe('input parameters validation', () => {
@@ -130,7 +134,7 @@ describe('HubCAServiceTest', () => {
         type: 'EXTERNAL',
       };
 
-      await HubCAService.createExternalHubCA(body);
+      await HubCAService.createExternalHubCA(ctx, body);
     }).timeout(15000);
 
     it('should create internal CA', async () => {
@@ -148,7 +152,7 @@ describe('HubCAServiceTest', () => {
           }
         }
       };
-      await HubCAService.createInternalHubCA(body);
+      await HubCAService.createInternalHubCA(ctx, body);
     }).timeout(15000);
   });
 });

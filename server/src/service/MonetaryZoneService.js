@@ -15,8 +15,6 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { MonetaryZone } = require('../models/MonetaryZone');
+const MonetaryZone = require('../models/MonetaryZone');
 
-exports.getMonetaryZones = async function () {
-  return MonetaryZone.findAllActive();
-};
+exports.getMonetaryZones = async ctx => MonetaryZone.findAllActive();

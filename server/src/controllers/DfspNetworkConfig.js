@@ -20,232 +20,232 @@
 const utils = require('../utils/writer.js');
 const DfspNetworkConfig = require('../service/DfspNetworkConfigService');
 
-exports.getEnvironmentDfspStatus = function getEnvironmentDfspStatus (req, res, next, dfspId) {
-  DfspNetworkConfig.getEnvironmentDfspStatus(dfspId)
-    .then(function (response) {
+exports.getDfspStatus = (req, res, next, dfspId) => {
+  DfspNetworkConfig.getDfspStatus(req.context, dfspId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.createDFSPEgressIp = function createDFSPEgressIp (req, res, next, body, dfspId) {
-  DfspNetworkConfig.createDFSPEgressIp(dfspId, body)
-    .then(function (response) {
+exports.createDFSPEgressIp = (req, res, next, body, dfspId) => {
+  DfspNetworkConfig.createDFSPEgressIp(req.context, dfspId, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.createDFSPIngressIp = function createDFSPIngressIp (req, res, next, body, dfspId) {
-  DfspNetworkConfig.createDFSPIngressIp(dfspId, body)
-    .then(function (response) {
+exports.createDFSPIngressIp = (req, res, next, body, dfspId) => {
+  DfspNetworkConfig.createDFSPIngressIp(req.context, dfspId, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.createDFSPIngressUrl = function createDFSPIngressUrl (req, res, next, body, dfspId) {
-  DfspNetworkConfig.createDFSPIngressUrl(dfspId, body)
-    .then(function (response) {
+exports.createDFSPIngressUrl = (req, res, next, body, dfspId) => {
+  DfspNetworkConfig.createDFSPIngressUrl(req.context, dfspId, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getUnprocessedEndpointItems = function getUnprocessedEndpointItems (req, res, next) {
-  DfspNetworkConfig.getUnprocessedEndpointItems()
-    .then(function (response) {
+exports.getUnprocessedEndpointItems = (req, res, next) => {
+  DfspNetworkConfig.getUnprocessedEndpointItems(req.context)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getUnprocessedDfspItems = function getUnprocessedDfspItems (req, res, next, dfspId) {
-  DfspNetworkConfig.getUnprocessedDfspItems(dfspId)
-    .then(function (response) {
+exports.getUnprocessedDfspItems = (req, res, next, dfspId) => {
+  DfspNetworkConfig.getUnprocessedDfspItems(req.context, dfspId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.confirmEndpointItem = function getUnprocessedEndpointItems (req, res, next, dfspId, epId) {
-  DfspNetworkConfig.confirmEndpointItem(dfspId, epId)
-    .then(function (response) {
+exports.confirmEndpointItem = (req, res, next, dfspId, epId) => {
+  DfspNetworkConfig.confirmEndpointItem(req.context, dfspId, epId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getDFSPIngressUrls = function getDFSPIngressUrls (req, res, next, dfspId) {
-  DfspNetworkConfig.getDFSPIngressUrls(dfspId)
-    .then(function (response) {
+exports.getDFSPIngressUrls = (req, res, next, dfspId) => {
+  DfspNetworkConfig.getDFSPIngressUrls(req.context, dfspId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getDFSPIngressIps = function getDFSPIngressIps (req, res, next, dfspId) {
-  DfspNetworkConfig.getDFSPIngressIps(dfspId)
-    .then(function (response) {
+exports.getDFSPIngressIps = (req, res, next, dfspId) => {
+  DfspNetworkConfig.getDFSPIngressIps(req.context, dfspId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getDFSPEgressIps = function getDFSPEgressIps (req, res, next, dfspId) {
-  DfspNetworkConfig.getDFSPEgressIps(dfspId)
-    .then(function (response) {
+exports.getDFSPEgressIps = (req, res, next, dfspId) => {
+  DfspNetworkConfig.getDFSPEgressIps(req.context, dfspId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.updateDFSPEndpoint = function updateDFSPEndpoint (req, res, next, body, dfspId, epId) {
-  DfspNetworkConfig.updateDFSPEndpoint(dfspId, epId, body)
-    .then(function (response) {
+exports.updateDFSPEndpoint = (req, res, next, body, dfspId, epId) => {
+  DfspNetworkConfig.updateDFSPEndpoint(req.context, dfspId, epId, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.deleteDFSPEndpoint = function deleteDFSPEndpoint (req, res, next, dfspId, epId) {
-  DfspNetworkConfig.deleteDFSPEndpoint(dfspId, epId)
-    .then(function (response) {
+exports.deleteDFSPEndpoint = (req, res, next, dfspId, epId) => {
+  DfspNetworkConfig.deleteDFSPEndpoint(req.context, dfspId, epId)
+    .then(response => {
       utils.writeJson(res, response, 204);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getDFSPEndpoints = function getDFSPEndpoints (req, res, next, dfspId) {
-  DfspNetworkConfig.getDFSPEndpoints(dfspId)
-    .then(function (response) {
+exports.getDFSPEndpoints = (req, res, next, dfspId) => {
+  DfspNetworkConfig.getDFSPEndpoints(req.context, dfspId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getDFSPEndpoint = function getDFSPEndpoint (req, res, next, dfspId, epId) {
-  DfspNetworkConfig.getDFSPEndpoint(dfspId, epId)
-    .then(function (response) {
+exports.getDFSPEndpoint = (req, res, next, dfspId, epId) => {
+  DfspNetworkConfig.getDFSPEndpoint(req.context, dfspId, epId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
 exports.getDFSPIngressIpEndpoint = (req, res, next, dfspId, epId) => {
-  DfspNetworkConfig.getDFSPIngressIpEndpoint(dfspId, epId)
-    .then(function (response) {
+  DfspNetworkConfig.getDFSPIngressIpEndpoint(req.context, dfspId, epId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
 exports.updateDFSPIngressIpEndpoint = (req, res, next, body, dfspId, epId) => {
-  DfspNetworkConfig.updateDFSPIngressIpEndpoint(dfspId, epId, body)
-    .then(function (response) {
+  DfspNetworkConfig.updateDFSPIngressIpEndpoint(req.context, dfspId, epId, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
 exports.deleteDFSPIngressIpEndpoint = (req, res, next, dfspId, epId) => {
-  DfspNetworkConfig.deleteDFSPIngressIpEndpoint(dfspId, epId)
-    .then(function (response) {
+  DfspNetworkConfig.deleteDFSPIngressIpEndpoint(req.context, dfspId, epId)
+    .then(response => {
       utils.writeJson(res, response, 204);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
 exports.getDFSPEgressIpEndpoint = (req, res, next, dfspId, epId) => {
-  DfspNetworkConfig.getDFSPEgressIpEndpoint(dfspId, epId)
-    .then(function (response) {
+  DfspNetworkConfig.getDFSPEgressIpEndpoint(req.context, dfspId, epId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
 exports.updateDFSPEgressIpEndpoint = (req, res, next, body, dfspId, epId) => {
-  DfspNetworkConfig.updateDFSPEgressIpEndpoint(dfspId, epId, body)
-    .then(function (response) {
+  DfspNetworkConfig.updateDFSPEgressIpEndpoint(req.context, dfspId, epId, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
 exports.deleteDFSPEgressIpEndpoint = (req, res, next, dfspId, epId) => {
-  DfspNetworkConfig.deleteDFSPEgressIpEndpoint(dfspId, epId)
-    .then(function (response) {
+  DfspNetworkConfig.deleteDFSPEgressIpEndpoint(req.context, dfspId, epId)
+    .then(response => {
       utils.writeJson(res, response, 204);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
 exports.getDFSPIngressUrlEndpoint = (req, res, next, dfspId, epId) => {
-  DfspNetworkConfig.getDFSPIngressUrlEndpoint(dfspId, epId)
-    .then(function (response) {
+  DfspNetworkConfig.getDFSPIngressUrlEndpoint(req.context, dfspId, epId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
 exports.updateDFSPIngressUrlEndpoint = (req, res, next, body, dfspId, epId) => {
-  DfspNetworkConfig.updateDFSPIngressUrlEndpoint(dfspId, epId, body)
-    .then(function (response) {
+  DfspNetworkConfig.updateDFSPIngressUrlEndpoint(req.context, dfspId, epId, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
 exports.deleteDFSPIngressUrlEndpoint = (req, res, next, dfspId, epId) => {
-  DfspNetworkConfig.deleteDFSPIngressUrlEndpoint(dfspId, epId)
-    .then(function (response) {
+  DfspNetworkConfig.deleteDFSPIngressUrlEndpoint(req.context, dfspId, epId)
+    .then(response => {
       utils.writeJson(res, response, 204);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };

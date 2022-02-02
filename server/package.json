@@ -41,7 +41,6 @@
     "node-forge": "^0.10.0",
     "node-vault": "^0.9.22",
     "oas3-tools": "^2.2.3",
-    "objection": "^1.6.9",
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
     "request": "^2.88.0",
@@ -49,9 +48,6 @@
     "sinon": "^7.4.1",
     "snazzy": "^8.0.0",
     "soap": "^0.35.0",
-    "sqlite3": "^5.0.2",
-    "swagger-tools": "^0.10.4",
-    "tmp-promise": "^1.0.5",
     "winston": "^3.2.1",
     "xml2js": "^0.4.19"
   },

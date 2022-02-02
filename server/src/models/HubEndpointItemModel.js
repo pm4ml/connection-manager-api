@@ -26,8 +26,7 @@ exports.findById = async (id) => {
   if (rows.length === 0) {
     throw new NotFoundError('Item with id: ' + id);
   } else if (rows.length === 1) {
-    const row = rows[0];
-    return row;
+    return rows[0];
   } else {
     throw new InternalError('E_TOO_MANY_ROWS');
   }
@@ -36,8 +35,10 @@ exports.findById = async (id) => {
 const rowToObject = (rawObject) => {
   const ipEntry = JSON.parse(rawObject.value);
   delete rawObject.value;
-  const denormObject = { ...rawObject, value: ipEntry };
-  return denormObject;
+  return {
+    ...rawObject,
+    value: ipEntry
+  };
 };
 
 /**

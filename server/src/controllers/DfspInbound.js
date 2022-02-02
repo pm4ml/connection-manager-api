@@ -20,8 +20,8 @@
 const utils = require('../utils/writer.js');
 const DfspInbound = require('../service/DfspInboundService');
 
-exports.createDFSPInboundEnrollment = function createDFSPInboundEnrollment (req, res, next, body, dfspId) {
-  DfspInbound.createDFSPInboundEnrollment(dfspId, body)
+exports.createDFSPInboundEnrollment = (req, res, next, body, dfspId) => {
+  DfspInbound.createDFSPInboundEnrollment(req.context, dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -30,8 +30,8 @@ exports.createDFSPInboundEnrollment = function createDFSPInboundEnrollment (req,
     });
 };
 
-exports.getDFSPInboundEnrollments = function getDFSPInboundEnrollments (req, res, next, dfspId) {
-  DfspInbound.getDFSPInboundEnrollments(dfspId)
+exports.getDFSPInboundEnrollments = (req, res, next, dfspId) => {
+  DfspInbound.getDFSPInboundEnrollments(req.context, dfspId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -40,8 +40,8 @@ exports.getDFSPInboundEnrollments = function getDFSPInboundEnrollments (req, res
     });
 };
 
-exports.getDFSPInboundEnrollment = function getDFSPInboundEnrollment (req, res, next, dfspId, enId) {
-  DfspInbound.getDFSPInboundEnrollment(dfspId, enId)
+exports.getDFSPInboundEnrollment = (req, res, next, dfspId, enId) => {
+  DfspInbound.getDFSPInboundEnrollment(req.context, dfspId, enId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -50,8 +50,8 @@ exports.getDFSPInboundEnrollment = function getDFSPInboundEnrollment (req, res, 
     });
 };
 
-exports.signDFSPInboundEnrollment = function signDFSPInboundEnrollment (req, res, next, dfspId, enId) {
-  DfspInbound.signDFSPInboundEnrollment(dfspId, enId)
+exports.signDFSPInboundEnrollment = (req, res, next, dfspId, enId) => {
+  DfspInbound.signDFSPInboundEnrollment(req.context, dfspId, enId)
     .then(function (response) {
       utils.writeJson(res, response);
     })

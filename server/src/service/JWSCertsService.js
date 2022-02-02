@@ -17,20 +17,18 @@
 
 'use strict';
 const DFSPModel = require('../models/DFSPModel');
-const PKIEngine = require('../pki_engine/VaultPKIEngine');
 const PkiService = require('./PkiService');
 const ValidationError = require('../errors/ValidationError');
 const Constants = require('../constants/Constants');
 
-exports.createDfspJWSCerts = async (dfspId, body) => {
+exports.createDfspJWSCerts = async (ctx, dfspId, body) => {
   if (body === null || typeof body === 'undefined') {
     throw new ValidationError(`Invalid body ${body}`);
   }
 
-  await PkiService.validateDfsp(dfspId);
+  await PkiService.validateDfsp(ctx, dfspId);
 
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+  const { pkiEngine } = ctx;
   const { validations, validationState } = pkiEngine.validateJWSCertificate(body.publicKey);
   const jwsData = {
     dfspId,
@@ -43,28 +41,25 @@ exports.createDfspJWSCerts = async (dfspId, body) => {
   return jwsData;
 };
 
-exports.updateDfspJWSCerts = async (dfspId, body) => {
+exports.updateDfspJWSCerts = async (ctx, dfspId, body) => {
   return exports.createDfspJWSCerts(dfspId, body);
 };
 
-exports.getDfspJWSCerts = async (dfspId) => {
-  await PkiService.validateDfsp(dfspId);
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+exports.getDfspJWSCerts = async (ctx, dfspId) => {
+  await PkiService.validateDfsp(ctx, dfspId);
+  const { pkiEngine } = ctx;
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   return pkiEngine.getDFSPJWSCerts(dbDfspId);
 };
 
-exports.deleteDfspJWSCerts = async (dfspId) => {
-  await PkiService.validateDfsp(dfspId);
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+exports.deleteDfspJWSCerts = async (ctx, dfspId) => {
+  await PkiService.validateDfsp(ctx, dfspId);
+  const { pkiEngine } = ctx;
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   await pkiEngine.deleteDFSPJWSCerts(dbDfspId);
 };
 
-exports.getAllDfspJWSCerts = async () => {
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+exports.getAllDfspJWSCerts = async (ctx) => {
+  const { pkiEngine } = ctx;
   return pkiEngine.getAllDFSPJWSCerts();
 };

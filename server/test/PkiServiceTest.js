@@ -18,10 +18,11 @@
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 
 const PkiService = require('../src/service/PkiService');
-const assert = require('chai').assert;
+const { assert } = require('chai');
 const NotFoundError = require('../src/errors/NotFoundError');
 const ValidationError = require('../src/errors/ValidationError');
 const { createInternalHubCA, getHubCA } = require('../src/service/HubCAService');
+const { createContext, destroyContext } = require('./context');
 
 const ROOT_CA = {
   csr: {
@@ -53,12 +54,15 @@ const ROOT_CA = {
 };
 
 describe('PkiService', () => {
+  let ctx;
   before(async () => {
     await setupTestDB();
+    ctx = await createContext();
   });
 
   after(async () => {
     await tearDownTestDB();
+    destroyContext(ctx);
   });
 
   describe('CA', () => {
@@ -90,7 +94,7 @@ describe('PkiService', () => {
         }
       };
       try {
-        await createInternalHubCA(caBody);
+        await createInternalHubCA(ctx, caBody);
         assert.fail();
       } catch (error) {
         assert.isTrue(error instanceof ValidationError);
@@ -98,10 +102,10 @@ describe('PkiService', () => {
     }).timeout(15000);
 
     it('should create a CA', async () => {
-      const result = await createInternalHubCA(ROOT_CA);
+      const result = await createInternalHubCA(ctx, ROOT_CA);
       assert.isNotNull(result.id);
 
-      const newCa = await getHubCA();
+      const newCa = await getHubCA(ctx);
       assert.isNotNull(newCa);
     }).timeout(15000);
 
@@ -116,7 +120,7 @@ describe('PkiService', () => {
         }
       };
       try {
-        await createInternalHubCA(caBody);
+        await createInternalHubCA(ctx, caBody);
         assert.fail();
       } catch (error) {
         assert.isTrue(error instanceof ValidationError);
@@ -136,12 +140,12 @@ describe('PkiService', () => {
         dfspId: 'DFSP_B',
         name: 'DFSP_B_description'
       };
-      const result = await PkiService.createDFSP(dfsp);
+      const result = await PkiService.createDFSP(ctx, dfsp);
       assert.property(result, 'id');
       assert.isNotNull(result.id);
-      const saved = await PkiService.getDFSPById(result.id);
+      const saved = await PkiService.getDFSPById(ctx, result.id);
       assert.equal(saved.name, dfsp.name);
-      const deleted = await PkiService.deleteDFSP(result.id);
+      const deleted = await PkiService.deleteDFSP(ctx, result.id);
       assert.equal(deleted, 1);
     });
 
@@ -150,13 +154,13 @@ describe('PkiService', () => {
         dfspId: 'MTN CI',
         name: 'DFSP_B_description',
       };
-      const result = await PkiService.createDFSP(dfsp);
+      const result = await PkiService.createDFSP(ctx, dfsp);
       assert.property(result, 'id');
       assert.isNotNull(result.id);
-      const saved = await PkiService.getDFSPById(result.id);
+      const saved = await PkiService.getDFSPById(ctx, result.id);
       assert.equal(saved.name, dfsp.name);
       assert.equal(saved.securityGroup, 'Application/DFSP:MTN-CI');
-      const deleted = await PkiService.deleteDFSP(result.id);
+      const deleted = await PkiService.deleteDFSP(ctx, result.id);
       assert.equal(deleted, 1);
     });
 
@@ -166,13 +170,13 @@ describe('PkiService', () => {
         name: 'dfsp1',
         monetaryZoneId: 'EUR'
       };
-      const result = await PkiService.createDFSP(dfsp);
+      const result = await PkiService.createDFSP(ctx, dfsp);
       assert.property(result, 'id');
       assert.isNotNull(result.id);
-      const saved = await PkiService.getDFSPById(result.id);
+      const saved = await PkiService.getDFSPById(ctx, result.id);
       assert.equal(saved.name, dfsp.name);
       assert.equal(saved.monetaryZoneId, dfsp.monetaryZoneId);
-      const deleted = await PkiService.deleteDFSP(result.id);
+      const deleted = await PkiService.deleteDFSP(ctx, result.id);
       assert.equal(deleted, 1);
     });
 
@@ -182,18 +186,18 @@ describe('PkiService', () => {
         name: 'dfsp1'
       };
 
-      await PkiService.createDFSP(dfsp);
+      await PkiService.createDFSP(ctx, dfsp);
 
       // remove the mz
       const newDfsp = { dfspId: dfsp.dfspId, monetaryZoneId: 'MAD' };
-      const result = await PkiService.updateDFSP(dfsp.dfspId, newDfsp);
+      const result = await PkiService.updateDFSP(ctx, dfsp.dfspId, newDfsp);
       assert.equal(result.name, dfsp.name);
       assert.equal(result.monetaryZoneId, 'MAD');
 
-      const saved = await PkiService.getDFSPById(dfsp.dfspId);
+      const saved = await PkiService.getDFSPById(ctx, dfsp.dfspId);
       assert.equal(saved.name, dfsp.name);
       assert.equal(saved.monetaryZoneId, 'MAD');
-      const deleted = await PkiService.deleteDFSP(dfsp.dfspId);
+      const deleted = await PkiService.deleteDFSP(ctx, dfsp.dfspId);
       assert.equal(deleted, 1);
     });
 
@@ -204,19 +208,19 @@ describe('PkiService', () => {
         monetaryZoneId: 'EUR'
 
       };
-      await PkiService.createDFSP(dfsp);
+      await PkiService.createDFSP(ctx, dfsp);
 
       // remove the mz
       const newDfsp = { ...dfsp, monetaryZoneId: null };
-      const result = await PkiService.updateDFSP(dfsp.dfspId, newDfsp);
+      const result = await PkiService.updateDFSP(ctx, dfsp.dfspId, newDfsp);
       assert.equal(result.name, dfsp.name);
       assert.equal(result.monetaryZoneId, null);
 
-      const saved = await PkiService.getDFSPById(dfsp.dfspId);
+      const saved = await PkiService.getDFSPById(ctx, dfsp.dfspId);
       assert.equal(saved.name, dfsp.name);
       assert.equal(saved.monetaryZoneId, null);
 
-      const deleted = await PkiService.deleteDFSP(dfsp.dfspId);
+      const deleted = await PkiService.deleteDFSP(ctx, dfsp.dfspId);
       assert.equal(deleted, 1);
     });
   });

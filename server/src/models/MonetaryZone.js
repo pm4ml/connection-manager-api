@@ -15,50 +15,10 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { BaseModel } = require('./BaseModel');
-const { Model } = require('objection');
-const { Currency } = require('./Currency');
-const monetaryZoneSchema = require('../../src/db/validators/monetaryZoneSchema');
+const { knex } = require('../db/database');
 
-class MonetaryZone extends BaseModel {
-  static get jsonSchema () {
-    return monetaryZoneSchema;
-  }
+const MONETARY_ZONE_TABLE = 'monetaryZone';
 
-  static get tableName () {
-    return 'monetaryZone';
-  }
-
-  static get idColumn () {
-    return 'monetaryZoneId';
-  }
-
-  static get relationMappings () {
-    return {
-      currency: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: Currency,
-        join: {
-          from: 'monetaryZone.monetaryZoneId',
-          to: 'currency.currencyId'
-        }
-      }
-    };
-  }
-
-  static async findById (id) {
-    return MonetaryZone.query().findById(id);
-  }
-
-  static async create (monetaryZone, trx) {
-    return MonetaryZone.query(trx).insert(monetaryZone);
-  }
-
-  static async findAllActive (trx) {
-    return MonetaryZone.query(trx).where('isActive', true);
-  }
-}
-
-module.exports = {
-  MonetaryZone
-};
+exports.findAllActive = () =>
+  knex.table(MONETARY_ZONE_TABLE).where('isActive', true)
+    .select();

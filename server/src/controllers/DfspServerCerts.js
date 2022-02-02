@@ -20,52 +20,52 @@
 const utils = require('../utils/writer.js');
 const ServerCertsService = require('../service/ServerCertsService');
 
-exports.createDfspServerCerts = function createDfspServerCerts (req, res, next, body, dfspId) {
-  ServerCertsService.createDfspServerCerts(dfspId, body)
-    .then(function (response) {
+exports.createDfspServerCerts = (req, res, next, body, dfspId) => {
+  ServerCertsService.createDfspServerCerts(req.context, dfspId, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.updateDfspServerCerts = function updateDfspServerCerts (req, res, next, body, dfspId) {
-  ServerCertsService.updateDfspServerCerts(dfspId, body)
-    .then(function (response) {
+exports.updateDfspServerCerts = (req, res, next, body, dfspId) => {
+  ServerCertsService.updateDfspServerCerts(req.context, dfspId, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getDfspServerCerts = function getDfspServerCerts (req, res, next, dfspId) {
-  ServerCertsService.getDfspServerCerts(dfspId)
-    .then(function (response) {
+exports.getDfspServerCerts = (req, res, next, dfspId) => {
+  ServerCertsService.getDfspServerCerts(req.context, dfspId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getAllDfspServerCerts = function getAllDfspServerCerts (req, res, next) {
-  ServerCertsService.getAllDfspServerCerts()
-    .then(function (response) {
+exports.getAllDfspServerCerts = (req, res, next) => {
+  ServerCertsService.getAllDfspServerCerts(req.context)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.deleteDfspServerCerts = function deleteDfspServerCerts (req, res, next, dfspId) {
-  ServerCertsService.deleteDfspServerCerts(dfspId)
-    .then(function (response) {
+exports.deleteDfspServerCerts = (req, res, next, dfspId) => {
+  ServerCertsService.deleteDfspServerCerts(req.context, dfspId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };

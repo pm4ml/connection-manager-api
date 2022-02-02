@@ -15,8 +15,6 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { Model } = require('objection');
-
 const db = require('../src/db/database');
 
 let setup = false;
@@ -24,7 +22,6 @@ let setup = false;
 exports.setupTestDB = async () => {
   if (!setup) {
     await db.waitForConnection();
-    Model.knex(db.knex);
     setup = true;
   }
 };

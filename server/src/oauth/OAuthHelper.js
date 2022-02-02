@@ -181,7 +181,7 @@ const createOAuth2Handler = () => {
     // /dfsps/jwscerts, /dfsps/{dfspId}/ca:
     if (/\/dfsps\/{dfspId}/.test(apiPath)) {
       const { dfspId } = req.openapi.pathParams;
-      return PkiService.getDFSPById(dfspId)
+      return PkiService.getDFSPById(req.context, dfspId)
         .then(dfsp => {
           const groups = authInfo.roles ? authInfo.roles : {};
           if (!dfsp.securityGroup || groups[dfsp.securityGroup]) {

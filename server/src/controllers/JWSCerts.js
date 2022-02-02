@@ -20,52 +20,52 @@
 const utils = require('../utils/writer.js');
 const JWSCertsService = require('../service/JWSCertsService');
 
-exports.createDfspJWSCerts = function createDfspJWSCerts (req, res, next, body, dfspId) {
-  JWSCertsService.createDfspJWSCerts(dfspId, body)
-    .then(function (response) {
+exports.createDfspJWSCerts = (req, res, next, body, dfspId) => {
+  JWSCertsService.createDfspJWSCerts(req.context, dfspId, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.updateDfspJWSCerts = function updateDfspJWSCerts (req, res, next, body, dfspId) {
-  JWSCertsService.updateDfspJWSCerts(dfspId, body)
-    .then(function (response) {
+exports.updateDfspJWSCerts = (req, res, next, body, dfspId) => {
+  JWSCertsService.updateDfspJWSCerts(req.context, dfspId, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getDfspJWSCerts = function getDfspJWSCerts (req, res, next, dfspId) {
-  JWSCertsService.getDfspJWSCerts(dfspId)
-    .then(function (response) {
+exports.getDfspJWSCerts = (req, res, next, dfspId) => {
+  JWSCertsService.getDfspJWSCerts(req.context, dfspId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getAllDfspJWSCerts = function getAllDfspJWSCerts (req, res, next) {
-  JWSCertsService.getAllDfspJWSCerts()
-    .then(function (response) {
+exports.getAllDfspJWSCerts = (req, res, next) => {
+  JWSCertsService.getAllDfspJWSCerts(req.context)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.deleteDfspJWSCerts = function deleteDfspJWSCerts (req, res, next, dfspId) {
-  JWSCertsService.deleteDfspJWSCerts(dfspId)
-    .then(function (response) {
+exports.deleteDfspJWSCerts = (req, res, next, dfspId) => {
+  JWSCertsService.deleteDfspJWSCerts(req.context, dfspId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };

@@ -17,30 +17,30 @@
 
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 
-const PKIEngine = require('../src/pki_engine/VaultPKIEngine');
 const fs = require('fs');
 const path = require('path');
-const assert = require('chai').assert;
+const { assert } = require('chai');
 const ValidationCodes = require('../src/pki_engine/ValidationCodes');
 const ValidationError = require('../src/errors/ValidationError');
 const moment = require('moment');
-const Constants = require('../src/constants/Constants');
+const { createContext, destroyContext } = require('./context');
 
-const VaultPKIEngine = new PKIEngine(Constants.vault);
-
-describe('VaultPKIEngine', () => {
+describe('ctx.pkiEngine', () => {
+  let ctx;
   before(async () => {
+    ctx = await createContext();
     await setupTestDB();
   });
 
   after(async () => {
     await tearDownTestDB();
+    destroyContext(ctx);
   });
 
   describe('Certificate validations', () => {
     it('should fail to validate a date-valid and usage-correct server certificate without its chain', async () => {
       const cert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/www.amazon.com.pem'), 'utf8');
-      const { validationState } = VaultPKIEngine.validateServerCertificate(cert);
+      const { validationState } = ctx.pkiEngine.validateServerCertificate(cert);
       assert.isTrue(validationState === ValidationCodes.VALID_STATES.INVALID);
     }).timeout(15000);
 
@@ -48,14 +48,14 @@ describe('VaultPKIEngine', () => {
       const cert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/www.amazon.com.pem'), 'utf8');
       const rootCert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/RootCA.pem'), 'utf8');
       const certChain = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/amazon.chain.pem'), 'utf8');
-      const validation = VaultPKIEngine.validateCertificateChain(cert, certChain, rootCert);
+      const validation = ctx.pkiEngine.validateCertificateChain(cert, certChain, rootCert);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
     }).timeout(15000);
 
     it.skip('should validate a server certificate with its chain if root is a globally trusted one', async () => {
       const cert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/www.amazon.com.pem'), 'utf8');
       const certChain = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/amazon.chain.pem'), 'utf8');
-      const validation = VaultPKIEngine.validateCertificateChain(cert, certChain);
+      const validation = ctx.pkiEngine.validateCertificateChain(cert, certChain);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID, validation.message);
     }).timeout(15000);
 
@@ -67,31 +67,31 @@ describe('VaultPKIEngine', () => {
         return;
       }
       const cert = fs.readFileSync(path.join(__dirname, 'resources/modusbox/expired/expired.pem'), 'utf8');
-      const validation = VaultPKIEngine.validateCertificateValidity(cert);
+      const validation = ctx.pkiEngine.validateCertificateValidity(cert);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.INVALID);
     }).timeout(15000);
 
     it('should validate a server certificate usage', async () => {
       const cert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/www.amazon.com.pem'), 'utf8');
-      const validation = VaultPKIEngine.validateCertificateUsageServer(cert);
+      const validation = ctx.pkiEngine.validateCertificateUsageServer(cert);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
     }).timeout(15000);
 
     it('should not validate a server certificate usage on a global root CA', async () => {
       const cert = fs.readFileSync(path.join(__dirname, 'resources/digicert/digicert.global.root.pem'), 'utf8');
-      const validation = VaultPKIEngine.validateCertificateUsageServer(cert);
+      const validation = ctx.pkiEngine.validateCertificateUsageServer(cert);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.INVALID);
     }).timeout(15000);
 
     it('should not validate a server certificate usage on a intermediate CA', async () => {
       const cert = fs.readFileSync(path.join(__dirname, 'resources/orange/Orange_Internal_G2-Server_CA.pem'), 'utf8');
-      const validation = VaultPKIEngine.validateCertificateUsageServer(cert);
+      const validation = ctx.pkiEngine.validateCertificateUsageServer(cert);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.INVALID);
     }).timeout(15000);
 
     it('should not validate an invalid CSR', async () => {
       const csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/some-serial.srl'), 'utf8');
-      const validation = await VaultPKIEngine.validateCsrSignatureValid(csr);
+      const validation = await ctx.pkiEngine.validateCsrSignatureValid(csr);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.INVALID);
     }).timeout(15000);
   });
@@ -100,28 +100,28 @@ describe('VaultPKIEngine', () => {
     it('verifyIntermediateChain for first cert in chain', async () => {
       const rootCert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Root_CA_Cert.cer'), 'utf8');
       const certChain = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Combined_Intermediate_CA_certs.pem'), 'utf8');
-      const validation = await VaultPKIEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
+      const validation = await ctx.pkiEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
     }).timeout(15000);
 
     it('verifyIntermediateChain when there is only one certificate in chain', async () => {
       const rootCert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Root_CA_Cert.cer'), 'utf8');
       const certChain = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Combined_Intermediate_CA_cert.pem'), 'utf8');
-      const validation = VaultPKIEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
+      const validation = ctx.pkiEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
     }).timeout(15000);
 
     it('verifyIntermediateChain when there is more than two certificate in chain', async () => {
       const rootCert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Root_CA_Cert.cer'), 'utf8');
       const certChain = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Combined_Intermediate_CA_certs_three.pem'), 'utf8');
-      const validation = VaultPKIEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
+      const validation = ctx.pkiEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
     }).timeout(15000);
 
     it('AMAZON - verifyIntermediateChain for first cert in chain', async () => {
       const rootCert = null;
       const certChain = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/amazon.chain.pem'), 'utf8');
-      const validation = VaultPKIEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
+      const validation = ctx.pkiEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
       assert.isTrue(validation.result === ValidationCodes.VALID_STATES.VALID);
     }).timeout(15000);
 
@@ -131,7 +131,7 @@ describe('VaultPKIEngine', () => {
       const rootCert = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/Root_CA_Cert.cer'), 'utf8');
       const certChain = fs.readFileSync(path.join(__dirname, 'resources/mp-1104/EmptyChain.pem'), 'utf8');
       try {
-        VaultPKIEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
+        ctx.pkiEngine.verifyIntermediateChain(rootCert, certChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code);
         assert.fail('Should not be here');
       } catch (error) {
         assert.isTrue(error instanceof ValidationError, error);

@@ -17,7 +17,6 @@
 
 'use strict';
 const PkiService = require('./PkiService');
-const PKIEngine = require('../pki_engine/VaultPKIEngine');
 const Constants = require('../constants/Constants');
 const ValidationCodes = require('../pki_engine/ValidationCodes');
 const ValidationError = require('../errors/ValidationError');
@@ -32,9 +31,8 @@ const formatBody = (body, pkiEngine) => {
   };
 };
 
-exports.createInternalHubCA = async (body) => {
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+exports.createInternalHubCA = async (ctx, body) => {
+  const { pkiEngine } = ctx;
 
   const { cert } = await pkiEngine.createCA(body);
   const certInfo = pkiEngine.getCertInfo(cert);
@@ -50,9 +48,8 @@ exports.createInternalHubCA = async (body) => {
   return info;
 };
 
-exports.createExternalHubCA = async (body) => {
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+exports.createExternalHubCA = async (ctx, body) => {
+  const { pkiEngine } = ctx;
 
   const rootCertificate = body.rootCertificate || '';
   const intermediateChain = body.intermediateChain || '';
@@ -76,15 +73,13 @@ exports.createExternalHubCA = async (body) => {
   return info;
 };
 
-exports.getHubCA = async () => {
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+exports.getHubCA = async (ctx) => {
+  const { pkiEngine } = ctx;
   return pkiEngine.getHubCACertDetails();
 };
 
-exports.deleteHubCA = async () => {
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+exports.deleteHubCA = async (ctx) => {
+  const { pkiEngine } = ctx;
   await pkiEngine.deleteHubCACertDetails();
   await pkiEngine.deleteCA();
 };

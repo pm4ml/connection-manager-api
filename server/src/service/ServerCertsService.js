@@ -17,18 +17,15 @@
 
 'use strict';
 const DFSPModel = require('../models/DFSPModel');
-const PKIEngine = require('../pki_engine/VaultPKIEngine');
 const PkiService = require('./PkiService');
 const ValidationError = require('../errors/ValidationError');
-const Constants = require('../constants/Constants');
 
-exports.createDfspServerCerts = async (dfspId, body) => {
+exports.createDfspServerCerts = async (ctx, dfspId, body) => {
   if (body === null || typeof body === 'undefined') {
     throw new ValidationError(`Invalid body ${body}`);
   }
-  await PkiService.validateDfsp(dfspId);
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+  await PkiService.validateDfsp(ctx, dfspId);
+  const { pkiEngine } = ctx;
   const { validations, validationState } = await pkiEngine.validateServerCertificate(body.serverCertificate, body.intermediateChain, body.rootCertificate);
 
   const certData = {
@@ -43,29 +40,26 @@ exports.createDfspServerCerts = async (dfspId, body) => {
   return certData;
 };
 
-exports.updateDfspServerCerts = async (dfspId, body) => {
-  return exports.createDfspServerCerts(dfspId, body);
+exports.updateDfspServerCerts = async (ctx, dfspId, body) => {
+  return exports.createDfspServerCerts(ctx, dfspId, body);
 };
 
-exports.getDfspServerCerts = async (dfspId) => {
-  await PkiService.validateDfsp(dfspId);
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+exports.getDfspServerCerts = async (ctx, dfspId) => {
+  await PkiService.validateDfsp(ctx, dfspId);
+  const { pkiEngine } = ctx;
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   return pkiEngine.getDFSPServerCerts(dbDfspId);
 };
 
-exports.deleteDfspServerCerts = async (dfspId) => {
-  await PkiService.validateDfsp(dfspId);
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+exports.deleteDfspServerCerts = async (ctx, dfspId) => {
+  await PkiService.validateDfsp(ctx, dfspId);
+  const { pkiEngine } = ctx;
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   await pkiEngine.deleteDFSPServerCerts(dbDfspId);
 };
 
-exports.getAllDfspServerCerts = async () => {
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+exports.getAllDfspServerCerts = async (ctx) => {
+  const { pkiEngine } = ctx;
   const allDfsps = await DFSPModel.findAll();
   return Promise.all(allDfsps.map(({ id }) => pkiEngine.getDFSPServerCerts(id)));
 };
@@ -73,12 +67,11 @@ exports.getAllDfspServerCerts = async () => {
 /**
  * Creates the server certificates
  */
-exports.createHubServerCerts = async (body) => {
+exports.createHubServerCerts = async (ctx, body) => {
   if (body === null || typeof body === 'undefined') {
     throw new ValidationError(`Invalid body ${body}`);
   }
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+  const { pkiEngine } = ctx;
   const cert = {};
   const serverCertData = await pkiEngine.createHubServerCert(body);
   cert.rootCertificate = await pkiEngine.getRootCaCert();
@@ -102,15 +95,13 @@ exports.createHubServerCerts = async (body) => {
   return certData;
 };
 
-exports.getHubServerCerts = async () => {
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+exports.getHubServerCerts = async (ctx) => {
+  const { pkiEngine } = ctx;
   return pkiEngine.getHubServerCert();
 };
 
-exports.deleteHubServerCerts = async () => {
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+exports.deleteHubServerCerts = async (ctx) => {
+  const { pkiEngine } = ctx;
   const cert = await pkiEngine.getHubServerCert();
   if (cert) {
     await pkiEngine.revokeHubServerCert(cert.serverCertificateInfo.serialNumber);

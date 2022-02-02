@@ -20,192 +20,192 @@
 const utils = require('../utils/writer.js');
 const HubNetworkConfig = require('../service/HubNetworkConfigService');
 
-exports.createHubEgressIp = function createHubEgressIp (req, res, next, body) {
-  HubNetworkConfig.createHubEgressIp(body)
-    .then(function (response) {
+exports.createHubEgressIp = (req, res, next, body) => {
+  HubNetworkConfig.createHubEgressIp(req.context, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.createHubIngressIp = function createHubIngressIp (req, res, next, body) {
-  HubNetworkConfig.createHubIngressIp(body)
-    .then(function (response) {
+exports.createHubIngressIp = (req, res, next, body) => {
+  HubNetworkConfig.createHubIngressIp(req.context, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.createHubIngressUrl = function createHubIngressUrl (req, res, next, body) {
-  HubNetworkConfig.createHubIngressUrl(body)
-    .then(function (response) {
+exports.createHubIngressUrl = (req, res, next, body) => {
+  HubNetworkConfig.createHubIngressUrl(req.context, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getHubIngressUrls = function getHubIngressUrls (req, res, next) {
-  HubNetworkConfig.getHubIngressUrls()
-    .then(function (response) {
+exports.getHubIngressUrls = (req, res, next) => {
+  HubNetworkConfig.getHubIngressUrls(req.context)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getHubIngressIps = function getHubIngressIps (req, res, next) {
-  HubNetworkConfig.getHubIngressIps()
-    .then(function (response) {
+exports.getHubIngressIps = (req, res, next) => {
+  HubNetworkConfig.getHubIngressIps(req.context)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getHubEgressIps = function getHubEgressIps (req, res, next) {
-  HubNetworkConfig.getHubEgressIps()
-    .then(function (response) {
+exports.getHubEgressIps = (req, res, next) => {
+  HubNetworkConfig.getHubEgressIps(req.context)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.updateHubEndpoint = function updateHubEndpoint (req, res, next, body, epId) {
-  HubNetworkConfig.updateHubEndpoint(epId, body)
-    .then(function (response) {
+exports.updateHubEndpoint = (req, res, next, body, epId) => {
+  HubNetworkConfig.updateHubEndpoint(req.context, epId, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.deleteHubEndpoint = function deleteHubEndpoint (req, res, next, epId) {
-  HubNetworkConfig.deleteHubEndpoint(epId)
-    .then(function (response) {
+exports.deleteHubEndpoint = (req, res, next, epId) => {
+  HubNetworkConfig.deleteHubEndpoint(req.context, epId)
+    .then(response => {
       utils.writeJson(res, response, 204);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getHubEndpoints = function getHubEndpoints (req, res, next) {
-  HubNetworkConfig.getHubEndpoints()
-    .then(function (response) {
+exports.getHubEndpoints = (req, res, next) => {
+  HubNetworkConfig.getHubEndpoints(req.context)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.getHubEndpoint = function getHubEndpoint (req, res, next, epId) {
-  HubNetworkConfig.getHubEndpoint(epId)
-    .then(function (response) {
+exports.getHubEndpoint = (req, res, next, epId) => {
+  HubNetworkConfig.getHubEndpoint(req.context, epId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
 exports.getHubIngressIpEndpoint = (req, res, next, epId) => {
-  HubNetworkConfig.getHubIngressIpEndpoint(epId)
-    .then(function (response) {
+  HubNetworkConfig.getHubIngressIpEndpoint(req.context, epId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
 exports.updateHubIngressIpEndpoint = (req, res, next, body, epId) => {
-  HubNetworkConfig.updateHubIngressIpEndpoint(epId, body)
-    .then(function (response) {
+  HubNetworkConfig.updateHubIngressIpEndpoint(req.context, epId, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
 exports.deleteHubIngressIpEndpoint = (req, res, next, epId) => {
-  HubNetworkConfig.deleteHubIngressIpEndpoint(epId)
-    .then(function (response) {
+  HubNetworkConfig.deleteHubIngressIpEndpoint(req.context, epId)
+    .then(response => {
       utils.writeJson(res, response, 204);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
 exports.getHubEgressIpEndpoint = (req, res, next, epId) => {
-  HubNetworkConfig.getHubEgressIpEndpoint(epId)
-    .then(function (response) {
+  HubNetworkConfig.getHubEgressIpEndpoint(req.context, epId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
 exports.updateHubEgressIpEndpoint = (req, res, next, body, epId) => {
-  HubNetworkConfig.updateHubEgressIpEndpoint(epId, body)
-    .then(function (response) {
+  HubNetworkConfig.updateHubEgressIpEndpoint(req.context, epId, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
 exports.deleteHubEgressIpEndpoint = (req, res, next, epId) => {
-  HubNetworkConfig.deleteHubEgressIpEndpoint(epId)
-    .then(function (response) {
+  HubNetworkConfig.deleteHubEgressIpEndpoint(req.context, epId)
+    .then(response => {
       utils.writeJson(res, response, 204);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
 exports.getHubIngressUrlEndpoint = (req, res, next, epId) => {
-  HubNetworkConfig.getHubIngressUrlEndpoint(epId)
-    .then(function (response) {
+  HubNetworkConfig.getHubIngressUrlEndpoint(req.context, epId)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
 exports.updateHubIngressUrlEndpoint = (req, res, next, body, epId) => {
-  HubNetworkConfig.updateHubIngressUrlEndpoint(epId, body)
-    .then(function (response) {
+  HubNetworkConfig.updateHubIngressUrlEndpoint(req.context, epId, body)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
 exports.deleteHubIngressUrlEndpoint = (req, res, next, epId) => {
-  HubNetworkConfig.deleteHubIngressUrlEndpoint(epId)
-    .then(function (response) {
+  HubNetworkConfig.deleteHubIngressUrlEndpoint(req.context, epId)
+    .then(response => {
       utils.writeJson(res, response, 204);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };

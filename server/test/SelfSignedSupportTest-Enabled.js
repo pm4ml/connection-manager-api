@@ -20,6 +20,7 @@ const Wso2MSClient = require('../src/service/Wso2ManagerServiceClient');
 const Wso2Client = require('../src/service/Wso2Client');
 const ExternalProcessError = require('../src/errors/ExternalProcessError');
 const { enableCustomRootCAs } = require('../src/utils/tlsUtils');
+const { createContext, destroyContext } = require('./context');
 
 const { assert } = require('chai');
 const path = require('path');

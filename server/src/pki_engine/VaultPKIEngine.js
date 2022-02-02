@@ -19,9 +19,6 @@ const CAType = require('../models/CAType');
 const PKIEngine = require('./PKIEngine');
 const InvalidEntityError = require('../errors/InvalidEntityError');
 const NotFoundError = require('../errors/NotFoundError');
-const util = require('util');
-const fs = require('fs');
-const { file } = require('tmp-promise');
 const tls = require('tls');
 
 // TODO: find and link document containing rules on allowable paths
@@ -49,6 +46,7 @@ class VaultPKIEngine extends PKIEngine {
     this.pkiBaseDomain = pkiBaseDomain;
     this.mounts = mounts;
     this.signExpiryHours = signExpiryHours;
+    this.reconnectTimer = null;
 
     this.trustedCaStore = forge.pki.createCaStore(tls.rootCertificates.filter(cert => {
       try { forge.pki.certificateFromPem(cert); } catch { return false; } return true;
@@ -57,6 +55,8 @@ class VaultPKIEngine extends PKIEngine {
 
   async connect () {
     let creds;
+
+    clearTimeout(this.reconnectTimer);
 
     if (this.auth.appRole) {
       creds = await this.vault.approleLogin({
@@ -76,6 +76,13 @@ class VaultPKIEngine extends PKIEngine {
       endpoint: this.endpoint,
       token: creds.auth.client_token,
     });
+
+    const tokenRefreshMs = (creds.auth.lease_duration - 10) * 1000;
+    this.reconnectTimer = setTimeout(this.connect.bind(this), tokenRefreshMs);
+  }
+
+  disconnect () {
+    clearTimeout(this.reconnectTimer);
   }
 
   setSecret (key, value) {
@@ -406,15 +413,6 @@ class VaultPKIEngine extends PKIEngine {
       },
     });
     return data;
-  }
-
-  async currentConfigTempFile () {
-    const { fd: configFd, path: configPath, cleanup: configCleanup } = await file({ mode: '0600', prefix: 'config-', postfix: '.json' });
-    const fsWrite = util.promisify(fs.write);
-    const configContent = this.caConfig ? this.caConfig : defaultCAConfig;
-    // console.log(`configContent: ${JSON.stringify(configContent)}`);
-    await fsWrite(configFd, JSON.stringify(configContent));
-    return { configPath, configCleanup };
   }
 
   /**

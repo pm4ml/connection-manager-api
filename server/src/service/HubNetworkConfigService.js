@@ -26,7 +26,7 @@ const ValidationError = require('../errors/ValidationError');
  * @param {IPEntry} body IPEntry
  * @param {String{'EGRESS'|'INGRESS'}} direction
  */
-const createHubIp = async function (body, direction) {
+const createHubIp = async (body, direction) => {
   const inputIpEntry = body.value;
   if (!inputIpEntry.address) {
     throw new ValidationError('No address received');
@@ -58,7 +58,7 @@ const createHubIp = async function (body, direction) {
  * body InputIP Hub egress IP
  * returns EndPointIp
  **/
-exports.createHubEgressIp = async function (body) {
+exports.createHubEgressIp = async (ctx, body) => {
   const endpointItem = await createHubIp(body, 'EGRESS');
   const id = await HubEndpointItemModel.create(endpointItem);
   return HubEndpointItemModel.findObjectById(id);
@@ -70,7 +70,7 @@ exports.createHubEgressIp = async function (body) {
  * body InputIP Hub ingress IP
  * returns EndPointIp
  **/
-exports.createHubIngressIp = async function (body) {
+exports.createHubIngressIp = async (ctx, body) => {
   const endpointItem = await createHubIp(body, 'INGRESS');
   const id = await HubEndpointItemModel.create(endpointItem);
   return HubEndpointItemModel.findObjectById(id);
@@ -79,16 +79,12 @@ exports.createHubIngressIp = async function (body) {
 /**
  * returns EndPointIp
  */
-exports.getHubEgressIps = async function getHubEgressIp () {
-  return HubEndpointItemModel.findObjectByDirectionType('EGRESS', 'IP');
-};
+exports.getHubEgressIps = async ctx => HubEndpointItemModel.findObjectByDirectionType('EGRESS', 'IP');
 
 /**
  * returns EndPointIp
  */
-exports.getHubIngressIps = async function getHubIngressIps () {
-  return HubEndpointItemModel.findObjectByDirectionType('INGRESS', 'IP');
-};
+exports.getHubIngressIps = async ctx => HubEndpointItemModel.findObjectByDirectionType('INGRESS', 'IP');
 
 /**
  * Set the Hub Ingress URL
@@ -97,7 +93,7 @@ exports.getHubIngressIps = async function getHubIngressIps () {
  * body InputURL Hub ingress URL
  * returns EndPointConfigItem
  **/
-exports.createHubIngressUrl = async function (body) {
+exports.createHubIngressUrl = async (ctx, body) => {
   const inputURLAddress = body.value;
   if (!inputURLAddress.url) {
     throw new ValidationError('No URL received');
@@ -114,22 +110,16 @@ exports.createHubIngressUrl = async function (body) {
   return HubEndpointItemModel.findObjectById(id);
 };
 
-exports.getHubIngressUrls = async function getHubIngressUrls () {
-  return HubEndpointItemModel.findObjectByDirectionType('INGRESS', 'URL');
-};
+exports.getHubIngressUrls = async ctx => HubEndpointItemModel.findObjectByDirectionType('INGRESS', 'URL');
 
-exports.getHubEndpoint = async function (epId) {
-  return HubEndpointItemModel.findObjectById(epId);
-};
+exports.getHubEndpoint = async (ctx, epId) => HubEndpointItemModel.findObjectById(epId);
 
-exports.getHubEndpoints = async function () {
-  return HubEndpointItemModel.findObjectAll();
-};
+exports.getHubEndpoints = async ctx => HubEndpointItemModel.findObjectAll();
 
 /**
  *
  */
-exports.updateHubEndpoint = async function (epId, body) {
+exports.updateHubEndpoint = async (ctx, epId, body) => {
   await HubEndpointItemModel.findObjectById(epId);
   if (body.value && body.value.address) {
     validateIPAddressInput(body.value.address);
@@ -149,7 +139,7 @@ exports.updateHubEndpoint = async function (epId, body) {
   return updatedEndpoint;
 };
 
-exports.deleteHubEndpoint = async function (epId) {
+exports.deleteHubEndpoint = async (ctx, epId) => {
   await HubEndpointItemModel.findObjectById(epId);
   await HubEndpointItemModel.delete(epId);
 };
@@ -162,7 +152,7 @@ exports.deleteHubEndpoint = async function (epId) {
  * @param {*} epId
  */
 const validateDirectionType = async (direction, type, epId) => {
-  const endpoint = await exports.getHubEndpoint(epId);
+  const endpoint = await HubEndpointItemModel.findObjectById(epId);
   if (endpoint.direction !== direction) {
     throw new ValidationError(`Wrong direction ${direction}, endpoint has already ${endpoint.direction}`);
   }
@@ -171,12 +161,12 @@ const validateDirectionType = async (direction, type, epId) => {
   }
 };
 
-exports.getHubIngressIpEndpoint = async (epId) => {
+exports.getHubIngressIpEndpoint = async (ctx, epId) => {
   await validateDirectionType('INGRESS', 'IP', epId);
-  return exports.getHubEndpoint(epId);
+  return HubEndpointItemModel.findObjectById(epId);
 };
 
-exports.updateHubIngressIpEndpoint = async (epId, body) => {
+exports.updateHubIngressIpEndpoint = async (ctx, epId, body) => {
   if (body.direction) {
     if (body.direction !== 'INGRESS') {
       throw new ValidationError('Bad direction value');
@@ -195,17 +185,17 @@ exports.updateHubIngressIpEndpoint = async (epId, body) => {
   return exports.updateHubEndpoint(epId, body);
 };
 
-exports.deleteHubIngressIpEndpoint = async (epId) => {
+exports.deleteHubIngressIpEndpoint = async (ctx, epId) => {
   await validateDirectionType('INGRESS', 'IP', epId);
   return exports.deleteHubEndpoint(epId);
 };
 
-exports.getHubEgressIpEndpoint = async (epId) => {
+exports.getHubEgressIpEndpoint = async (ctx, epId) => {
   await validateDirectionType('EGRESS', 'IP', epId);
-  return exports.getHubEndpoint(epId);
+  return HubEndpointItemModel.findObjectById(epId);
 };
 
-exports.updateHubEgressIpEndpoint = async (epId, body) => {
+exports.updateHubEgressIpEndpoint = async (ctx, epId, body) => {
   if (body.direction) {
     if (body.direction !== 'EGRESS') {
       throw new ValidationError('Bad direction value');
@@ -224,17 +214,17 @@ exports.updateHubEgressIpEndpoint = async (epId, body) => {
   return exports.updateHubEndpoint(epId, body);
 };
 
-exports.deleteHubEgressIpEndpoint = async (epId) => {
+exports.deleteHubEgressIpEndpoint = async (ctx, epId) => {
   await validateDirectionType('EGRESS', 'IP', epId);
   return exports.deleteHubEndpoint(epId);
 };
 
-exports.getHubIngressUrlEndpoint = async (epId) => {
+exports.getHubIngressUrlEndpoint = async (ctx, epId) => {
   await validateDirectionType('INGRESS', 'URL', epId);
-  return exports.getHubEndpoint(epId);
+  return HubEndpointItemModel.findObjectById(epId);
 };
 
-exports.updateHubIngressUrlEndpoint = async (epId, body) => {
+exports.updateHubIngressUrlEndpoint = async (ctx, epId, body) => {
   if (body.direction) {
     if (body.direction !== 'INGRESS') {
       throw new ValidationError('Bad direction value');
@@ -253,7 +243,7 @@ exports.updateHubIngressUrlEndpoint = async (epId, body) => {
   return exports.updateHubEndpoint(epId, body);
 };
 
-exports.deleteHubIngressUrlEndpoint = async (epId) => {
+exports.deleteHubIngressUrlEndpoint = async (ctx, epId) => {
   await validateDirectionType('INGRESS', 'URL', epId);
   return exports.deleteHubEndpoint(epId);
 };

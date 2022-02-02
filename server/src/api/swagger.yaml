@@ -2,8 +2,6 @@ openapi: 3.0.1
 info:
   title: Connection Manager API
   description: Connection Manager API
-  contact:
-    email: ramiro@modusbox.com
   version: 1.6.0
 servers:
 - url: http://localhost:3001/api

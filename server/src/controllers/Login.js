@@ -20,42 +20,42 @@
 const utils = require('../utils/writer.js');
 const Login = require('../service/LoginService');
 
-exports.loginUser = function login (req, res, next, body) {
-  Login.loginUser(body, req, res)
-    .then(function (response) {
+exports.loginUser = (req, res, next, body) => {
+  Login.loginUser(req.context, body, req, res)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.logoutUser = function login (req, res, next) {
-  Login.logoutUser(req, res)
-    .then(function (response) {
+exports.logoutUser = (req, res, next) => {
+  Login.logoutUser(req.context, req, res)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.login2step = function login2step (req, res, next, username, password, generatedToken) {
-  Login.login2step(username, password, generatedToken, req, res)
-    .then(function (response) {
+exports.login2step = (req, res, next, username, password, generatedToken) => {
+  Login.login2step(req.context, username, password, generatedToken, req, res)
+    .then(response => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };
 
-exports.resetPassword = function resetPassword (req, res, username, newPassword, userguid) {
-  Login.resetPassword(username, newPassword, userguid)
-    .then(function (response) {
+exports.resetPassword = (req, res, username, newPassword, userguid) => {
+  Login.resetPassword(req.context, username, newPassword, userguid)
+    .then(response => {
       utils.writeJson(res, response, 204);
     })
-    .catch(function (response) {
+    .catch(response => {
       utils.writeJson(res, response, response.status);
     });
 };

@@ -16,27 +16,28 @@
  ******************************************************************************/
 
 const Wso2TotpClient = require('../src/service/Wso2TotpClient');
-const assert = require('chai').assert;
+const { assert } = require('chai');
 const rp = require('request-promise-native');
 const sinon = require('sinon');
 const xml2js = require('xml2js');
+const { createContext, destroyContext } = require('./context');
 
 describe('TOTP admin server client', () => {
   it('should return a secret key when valid credentials', async () => {
-    var obj = {
+    const obj = {
       'ns:retrieveSecretKeyResponse':
             {
-              '$':
+              $:
                     { 'xmlns:ns': 'http://services.totp.authenticator.application.identity.carbon.wso2.org' },
               'ns:return': ['XXX']
             }
     };
-    var builder = new xml2js.Builder();
-    var xml = builder.buildObject(obj);
+    const builder = new xml2js.Builder();
+    const xml = builder.buildObject(obj);
 
-    let stub = sinon.stub(rp, 'Request');
+    const stub = sinon.stub(rp, 'Request');
     stub.resolves(xml);
-    var response = await Wso2TotpClient.retrieveSecretKey('validuser');
+    const response = await Wso2TotpClient.retrieveSecretKey('validuser');
     assert.equal(response, 'XXX');
   });
 });

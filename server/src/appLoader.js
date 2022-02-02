@@ -27,12 +27,11 @@ const OAuthHelper = require('./oauth/OAuthHelper');
 const db = require('./db/database');
 const corsUtils = require('./utils/corsUtils');
 
-const { Model } = require('objection');
 const Constants = require('./constants/Constants');
+const PKIEngine = require('./pki_engine/VaultPKIEngine');
 
 exports.connect = async () => {
   await db.waitForConnection();
-  Model.knex(db.knex);
   await executeSSLCustomLogic();
   // await pkiService.init(Constants.vault);
 
@@ -56,43 +55,26 @@ exports.connect = async () => {
 
   // Initialize the Swagger middleware
   const expressAppConfig = oas3Tools.expressAppConfig(path.join(__dirname, 'api/swagger.yaml'), options);
-  /* function (middleware) {
-    // Interpret Swagger resources and attach metadata to request - must be first in swagger-tools middleware chain
-    app.use(middleware.swaggerMetadata());
-
-    OAuthHelper.handleMiddleware(middleware, app);
-
-    // Validate Swagger requests
-    // https://github.com/apigee-127/swagger-tools/blob/master/docs/Middleware.md#swagger-validator
-    // https://github.com/apigee-127/swagger-tools/blob/master/docs/Swagger_Validation.md
-    // Comment this out since we're using Joi. This validator returns an html response with no detail
-    // app.use(middleware.swaggerValidator());
-
-    // Route validated requests to appropriate controller
-    // Ref: https://github.com/apigee-127/swagger-tools/blob/master/docs/Middleware.md
-    const options = {
-      swaggerUi: path.join(__dirname, '/swagger.json'),
-      controllers: path.join(__dirname, './controllers'),
-      useStubs: false
-    };
-
-    app.use(middleware.swaggerRouter(options));
-
-    // Serve the Swagger documents and Swagger UI
-    // https://github.com/apigee-127/swagger-tools/blob/master/docs/Middleware.md#swagger-ui
-    app.use(middleware.swaggerUi());
-  });
-
-   */
 
   const app = expressAppConfig.getApp();
 
-  let middlewares = 0;
-  app.use(cors(corsUtils.getCorsOptions)); middlewares++;
-  app.use(logger.createWinstonLogger()); middlewares++;
+  const pkiEngine = new PKIEngine(Constants.vault);
+  await pkiEngine.connect();
 
+  const middlewares = [
+    (req, res, next) => {
+      req.context = {
+        pkiEngine,
+      };
+      next();
+    },
+    cors(corsUtils.getCorsOptions),
+    logger.createWinstonLogger()
+  ];
+
+  app.use(...middlewares);
   const stack = app._router.stack;
-  const lastEntries = stack.splice(app._router.stack.length - middlewares);
+  const lastEntries = stack.splice(app._router.stack.length - middlewares.length);
   const firstEntries = stack.splice(0, 5);
   app._router.stack = [...firstEntries, ...lastEntries, ...stack];
   // console.log(app._router.stack);

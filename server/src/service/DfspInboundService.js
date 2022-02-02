@@ -20,7 +20,7 @@ const PkiService = require('./PkiService');
 const InvalidEntityError = require('../errors/InvalidEntityError');
 const ValidationError = require('../errors/ValidationError');
 const CAType = require('../models/CAType');
-const PKIEngine = require('../pki_engine/VaultPKIEngine');
+
 const Constants = require('../constants/Constants');
 const { createID } = require('../models/GID');
 const DFSPModel = require('../models/DFSPModel');
@@ -33,12 +33,12 @@ const DFSPModel = require('../models/DFSPModel');
  * body DFSPInboundCreate DFSP inbound initial info
  * returns ObjectCreatedResponse
  **/
-exports.createDFSPInboundEnrollment = async function (dfspId, body) {
-  await PkiService.validateDfsp(dfspId);
+exports.createDFSPInboundEnrollment = async (ctx, dfspId, body) => {
+  const { pkiEngine } = ctx;
+  await PkiService.validateDfsp(ctx, dfspId);
 
   let csrInfo;
   try {
-    const pkiEngine = new PKIEngine(Constants.vault);
     csrInfo = pkiEngine.getCSRInfo(body.clientCSR);
   } catch (error) {
     throw new ValidationError('Could not parse the CSR content', error);
@@ -49,8 +49,6 @@ exports.createDFSPInboundEnrollment = async function (dfspId, body) {
     csr: body.clientCSR
   };
 
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
   const { validations, validationState } = await pkiEngine.validateInboundEnrollment(enrollment);
 
   const values = {
@@ -70,10 +68,9 @@ exports.createDFSPInboundEnrollment = async function (dfspId, body) {
 /**
  * Get a list of DFSP Inbound enrollments
  */
-exports.getDFSPInboundEnrollments = async function (dfspId) {
-  await PkiService.validateDfsp(dfspId);
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+exports.getDFSPInboundEnrollments = async (ctx, dfspId) => {
+  await PkiService.validateDfsp(ctx, dfspId);
+  const { pkiEngine } = ctx;
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   return pkiEngine.getDFSPInboundEnrollments(dbDfspId);
 };
@@ -85,10 +82,9 @@ exports.getDFSPInboundEnrollments = async function (dfspId) {
  * enId String Enrollment id
  * returns InboundEnrollment
  **/
-exports.getDFSPInboundEnrollment = async function (dfspId, enId) {
-  await PkiService.validateDfsp(dfspId);
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+exports.getDFSPInboundEnrollment = async (ctx, dfspId, enId) => {
+  await PkiService.validateDfsp(ctx, dfspId);
+  const { pkiEngine } = ctx;
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   return pkiEngine.getDFSPInboundEnrollment(dbDfspId, enId);
 };
@@ -101,11 +97,10 @@ exports.getDFSPInboundEnrollment = async function (dfspId, enId) {
  * enId String Enrollment id
  * returns ApiResponse
  **/
-exports.signDFSPInboundEnrollment = async function (dfspId, enId) {
-  await PkiService.validateDfsp(dfspId);
+exports.signDFSPInboundEnrollment = async (ctx, dfspId, enId) => {
+  await PkiService.validateDfsp(ctx, dfspId);
 
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+  const { pkiEngine } = ctx;
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   const enrollment = await pkiEngine.getDFSPInboundEnrollment(dbDfspId, enId);
   if (!enrollment) {

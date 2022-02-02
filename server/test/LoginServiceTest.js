@@ -23,18 +23,22 @@ const Wso2Client = require('../src/service/Wso2Client');
 const BadRequestError = require('../src/errors/BadRequestError');
 const UnauthorizedError = require('../src/errors/UnauthorizedError');
 const ExternalProcessError = require('../src/errors/ExternalProcessError');
+const { createContext, destroyContext } = require('./context');
 
-const assert = require('chai').assert;
+const { assert } = require('chai');
 const sinon = require('sinon');
 
 describe('first login', () => {
   let wso2ClientTokenMock;
+  let ctx;
 
-  before(() => {
+  before(async () => {
+    ctx = await createContext();
     wso2ClientTokenMock = sinon.stub(Wso2Client, 'getToken');
   });
 
   after(() => {
+    destroyContext(ctx);
     wso2ClientTokenMock.restore();
   });
 
@@ -48,7 +52,7 @@ describe('first login', () => {
 
     Constants.OAUTH.AUTH_ENABLED = true;
 
-    const response = await LoginService.loginUser({ username: 'user1', password: 'password1' });
+    const response = await LoginService.loginUser(ctx, { username: 'user1', password: 'password1' });
 
     // FIXME sending "true" string to UI
     assert.strictEqual(response.askPassword, true, 'Returning first time flag');
@@ -59,8 +63,10 @@ describe('2step', () => {
   let wso2ClientTokenMock;
   let wso2TotpClientMock;
   let wso2MSClientMock;
+  let ctx;
 
-  before(() => {
+  before(async () => {
+    ctx = await createContext();
     wso2ClientTokenMock = sinon.stub(Wso2Client, 'getToken');
     wso2MSClientMock = sinon.stub(Wso2MSClient, 'setUserClaimValue');
 
@@ -73,13 +79,14 @@ describe('2step', () => {
     wso2TotpClientMock.restore();
 
     sinon.restore();
+    destroyContext(ctx);
   });
 
   it('should return a bad request error when AUTH_2FA_ENABLED is set to false', async () => {
     Constants.AUTH_2FA.AUTH_2FA_ENABLED = false;
 
     try {
-      await LoginService.login2step('user1', 'pass1', 123456);
+      await LoginService.login2step(ctx, 'user1', 'pass1', 123456);
       assert.fail('Should have throw BadRequestError');
     } catch (error) {
       assert.instanceOf(error, BadRequestError);
@@ -91,7 +98,7 @@ describe('2step', () => {
     wso2ClientTokenMock.callsFake((params) => { throw new UnauthorizedError(''); });
 
     try {
-      await LoginService.login2step('user1', 'pass1', 123456);
+      await LoginService.login2step(ctx, 'user1', 'pass1', 123456);
       assert.fail('Should have throw UnauthorizedError');
     } catch (error) {
       assert.instanceOf(error, UnauthorizedError);
@@ -108,7 +115,7 @@ describe('2step', () => {
     wso2TotpClientMock.callsFake((params) => { throw new UnauthorizedError(''); });
 
     try {
-      await LoginService.login2step('user1', 'pass1', 123456);
+      await LoginService.login2step(ctx, 'user1', 'pass1', 123456);
       assert.fail('Should have throw UnauthorizedError');
     } catch (error) {
       assert.instanceOf(error, UnauthorizedError);
@@ -126,7 +133,7 @@ describe('2step', () => {
     wso2MSClientMock.callsFake((params) => { throw new ExternalProcessError(''); });
 
     try {
-      await LoginService.login2step('user1', 'pass1', 123456);
+      await LoginService.login2step(ctx, 'user1', 'pass1', 123456);
       assert.fail('Should have throw ExternalProcessError');
     } catch (error) {
       assert.instanceOf(error, ExternalProcessError);
@@ -141,13 +148,24 @@ describe('change password', () => {
     newPassword: 'ZZZ',
     userguid: '93f0b639-2d7e-4e99-84d0-eeff58c48283'
   };
+
+  let ctx;
+
+  before(async () => {
+    ctx = await createContext();
+  });
+
+  after(() => {
+    destroyContext(ctx);
+  });
+
   it('should call WSO2 change password endpoint once', async () => {
     const wso2ClientPasswordMock = sinon.mock(Wso2Client)
       .expects('resetPassword')
       .withExactArgs(testUser.username, testUser.newPassword, testUser.userguid)
       .returns({});
 
-    await LoginService.resetPassword(testUser.username, testUser.newPassword, testUser.userguid);
+    await LoginService.resetPassword(ctx, testUser.username, testUser.newPassword, testUser.userguid);
 
     wso2ClientPasswordMock.verify();
     sinon.restore();
@@ -157,7 +175,7 @@ describe('change password', () => {
     try {
       sinon.mock(Wso2Client).expects('resetPassword').throws(new UnauthorizedError('Unathorized'));
 
-      await LoginService.resetPassword(testUser.username, testUser.newPassword, testUser.userguid);
+      await LoginService.resetPassword(ctx, testUser.username, testUser.newPassword, testUser.userguid);
       assert.fail('Should return an error from WSO2');
     } catch (error) {
       assert.instanceOf(error, UnauthorizedError);

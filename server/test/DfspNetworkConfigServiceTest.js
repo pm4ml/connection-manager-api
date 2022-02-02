@@ -21,15 +21,19 @@ const PkiService = require('../src/service/PkiService');
 const DfspNetworkConfigService = require('../src/service/DfspNetworkConfigService');
 const ValidationError = require('../src/errors/ValidationError');
 const NotFoundError = require('../src/errors/NotFoundError');
-const assert = require('chai').assert;
+const { assert } = require('chai');
+const { createContext, destroyContext } = require('./context');
 
 describe('DfspNetworkConfigService', () => {
+  let ctx;
   before(async () => {
+    ctx = await createContext();
     await setupTestDB();
   });
 
   after(async () => {
     await tearDownTestDB();
+    destroyContext(ctx);
   });
 
   describe('DfspNetworkConfigService creating endpoint items', () => {
@@ -40,19 +44,19 @@ describe('DfspNetworkConfigService', () => {
         dfspId: 'DFSP_TEST_B',
         name: 'DFSP_TEST_B_description'
       };
-      const resultDfsp = await PkiService.createDFSP(dfsp);
+      const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
       dfspId = resultDfsp.id;
     });
 
     afterEach('tearing down hook DFSP', async () => {
-      await PkiService.deleteDFSP(dfspId);
+      await PkiService.deleteDFSP(ctx, dfspId);
     });
 
     describe('DfspNetworkConfigService validations', () => {
       it('should throw ValidationError on illegal Egress IP', async () => {
         const illegalIPBody = { value: { address: '999.1.1.1', ports: ['80'] } };
         try {
-          await DfspNetworkConfigService.createDFSPEgressIp(dfspId, illegalIPBody);
+          await DfspNetworkConfigService.createDFSPEgressIp(ctx, dfspId, illegalIPBody);
           assert.fail();
         } catch (error) {
           assert(error instanceof ValidationError, 'Error is: ' + error);
@@ -62,7 +66,7 @@ describe('DfspNetworkConfigService', () => {
       it('should throw ValidationError on illegal Ingress IP', async () => {
         const illegalIPBody = { value: { address: '999.1.1.1', ports: ['80'] } };
         try {
-          await DfspNetworkConfigService.createDFSPIngressIp(dfspId, illegalIPBody);
+          await DfspNetworkConfigService.createDFSPIngressIp(ctx, dfspId, illegalIPBody);
           assert.fail();
         } catch (error) {
           assert(error instanceof ValidationError, 'Error is: ' + error);
@@ -72,7 +76,7 @@ describe('DfspNetworkConfigService', () => {
       it('should throw ValidationError on illegal Egress IP', async () => {
         const illegalIPBody = { value: { address: 'a.b.c.d', ports: ['80'] } };
         try {
-          await DfspNetworkConfigService.createDFSPEgressIp(dfspId, illegalIPBody);
+          await DfspNetworkConfigService.createDFSPEgressIp(ctx, dfspId, illegalIPBody);
           assert.fail();
         } catch (error) {
           assert(error instanceof ValidationError, 'Error is: ' + error);
@@ -82,7 +86,7 @@ describe('DfspNetworkConfigService', () => {
       it('should throw ValidationError on illegal Ingress IP', async () => {
         const illegalIPBody = { value: { address: 'a.b.c.d', ports: ['80'] } };
         try {
-          await DfspNetworkConfigService.createDFSPIngressIp(dfspId, illegalIPBody);
+          await DfspNetworkConfigService.createDFSPIngressIp(ctx, dfspId, illegalIPBody);
           assert.fail();
         } catch (error) {
           assert(error instanceof ValidationError, 'Error is: ' + error);
@@ -92,7 +96,7 @@ describe('DfspNetworkConfigService', () => {
       it('should throw ValidationError on illegal Ingress ports', async () => {
         const illegalIPBody = { value: { address: '1.1.1.1', ports: ['-80'] } };
         try {
-          await DfspNetworkConfigService.createDFSPIngressIp(dfspId, illegalIPBody);
+          await DfspNetworkConfigService.createDFSPIngressIp(ctx, dfspId, illegalIPBody);
           assert.fail();
         } catch (error) {
           assert(error instanceof ValidationError, 'Error is: ' + error);
@@ -102,7 +106,7 @@ describe('DfspNetworkConfigService', () => {
       it('should throw ValidationError on illegal Ingress ports', async () => {
         const illegalIPBody = { value: { address: '1.1.1.1', ports: ['80', '90000-'] } };
         try {
-          await DfspNetworkConfigService.createDFSPIngressIp(dfspId, illegalIPBody);
+          await DfspNetworkConfigService.createDFSPIngressIp(ctx, dfspId, illegalIPBody);
           assert.fail();
         } catch (error) {
           assert(error instanceof ValidationError, 'Error is: ' + error);
@@ -112,7 +116,7 @@ describe('DfspNetworkConfigService', () => {
       it('should throw ValidationError on illegal Egress ports', async () => {
         const illegalIPBody = { value: { address: '1.1.1.1', ports: ['-80'] } };
         try {
-          await DfspNetworkConfigService.createDFSPEgressIp(dfspId, illegalIPBody);
+          await DfspNetworkConfigService.createDFSPEgressIp(ctx, dfspId, illegalIPBody);
           assert.fail();
         } catch (error) {
           assert(error instanceof ValidationError, 'Error is: ' + error);
@@ -122,7 +126,7 @@ describe('DfspNetworkConfigService', () => {
       it('should throw ValidationError on illegal Egress ports', async () => {
         const illegalIPBody = { value: { address: '1.1.1.1', ports: ['80', '90000-'] } };
         try {
-          await DfspNetworkConfigService.createDFSPEgressIp(dfspId, illegalIPBody);
+          await DfspNetworkConfigService.createDFSPEgressIp(ctx, dfspId, illegalIPBody);
           assert.fail();
         } catch (error) {
           assert(error instanceof ValidationError, 'Error is: ' + error);
@@ -133,7 +137,7 @@ describe('DfspNetworkConfigService', () => {
         let illegalUrlBody = { value: { url: 'ftp:www.sun.com' } };
 
         try {
-          await DfspNetworkConfigService.createDFSPIngressUrl(dfspId, illegalUrlBody);
+          await DfspNetworkConfigService.createDFSPIngressUrl(ctx, dfspId, illegalUrlBody);
           assert.fail();
         } catch (error) {
           assert(error instanceof ValidationError);
@@ -142,7 +146,7 @@ describe('DfspNetworkConfigService', () => {
         illegalUrlBody = { value: { url: 'www.sun.com' } };
 
         try {
-          await DfspNetworkConfigService.createDFSPIngressUrl(dfspId, illegalUrlBody);
+          await DfspNetworkConfigService.createDFSPIngressUrl(ctx, dfspId, illegalUrlBody);
           assert.fail();
         } catch (error) {
           assert(error instanceof ValidationError);
@@ -152,8 +156,8 @@ describe('DfspNetworkConfigService', () => {
 
     it('should create an ingress IP endpoint', async () => {
       const ipBody = { value: { address: '1.1.1.1', ports: ['80', '8000-8080'] } };
-      await DfspNetworkConfigService.createDFSPIngressIp(dfspId, ipBody);
-      const result = await DfspNetworkConfigService.getDFSPIngressIps(dfspId);
+      await DfspNetworkConfigService.createDFSPIngressIp(ctx, dfspId, ipBody);
+      const result = await DfspNetworkConfigService.getDFSPIngressIps(ctx, dfspId);
       assert.equal(result[0].value.address, ipBody.value.address);
       assert.equal(result[0].value.ports[0], ipBody.value.ports[0]);
       assert.equal(result[0].value.ports[1], ipBody.value.ports[1]);
@@ -161,28 +165,28 @@ describe('DfspNetworkConfigService', () => {
 
     it('should create more than one input IP entry', async () => {
       let ipBody = { value: { address: '1.1.1.1', ports: ['80', '8000-8080'] } };
-      await DfspNetworkConfigService.createDFSPIngressIp(dfspId, ipBody);
-      let result = await DfspNetworkConfigService.getDFSPIngressIps(dfspId);
+      await DfspNetworkConfigService.createDFSPIngressIp(ctx, dfspId, ipBody);
+      let result = await DfspNetworkConfigService.getDFSPIngressIps(ctx, dfspId);
       assert.equal(result.length, 1);
       assert.equal(result[0].value.address, ipBody.value.address);
       assert.equal(result[0].value.ports[0], ipBody.value.ports[0]);
       assert.equal(result[0].value.ports[1], ipBody.value.ports[1]);
 
       ipBody = { value: { address: '2.2.2.2', ports: ['80'] } };
-      await DfspNetworkConfigService.createDFSPIngressIp(dfspId, ipBody);
-      result = await DfspNetworkConfigService.getDFSPIngressIps(dfspId);
+      await DfspNetworkConfigService.createDFSPIngressIp(ctx, dfspId, ipBody);
+      result = await DfspNetworkConfigService.getDFSPIngressIps(ctx, dfspId);
       assert.equal(result.length, 2);
       assert.equal(result[1].value.address, ipBody.value.address);
       assert.equal(result[1].value.ports[0], ipBody.value.ports[0]);
 
-      const items = await DfspNetworkConfigService.getDFSPIngressIps(dfspId);
+      const items = await DfspNetworkConfigService.getDFSPIngressIps(ctx, dfspId);
       assert.equal(items.length, 2);
     });
 
     it('should create an egress IP endpoint', async () => {
       const ipBody = { value: { address: '1.1.1.1', ports: ['80', '8000-8080'] } };
-      await DfspNetworkConfigService.createDFSPEgressIp(dfspId, ipBody);
-      const result = await DfspNetworkConfigService.getDFSPEgressIps(dfspId);
+      await DfspNetworkConfigService.createDFSPEgressIp(ctx, dfspId, ipBody);
+      const result = await DfspNetworkConfigService.getDFSPEgressIps(ctx, dfspId);
       assert.equal(result[0].value.address, ipBody.value.address);
       assert.equal(result[0].value.ports[0], ipBody.value.ports[0]);
       assert.equal(result[0].value.ports[1], ipBody.value.ports[1]);
@@ -190,28 +194,28 @@ describe('DfspNetworkConfigService', () => {
 
     it('should create more than one egress IP entry', async () => {
       let ipBody = { value: { address: '1.1.1.1', ports: ['80', '8000-8080'] } };
-      await DfspNetworkConfigService.createDFSPEgressIp(dfspId, ipBody);
-      let result = await DfspNetworkConfigService.getDFSPEgressIps(dfspId);
+      await DfspNetworkConfigService.createDFSPEgressIp(ctx, dfspId, ipBody);
+      let result = await DfspNetworkConfigService.getDFSPEgressIps(ctx, dfspId);
       assert.equal(result.length, 1);
       assert.equal(result[0].value.address, ipBody.value.address);
       assert.equal(result[0].value.ports[0], ipBody.value.ports[0]);
       assert.equal(result[0].value.ports[1], ipBody.value.ports[1]);
 
       ipBody = { value: { address: '2.2.2.2', ports: ['80'] } };
-      await DfspNetworkConfigService.createDFSPEgressIp(dfspId, ipBody);
-      result = await DfspNetworkConfigService.getDFSPEgressIps(dfspId);
+      await DfspNetworkConfigService.createDFSPEgressIp(ctx, dfspId, ipBody);
+      result = await DfspNetworkConfigService.getDFSPEgressIps(ctx, dfspId);
       assert.equal(result.length, 2);
       assert.equal(result[1].value.address, ipBody.value.address);
       assert.equal(result[1].value.ports[0], ipBody.value.ports[0]);
 
-      const items = await DfspNetworkConfigService.getDFSPEgressIps(dfspId);
+      const items = await DfspNetworkConfigService.getDFSPEgressIps(ctx, dfspId);
       assert.equal(items.length, 2);
     });
 
     it('should create an IngressUrl', async () => {
       const urlBody = { value: { url: 'http://www.sun.com' } };
-      await DfspNetworkConfigService.createDFSPIngressUrl(dfspId, urlBody);
-      const items = await DfspNetworkConfigService.getDFSPIngressUrls(dfspId);
+      await DfspNetworkConfigService.createDFSPIngressUrl(ctx, dfspId, urlBody);
+      const items = await DfspNetworkConfigService.getDFSPIngressUrls(ctx, dfspId);
       assert.equal(items.length, 1);
     });
 
@@ -219,76 +223,76 @@ describe('DfspNetworkConfigService', () => {
       const COUNT = 10;
       for (let index = 0; index < COUNT; index++) {
         const urlBody = { value: { url: `http://www.sun${index}.com` } };
-        await DfspNetworkConfigService.createDFSPIngressUrl(dfspId, urlBody);
+        await DfspNetworkConfigService.createDFSPIngressUrl(ctx, dfspId, urlBody);
       }
-      const items = await DfspNetworkConfigService.getDFSPIngressUrls(dfspId);
+      const items = await DfspNetworkConfigService.getDFSPIngressUrls(ctx, dfspId);
       assert.equal(items.length, COUNT);
     });
 
     xit('should update a set of endpoints', async () => { // FIXME use a different operation, it needs to update the same id
       let urlBody = { value: { url: 'http://www.sun.com' } };
 
-      await DfspNetworkConfigService.createDFSPIngressUrl(dfspId, urlBody);
-      let result = await DfspNetworkConfigService.getDFSPIngressUrls(dfspId);
+      await DfspNetworkConfigService.createDFSPIngressUrl(ctx, dfspId, urlBody);
+      let result = await DfspNetworkConfigService.getDFSPIngressUrls(ctx, dfspId);
       assert.equal(result.value, urlBody.value.url);
 
       urlBody = { value: { url: 'http://www.oracle.com' } };
 
-      await DfspNetworkConfigService.createDFSPIngressUrl(dfspId, urlBody);
-      result = await DfspNetworkConfigService.getDFSPIngressUrls(dfspId);
+      await DfspNetworkConfigService.createDFSPIngressUrl(ctx, dfspId, urlBody);
+      result = await DfspNetworkConfigService.getDFSPIngressUrls(ctx, dfspId);
       assert.equal(result.value, urlBody.value.url);
     });
 
     it('should not throw NotFoundError when no IngressUrl endpoint configured', async () => {
-      const items = await DfspNetworkConfigService.getDFSPIngressUrls(dfspId);
+      const items = await DfspNetworkConfigService.getDFSPIngressUrls(ctx, dfspId);
       assert.equal(items.length, 0);
     });
 
     it('should return the correct amount of unprocessed endpoints for URLs', async () => {
       const urlBody = { value: { url: 'http://www.sun.com' } };
-      await DfspNetworkConfigService.createDFSPIngressUrl(dfspId, urlBody);
-      const items = await DfspNetworkConfigService.getUnprocessedEndpointItems();
+      await DfspNetworkConfigService.createDFSPIngressUrl(ctx, dfspId, urlBody);
+      const items = await DfspNetworkConfigService.getUnprocessedEndpointItems(ctx);
       assert.equal(items.length, 1);
     });
 
     it('should return the correct format for of unprocessed endpoints for URLs', async () => {
       const urlBody = { value: { url: 'http://www.sun.com' } };
-      await DfspNetworkConfigService.createDFSPIngressUrl(dfspId, urlBody);
-      const items = await DfspNetworkConfigService.getUnprocessedEndpointItems();
+      await DfspNetworkConfigService.createDFSPIngressUrl(ctx, dfspId, urlBody);
+      const items = await DfspNetworkConfigService.getUnprocessedEndpointItems(ctx);
       assert.equal(items.length, 1);
       assert.equal(items[0].value.url, urlBody.value.url);
     });
 
     it('should return the correct format for of unprocessed endpoints for IPs', async () => {
       const ipBody = { value: { address: '1.1.1.1', ports: ['80', '8000-8080'] } };
-      await DfspNetworkConfigService.createDFSPEgressIp(dfspId, ipBody);
-      const items = await DfspNetworkConfigService.getUnprocessedEndpointItems();
+      await DfspNetworkConfigService.createDFSPEgressIp(ctx, dfspId, ipBody);
+      const items = await DfspNetworkConfigService.getUnprocessedEndpointItems(ctx);
       assert.equal(items.length, 1);
       assert.equal(items[0].value.address, ipBody.value.address);
     });
 
     it('should confirm an ingress URL endpoint', async () => {
       const urlBody = { value: { url: 'http://www.sun.com' } };
-      const result = await DfspNetworkConfigService.createDFSPIngressUrl(dfspId, urlBody);
+      const result = await DfspNetworkConfigService.createDFSPIngressUrl(ctx, dfspId, urlBody);
 
-      const confirmed = await DfspNetworkConfigService.confirmEndpointItem(result.dfsp_id, result.id);
+      const confirmed = await DfspNetworkConfigService.confirmEndpointItem(ctx, result.dfsp_id, result.id);
       assert.equal(confirmed.state, 'CONFIRMED');
     });
 
     it('should create update delete an ingress URL via endpoint operations', async () => {
       const urlBody = { value: { url: 'http://www.sun.com' } };
-      const result = await DfspNetworkConfigService.createDFSPIngressUrl(dfspId, urlBody);
-      const loadedUrl = await DfspNetworkConfigService.getDFSPEndpoint(dfspId, result.id);
+      const result = await DfspNetworkConfigService.createDFSPIngressUrl(ctx, dfspId, urlBody);
+      const loadedUrl = await DfspNetworkConfigService.getDFSPEndpoint(ctx, dfspId, result.id);
       assert.equal(loadedUrl.value.url, urlBody.value.url);
       loadedUrl.value.url = 'http://www.oracle.com';
-      const updatedUrl = await DfspNetworkConfigService.updateDFSPEndpoint(dfspId, result.id, loadedUrl);
+      const updatedUrl = await DfspNetworkConfigService.updateDFSPEndpoint(ctx, dfspId, result.id, loadedUrl);
       assert.equal(updatedUrl.value.url, loadedUrl.value.url);
-      const newLoadedUrl = await DfspNetworkConfigService.getDFSPEndpoint(dfspId, result.id);
+      const newLoadedUrl = await DfspNetworkConfigService.getDFSPEndpoint(ctx, dfspId, result.id);
       assert.equal(newLoadedUrl.value.url, loadedUrl.value.url);
-      const emptyResponse = await DfspNetworkConfigService.deleteDFSPEndpoint(dfspId, result.id);
+      const emptyResponse = await DfspNetworkConfigService.deleteDFSPEndpoint(ctx, dfspId, result.id);
       assert.isUndefined(emptyResponse);
       try {
-        await DfspNetworkConfigService.getDFSPEndpoint(dfspId, result.id);
+        await DfspNetworkConfigService.getDFSPEndpoint(ctx, dfspId, result.id);
         assert.fail('Should not have got here');
       } catch (error) {
         assert(error instanceof NotFoundError, 'Error is: ' + error);
@@ -297,8 +301,8 @@ describe('DfspNetworkConfigService', () => {
 
     it('should return the dfspId as string when getting the UnprocessedEndpointItems', async () => {
       const urlBody = { value: { url: 'http://www.sun.com' } };
-      await DfspNetworkConfigService.createDFSPIngressUrl(dfspId, urlBody);
-      const items = await DfspNetworkConfigService.getUnprocessedEndpointItems();
+      await DfspNetworkConfigService.createDFSPIngressUrl(ctx, dfspId, urlBody);
+      const items = await DfspNetworkConfigService.getUnprocessedEndpointItems(ctx);
       assert.equal(items.length, 1);
       assert.equal(items[0].dfsp_id, 'DFSP_TEST_B', JSON.stringify(items, null, 2));
     });

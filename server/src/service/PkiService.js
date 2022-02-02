@@ -20,7 +20,6 @@ const DFSPModel = require('../models/DFSPModel');
 const InternalError = require('../errors/InternalError');
 const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
-const PKIEngine = require('../pki_engine/VaultPKIEngine');
 
 const ValidationCodes = require('../pki_engine/ValidationCodes');
 const Constants = require('../constants/Constants');
@@ -32,7 +31,7 @@ const Constants = require('../constants/Constants');
  * body DFSPCreate DFSP initial info
  * returns ObjectCreatedResponse
  **/
-exports.createDFSP = async function (body) {
+exports.createDFSP = async (ctx, body) => {
   const regex = / /gi;
   const dfspIdNoSpaces = body.dfspId ? body.dfspId.replace(regex, '-') : null;
 
@@ -59,7 +58,7 @@ exports.createDFSP = async function (body) {
  *
  * returns DFSP[]
  **/
-exports.getDFSPs = async function () {
+exports.getDFSPs = async ctx => {
   const rows = await DFSPModel.findAll();
   return rows.map(r => dfspRowToObject(r));
 };
@@ -67,9 +66,7 @@ exports.getDFSPs = async function () {
 /**
  * Validates that both env and dfsp exist, and that the dfsp belongs to the env
  */
-exports.validateDfsp = async function (dfspId) {
-  return exports.getDFSPById(dfspId);
-};
+exports.validateDfsp = async (ctx, dfspId) => exports.getDFSPById(ctx, dfspId);
 
 /**
  * Returns a DFSP by its id
@@ -77,7 +74,7 @@ exports.validateDfsp = async function (dfspId) {
  * dfspId String ID of dfsp
  * returns DFSP
  **/
-exports.getDFSPById = async function (dfspId) {
+exports.getDFSPById = async (ctx, dfspId) => {
   if (dfspId === null || typeof dfspId === 'undefined') {
     throw new ValidationError(`Invalid dfspId ${dfspId}`);
   }
@@ -92,7 +89,7 @@ exports.getDFSPById = async function (dfspId) {
   }
 };
 
-exports.updateDFSP = async (dfspId, newDfsp) => {
+exports.updateDFSP = async (ctx, dfspId, newDfsp) => {
   if (dfspId === null || typeof dfspId === 'undefined') {
     throw new ValidationError(`Invalid dfspId ${dfspId}`);
   }
@@ -119,10 +116,9 @@ exports.splitChainIntermediateCertificateInfo = (intermediateChain, pkiEngine) =
  * dfspId String ID of dfsp
  * returns DFSP
  **/
-exports.deleteDFSP = async function (dfspId) {
-  await exports.validateDfsp(dfspId);
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+exports.deleteDFSP = async (ctx, dfspId) => {
+  await exports.validateDfsp(ctx, dfspId);
+  const { pkiEngine } = ctx;
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   await pkiEngine.deleteAllDFSPData(dbDfspId);
   return DFSPModel.delete(dfspId);
@@ -134,14 +130,13 @@ exports.deleteDFSP = async function (dfspId) {
  * rootCertificate: a root certificate used by the DFSP. Can be a self-signed certificate, or a globally trusted CA like Digicert.
  * intermediateChain: list of intermediate certificates.
  */
-exports.setDFSPca = async function (dfspId, body) {
-  await exports.validateDfsp(dfspId);
+exports.setDFSPca = async (ctx, dfspId, body) => {
+  await exports.validateDfsp(ctx, dfspId);
 
   const rootCertificate = body.rootCertificate || '';
   const intermediateChain = body.intermediateChain || '';
 
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+  const { pkiEngine } = ctx;
   const { validations, validationState } = await pkiEngine.validateCACertificate(rootCertificate, intermediateChain);
 
   const values = {
@@ -157,16 +152,15 @@ exports.setDFSPca = async function (dfspId, body) {
   return values;
 };
 
-exports.getDfspsByMonetaryZones = async (monetaryZoneId) => {
+exports.getDfspsByMonetaryZones = async (ctx, monetaryZoneId) => {
   const dfsps = await DFSPModel.getDfspsByMonetaryZones(monetaryZoneId);
   return dfsps.map(r => dfspRowToObject(r));
 };
 
-exports.getDFSPca = async function (dfspId) {
-  await exports.validateDfsp(dfspId);
+exports.getDFSPca = async (ctx, dfspId) => {
+  await exports.validateDfsp(ctx, dfspId);
+  const { pkiEngine } = ctx;
   try {
-    const pkiEngine = new PKIEngine(Constants.vault);
-    await pkiEngine.connect();
     const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
     return await pkiEngine.getDFSPCA(dbDfspId);
   } catch (error) {
@@ -182,10 +176,9 @@ exports.getDFSPca = async function (dfspId) {
   }
 };
 
-exports.deleteDFSPca = async function (dfspId) {
-  await exports.validateDfsp(dfspId);
-  const pkiEngine = new PKIEngine(Constants.vault);
-  await pkiEngine.connect();
+exports.deleteDFSPca = async (ctx, dfspId) => {
+  await exports.validateDfsp(ctx, dfspId);
+  const { pkiEngine } = ctx;
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   return pkiEngine.deleteDFSPCA(dbDfspId);
 };
