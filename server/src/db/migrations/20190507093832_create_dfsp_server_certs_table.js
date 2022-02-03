@@ -17,8 +17,8 @@
 
 exports.up = function (knex, Promise) {
   return knex.schema.createTable('dfsp_server_certs', (table) => {
-    table.increments('id', 11).primary();
-    table.integer('dfsp_id', 11).unsigned().notNullable();
+    table.increments('id').primary();
+    table.integer('dfsp_id').unsigned().notNullable();
     table.text('root_cert');
     table.text('chain');
     table.text('server_cert');

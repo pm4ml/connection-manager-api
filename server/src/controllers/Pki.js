@@ -21,7 +21,7 @@ const utils = require('../utils/writer.js');
 const Pki = require('../service/PkiService');
 
 exports.createDFSP = function createDFSP (req, res, next, body) {
-  Pki.createDFSP(body)
+  Pki.createDFSP(req.context, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -31,7 +31,7 @@ exports.createDFSP = function createDFSP (req, res, next, body) {
 };
 
 exports.deleteDFSP = function createDFSP (req, res, next, dfspId) {
-  Pki.deleteDFSP(dfspId)
+  Pki.deleteDFSP(req.context, dfspId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -41,7 +41,7 @@ exports.deleteDFSP = function createDFSP (req, res, next, dfspId) {
 };
 
 exports.getDFSPs = function getDFSPs (req, res, next) {
-  Pki.getDFSPs()
+  Pki.getDFSPs(req.context)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -51,7 +51,7 @@ exports.getDFSPs = function getDFSPs (req, res, next) {
 };
 
 exports.setDFSPca = function setDFSPca (req, res, next, body, dfspId) {
-  Pki.setDFSPca(dfspId, body)
+  Pki.setDFSPca(req.context, dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -61,7 +61,7 @@ exports.setDFSPca = function setDFSPca (req, res, next, body, dfspId) {
 };
 
 exports.getDFSPca = function getDFSPca (req, res, next, dfspId) {
-  Pki.getDFSPca(dfspId)
+  Pki.getDFSPca(req.context, dfspId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -71,7 +71,7 @@ exports.getDFSPca = function getDFSPca (req, res, next, dfspId) {
 };
 
 exports.updateDFSP = (req, res, next, body, dfspId) => {
-  Pki.updateDFSP(dfspId, body)
+  Pki.updateDFSP(req.context, dfspId, body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -81,7 +81,7 @@ exports.updateDFSP = (req, res, next, body, dfspId) => {
 };
 
 exports.getDfspsByMonetaryZones = (req, res, next, monetaryZoneId) => {
-  Pki.getDfspsByMonetaryZones(monetaryZoneId)
+  Pki.getDfspsByMonetaryZones(req.context, monetaryZoneId)
     .then(function (response) {
       utils.writeJson(res, response);
     })

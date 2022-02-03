@@ -17,8 +17,8 @@
 
 exports.up = function (knex, Promise) {
   return knex.schema.createTable('inbound_enrollments', (table) => {
-    table.increments('id', 11).primary();
-    table.integer('dfsp_id', 11).unsigned().notNullable();
+    table.increments('id').primary();
+    table.integer('dfsp_id').unsigned().notNullable();
     table.text('cert');
     table.text('csr');
     table.json('cert_info').defaultTo(null);

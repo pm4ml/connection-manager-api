@@ -18,7 +18,7 @@
 exports.up = function (knex, Promise) {
   return knex.schema.createTable('dfsp_endpoint_items', (table) => {
     table.increments('id').primary();
-    table.integer('dfsp_id', 11).unsigned().notNullable();
+    table.integer('dfsp_id').unsigned().notNullable();
     table.string('state', 512).defaultTo(null);
     table.string('direction', 512).defaultTo(null);
     table.string('value', 1024).defaultTo(null);

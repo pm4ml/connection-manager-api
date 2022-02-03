@@ -15,17 +15,13 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-exports.up = function (knex, Promise) {
-  return knex.schema.createTable('dfsps', (table) => {
-    table.increments('id').primary().unsigned().notNullable();
-    table.string('name', 512).notNullable();
-    table.string('identifier', 512).defaultTo(null);
-    table.index('id');
-    if (!process.env.TEST) table.engine('InnoDB');
-    if (!process.env.TEST) table.charset('utf8mb4');
-  });
-};
+exports.up = (knex) => knex.schema.createTable('dfsps', (table) => {
+  table.increments('id').primary().unsigned().notNullable();
+  table.string('name', 512).notNullable();
+  table.string('identifier', 512).defaultTo(null);
+  table.index('id');
+  table.engine('InnoDB');
+  table.charset('utf8mb4');
+});
 
-exports.down = function (knex, Promise) {
-  return knex.schema.dropTableIfExists('dfsps');
-};
+exports.down = knex => knex.schema.dropTableIfExists('dfsps');
