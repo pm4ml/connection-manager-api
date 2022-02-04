@@ -123,10 +123,11 @@ exports.findObjectByDirectionType = async (direction, type, dfspId) => {
 /**
  * Gets a set of endpoints, parse the JSON in value, returning an Array of Objects
  */
-exports.findAllByDirectionType = async (direction, type) => {
+exports.findConfirmedByDirectionType = async (direction, type) => {
   const rawObjects = await knex.table(ENDPOINT_ITEMS_TABLE)
     .where(`${ENDPOINT_ITEMS_TABLE}.direction`, direction)
     .where(`${ENDPOINT_ITEMS_TABLE}.type`, type)
+    .where(`${ENDPOINT_ITEMS_TABLE}.state`, 'CONFIRMED')
     .select(`${ENDPOINT_ITEMS_TABLE}.*`);
   return Promise.all(rawObjects.map(row => rowToObject(row)));
 };

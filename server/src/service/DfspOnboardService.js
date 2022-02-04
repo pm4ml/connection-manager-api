@@ -20,20 +20,23 @@ const DFSPModel = require('../models/DFSPModel');
 const DFSPEndpointItemModel = require('../models/DFSPEndpointItemModel');
 
 const getIPsBundle = async () => {
-  const dfsps = await DFSPModel.findAll();
-  const ips = await DFSPEndpointItemModel.findAllByDirectionType('EGRESS', 'IP');
-  const dfspNames = Object.fromEntries(dfsps.map((dfsp) => [dfsp.id, dfsp.name]));
-  return ips.reduce((acc, ip) => {
-    acc[dfspNames[ip.dfsp_id]] = acc[dfspNames[ip.dfsp_id]] ? acc[dfspNames[ip.dfsp_id]] + ',' + ip.value.address : ip.value.address;
-    return acc;
-  });
+  const ips = await DFSPEndpointItemModel.findConfirmedByDirectionType('EGRESS', 'IP');
+  const bundle = {};
+  for (const ip of ips) {
+    if (bundle[ip.dfsp_id]) {
+      bundle[ip.dfsp_id] += ',' + ip.value.address;
+    } else {
+      bundle[ip.dfsp_id] = ip.value.address;
+    }
+  }
+  return bundle;
 };
 
 exports.onboardDFSP = async (ctx, dfspId) => {
   await PkiService.validateDfsp(ctx, dfspId);
   const { pkiEngine } = ctx;
-  const dfsps = await DFSPModel.findAll();
-  await Promise.all(dfsps.map((dfsp) => pkiEngine.populateDFSPClientCertBundle(dfsp.id, dfsp.name)));
+  const id = await DFSPModel.findIdByDfspId(dfspId);
+  await pkiEngine.populateDFSPClientCertBundle(id, dfspId);
 
   const ipsBundle = await getIPsBundle();
   await pkiEngine.populateDFSPInternalIPWhitelistBundle(ipsBundle);

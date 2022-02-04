@@ -286,7 +286,9 @@ class VaultPKIEngine extends PKIEngine {
     this.validateId(dfspId, 'dfspId');
     const dfspCA = await this.getDFSPCA(dfspId);
     const enrollments = await this.getDFSPOutboundEnrollments(dfspId);
-    const dfspClientCert = enrollments.filter((en) => en.state === 'CERT_SIGNED').sort((a, b) => b - a);
+    const dfspClientCert = enrollments
+      .filter((en) => en.state === 'CERT_SIGNED')
+      .sort((a, b) => b.id - a.id)[0];
     const cert = this.getCertInfo(dfspClientCert.certificate);
     const bundle = {
       ca_bundle: `${dfspCA.intermediateChain}\n${dfspCA.rootCertificate}`,
