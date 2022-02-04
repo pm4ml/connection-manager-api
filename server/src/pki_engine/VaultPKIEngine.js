@@ -282,6 +282,29 @@ class VaultPKIEngine extends PKIEngine {
   }
   // endregion
 
+  async populateDFSPClientCertBundle (dfspId, dfspName) {
+    this.validateId(dfspId, 'dfspId');
+    const dfspCA = await this.getDFSPCA(dfspId);
+    const enrollments = await this.getDFSPOutboundEnrollments(dfspId);
+    const dfspClientCert = enrollments.filter((en) => en.state === 'CERT_SIGNED').sort((a, b) => b - a);
+    const cert = this.getCertInfo(dfspClientCert.certificate);
+    const bundle = {
+      ca_bundle: `${dfspCA.intermediateChain}\n${dfspCA.rootCertificate}`,
+      client_cert_chain: `${dfspClientCert.key}\n${dfspClientCert.certificate}\n${dfspCA.intermediateChain}\n${dfspCA.rootCertificate}`,
+      fqdn: cert.subject.CN,
+      host: dfspName,
+    };
+    await this.client.write(`${this.mounts.dfspClientCertBundle}/${dfspName}`, bundle);
+  }
+
+  async populateDFSPInternalIPWhitelistBundle (value) {
+    return this.client.write(`${this.mounts.dfspInternalIPWhitelistBundle}`, value);
+  }
+
+  async populateDFSPExternalIPWhitelistBundle (value) {
+    return this.client.write(`${this.mounts.dfspExternalIPWhitelistBundle}`, value);
+  }
+
   /**
    * Delete root CA
    * @returns {Promise<void>}
@@ -378,8 +401,8 @@ class VaultPKIEngine extends PKIEngine {
     if (caOptions.default) {
       caConfig.signing.default = caOptions.default;
     }
-    const csr = await this.createHubCSR(caOptions.csr);
-    const cert = await this.signHubCSR(csr.csr);
+    const csr = await this.createIntermediateHubCSR(caOptions.csr);
+    const cert = await this.signIntermediateHubCSR(csr.csr);
     await this.setIntermediateCACert(cert.certificate);
 
     return {
@@ -421,12 +444,17 @@ class VaultPKIEngine extends PKIEngine {
    * @param {*} keyBits Key length. If not specified, takes the CA defaults ( see constructor )
    * @returns { csr: String, key:  String, PEM-encoded. Encrypted ( see encryptKey ) }
    */
-  async createCSR (csrParameters, keyBits) {
+  async createCSR (keyBits, csrParameters) {
     const keys = forge.pki.rsa.generateKeyPair(keyBits);
     const csr = forge.pki.createCertificationRequest();
     csr.publicKey = keys.publicKey;
-    csr.setSubject(Object.entries(csrParameters.subject).map(([shortName, value]) => ({ shortName, value })));
-    if (csrParameters.extensions && csrParameters.extensions.subjectAltName) {
+    if (csrParameters?.subject) {
+      csr.setSubject(Object.entries(csrParameters.subject).map(([shortName, value]) => ({
+        shortName,
+        value
+      })));
+    }
+    if (csrParameters?.extensions?.subjectAltName) {
       const { dns, ips } = csrParameters.extensions.subjectAltName;
       csr.setAttributes([{
         name: 'extensionRequest',

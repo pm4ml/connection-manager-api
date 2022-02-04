@@ -20,8 +20,8 @@
 const utils = require('../utils/writer.js');
 const DfspOutbound = require('../service/DfspOutboundService');
 
-exports.createCSRAndDFSPOutboundEnrollment = (req, res, next, body, dfspId) => {
-  DfspOutbound.createCSRAndDFSPOutboundEnrollment(req.context, dfspId, body)
+exports.createCSRAndDFSPOutboundEnrollment = (req, res, next, dfspId) => {
+  DfspOutbound.createCSRAndDFSPOutboundEnrollment(req.context, dfspId)
     .then(response => {
       utils.writeJson(res, response);
     })

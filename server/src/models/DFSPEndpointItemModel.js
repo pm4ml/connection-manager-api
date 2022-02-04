@@ -42,8 +42,10 @@ const rowToObject = async (rawObject) => {
   rawObject.dfsp_id = dfsp.dfsp_id;
   const ipEntry = JSON.parse(rawObject.value);
   delete rawObject.value;
-  const denormObject = { ...rawObject, value: ipEntry };
-  return denormObject;
+  return {
+    ...rawObject,
+    value: ipEntry
+  };
 };
 
 /**
@@ -116,6 +118,17 @@ exports.findObjectByDirectionType = async (direction, type, dfspId) => {
     .select(`${ENDPOINT_ITEMS_TABLE}.*`);
   const endpoints = Promise.all(rawObjects.map(async row => rowToObject(row)));
   return endpoints;
+};
+
+/**
+ * Gets a set of endpoints, parse the JSON in value, returning an Array of Objects
+ */
+exports.findAllByDirectionType = async (direction, type) => {
+  const rawObjects = await knex.table(ENDPOINT_ITEMS_TABLE)
+    .where(`${ENDPOINT_ITEMS_TABLE}.direction`, direction)
+    .where(`${ENDPOINT_ITEMS_TABLE}.type`, type)
+    .select(`${ENDPOINT_ITEMS_TABLE}.*`);
+  return Promise.all(rawObjects.map(row => rowToObject(row)));
 };
 
 exports.update = async (dfspId, id, endpointItem) => {

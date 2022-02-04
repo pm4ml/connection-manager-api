@@ -58,11 +58,10 @@ class PKIEngine {
 
   /**
    *
-   * @param {CSRParameters} csrParameters CSR Parameters
    * @param {*} keyBits Key length. If not specified, takes the CA defaults ( see constructor )
    * @param {*} algorithm signature algorithm If not specified, takes the CA defaults ( see constructor )
    */
-  async createCSR (csrParameters, keyBits, algorithm) {
+  async createCSR (keyBits, algorithm) {
     return undefined;
   }
 

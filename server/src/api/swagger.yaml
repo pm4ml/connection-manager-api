@@ -1192,13 +1192,13 @@ paths:
         required: true
         schema:
           type: string
-      requestBody:
-        description: CSR parameters
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CSRParameters'
-        required: true
+#      requestBody:
+#        description: CSR parameters
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/CSRParameters'
+#        required: true
       responses:
         200:
           description: successful operation
@@ -1206,6 +1206,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ObjectCreatedResponse'
+        400:
+          description: validation error
+          content: {}
+      security:
+      - OAuth2:
+        - pta
+      x-swagger-router-controller: DfspOutbound
+      x-codegen-request-body-name: body
+  /dfsps/{dfspId}/onboard:
+    post:
+      tags:
+      - Hub-client-certificate
+      summary: Onboard DFSP
+      description: Apply all certificates stored in Vault
+      operationId: onboardDFSP
+      parameters:
+      - name: dfspId
+        in: path
+        description: DFSP id
+        required: true
+        schema:
+          type: string
+      responses:
+        204:
+          description: successful operation
         400:
           description: validation error
           content: {}

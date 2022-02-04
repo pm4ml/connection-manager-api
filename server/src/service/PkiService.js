@@ -23,6 +23,7 @@ const NotFoundError = require('../errors/NotFoundError');
 
 const ValidationCodes = require('../pki_engine/ValidationCodes');
 const Constants = require('../constants/Constants');
+const { createCSRAndDFSPOutboundEnrollment } = require('./DfspOutboundService');
 
 /**
  * Creates an entry to store DFSP related info
@@ -43,10 +44,19 @@ exports.createDFSP = async (ctx, body) => {
   };
 
   try {
-    const result = await DFSPModel.create(values);
-    if (result.length === 1) {
-      return { id: body.dfspId };
-    }
+    await DFSPModel.create(values);
+    return { id: body.dfspId };
+  } catch (err) {
+    console.error(err);
+    throw new InternalError(err.message);
+  }
+};
+
+exports.createDFSPWithCSR = async (ctx, body) => {
+  await exports.createDFSP(ctx, body);
+
+  try {
+    await createCSRAndDFSPOutboundEnrollment(ctx, body.dfspId, Constants.clientCsrParameters);
   } catch (err) {
     console.error(err);
     throw new InternalError(err.message);

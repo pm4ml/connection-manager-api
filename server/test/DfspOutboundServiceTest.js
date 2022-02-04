@@ -47,10 +47,15 @@ const createCertFromCSR = (csrPem) => {
   cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
 
   // subject from CSR
-  cert.setSubject(csr.subject.attributes);
-  // issuer from CA
-  cert.setIssuer(caCert.subject.attributes);
-  cert.setExtensions(csr.getAttribute({ name: 'extensionRequest' }).extensions);
+  if (csr.subject?.attributes) {
+    cert.setSubject(csr.subject.attributes);
+    // issuer from CA
+    cert.setIssuer(caCert.subject.attributes);
+    const ext = csr.getAttribute({ name: 'extensionRequest' })?.extensions;
+    if (ext) {
+      cert.setExtensions(ext);
+    }
+  }
 
   cert.publicKey = csr.publicKey;
   cert.sign(privateKey, forge.md.sha256.create());

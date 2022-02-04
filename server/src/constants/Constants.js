@@ -135,6 +135,9 @@ module.exports = {
       pki: env.get('VAULT_MOUNT_PKI').default('pki').asString(),
       intermediatePki: env.get('VAULT_MOUNT_INTERMEDIATE_PKI').default('pki_int').asString(),
       kv: env.get('VAULT_MOUNT_KV').default('secrets').asString(),
+      dfspClientCertBundle: env.get('VAULT_MOUNT_DFSP_CLIENT_CERT_BUNDLE').default('onboarding_pm4mls').asString(),
+      dfspInternalIPWhitelistBundle: env.get('VAULT_MOUNT_DFSP_INT_IP_WHITELIST_BUNDLE').default('whitelist_pm4mls').asString(),
+      dfspExternalIPWhitelistBundle: env.get('VAULT_MOUNT_DFSP_EXT_IP_WHITELIST_BUNDLE').default('whitelist_fsps').asString(),
     },
     pkiBaseDomain: env.get('VAULT_PKI_BASE_DOMAIN').required().asString(),
     auth: vaultAuth,
@@ -149,4 +152,6 @@ module.exports = {
   },
   privateKeyLength: env.get('PRIVATE_KEY_LENGTH').default(4096).asIntPositive(),
   privateKeyAlgorithm: env.get('PRIVATE_KEY_ALGORITHM').default('rsa').asString(),
+  clientCsrParameters: env.get('CLIENT_CSR_PARAMETERS').asJsonConfig(),
+  serverCsrParameters: env.get('SERVER_CSR_PARAMETERS').asJsonConfig(),
 };

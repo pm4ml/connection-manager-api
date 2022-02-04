@@ -18,41 +18,21 @@
 'use strict';
 const PkiService = require('./PkiService');
 const ValidationError = require('../errors/ValidationError');
-const Constants = require('../constants/Constants');
 const { createID } = require('../models/GID');
 const DFSPModel = require('../models/DFSPModel');
 
 const REQUIRED_KEY_LENGTH = 4096;
 
 /**
- * Creates a CSR, signed by the environment CA. Creates an OutboundEnrollment, associate the CSR to it, and set its state to CSR_LOADED.
+ * Creates a CSR, signed by the environment CA.
+ * Creates an OutboundEnrollment, associate the CSR to it, and set its state to CSR_LOADED.
  */
-exports.createCSRAndDFSPOutboundEnrollment = async (ctx, dfspId, body) => {
+exports.createCSRAndDFSPOutboundEnrollment = async (ctx, dfspId) => {
   await PkiService.validateDfsp(ctx, dfspId);
-  const csrParameters = body;
-  if (!csrParameters.subject) {
-    throw new ValidationError('No subject specified');
-  }
-
-  if (!csrParameters.subject.CN) {
-    throw new ValidationError('No subject CN specified');
-  }
-
-  if (!csrParameters.extensions) {
-    throw new ValidationError('No extensions specified');
-  }
-
-  if (!csrParameters.extensions.subjectAltName) {
-    throw new ValidationError('No extensions subjectAltName specified');
-  }
-
-  if (!csrParameters.extensions.subjectAltName.dns && !csrParameters.extensions.subjectAltName.ips) {
-    throw new ValidationError('Must specify a DNS or IP subjectAltName');
-  }
 
   const { pkiEngine } = ctx;
 
-  const { csr, privateKey } = await pkiEngine.createCSR(csrParameters, REQUIRED_KEY_LENGTH);
+  const { csr, privateKey } = await pkiEngine.createCSR(REQUIRED_KEY_LENGTH);
   const csrInfo = pkiEngine.getCSRInfo(csr);
 
   const values = {
