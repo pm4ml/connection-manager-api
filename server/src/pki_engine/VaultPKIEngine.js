@@ -1302,6 +1302,7 @@ class VaultPKIEngine extends PKIEngine {
   validateCSR (csr) {
     const schema = Joi.object().description('CA initial parameters').keys({
       CN: Joi.string().description('Common Name').required(),
+      E: Joi.string().description('Email'),
       O: Joi.string().description('Organization').required(),
       OU: Joi.string().description('Organizational Unit'),
       C: Joi.string().description('Country'),
