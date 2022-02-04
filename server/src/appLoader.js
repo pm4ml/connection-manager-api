@@ -23,12 +23,14 @@ const path = require('path');
 const oas3Tools = require('oas3-tools');
 const logger = require('./log/logger');
 const OAuthHelper = require('./oauth/OAuthHelper');
+const HubCAService = require('./service/HubCAService');
 
 const db = require('./db/database');
 const corsUtils = require('./utils/corsUtils');
 
 const Constants = require('./constants/Constants');
 const PKIEngine = require('./pki_engine/VaultPKIEngine');
+const NotFoundError = require('./errors/NotFoundError');
 
 exports.connect = async () => {
   await db.waitForConnection();
@@ -61,9 +63,17 @@ exports.connect = async () => {
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
 
-  const rootCA = await pkiEngine.getRootCaCert();
+  let rootCA;
+  const ctx = { pkiEngine };
+  try {
+    rootCA = await HubCAService.getHubCA(ctx);
+  } catch (e) {
+    if (!(e instanceof NotFoundError)) {
+      throw e;
+    }
+  }
   if (!rootCA) {
-    await pkiEngine.createCA(Constants.caCsrParameters);
+    await HubCAService.createInternalHubCA(ctx, Constants.caCsrParameters);
   }
 
   const middlewares = [

@@ -707,7 +707,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CAInitialInfo"
+              $ref: "#/components/schemas/CA_csr_dn"
         required: true
       responses:
         200:

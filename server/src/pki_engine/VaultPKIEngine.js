@@ -39,7 +39,16 @@ const VALID_SELF_SIGNED = 'VALID(SELF_SIGNED)';
 const INVALID = 'INVALID';
 
 class VaultPKIEngine extends PKIEngine {
-  constructor ({ endpoint, mounts, auth, pkiServerRole, pkiClientRole, signExpiryHours }) {
+  constructor ({
+    endpoint,
+    mounts,
+    auth,
+    pkiServerRole,
+    pkiClientRole,
+    signExpiryHours,
+    keyLength,
+    keyAlgorithm
+  }) {
     super();
     this.auth = auth;
     this.endpoint = endpoint;
@@ -49,6 +58,8 @@ class VaultPKIEngine extends PKIEngine {
     this.mounts = mounts;
     this.signExpiryHours = signExpiryHours;
     this.reconnectTimer = null;
+    this.keyLength = keyLength;
+    this.keyAlgorithm = keyAlgorithm;
 
     this.trustedCaStore = forge.pki.createCaStore(tls.rootCertificates.filter(cert => {
       try { forge.pki.certificateFromPem(cert); } catch { return false; } return true;
@@ -338,8 +349,8 @@ class VaultPKIEngine extends PKIEngine {
         locality: csr.L,
         country: csr.C,
         province: csr.ST,
-        key_type: Constants.privateKeyAlgorithm,
-        key_bits: Constants.privateKeyLength,
+        key_type: this.keyAlgorithm,
+        key_bits: this.keyLength,
       },
     });
 
