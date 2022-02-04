@@ -128,38 +128,7 @@ describe('PKIEngine', () => {
       // change the swagger api definition to not require a host at all, or even remove these entries for a CA
       // Have to check with the product team before making this change
       const caOptionsDoc = {
-        csr: {
-          hosts: [],
-          names: [],
-          key: {
-            size: 4096,
-            algo: 'rsa'
-          }
-        }
-      };
 
-      try {
-        await ctx.pkiEngine.createCA(caOptionsDoc);
-      } catch (error) {
-        assert.isTrue(error instanceof ValidationError, error);
-      }
-    }).timeout(15000);
-
-    it('should fail on a CAInitialInfo with more than one name', async () => {
-      // This is valid according to the swagger spec:
-      // A CSR for a CA doesn't need hosts or names entries to have values
-      // Thinking about this, a CA doesn't need hosts nor names, so we could
-      // change the swagger api definition to not require a host at all, or even remove these entries for a CA
-      // Have to check with the product team before making this change
-      const caOptionsDoc = {
-        csr: {
-          hosts: [],
-          names: [{ CN: 'test1', O: 'L' }, { CN: 'test2', O: 'L' }],
-          key: {
-            size: 4096,
-            algo: 'rsa'
-          }
-        }
       };
 
       try {
@@ -175,16 +144,7 @@ describe('PKIEngine', () => {
       // Thinking about this, a CA doesn't need hosts nor names, so we could
       // change the swagger api definition to not require a host at all, or even remove these entries for a CA
       // Have to check with the product team before making this change
-      const caOptionsDoc = {
-        csr: {
-          hosts: [],
-          names: [{ O: 'L' }],
-          key: {
-            size: 4096,
-            algo: 'rsa'
-          }
-        }
-      };
+      const caOptionsDoc = { O: 'L' };
 
       try {
         await ctx.pkiEngine.createCA(caOptionsDoc);

@@ -19,6 +19,7 @@
 const DFSPModel = require('../models/DFSPModel');
 const PkiService = require('./PkiService');
 const ValidationError = require('../errors/ValidationError');
+const Constants = require('../constants/Constants');
 
 exports.createDfspServerCerts = async (ctx, dfspId, body) => {
   if (body === null || typeof body === 'undefined') {
@@ -67,13 +68,10 @@ exports.getAllDfspServerCerts = async (ctx) => {
 /**
  * Creates the server certificates
  */
-exports.createHubServerCerts = async (ctx, body) => {
-  if (body === null || typeof body === 'undefined') {
-    throw new ValidationError(`Invalid body ${body}`);
-  }
+exports.createHubServerCerts = async (ctx) => {
   const { pkiEngine } = ctx;
   const cert = {};
-  const serverCertData = await pkiEngine.createHubServerCert(body);
+  const serverCertData = await pkiEngine.createHubServerCert(Constants.serverCsrParameters);
   cert.rootCertificate = await pkiEngine.getRootCaCert();
   cert.rootCertificateInfo = pkiEngine.getCertInfo(cert.rootCertificate);
   if (serverCertData.ca_chain) {

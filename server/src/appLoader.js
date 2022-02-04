@@ -61,6 +61,11 @@ exports.connect = async () => {
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
 
+  const rootCA = await pkiEngine.getRootCaCert();
+  if (!rootCA) {
+    await pkiEngine.createCA(Constants.caCsrParameters);
+  }
+
   const middlewares = [
     (req, res, next) => {
       req.context = {

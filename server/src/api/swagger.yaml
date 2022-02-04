@@ -639,14 +639,13 @@ paths:
       summary: post server certificate
       description: TBD
       operationId: createHubServerCerts
-
-      requestBody:
-        description: TBD
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CSRParameters'
-        required: true
+#      requestBody:
+#        description: TBD
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/CSRParameters'
+#        required: true
       responses:
         200:
           description: successful operation

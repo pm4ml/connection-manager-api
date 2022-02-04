@@ -1,9 +1,0 @@
-{
-  "signing": {
-    "default": {
-      "expiry": "43800h",
-      "usages": ["signing", "key encipherment", "client auth"],
-      "signature_algorithm": "SHA256WithRSA"
-    }
-  }
-}

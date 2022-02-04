@@ -154,4 +154,5 @@ module.exports = {
   privateKeyAlgorithm: env.get('PRIVATE_KEY_ALGORITHM').default('rsa').asString(),
   clientCsrParameters: env.get('CLIENT_CSR_PARAMETERS').asJsonConfig(),
   serverCsrParameters: env.get('SERVER_CSR_PARAMETERS').asJsonConfig(),
+  caCsrParameters: env.get('CA_CSR_PARAMETERS').asJsonConfig(),
 };

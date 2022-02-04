@@ -10,8 +10,6 @@
 
 const vault = require('node-vault');
 const forge = require('node-forge');
-const CAInitialInfo = require('./CAInitialInfo');
-const defaultCAConfig = require('./ca-config.json');
 const Validation = require('./Validation');
 const ValidationCodes = require('./ValidationCodes');
 const moment = require('moment');
@@ -20,6 +18,9 @@ const PKIEngine = require('./PKIEngine');
 const InvalidEntityError = require('../errors/InvalidEntityError');
 const NotFoundError = require('../errors/NotFoundError');
 const tls = require('tls');
+const Joi = require('joi');
+const ValidationError = require('../errors/ValidationError');
+const Constants = require('../constants/Constants');
 
 // TODO: find and link document containing rules on allowable paths
 const vaultPaths = {
@@ -320,40 +321,31 @@ class VaultPKIEngine extends PKIEngine {
 
   /**
    * Create root CA
-   * @param {CAInitialInfo} caOptionsDoc. Engine options, @see CAInitialInfo
+   * @param {object} csr
    */
-  async createCA (caOptionsDoc) {
-    const caOptions = new CAInitialInfo(caOptionsDoc);
-    const caConfig = { ...defaultCAConfig };
-    if (caOptions.default) {
-      caConfig.signing.default = caOptions.default;
-    }
-
+  async createCA (csr) {
+    this.validateCSR(csr);
     try { await this.deleteCA(); } catch (e) { }
 
-    const { names, key: keyDetails } = caOptions.csr;
-    const altNames = names.length > 1 ? names.slice(1).map((name) => name.CN).join(',') : '';
     const { data } = await this.client.request({
       path: `/${this.mounts.pki}/root/generate/exported`,
       method: 'POST',
       json: {
-        common_name: names[0].CN,
-        alt_names: altNames,
-        ou: names.map((name) => name.OU),
-        organization: names.map((name) => name.O),
-        locality: names.map((name) => name.L),
-        country: names.map((name) => name.C),
-        province: names.map((name) => name.ST),
-        key_type: keyDetails.algo,
-        key_bits: keyDetails.size,
-        ttl: caConfig.signing.default.expiry,
+        common_name: csr.CN,
+        ou: csr.OU,
+        organization: csr.O,
+        locality: csr.L,
+        country: csr.C,
+        province: csr.ST,
+        key_type: Constants.privateKeyAlgorithm,
+        key_bits: Constants.privateKeyLength,
       },
     });
 
     return {
       cert: data.certificate,
       key: data.private_key,
-      caConfig
+      csr,
     };
   }
 
@@ -398,20 +390,15 @@ class VaultPKIEngine extends PKIEngine {
      * @param {CAInitialInfo} caOptionsDoc. Engine options, @see CAInitialInfo
      */
   async createIntermediateCA (caOptionsDoc) {
-    const caOptions = new CAInitialInfo(caOptionsDoc);
-    const caConfig = { ...defaultCAConfig };
-    if (caOptions.default) {
-      caConfig.signing.default = caOptions.default;
-    }
-    const csr = await this.createIntermediateHubCSR(caOptions.csr);
-    const cert = await this.signIntermediateHubCSR(csr.csr);
+    this.validateCSR(caOptionsDoc);
+    const csr = await this.createIntermediateHubCSR(caOptionsDoc);
+    const cert = await this.signIntermediateHubCSR(caOptionsDoc);
     await this.setIntermediateCACert(cert.certificate);
 
     return {
       cert: cert.certificate,
       csr: csr.csr,
       key: csr.private_key,
-      caConfig
     };
   }
 
@@ -1310,6 +1297,22 @@ class VaultPKIEngine extends PKIEngine {
       signatureAlgorithm: forge.pki.oids[cert.siginfo.algorithmOid],
       publicKeyLength: cert.publicKey.n.bitLength(),
     };
+  }
+
+  validateCSR (csr) {
+    const schema = Joi.object().description('CA initial parameters').keys({
+      CN: Joi.string().description('Common Name').required(),
+      O: Joi.string().description('Organization').required(),
+      OU: Joi.string().description('Organizational Unit'),
+      C: Joi.string().description('Country'),
+      ST: Joi.string().description('State'),
+      L: Joi.string().description('Location'),
+    });
+    const result = schema.validate(csr);
+    if (result.error) {
+      console.warn(result.error.details);
+      throw new ValidationError('Invalid CAInitialInfo document', result.error.details);
+    }
   }
 }
 
