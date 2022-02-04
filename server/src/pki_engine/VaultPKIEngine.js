@@ -39,12 +39,13 @@ const VALID_SELF_SIGNED = 'VALID(SELF_SIGNED)';
 const INVALID = 'INVALID';
 
 class VaultPKIEngine extends PKIEngine {
-  constructor ({ endpoint, mounts, auth, pkiBaseDomain, signExpiryHours }) {
+  constructor ({ endpoint, mounts, auth, pkiServerRole, pkiClientRole, signExpiryHours }) {
     super();
     this.auth = auth;
     this.endpoint = endpoint;
     this.vault = vault({ endpoint });
-    this.pkiBaseDomain = pkiBaseDomain;
+    this.pkiServerRole = pkiServerRole;
+    this.pkiClientRole = pkiClientRole;
     this.mounts = mounts;
     this.signExpiryHours = signExpiryHours;
     this.reconnectTimer = null;
@@ -367,7 +368,7 @@ class VaultPKIEngine extends PKIEngine {
       }
     }
     const { data } = await this.client.request({
-      path: `/${this.mounts.pki}/issue/${this.pkiBaseDomain}`,
+      path: `/${this.mounts.pki}/issue/${this.pkiServerRole}`,
       method: 'POST',
       json: reqJson,
     });
@@ -487,7 +488,7 @@ class VaultPKIEngine extends PKIEngine {
   async signWithIntermediateCA (csr) {
     const csrInfo = forge.pki.certificationRequestFromPem(csr);
     const { data } = await this.client.request({
-      path: `/${this.mounts.intermediatePki}/sign/${this.pkiBaseDomain}`,
+      path: `/${this.mounts.intermediatePki}/sign/${this.pkiClientRole}`,
       method: 'POST',
       json: {
         common_name: csrInfo.subject.getField('CN').value,
@@ -505,7 +506,7 @@ class VaultPKIEngine extends PKIEngine {
   async sign (csr) {
     const csrInfo = forge.pki.certificationRequestFromPem(csr);
     const { data } = await this.client.request({
-      path: `/${this.mounts.pki}/sign/${this.pkiBaseDomain}`,
+      path: `/${this.mounts.pki}/sign/${this.pkiClientRole}`,
       method: 'POST',
       json: {
         common_name: csrInfo.subject.getField('CN').value,
