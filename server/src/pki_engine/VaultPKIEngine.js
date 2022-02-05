@@ -512,15 +512,15 @@ class VaultPKIEngine extends PKIEngine {
   /**
    * Sign Client (DFSP) CSR and return client certificate
    * @param csr
+   * @param commonName
    * @returns {Promise<*>}
    */
-  async sign (csr) {
-    const csrInfo = forge.pki.certificationRequestFromPem(csr);
+  async sign (csr, commonName) {
     const { data } = await this.client.request({
       path: `/${this.mounts.pki}/sign/${this.pkiClientRole}`,
       method: 'POST',
       json: {
-        common_name: csrInfo.subject.getField('CN').value,
+        common_name: commonName,
         csr,
         ttl: `${this.signExpiryHours}h`,
       },

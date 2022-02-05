@@ -129,6 +129,7 @@ module.exports = {
       .default('1000')
       .asInt(),
   },
+  switchFQDN: env.get('SWITCH_FQDN').default('switch.example.com').asString(),
   vault: {
     endpoint: env.get('VAULT_ENDPOINT').required().asString(),
     mounts: {

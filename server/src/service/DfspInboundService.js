@@ -109,7 +109,7 @@ exports.signDFSPInboundEnrollment = async (ctx, dfspId, enId) => {
 
   const { csr } = enrollment;
 
-  const newCert = await pkiEngine.sign(csr);
+  const newCert = await pkiEngine.sign(csr, Constants.switchFQDN);
   const certInfo = pkiEngine.getCertInfo(newCert);
 
   const inboundEnrollment = {
