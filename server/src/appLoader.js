@@ -89,6 +89,7 @@ exports.connect = async () => {
     (req, res, next) => {
       req.context = {
         pkiEngine,
+        certManager,
       };
       next();
     },
