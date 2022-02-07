@@ -66,7 +66,10 @@ exports.connect = async () => {
 
   let certManager;
   if (Constants.certManager.enabled) {
-    certManager = new CertManager(Constants.certManager);
+    certManager = new CertManager({
+      ...Constants.certManager,
+      logger,
+    });
   }
 
   let rootCA;
