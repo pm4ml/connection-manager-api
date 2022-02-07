@@ -39,8 +39,8 @@ class CertManager {
     const options = { headers: { 'Content-type': k8s.PatchUtils.PATCH_FORMAT_JSON_PATCH } };
 
     return this.k8sApi.patchNamespacedSecret(this.serverCertSecretName, this.serverCertSecretNamespace, patch, undefined, undefined, undefined, undefined, options)
-      .then(() => { this.logger.log('Server cert renewal successful'); })
-      .catch((err) => { this.logger.error('Error renewing server cert: ', err); });
+      .then(() => { console.log('Server cert renewal successful'); })
+      .catch((err) => { console.log('Error renewing server cert: ', err); });
   }
 }
 
