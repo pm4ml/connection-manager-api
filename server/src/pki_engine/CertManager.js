@@ -9,7 +9,6 @@
  ************************************************************************* */
 
 const k8s = require('@kubernetes/client-node');
-const assert = require('assert/strict');
 
 class CertManager {
   constructor (config) {
@@ -17,7 +16,9 @@ class CertManager {
     this.serverCertSecretName = config.serverCertSecretName;
     this.serverCertSecretNamespace = config.serverCertSecretNamespace;
 
-    assert(this.logger && this.serverCertSecretName && this.serverCertSecretNamespace);
+    if (!this.logger || !this.serverCertSecretName || !this.serverCertSecretNamespace) {
+      throw new Error('Missing one of the props: logger, serverCertSecretName, serverCertSecretNamespace');
+    }
 
     this.kc = new k8s.KubeConfig();
     this.kc.loadFromDefault();
