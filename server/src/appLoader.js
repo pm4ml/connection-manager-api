@@ -31,6 +31,7 @@ const corsUtils = require('./utils/corsUtils');
 const Constants = require('./constants/Constants');
 const PKIEngine = require('./pki_engine/VaultPKIEngine');
 const NotFoundError = require('./errors/NotFoundError');
+const CertManager = require('./pki_engine/CertManager');
 
 exports.connect = async () => {
   await db.waitForConnection();
@@ -63,8 +64,13 @@ exports.connect = async () => {
   const pkiEngine = new PKIEngine(Constants.vault);
   await pkiEngine.connect();
 
+  let certManager;
+  if (Constants.certManager.enabled) {
+    certManager = new CertManager(Constants.certManager);
+  }
+
   let rootCA;
-  const ctx = { pkiEngine };
+  const ctx = { pkiEngine, certManager };
   try {
     rootCA = await HubCAService.getHubCA(ctx);
   } catch (e) {

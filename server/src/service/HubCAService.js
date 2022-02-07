@@ -32,7 +32,7 @@ const formatBody = (body, pkiEngine) => {
 };
 
 exports.createInternalHubCA = async (ctx, body) => {
-  const { pkiEngine } = ctx;
+  const { pkiEngine, certManager } = ctx;
 
   const { cert } = await pkiEngine.createCA(body);
   const certInfo = pkiEngine.getCertInfo(cert);
@@ -45,11 +45,15 @@ exports.createInternalHubCA = async (ctx, body) => {
 
   await pkiEngine.setHubCACertDetails(info);
 
+  if (certManager) {
+    await certManager.renewServerCert();
+  }
+
   return info;
 };
 
 exports.createExternalHubCA = async (ctx, body) => {
-  const { pkiEngine } = ctx;
+  const { pkiEngine, certManager } = ctx;
 
   const rootCertificate = body.rootCertificate || '';
   const intermediateChain = body.intermediateChain || '';
@@ -69,6 +73,10 @@ exports.createExternalHubCA = async (ctx, body) => {
   if (validationState === ValidationCodes.VALID_STATES.VALID) {
     await pkiEngine.setHubCaCertChain(rootCertificate + intermediateChain, privateKey);
     await pkiEngine.setHubCACertDetails(info);
+  }
+
+  if (certManager) {
+    await certManager.renewServerCert();
   }
   return info;
 };

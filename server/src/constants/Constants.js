@@ -65,6 +65,15 @@ if (vaultAuthMethod === 'K8S') {
   };
 }
 
+const certManager = {
+  enabled: env.get('CERT_MANAGER_ENABLED').default('false').asBool(),
+};
+
+if (certManager.enabled) {
+  certManager.serverCertSecretName = env.get('CERT_MANAGER_SERVER_CERT_SECRET_NAME').asString();
+  certManager.serverCertSecretNamespace = env.get('CERT_MANAGER_SERVER_CERT_SECRET_NAMESPACE').asString();
+}
+
 module.exports = {
   SERVER: {
     PORT: env.get('PORT').default('3001').asPortNumber(),
@@ -147,6 +156,7 @@ module.exports = {
     keyLength: env.get('PRIVATE_KEY_LENGTH').default(4096).asIntPositive(),
     keyAlgorithm: env.get('PRIVATE_KEY_ALGORITHM').default('rsa').asString(),
   },
+  certManager,
   auth: {
     enabled: env.get('AUTH_ENABLED').asBoolStrict(),
     creds: {

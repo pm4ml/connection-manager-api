@@ -1,0 +1,46 @@
+/** ************************************************************************
+ *  (C) Copyright Mojaloop Foundation 2020                                *
+ *                                                                        *
+ *  This file is made available under the terms of the license agreement  *
+ *  specified in the corresponding source code repository.                *
+ *                                                                        *
+ *  ORIGINAL AUTHOR:                                                      *
+ *       Yevhen Kyriukha <yevhen.kyriukha@modusbox.com>                   *
+ ************************************************************************* */
+
+const k8s = require('@kubernetes/client-node');
+const assert = require('assert/strict');
+
+class CertManager {
+  constructor (config) {
+    this.logger = config.logger;
+    this.serverCertSecretName = config.serverCertSecretName;
+    this.serverCertSecretNamespace = config.serverCertSecretNamespace;
+
+    assert(this.logger && this.serverCertSecretName && this.serverCertSecretNamespace);
+
+    this.kc = new k8s.KubeConfig();
+    this.kc.loadFromDefault();
+
+    this.k8sApi = this.kc.makeApiClient(k8s.CoreV1Api);
+  }
+
+  async renewServerCert () {
+    const patch = [
+      {
+        op: 'replace',
+        path: '/metadata/annotations',
+        value: {
+          'cert-manager.io/issuer-name': 'force-renewal-triggered'
+        }
+      }
+    ];
+    const options = { headers: { 'Content-type': k8s.PatchUtils.PATCH_FORMAT_JSON_PATCH } };
+
+    return this.k8sApi.patchNamespacedSecret(this.serverCertSecretName, this.serverCertSecretNamespace, patch, undefined, undefined, undefined, undefined, options)
+      .then(() => { this.logger.log('Server cert renewal successful'); })
+      .catch((err) => { this.logger.error('Error renewing server cert: ', err); });
+  }
+}
+
+module.exports = CertManager;
