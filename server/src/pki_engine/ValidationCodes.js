@@ -34,7 +34,7 @@ module.exports = {
     CSR_CERT_SAME_CN: {
       code: 'CSR_CERT_SAME_CN',
       description:
-        `The CSR and the Certificate must have the same CN. This was created because some external CAs change some subject info in the certificate, so we can't use CSR_CERT_SAME_SUBJECT_INFO`
+        'The CSR and the Certificate must have the same CN. This was created because some external CAs change some subject info in the certificate, so we can\'t use CSR_CERT_SAME_SUBJECT_INFO'
     },
     CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH: {
       code: 'CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH',

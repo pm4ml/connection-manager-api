@@ -28,8 +28,8 @@ module.exports = {
     ValidationCodes.VALIDATION_CODES.CERTIFICATE_VALIDITY.code,
     // ValidationCodes.VALIDATION_CODES.CERTIFICATE_USAGE_CLIENT.code,
     ValidationCodes.VALIDATION_CODES.CERTIFICATE_ALGORITHM_SHA256.code,
-    ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code,
-    ValidationCodes.VALIDATION_CODES.CSR_CERT_SAME_CN.code
+    ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code
+    // ValidationCodes.VALIDATION_CODES.CSR_CERT_SAME_CN.code
   ],
   outboundValidations: [
     ValidationCodes.VALIDATION_CODES.CSR_SIGNATURE_VALID.code,
