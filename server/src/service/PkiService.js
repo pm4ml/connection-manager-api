@@ -53,10 +53,11 @@ exports.createDFSP = async (ctx, body) => {
 };
 
 exports.createDFSPWithCSR = async (ctx, body) => {
-  await exports.createDFSP(ctx, body);
+  const dfsp = await exports.createDFSP(ctx, body);
 
   try {
     await createCSRAndDFSPOutboundEnrollment(ctx, body.dfspId, Constants.clientCsrParameters);
+    return dfsp;
   } catch (err) {
     console.error(err);
     throw new InternalError(err.message);
