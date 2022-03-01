@@ -83,6 +83,14 @@ exports.createExternalHubCA = async (ctx, body) => {
 
 exports.getHubCA = async (ctx) => {
   const { pkiEngine } = ctx;
+  const ca = await pkiEngine.getRootCaCert();
+  return {
+    rootCertificate: ca,
+  };
+};
+
+exports.getHubCAInfo = async (ctx) => {
+  const { pkiEngine } = ctx;
   return pkiEngine.getHubCACertDetails();
 };
 
