@@ -21,8 +21,6 @@ const ValidationError = require('../errors/ValidationError');
 const { createID } = require('../models/GID');
 const DFSPModel = require('../models/DFSPModel');
 
-const REQUIRED_KEY_LENGTH = 4096;
-
 /**
  * Creates a CSR, signed by the environment CA.
  * Creates an OutboundEnrollment, associate the CSR to it, and set its state to CSR_LOADED.

@@ -15,7 +15,7 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const ValidationsConfiguration = require('./ValidationsConfiguration');
+const { getValidationConfig } = require('./this.validationConfig');
 const ValidationCodes = require('./ValidationCodes');
 const Validation = require('./Validation');
 const forge = require('node-forge');
@@ -29,7 +29,8 @@ class PKIEngine {
    * @param {Object} options. Depends on the kind of PkiEngine. See subclasses
    */
   constructor (options) {
-    return undefined;
+    this.opts = options;
+    this.validationConfig = getValidationConfig(options);
   }
 
   /**
@@ -72,7 +73,7 @@ class PKIEngine {
    * @returns { validations, validationState } validations list and validationState, where validationState = VALID if all the validations are VALID or NOT_AVAIABLE; INVALID otherwise
    */
   validateJWSCertificate (publicKey) {
-    const validation = new Validation(ValidationsConfiguration.jwsCertValidations, true);
+    const validation = new Validation(this.validationConfig.jwsCertValidations, true);
     try {
       forge.pki.publicKeyFromPem(publicKey);
     } catch (e) {
@@ -100,7 +101,7 @@ class PKIEngine {
    */
   validateCACertificate (rootCertificate, intermediateChain, key) {
     const validationCodes = [
-      ...ValidationsConfiguration.dfspCaValidations,
+      ...this.validationConfig.dfspCaValidations,
       ...key ? [ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code] : []
     ];
     return this.performCAValidations(validationCodes, intermediateChain, rootCertificate, key);
@@ -115,7 +116,7 @@ class PKIEngine {
    * @returns { validations, validationState } validations list and validationState, where validationState = VALID if all the validations are VALID or NOT_AVAIABLE; INVALID otherwise
    */
   validateServerCertificate (serverCert, intermediateChain, rootCertificate) {
-    const validationCodes = ValidationsConfiguration.serverCertValidations;
+    const validationCodes = this.validationConfig.serverCertValidations;
     return this.performCertificateValidations(validationCodes, serverCert, intermediateChain, rootCertificate);
   }
 
@@ -262,7 +263,7 @@ class PKIEngine {
    * @returns { validations, validationState } validations list and validationState, where validationState = VALID if all the validations are VALID or NOT_AVAIABLE; INVALID otherwise
    */
   validateInboundEnrollment (enrollment) {
-    const validationCodes = ValidationsConfiguration.inboundValidations;
+    const validationCodes = this.validationConfig.inboundValidations;
     return this.performEnrollmentValidations(validationCodes, enrollment);
   }
 
@@ -274,7 +275,7 @@ class PKIEngine {
    * @returns { validations, validationState } validations list and validationState, where validationState = VALID if all the validations are VALID or NOT_AVAIABLE; INVALID otherwise
    */
   validateOutboundEnrollment (enrollment) {
-    const validationCodes = ValidationsConfiguration.outboundValidations;
+    const validationCodes = this.validationConfig.outboundValidations;
     return this.performEnrollmentValidations(validationCodes, enrollment);
   }
 
