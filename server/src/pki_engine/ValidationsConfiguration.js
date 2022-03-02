@@ -15,7 +15,7 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { VALIDATION_CODES } = require('./js');
+const { VALIDATION_CODES } = require('./ValidationCodes');
 
 exports.getValidationConfig = (config) => ({
   inboundValidations: [
