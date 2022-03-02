@@ -100,7 +100,7 @@ describe('PKIEngine', () => {
           }
         }
       };
-      const keyCSRPair = await ctx.pkiEngine.createCSR(csrParameters, 4096, 'rsa');
+      const keyCSRPair = await ctx.pkiEngine.createCSR(csrParameters);
       assert.isNotNull(keyCSRPair.key);
       assert.isNotNull(keyCSRPair.csr);
     }).timeout(15000);

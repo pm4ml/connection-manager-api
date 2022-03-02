@@ -62,7 +62,7 @@ class PKIEngine {
    * @param {*} keyBits Key length. If not specified, takes the CA defaults ( see constructor )
    * @param {*} algorithm signature algorithm If not specified, takes the CA defaults ( see constructor )
    */
-  async createCSR (keyBits, algorithm) {
+  async createCSR (params) {
     return undefined;
   }
 

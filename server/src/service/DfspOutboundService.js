@@ -30,7 +30,7 @@ exports.createCSRAndDFSPOutboundEnrollment = async (ctx, dfspId) => {
 
   const { pkiEngine } = ctx;
 
-  const { csr, privateKey } = await pkiEngine.createCSR(REQUIRED_KEY_LENGTH);
+  const { csr, privateKey } = await pkiEngine.createCSR();
   const csrInfo = pkiEngine.getCSRInfo(csr);
 
   const values = {

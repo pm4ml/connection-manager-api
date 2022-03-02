@@ -20,7 +20,6 @@ const NotFoundError = require('../errors/NotFoundError');
 const tls = require('tls');
 const Joi = require('joi');
 const ValidationError = require('../errors/ValidationError');
-const Constants = require('../constants/Constants');
 
 // TODO: find and link document containing rules on allowable paths
 const vaultPaths = {
@@ -442,11 +441,10 @@ class VaultPKIEngine extends PKIEngine {
   /**
    *
    * @param {CSRParameters} csrParameters CSR Parameters
-   * @param {*} keyBits Key length. If not specified, takes the CA defaults ( see constructor )
    * @returns { csr: String, key:  String, PEM-encoded. Encrypted ( see encryptKey ) }
    */
-  async createCSR (keyBits, csrParameters) {
-    const keys = forge.pki.rsa.generateKeyPair(keyBits);
+  async createCSR (csrParameters) {
+    const keys = forge.pki.rsa.generateKeyPair(this.keyLength);
     const csr = forge.pki.createCertificationRequest();
     csr.publicKey = keys.publicKey;
     if (csrParameters?.subject) {
