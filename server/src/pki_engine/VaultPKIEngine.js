@@ -49,7 +49,7 @@ class VaultPKIEngine extends PKIEngine {
     keyLength,
     keyAlgorithm
   }) {
-    super();
+    super({ keyLength });
     this.auth = auth;
     this.endpoint = endpoint;
     this.vault = vault({ endpoint });
