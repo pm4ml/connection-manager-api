@@ -15,7 +15,7 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { getValidationConfig } = require('./this.validationConfig');
+const { getValidationConfig } = require('./ValidationsConfiguration');
 const ValidationCodes = require('./ValidationCodes');
 const Validation = require('./Validation');
 const forge = require('node-forge');
