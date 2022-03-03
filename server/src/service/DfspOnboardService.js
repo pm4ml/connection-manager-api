@@ -43,4 +43,6 @@ exports.onboardDFSP = async (ctx, dfspId) => {
 
   // TODO: populate external IP whitelist
   // await Promise.all(dfsps.map((dfsp) => pkiEngine.populateDFSPExternalIPWhitelistBundle(ipsBundle)));
+
+  return {};
 };
