@@ -17,7 +17,6 @@
 
 'use strict';
 const PkiService = require('./PkiService');
-const Constants = require('../constants/Constants');
 const ValidationCodes = require('../pki_engine/ValidationCodes');
 const ValidationError = require('../errors/ValidationError');
 
@@ -86,6 +85,8 @@ exports.getHubCA = async (ctx) => {
   const ca = await pkiEngine.getRootCaCert();
   return {
     rootCertificate: ca,
+    validationState: 'VALID',
+    type: 'INTERNAL',
   };
 };
 
