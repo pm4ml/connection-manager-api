@@ -1401,7 +1401,7 @@ paths:
     get:
       tags:
       - DFSP-Endpoint-configuration
-      summary: Get the DFSP Ingress IPs
+      summary: Get the DFSP Ingress configuration
       operationId: getDFSPIngress
       parameters:
       - name: dfspId
@@ -1416,9 +1416,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/EndPointIp'
+                $ref: '#/components/schemas/GetDFSPIngressRes'
       security:
       - OAuth2:
         - mta
@@ -1427,7 +1425,7 @@ paths:
     post:
       tags:
       - DFSP-Endpoint-configuration
-      summary: Adds a new IP entry to the DFSP Ingress endpoint
+      summary: Adds DFSP Ingress endpoint configuration
       description: Adds the entry with state NEW
       operationId: createDFSPIngress
       parameters:
@@ -1442,7 +1440,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/InputIPValue'
+              $ref: '#/components/schemas/CreateDFSPIngressReq'
         required: true
       responses:
         200:
@@ -1450,7 +1448,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EndPointIp'
+                $ref: '#/components/schemas/CreateDFSPIngressRes'
       security:
       - OAuth2:
         - mta
@@ -3020,6 +3018,11 @@ components:
       properties:
         value:
           $ref: '#/components/schemas/IPEntry'
+    DFSPIngress:
+      type: object
+      properties:
+        IP:
+            $ref: '#/components/schemas/IPEntry'
     DFSPEgress:
       type: object
       properties:
@@ -3029,6 +3032,31 @@ components:
           uniqueItems: true
           items:
             $ref: '#/components/schemas/IPEntry'
+    CreateDFSPIngressReq:
+      type: object
+      required:
+      - value
+      properties:
+        value:
+          $ref: '#/components/schemas/DFSPIngress'
+    GetDFSPIngressRes:
+      allOf:
+      - $ref: '#/components/schemas/BaseEndpoint'
+      - type: object
+        required:
+        - value
+        properties:
+          value:
+            $ref: '#/components/schemas/DFSPIngress'
+    CreateDFSPIngressRes:
+      allOf:
+      - $ref: '#/components/schemas/BaseEndpoint'
+      - type: object
+        required:
+        - value
+        properties:
+          value:
+            $ref: '#/components/schemas/DFSPIngress'
     CreateDFSPEgressReq:
       type: object
       required:
