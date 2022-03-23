@@ -3023,7 +3023,7 @@ components:
     DFSPEgress:
       type: object
       properties:
-        ipList:
+        IPList:
           type: array
           minItems: 1
           uniqueItems: true
