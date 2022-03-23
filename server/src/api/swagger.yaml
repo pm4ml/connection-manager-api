@@ -1397,6 +1397,66 @@ paths:
         - mta
         - pta
       x-swagger-router-controller: DfspNetworkConfig
+  /dfsps/{dfspId}/endpoints/ingress:
+    get:
+      tags:
+      - DFSP-Endpoint-configuration
+      summary: Get the DFSP Ingress IPs
+      operationId: getDFSPIngress
+      parameters:
+      - name: dfspId
+        in: path
+        description: DFSP id
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EndPointIp'
+      security:
+      - OAuth2:
+        - mta
+        - pta
+      x-swagger-router-controller: DfspNetworkConfig
+    post:
+      tags:
+      - DFSP-Endpoint-configuration
+      summary: Adds a new IP entry to the DFSP Ingress endpoint
+      description: Adds the entry with state NEW
+      operationId: createDFSPIngress
+      parameters:
+      - name: dfspId
+        in: path
+        description: DFSP id
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: DFSP ingress IP entry
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InputIPValue'
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndPointIp'
+      security:
+      - OAuth2:
+        - mta
+        - pta
+      x-swagger-router-controller: DfspNetworkConfig
+      x-codegen-request-body-name: body
   /dfsps/{dfspId}/endpoints/ingress/ips:
     get:
       tags:
@@ -1728,9 +1788,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/EndPointIp'
+                $ref: '#/components/schemas/getDFSPEgressRes'
       security:
       - OAuth2:
         - mta
@@ -2959,17 +3017,22 @@ components:
       properties:
         value:
           $ref: '#/components/schemas/IPEntry'
+    DFSPEgress:
+      type: object
+      properties:
+        ipList:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/IPEntry'
     CreateDFSPEgressReq:
-       type: object
-       required:
-       - value
-       properties:
-          value:
-            type: array
-            minItems: 1
-            uniqueItems: true
-            items:
-              $ref: '#/components/schemas/IPEntry'
+      type: object
+      required:
+      - value
+      properties:
+        value:
+          $ref: '#/components/schemas/DFSPEgress'
     CreateDFSPEgressRes:
       allOf:
       - $ref: '#/components/schemas/BaseEndpoint'
@@ -2978,11 +3041,16 @@ components:
         - value
         properties:
           value:
-            type: array
-            minItems: 1
-            uniqueItems: true
-            items:
-              $ref: '#/components/schemas/IPEntry'
+            $ref: '#/components/schemas/DFSPEgress'
+    getDFSPEgressRes:
+      allOf:
+      - $ref: '#/components/schemas/BaseEndpoint'
+      - type: object
+        required:
+        - value
+        properties:
+          value:
+            $ref: '#/components/schemas/DFSPEgress'
     InputURLValue:
       type: object
       properties:
