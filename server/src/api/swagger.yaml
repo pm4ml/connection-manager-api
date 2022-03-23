@@ -3019,11 +3019,11 @@ components:
         value:
           $ref: '#/components/schemas/IPEntry'
     DFSPIngress:
-      type: object
-      properties:
-        IP:
-            $ref: '#/components/schemas/IPEntry'
+      description: DFSP Ingress entity
+      allOf:
+      - $ref: '#/components/schemas/URLEntry'
     DFSPEgress:
+      description: DFSP Egress entity
       type: object
       properties:
         IPList:
