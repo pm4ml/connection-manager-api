@@ -1786,7 +1786,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/getDFSPEgressRes'
+                $ref: '#/components/schemas/GetDFSPEgressRes'
       security:
       - OAuth2:
         - mta
@@ -3073,7 +3073,7 @@ components:
         properties:
           value:
             $ref: '#/components/schemas/DFSPEgress'
-    getDFSPEgressRes:
+    GetDFSPEgressRes:
       allOf:
       - $ref: '#/components/schemas/BaseEndpoint'
       - type: object
