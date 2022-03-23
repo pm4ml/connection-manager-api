@@ -153,7 +153,6 @@ paths:
           description: external process error
           content: {}
       x-swagger-router-controller: Login
-
   /hub/endpoints:
     get:
       tags:
@@ -1710,6 +1709,66 @@ paths:
         - mta
         - pta
       x-swagger-router-controller: DfspNetworkConfig
+  /dfsps/{dfspId}/endpoints/egress:
+    get:
+      tags:
+      - DFSP-Endpoint-configuration
+      summary: Get the DFSP Egress configuration
+      operationId: getDFSPEgress
+      parameters:
+      - name: dfspId
+        in: path
+        description: DFSP id
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EndPointIp'
+      security:
+      - OAuth2:
+        - mta
+        - pta
+      x-swagger-router-controller: DfspNetworkConfig
+    post:
+      tags:
+      - DFSP-Endpoint-configuration
+      summary: Adds DFSP Egress endpoint configuration
+      description: Adds the entry with state NEW
+      operationId: createDFSPEgress
+      parameters:
+      - name: dfspId
+        in: path
+        description: DFSP id
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: DFSP egress IP entry
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDFSPEgressReq'
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDFSPEgressRes'
+      security:
+      - OAuth2:
+        - mta
+        - pta
+      x-swagger-router-controller: DfspNetworkConfig
+      x-codegen-request-body-name: body
   /dfsps/{dfspId}/endpoints/egress/ips:
     get:
       tags:
@@ -2900,6 +2959,30 @@ components:
       properties:
         value:
           $ref: '#/components/schemas/IPEntry'
+    CreateDFSPEgressReq:
+       type: object
+       required:
+       - value
+       properties:
+          value:
+            type: array
+            minItems: 1
+            uniqueItems: true
+            items:
+              $ref: '#/components/schemas/IPEntry'
+    CreateDFSPEgressRes:
+      allOf:
+      - $ref: '#/components/schemas/BaseEndpoint'
+      - type: object
+        required:
+        - value
+        properties:
+          value:
+            type: array
+            minItems: 1
+            uniqueItems: true
+            items:
+              $ref: '#/components/schemas/IPEntry'
     InputURLValue:
       type: object
       properties:
