@@ -3033,55 +3033,25 @@ components:
           items:
             $ref: '#/components/schemas/IPEntry'
     CreateDFSPIngressReq:
-      type: object
-      required:
-      - value
-      properties:
-        value:
-          $ref: '#/components/schemas/DFSPIngress'
+      $ref: '#/components/schemas/DFSPIngress'
     GetDFSPIngressRes:
       allOf:
       - $ref: '#/components/schemas/BaseEndpoint'
-      - type: object
-        required:
-        - value
-        properties:
-          value:
-            $ref: '#/components/schemas/DFSPIngress'
+      - $ref: '#/components/schemas/DFSPIngress'
     CreateDFSPIngressRes:
       allOf:
       - $ref: '#/components/schemas/BaseEndpoint'
-      - type: object
-        required:
-        - value
-        properties:
-          value:
-            $ref: '#/components/schemas/DFSPIngress'
+      - $ref: '#/components/schemas/DFSPIngress'
     CreateDFSPEgressReq:
-      type: object
-      required:
-      - value
-      properties:
-        value:
-          $ref: '#/components/schemas/DFSPEgress'
+      $ref: '#/components/schemas/DFSPEgress'
     CreateDFSPEgressRes:
       allOf:
       - $ref: '#/components/schemas/BaseEndpoint'
-      - type: object
-        required:
-        - value
-        properties:
-          value:
-            $ref: '#/components/schemas/DFSPEgress'
+      - $ref: '#/components/schemas/DFSPEgress'
     GetDFSPEgressRes:
       allOf:
       - $ref: '#/components/schemas/BaseEndpoint'
-      - type: object
-        required:
-        - value
-        properties:
-          value:
-            $ref: '#/components/schemas/DFSPEgress'
+      - $ref: '#/components/schemas/DFSPEgress'
     InputURLValue:
       type: object
       properties:
