@@ -7,3 +7,11 @@ tmpdir
 .DS_Store
 localEnvs
 
+# ignore all log files
+**/*.log
+
+# ignore .env files
+.env
+
+# ignore vault install from server/run-vault.sh
+.vault
