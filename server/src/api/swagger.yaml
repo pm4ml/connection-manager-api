@@ -2929,12 +2929,14 @@ components:
       description: CA initial parameters
     URLEntry:
       type: object
+      additionalProperties: false
       properties:
         url:
           type: string
           description: URL
     IPEntry:
       type: object
+      additionalProperties: false
       properties:
         description:
           type: string
@@ -2958,6 +2960,7 @@ components:
             example: 8000-8080
     BaseEndpoint:
       type: object
+      additionalProperties: false
       properties:
         id:
           type: integer
@@ -3024,6 +3027,7 @@ components:
       - $ref: '#/components/schemas/URLEntry'
     DFSPEgress:
       description: DFSP Egress entity
+      additionalProperties: false
       type: object
       properties:
         IPList:
