@@ -22,7 +22,6 @@ exports.up = function (knex, Promise) {
     table.string('state', 512).defaultTo(null);
     table.string('direction', 512).defaultTo(null);
     table.jsonb('value').defaultTo(null);
-    table.string('type', 10).defaultTo(null);
     table.datetime('created_date').notNullable().defaultTo(knex.fn.now());
     table.string('created_by', 1024).defaultTo(null);
     table.foreign('dfsp_id', 'FK_ENDPT_DFSP_ID').references('dfsps.id').onDelete('CASCADE').onUpdate('NO ACTION');

@@ -306,5 +306,58 @@ describe('DfspNetworkConfigService', () => {
       assert.equal(items.length, 1);
       assert.equal(items[0].dfsp_id, 'DFSP_TEST_B', JSON.stringify(items, null, 2));
     });
+
+    it('should return a NotFound exception when Endpoint Egress config doesnt exist', async () => {
+      try {
+        const getDFSPEgressResult = await DfspNetworkConfigService.getDFSPEgress(ctx, dfspId);
+        assert.fail('NotFoundError should have been thrown');
+      } catch (error) {
+        assert(error instanceof NotFoundError, 'Error is: ' + error);
+      }
+    });
+
+    it('should create an Endpoint Egress config', async () => {
+      const body = {
+        IPList: [
+          {
+            description: 'Notification Callback Egress IP & Ports',
+            address: '163.10.24.28/30',
+            ports: [
+              '80',
+              '8000-8080'
+            ]
+          }
+        ]
+      };
+
+      const createDFSPEgressResult = await DfspNetworkConfigService.createDFSPEgress(ctx, dfspId, body);
+      const getDFSPEgressResult = await DfspNetworkConfigService.getDFSPEgress(ctx, dfspId);
+      assert.equal(createDFSPEgressResult.dfsp_id, dfspId);
+      assert.equal(getDFSPEgressResult.dfsp_id, dfspId);
+      assert.deepEqual(createDFSPEgressResult.IPList, body.IPList);
+      assert.deepEqual(getDFSPEgressResult.IPList, body.IPList);
+    });
+
+    it('should return a NotFound exception when Endpoint Ingress config doesnt exist', async () => {
+      try {
+        const getDFSPIngressResult = await DfspNetworkConfigService.getDFSPIngress(ctx, dfspId);
+        assert.fail('NotFoundError should have been thrown');
+      } catch (error) {
+        assert(error instanceof NotFoundError, 'Error is: ' + error);
+      }
+    });
+
+    it('should create an Endpoint Ingress config', async () => {
+      const body = {
+        url: 'string'
+      };
+
+      const createDFSPIngressResult = await DfspNetworkConfigService.createDFSPIngress(ctx, dfspId, body);
+      const getDFSPIngressResult = await DfspNetworkConfigService.getDFSPIngress(ctx, dfspId);
+      assert.equal(createDFSPIngressResult.dfsp_id, dfspId);
+      assert.equal(getDFSPIngressResult.dfsp_id, dfspId);
+      assert.deepEqual(createDFSPIngressResult.url, body.url);
+      assert.deepEqual(getDFSPIngressResult.url, body.url);
+    });
   });
 });

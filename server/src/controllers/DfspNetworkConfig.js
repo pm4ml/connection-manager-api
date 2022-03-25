@@ -30,6 +30,26 @@ exports.getDfspStatus = (req, res, next, dfspId) => {
     });
 };
 
+exports.createDFSPEgress = (req, res, next, body, dfspId) => {
+  DfspNetworkConfig.createDFSPEgress(req.context, dfspId, body)
+    .then(response => {
+      utils.writeJson(res, response);
+    })
+    .catch(response => {
+      utils.writeJson(res, response, response.status);
+    });
+};
+
+exports.getDFSPEgress = (req, res, next, dfspId) => {
+  DfspNetworkConfig.getDFSPEgress(req.context, dfspId)
+    .then(response => {
+      utils.writeJson(res, response);
+    })
+    .catch(response => {
+      utils.writeJson(res, response, response.status);
+    });
+};
+
 exports.createDFSPEgressIp = (req, res, next, body, dfspId) => {
   DfspNetworkConfig.createDFSPEgressIp(req.context, dfspId, body)
     .then(response => {
@@ -159,6 +179,27 @@ exports.getDFSPEndpoint = (req, res, next, dfspId, epId) => {
       utils.writeJson(res, response, response.status);
     });
 };
+
+exports.createDFSPIngress = (req, res, next, body, dfspId) => {
+  DfspNetworkConfig.createDFSPIngress(req.context, dfspId, body)
+    .then(response => {
+      utils.writeJson(res, response);
+    })
+    .catch(response => {
+      utils.writeJson(res, response, response.status);
+    });
+};
+
+exports.getDFSPIngress = (req, res, next, dfspId) => {
+  DfspNetworkConfig.getDFSPIngress(req.context, dfspId)
+    .then(response => {
+      utils.writeJson(res, response);
+    })
+    .catch(response => {
+      utils.writeJson(res, response, response.status);
+    });
+};
+
 
 exports.getDFSPIngressIpEndpoint = (req, res, next, dfspId, epId) => {
   DfspNetworkConfig.getDFSPIngressIpEndpoint(req.context, dfspId, epId)

@@ -22,10 +22,23 @@ const NotFoundError = require('../errors/NotFoundError');
 const PkiService = require('./PkiService');
 const DFSPModel = require('../models/DFSPModel');
 const DFSPEndpointItemModel = require('../models/DFSPEndpointItemModel');
+const DFSPEndpointModel = require('../models/DFSPEndpointModel');
 
 const StatusEnum = Object.freeze({ NOT_STARTED: 'NOT_STARTED', IN_PROGRESS: 'IN_PROGRESS', COMPLETED: 'COMPLETED' });
 const PhaseEnum = Object.freeze({ BUSINESS_SETUP: 'BUSINESS_SETUP', TECNICAL_SETUP: 'TECNICAL_SETUP' });
 const StepEnum = Object.freeze({ ID_GENERATION: 'ID_GENERATION', ENDPOINTS: 'ENDPOINTS', CSR_EXCHANGE: 'CSR_EXCHANGE', CERTIFICATE_AUTHORITY: 'CERTIFICATE_AUTHORITY', SERVER_CERTIFICATES_EXCHANGE: 'SERVER_CERTIFICATES_EXCHANGE', JWS_CERTIFICATES: 'JWS_CERTIFICATES' });
+const DirectionEnum = Object.freeze({ EGRESS: 'EGRESS', INGRESS: 'INGRESS' });
+
+/**
+ * Internal function to transform endpoint results from DFSPEndpointModel to API DFSPEndpoint response
+ * dfspId String ID of dfsp
+ * returns inline_response_200_1
+ **/
+const transformEndpointModeltoApiRes = (endpointMode) => {
+  const tmp = {... endpointMode};
+  delete tmp.direction
+  return tmp;
+};
 
 /**
  * Returns the Environment DFSP Status based on configured information for dfspId
@@ -167,16 +180,135 @@ const createDFSPIp = async (ctx, dfspId, body, direction) => {
 };
 
 /**
+ * Adds a new configuration to the DFSP Endpoint Egress
+ *
+ * @param {String} dfspId DFSP id
+ * @param body {Object} DFSPEgress
+ * @returns BaseEndpoint + DFSPEgress
+ **/
+ exports.createDFSPEgress = async (ctx, dfspId, body) => {
+  await PkiService.validateDfsp(ctx, dfspId);
+  const resultId = await DFSPEndpointModel.create(dfspId, StatusEnum.NOT_STARTED, null, DirectionEnum.EGRESS, body);
+  return transformEndpointModeltoApiRes(await DFSPEndpointModel.findObjectById(resultId));
+
+  // ## Example response
+  // return {
+  //   "id": 0,
+  //   "type": "IP",
+  //   "state": "NEW",
+  //   "createdDate": "2022-03-24T09:41:21.263Z",
+  //   "createdBy": "string",
+  //   "dfspId": "string",
+  //   "IPList": [
+  //     {
+  //       "description": "Notification Callback Egress IP & Ports",
+  //       "address": "163.10.24.28/30",
+  //       "ports": [
+  //         "80",
+  //         "8000-8080"
+  //       ]
+  //     }
+  //   ]
+  // };
+};
+
+/**
+ * Get configuration for the DFSP Endpoint Egress
+ *
+ * @param {String} dfspId DFSP id
+ * @returns BaseEndpoint + DFSPEgress
+ **/
+ exports.getDFSPEgress = async (ctx, dfspId) => {
+  await PkiService.validateDfsp(ctx, dfspId);
+  const result = await DFSPEndpointModel.findLastestObjectByDirection(dfspId, DirectionEnum.EGRESS);
+  if (result == null) throw new NotFoundError('Endpoint configuration not found!');
+  return transformEndpointModeltoApiRes(result);
+
+  // ## Example response
+  // return {
+  //   "id": 0,
+  //   "type": "IP",
+  //   "state": "NEW",
+  //   "createdDate": "2022-03-24T09:41:21.263Z",
+  //   "createdBy": "string",
+  //   "dfspId": "string",
+  //   "IPList": [
+  //     {
+  //       "description": "Notification Callback Egress IP & Ports",
+  //       "address": "163.10.24.28/30",
+  //       "ports": [
+  //         "80",
+  //         "8000-8080"
+  //       ]
+  //     }
+  //   ]
+  // };
+};
+
+/**
  * Adds a new IP entry to the DFSP Egress endpoint
  *
  * @param {String} dfspId DFSP id
- * @param body {Object} InputIP DFSP egress IP
- * returns DFSPEndPointIp
+ * @param body {Object} DFSPIngress
+ * @returns BaseEndpoint + DFSPIngress
  **/
 exports.createDFSPEgressIp = async (ctx, dfspId, body) => {
   const endpointItem = await createDFSPIp(ctx, dfspId, body, 'EGRESS');
   const id = await DFSPEndpointItemModel.create(endpointItem);
   return DFSPEndpointItemModel.findObjectById(id);
+};
+
+/**
+ * Adds a new configuration to DFSP Endpoint Ingress
+ *
+ * @param {String} dfspId DFSP id
+ * @param body {Object} DFSPIngress
+ * @returns BaseEndpoint + DFSPIngress
+ **/
+ exports.createDFSPIngress = async (ctx, dfspId, body) => {
+  await PkiService.validateDfsp(ctx, dfspId);
+  const resultId = await DFSPEndpointModel.create(dfspId, StatusEnum.NOT_STARTED, null, DirectionEnum.INGRESS, body);
+  return transformEndpointModeltoApiRes(await DFSPEndpointModel.findObjectById(resultId));
+
+  // ## Example response
+  // return {
+  //   "id": 0,
+  //   "type": "IP",
+  //   "state": "NEW",
+  //   "createdDate": "2022-03-24T09:47:48.477Z",
+  //   "createdBy": "string",
+  //   "dfspId": "string",
+  //   "value": {
+  //     "url": "string"
+  //   }
+  // };
+};
+
+/**
+ * Get newc configuration to DFSP Endpoint Ingress
+ *
+ * @param {String} dfspId DFSP id
+ * body InputIP DFSP ingress IP
+ * returns DFSPIngress
+ **/
+ exports.getDFSPIngress = async (ctx, dfspId) => {
+  await PkiService.validateDfsp(ctx, dfspId);
+  const result = await DFSPEndpointModel.findLastestObjectByDirection(dfspId, DirectionEnum.INGRESS);
+  if (result == null) throw new NotFoundError('Endpoint configuration not found!');
+  return transformEndpointModeltoApiRes(result);
+
+  // ## Example response
+  // return {
+  //   "id": 0,
+  //   "type": "IP",
+  //   "state": "NEW",
+  //   "createdDate": "2022-03-24T09:47:48.477Z",
+  //   "createdBy": "string",
+  //   "dfspId": "string",
+  //   "value": {
+  //     "url": "string"
+  //   }
+  // };
 };
 
 /**
