@@ -318,7 +318,7 @@ describe('DfspNetworkConfigService', () => {
 
     it('should create an Endpoint Egress config', async () => {
       const body = {
-        IPList: [
+        ipList: [
           {
             description: 'Notification Callback Egress IP & Ports',
             address: '163.10.24.28/30',
@@ -334,8 +334,8 @@ describe('DfspNetworkConfigService', () => {
       const getDFSPEgressResult = await DfspNetworkConfigService.getDFSPEgress(ctx, dfspId);
       assert.equal(createDFSPEgressResult.dfsp_id, dfspId);
       assert.equal(getDFSPEgressResult.dfsp_id, dfspId);
-      assert.deepEqual(createDFSPEgressResult.IPList, body.IPList);
-      assert.deepEqual(getDFSPEgressResult.IPList, body.IPList);
+      assert.deepEqual(createDFSPEgressResult.ipList, body.ipList);
+      assert.deepEqual(getDFSPEgressResult.ipList, body.ipList);
     });
 
     it('should return a NotFound exception when Endpoint Ingress config doesnt exist', async () => {

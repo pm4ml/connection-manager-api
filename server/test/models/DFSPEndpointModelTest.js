@@ -65,10 +65,9 @@ const DirectionEnum = Object.freeze({ EGRESS: 'EGRESS', INGRESS: 'INGRESS' });
         id: null,
         dfsp_id: dfspData[0].dfsp_id,
         state: StatusEnum.NOT_STARTED,
-        type: null,
         direction: DirectionEnum.EGRESS,
         value: {
-          IPList: [
+          ipList: [
             {
               description: 'Notification Callback Egress IP & Ports',
               address: '163.10.24.28/30',
@@ -106,81 +105,78 @@ const DirectionEnum = Object.freeze({ EGRESS: 'EGRESS', INGRESS: 'INGRESS' });
     it('should create a valid Endpoint configuration', async () => {
       // Act
 
-      // DFSPEndpointModel.create = async (id, state, type, direction, value) => {
-      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.type, endpointData.direction, endpointData.value);
+      // DFSPEndpointModel.create = async (id, state, direction, value) => {
+      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.direction, endpointData.value);
       endpointIdList.push(endpointData.id);
       console.log(`endpointCreateResult=${endpointData.id}`);
 
-      const findResult = await DFSPEndpointModel.findObjectById(endpointData.id);
+      const result = await DFSPEndpointModel.findObjectById(endpointData.id);
 
       // Assert
-      assert.equal(findResult.id, endpointData.id);
-      assert.equal(findResult.dfsp_id, endpointData.dfsp_id);
-      assert.equal(findResult.direction, endpointData.direction);
-      assert.equal(findResult.state, endpointData.state);
-      assert.equal(findResult.type, endpointData.type);
-      assert.equal(findResult.created_by, null);
-      assert.deepEqual(findResult.IPList, endpointData.value.IPList);
-      assert.beforeOrEqualDate(new Date(findResult.created_date), new Date());
+      assert.equal(result.id, endpointData.id);
+      assert.equal(result.dfsp_id, endpointData.dfsp_id);
+      assert.equal(result.direction, endpointData.direction);
+      assert.equal(result.state, endpointData.state);
+      assert.equal(result.created_by, null);
+      assert.deepEqual(result.ipList, endpointData.value.ipList);
+      assert.beforeOrEqualDate(new Date(result.created_date), new Date());
     });
 
     it('should return latest Endpoint config record from findLastestObjectByDirection ordered by dfsp_endpoint.id', async () => {
       // Act
 
-      // DFSPEndpointModel.create = async (id, state, type, direction, value) => {
-      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.type, endpointData.direction, endpointData.value);
+      // DFSPEndpointModel.create = async (id, state, direction, value) => {
+      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.direction, endpointData.value);
       endpointIdList.push(endpointData.id);
       console.log(`endpointCreateResult.1=${endpointData.id}`);
-      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.type, endpointData.direction, endpointData.value);
+      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.direction, endpointData.value);
       endpointIdList.push(endpointData.id);
       console.log(`endpointCreateResult.2=${endpointData.id}`);
-      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.type, endpointData.direction, endpointData.value);
+      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.direction, endpointData.value);
       endpointIdList.push(endpointData.id);
       console.log(`endpointCreateResult.3=${endpointData.id}`);
 
-      const findLastestObjectByDirectionResult = await DFSPEndpointModel.findLastestObjectByDirection(endpointData.dfsp_id, DirectionEnum.EGRESS);
-      console.log(findLastestObjectByDirectionResult);
+      const result = await DFSPEndpointModel.findLastestObjectByDirection(endpointData.dfsp_id, DirectionEnum.EGRESS);
+      console.log(result);
 
       // Assert
-      assert.equal(findLastestObjectByDirectionResult.id, endpointData.id);
-      assert.equal(findLastestObjectByDirectionResult.dfsp_id, endpointData.dfsp_id);
-      assert.equal(findLastestObjectByDirectionResult.direction, endpointData.direction);
-      assert.equal(findLastestObjectByDirectionResult.state, endpointData.state);
-      assert.equal(findLastestObjectByDirectionResult.type, endpointData.type);
-      assert.equal(findLastestObjectByDirectionResult.created_by, null);
-      assert.deepEqual(findLastestObjectByDirectionResult.IPList, endpointData.value.IPList);
-      assert.beforeOrEqualDate(new Date(findLastestObjectByDirectionResult.created_date), new Date());
+      assert.equal(result.id, endpointData.id);
+      assert.equal(result.dfsp_id, endpointData.dfsp_id);
+      assert.equal(result.direction, endpointData.direction);
+      assert.equal(result.state, endpointData.state);
+      assert.equal(result.created_by, null);
+      assert.deepEqual(result.ipList, endpointData.value.ipList);
+      assert.beforeOrEqualDate(new Date(result.created_date), new Date());
     });
 
     it('should return all results by direction from findObjectByDirection', async () => {
       // Act
 
-      // DFSPEndpointModel.create = async (id, state, type, direction, value) => {
-      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.type, endpointData.direction, endpointData.value);
+      // DFSPEndpointModel.create = async (id, state, direction, value) => {
+      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.direction, endpointData.value);
       endpointIdList.push(endpointData.id);
       console.log(`endpointCreateResult.1=${endpointData.id}`);
-      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.type, endpointData.direction, endpointData.value);
+      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.direction, endpointData.value);
       endpointIdList.push(endpointData.id);
       console.log(`endpointCreateResult.2=${endpointData.id}`);
-      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.type, endpointData.direction, endpointData.value);
+      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.direction, endpointData.value);
       endpointIdList.push(endpointData.id);
       console.log(`endpointCreateResult.3=${endpointData.id}`);
 
-      const findLastestObjectByDirectionResult = await DFSPEndpointModel.findObjectByDirection(endpointData.dfsp_id, DirectionEnum.EGRESS);
-      console.log(findLastestObjectByDirectionResult);
+      const result = await DFSPEndpointModel.findObjectByDirection(endpointData.dfsp_id, DirectionEnum.EGRESS);
+      console.log(result);
 
       // Assert
-      assert.equal(findLastestObjectByDirectionResult.length, 3);
+      assert.equal(result.length, 3);
       let endPointerIdIndex = endpointIdList.length - 3;
-      for (const item of findLastestObjectByDirectionResult) {
+      for (const item of result) {
         assert.equal(item.id, endpointIdList[endPointerIdIndex]);
         endPointerIdIndex++; // lets incr the index pointer
         assert.equal(item.dfsp_id, endpointData.dfsp_id);
         assert.equal(item.direction, endpointData.direction);
         assert.equal(item.state, endpointData.state);
-        assert.equal(item.type, endpointData.type);
         assert.equal(item.created_by, null);
-        assert.deepEqual(item.IPList, endpointData.value.IPList);
+        assert.deepEqual(item.ipList, endpointData.value.ipList);
         assert.beforeOrEqualDate(new Date(item.created_date), new Date());
       }
     });
@@ -188,32 +184,31 @@ const DirectionEnum = Object.freeze({ EGRESS: 'EGRESS', INGRESS: 'INGRESS' });
     it('should return all results from findObjectAll', async () => {
       // Act
 
-      // DFSPEndpointModel.create = async (id, state, type, direction, value) => {
-      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.type, DirectionEnum.EGRESS, endpointData.value);
+      // DFSPEndpointModel.create = async (id, state, direction, value) => {
+      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, DirectionEnum.EGRESS, endpointData.value);
       endpointIdList.push(endpointData.id);
       console.log(`endpointCreateResult.1=${endpointData.id}`);
-      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.type, DirectionEnum.INGRESS, endpointData.value);
+      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, DirectionEnum.INGRESS, endpointData.value);
       endpointIdList.push(endpointData.id);
       console.log(`endpointCreateResult.2=${endpointData.id}`);
-      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.type, DirectionEnum.EGRESS, endpointData.value);
+      endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, DirectionEnum.EGRESS, endpointData.value);
       endpointIdList.push(endpointData.id);
       console.log(`endpointCreateResult.3=${endpointData.id}`);
 
-      const findObjectAllResult = await DFSPEndpointModel.findObjectAll(endpointData.dfsp_id);
-      console.log(findObjectAllResult);
+      const result = await DFSPEndpointModel.findObjectAll(endpointData.dfsp_id);
+      console.log(result);
 
       // Assert
-      assert.equal(findObjectAllResult.length, 3);
+      assert.equal(result.length, 3);
       let endPointerIdIndex = endpointIdList.length - 3;
-      for (const item of findObjectAllResult) {
+      for (const item of result) {
         assert.equal(item.id, endpointIdList[endPointerIdIndex]);
         endPointerIdIndex++; // lets incr the index pointer
         assert.equal(item.dfsp_id, endpointData.dfsp_id);
         assert.isOk((item.direction === DirectionEnum.EGRESS) || (item.direction === DirectionEnum.INGRESS));
         assert.equal(item.state, endpointData.state);
-        assert.equal(item.type, endpointData.type);
         assert.equal(item.created_by, null);
-        assert.deepEqual(item.IPList, endpointData.value.IPList);
+        assert.deepEqual(item.ipList, endpointData.value.ipList);
         assert.beforeOrEqualDate(new Date(item.created_date), new Date());
       }
     });

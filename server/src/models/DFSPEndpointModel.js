@@ -44,12 +44,7 @@ const rowToObject = async (rawObject) => {
   const dfsp = await DFSPModel.findByRawId(rawObject.dfsp_id);
 
   rawObject.dfsp_id = dfsp.dfsp_id;
-  let endPoint = rawObject.value
-
-  // # Lets check if we need to parse the value, some MySQL versions will store the JSONB value as a string
-  if (typeof rawObject.value === 'string' || rawObject.value instanceof String) {
-    endPoint = JSON.parse(rawObject.value);
-  }
+  const endPoint = rawObject.value;
 
   delete rawObject.value;
 
@@ -106,11 +101,10 @@ exports.findObjectByDirection = async (dfspId, direction) => {
 /**
  * Creates an endpoint, and parses the JSON in value, returning an Object.
  */
-exports.create = async (dfspId, state, type, direction, value) => {
+exports.create = async (dfspId, state, direction, value) => {
   const dfsp_id = await DFSPModel.findIdByDfspId(dfspId);
   const record = {
     state,
-    type,
     value,
     dfsp_id,
     direction: direction,

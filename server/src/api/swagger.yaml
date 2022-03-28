@@ -3030,7 +3030,7 @@ components:
       additionalProperties: false
       type: object
       properties:
-        IPList:
+        ipList:
           type: array
           minItems: 1
           uniqueItems: true
@@ -3038,24 +3038,99 @@ components:
             $ref: '#/components/schemas/IPEntry'
     CreateDFSPIngressReq:
       $ref: '#/components/schemas/DFSPIngress'
+      example:
+        {
+          "url": "http://test.local"
+        }
     GetDFSPIngressRes:
       allOf:
       - $ref: '#/components/schemas/BaseEndpoint'
       - $ref: '#/components/schemas/DFSPIngress'
+      example:
+        {
+          "id": 230,
+          "dfsp_id": "test1",
+          "state": "NOT_STARTED",
+          "type": null,
+          "created_date": "2022-03-25T09:10:19.000Z",
+          "created_by": null,
+          "url": "http://test.local"
+        }
     CreateDFSPIngressRes:
       allOf:
       - $ref: '#/components/schemas/BaseEndpoint'
       - $ref: '#/components/schemas/DFSPIngress'
+      example:
+        {
+          "id": 230,
+          "dfsp_id": "test1",
+          "state": "NOT_STARTED",
+          "type": null,
+          "created_date": "2022-03-25T09:10:19.000Z",
+          "created_by": null,
+          "url": "http://test.local"
+        }
     CreateDFSPEgressReq:
       $ref: '#/components/schemas/DFSPEgress'
+      example:
+        {
+          "ipList": [
+            {
+              "description": "Notification Callback Egress IP & Ports",
+              "address": "163.10.24.28/30",
+              "ports": [
+                "80",
+                "8000-8080"
+              ]
+            }
+          ]
+        }
     CreateDFSPEgressRes:
       allOf:
       - $ref: '#/components/schemas/BaseEndpoint'
       - $ref: '#/components/schemas/DFSPEgress'
+      example:
+        {
+            "id": 228,
+            "dfsp_id": "test1",
+            "state": "NOT_STARTED",
+            "type": null,
+            "created_date": "2022-03-25T09:08:05.000Z",
+            "created_by": null,
+            "ipList": [
+                {
+                    "ports": [
+                        "80",
+                        "8000-8080"
+                    ],
+                    "address": "163.10.24.28/30",
+                    "description": "Notification Callback Egress IP & Ports"
+                }
+            ]
+        }
     GetDFSPEgressRes:
       allOf:
       - $ref: '#/components/schemas/BaseEndpoint'
       - $ref: '#/components/schemas/DFSPEgress'
+      example:
+        {
+            "id": 228,
+            "dfsp_id": "test1",
+            "state": "NOT_STARTED",
+            "type": null,
+            "created_date": "2022-03-25T09:08:05.000Z",
+            "created_by": null,
+            "ipList": [
+                {
+                    "ports": [
+                        "80",
+                        "8000-8080"
+                    ],
+                    "address": "163.10.24.28/30",
+                    "description": "Notification Callback Egress IP & Ports"
+                }
+            ]
+        }
     InputURLValue:
       type: object
       properties:
