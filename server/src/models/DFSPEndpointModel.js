@@ -85,7 +85,7 @@ exports.findObjectByDirection = async (dfspId, direction) => {
     .where('dfsp_id', id)
     .where('direction', direction)
     .select();
-  const endpoints = Promise.all(rawObjects.map(async row => rowToObject(row)));
+  const endpoints = Promise.all(rawObjects.map(row => rowToObject(row)));
   return endpoints;
 };
 
