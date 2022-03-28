@@ -200,7 +200,6 @@ exports.getDFSPIngress = (req, res, next, dfspId) => {
     });
 };
 
-
 exports.getDFSPIngressIpEndpoint = (req, res, next, dfspId, epId) => {
   DfspNetworkConfig.getDFSPIngressIpEndpoint(req.context, dfspId, epId)
     .then(response => {
