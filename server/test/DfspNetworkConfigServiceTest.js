@@ -310,7 +310,7 @@ describe('DfspNetworkConfigService', () => {
 
     it('should return a NotFound exception when Endpoint Egress config doesnt exist', async () => {
       try {
-        const getDFSPEgressResult = await DfspNetworkConfigService.getDFSPEgress(ctx, dfspId);
+        await DfspNetworkConfigService.getDFSPEgress(ctx, dfspId);
         assert.fail('NotFoundError should have been thrown');
       } catch (error) {
         assert(error instanceof NotFoundError, 'Error is: ' + error);
@@ -347,7 +347,7 @@ describe('DfspNetworkConfigService', () => {
 
     it('should return a NotFound exception when Endpoint Ingress config doesnt exist', async () => {
       try {
-        const getDFSPIngressResult = await DfspNetworkConfigService.getDFSPIngress(ctx, dfspId);
+        await DfspNetworkConfigService.getDFSPIngress(ctx, dfspId);
         assert.fail('NotFoundError should have been thrown');
       } catch (error) {
         assert(error instanceof NotFoundError, 'Error is: ' + error);

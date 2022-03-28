@@ -26,8 +26,7 @@ const DFSPModel = require('../../src/models/DFSPModel');
 const DFSPEndpointModel = require('../../src/models/DFSPEndpointModel');
 const { StatusEnum, DirectionEnum } = require('../../src/service/DfspNetworkConfigService');
 
- describe('DFSPEndpointModel', async function () {
-  let ctx;
+describe('DFSPEndpointModel', async function () {
   before(async () => {
     await setupTestDB();
   });
@@ -37,7 +36,7 @@ const { StatusEnum, DirectionEnum } = require('../../src/service/DfspNetworkConf
   });
 
   describe('DFSPEndpointModel', async function () {
-    let dfspData = null
+    let dfspData = null;
     let endpointData = null;
     const endpointIdList = [];
 
@@ -88,7 +87,7 @@ const { StatusEnum, DirectionEnum } = require('../../src/service/DfspNetworkConf
     afterEach('cleanup', async () => {
       // Cleanup
 
-      console.log(`deleting dfsp records`);
+      console.log('deleting dfsp records');
       for (const dfsp of dfspData) {
         console.log(`deleting dfsp record=${dfsp.dfsp_id}`);
         await DFSPModel.delete(dfsp.dfsp_id);

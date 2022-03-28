@@ -19,7 +19,6 @@ const { setupTestDB, tearDownTestDB } = require('./test-database');
 
 const PkiService = require('../src/service/PkiService');
 const { assert } = require('chai');
-const NotFoundError = require('../src/errors/NotFoundError');
 const ValidationError = require('../src/errors/ValidationError');
 const { createInternalHubCA, getHubCA } = require('../src/service/HubCAService');
 const { createContext, destroyContext } = require('./context');

@@ -19,7 +19,6 @@ const Constants = require('../src/constants/Constants');
 const Wso2MSClient = require('../src/service/Wso2ManagerServiceClient');
 const Wso2Client = require('../src/service/Wso2Client');
 const ExternalProcessError = require('../src/errors/ExternalProcessError');
-const { createContext, destroyContext } = require('./context');
 
 const { assert } = require('chai');
 

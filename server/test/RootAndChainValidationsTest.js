@@ -25,8 +25,6 @@ const ROOT_CA = require('./Root_CA.js');
 
 const ValidationCodes = require('../src/pki_engine/ValidationCodes');
 const { createInternalHubCA } = require('../src/service/HubCAService');
-const PKIEngine = require('../src/pki_engine/VaultPKIEngine');
-const Constants = require('../src/constants/Constants');
 const DFSPModel = require('../src/models/DFSPModel');
 const { createContext, destroyContext } = require('./context');
 

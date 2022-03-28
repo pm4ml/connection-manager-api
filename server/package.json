@@ -7,7 +7,7 @@
     "testX": "standardx --verbose | snazzy && mocha",
     "test": "./run-vault.sh && mocha ; ./kill-vault.sh",
     "test-self-signed-server": "./run-vault.sh && TEST_START_SELF_SIGNED_SERVER=true npm test ; ./kill-vault.sh",
-    "lint": "npx eslint ./src",
+    "lint": "npx eslint ./src ./test",
     "wtftest": "wtfnode ./node_modules/.bin/_mocha",
     "test-with-coverage": "./run-vault.sh && nyc --reporter=text mocha --timeout 20000 --colors -exit ; ./kill-vault.sh",
     "start": "node src/index.js",

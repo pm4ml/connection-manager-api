@@ -17,18 +17,21 @@
 
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 const HubCAService = require('../src/service/HubCAService');
-const { assert } = require('chai');
-const ValidationError = require('../src/errors/ValidationError');
-const PkiService = require('../src/service/PkiService');
-const fs = require('fs');
-const path = require('path');
+// const { assert } = require('chai');
+// const ValidationError = require('../src/errors/ValidationError');
+// const PkiService = require('../src/service/PkiService');
+// const fs = require('fs');
+// const path = require('path');
 const { pki } = require('node-forge');
 const { createContext, destroyContext } = require('./context');
 
-const rootCert = fs.readFileSync(path.join(__dirname, 'resources/google.com/google.com.pem'), 'utf8');
-const intermediateChain = fs.readFileSync(path.join(__dirname, 'resources/google.com/google.chain.pem'), 'utf8');
-const amazonRootCert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/RootCA.pem'), 'utf8');
-const amazonIntermediateChain = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/amazon.chain.pem'), 'utf8');
+/**
+ * Leaving these here as they look useful
+*/
+// const rootCert = fs.readFileSync(path.join(__dirname, 'resources/google.com/google.com.pem'), 'utf8');
+// const intermediateChain = fs.readFileSync(path.join(__dirname, 'resources/google.com/google.chain.pem'), 'utf8');
+// const amazonRootCert = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/RootCA.pem'), 'utf8');
+// const amazonIntermediateChain = fs.readFileSync(path.join(__dirname, 'resources/amazon.com/amazon.chain.pem'), 'utf8');
 
 const createSelfSignedCA = () => {
   const keys = pki.rsa.generateKeyPair(2048);

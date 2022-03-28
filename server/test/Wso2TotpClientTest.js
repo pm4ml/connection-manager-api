@@ -20,7 +20,6 @@ const { assert } = require('chai');
 const rp = require('request-promise-native');
 const sinon = require('sinon');
 const xml2js = require('xml2js');
-const { createContext, destroyContext } = require('./context');
 
 describe('TOTP admin server client', () => {
   it('should return a secret key when valid credentials', async () => {
