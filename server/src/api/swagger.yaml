@@ -2989,6 +2989,32 @@ components:
         dfspId:
           type: string
       description: Common properties to both IP and URL endpoints
+    BaseEndpointv2:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: integer
+          format: int32
+        direction:
+          type: string
+          enum:
+          - INGRESS
+          - EGRESS
+        state:
+          type: string
+          enum:
+          - NEW
+          - CONFIRMED
+          - INVALID
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+        dfspId:
+          type: string
+      description: Common properties to both for Endpoint Ingress & Egress configurations
     EndPointIp:
       allOf:
       - $ref: '#/components/schemas/BaseEndpoint'
@@ -3044,30 +3070,30 @@ components:
         }
     GetDFSPIngressRes:
       allOf:
-      - $ref: '#/components/schemas/BaseEndpoint'
+      - $ref: '#/components/schemas/BaseEndpointv2'
       - $ref: '#/components/schemas/DFSPIngress'
       example:
         {
           "id": 230,
-          "dfsp_id": "test1",
+          "dfspId": "test1",
           "state": "NOT_STARTED",
           "type": null,
-          "created_date": "2022-03-25T09:10:19.000Z",
-          "created_by": null,
+          "createdAt": "2022-03-25T09:10:19.000Z",
+          "createdBy": null,
           "url": "http://test.local"
         }
     CreateDFSPIngressRes:
       allOf:
-      - $ref: '#/components/schemas/BaseEndpoint'
+      - $ref: '#/components/schemas/BaseEndpointv2'
       - $ref: '#/components/schemas/DFSPIngress'
       example:
         {
           "id": 230,
-          "dfsp_id": "test1",
+          "dfspId": "test1",
           "state": "NOT_STARTED",
           "type": null,
-          "created_date": "2022-03-25T09:10:19.000Z",
-          "created_by": null,
+          "createdAt": "2022-03-25T09:10:19.000Z",
+          "createdBy": null,
           "url": "http://test.local"
         }
     CreateDFSPEgressReq:
@@ -3087,16 +3113,16 @@ components:
         }
     CreateDFSPEgressRes:
       allOf:
-      - $ref: '#/components/schemas/BaseEndpoint'
+      - $ref: '#/components/schemas/BaseEndpointv2'
       - $ref: '#/components/schemas/DFSPEgress'
       example:
         {
             "id": 228,
-            "dfsp_id": "test1",
+            "dfspId": "test1",
             "state": "NOT_STARTED",
             "type": null,
-            "created_date": "2022-03-25T09:08:05.000Z",
-            "created_by": null,
+            "createdAt": "2022-03-25T09:08:05.000Z",
+            "createdBy": null,
             "ipList": [
                 {
                     "ports": [
@@ -3110,16 +3136,16 @@ components:
         }
     GetDFSPEgressRes:
       allOf:
-      - $ref: '#/components/schemas/BaseEndpoint'
+      - $ref: '#/components/schemas/BaseEndpointv2'
       - $ref: '#/components/schemas/DFSPEgress'
       example:
         {
             "id": 228,
-            "dfsp_id": "test1",
+            "dfspId": "test1",
             "state": "NOT_STARTED",
             "type": null,
-            "created_date": "2022-03-25T09:08:05.000Z",
-            "created_by": null,
+            "createdAt": "2022-03-25T09:08:05.000Z",
+            "createdBy": null,
             "ipList": [
                 {
                     "ports": [

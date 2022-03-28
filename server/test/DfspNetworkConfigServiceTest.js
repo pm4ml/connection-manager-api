@@ -21,8 +21,9 @@ const PkiService = require('../src/service/PkiService');
 const DfspNetworkConfigService = require('../src/service/DfspNetworkConfigService');
 const ValidationError = require('../src/errors/ValidationError');
 const NotFoundError = require('../src/errors/NotFoundError');
-const { assert } = require('chai');
+const { assert } = require('chai').use(require('chai-datetime'));
 const { createContext, destroyContext } = require('./context');
+const { StatusEnum } = require('../src/service/DfspNetworkConfigService');
 
 describe('DfspNetworkConfigService', () => {
   let ctx;
@@ -332,10 +333,16 @@ describe('DfspNetworkConfigService', () => {
 
       const createDFSPEgressResult = await DfspNetworkConfigService.createDFSPEgress(ctx, dfspId, body);
       const getDFSPEgressResult = await DfspNetworkConfigService.getDFSPEgress(ctx, dfspId);
-      assert.equal(createDFSPEgressResult.dfsp_id, dfspId);
-      assert.equal(getDFSPEgressResult.dfsp_id, dfspId);
+      assert.equal(createDFSPEgressResult.dfspId, dfspId);
+      assert.equal(getDFSPEgressResult.dfspId, dfspId);
+      assert.equal(createDFSPEgressResult.state, StatusEnum.NOT_STARTED);
+      assert.equal(getDFSPEgressResult.state, StatusEnum.NOT_STARTED);
       assert.deepEqual(createDFSPEgressResult.ipList, body.ipList);
       assert.deepEqual(getDFSPEgressResult.ipList, body.ipList);
+      assert.notProperty(createDFSPEgressResult, 'direction');
+      assert.notProperty(getDFSPEgressResult, 'direction');
+      assert.beforeOrEqualDate(new Date(createDFSPEgressResult.createdAt), new Date());
+      assert.beforeOrEqualDate(new Date(getDFSPEgressResult.createdAt), new Date());
     });
 
     it('should return a NotFound exception when Endpoint Ingress config doesnt exist', async () => {
@@ -354,10 +361,16 @@ describe('DfspNetworkConfigService', () => {
 
       const createDFSPIngressResult = await DfspNetworkConfigService.createDFSPIngress(ctx, dfspId, body);
       const getDFSPIngressResult = await DfspNetworkConfigService.getDFSPIngress(ctx, dfspId);
-      assert.equal(createDFSPIngressResult.dfsp_id, dfspId);
-      assert.equal(getDFSPIngressResult.dfsp_id, dfspId);
+      assert.equal(createDFSPIngressResult.dfspId, dfspId);
+      assert.equal(getDFSPIngressResult.dfspId, dfspId);
+      assert.equal(createDFSPIngressResult.state, StatusEnum.NOT_STARTED);
+      assert.equal(getDFSPIngressResult.state, StatusEnum.NOT_STARTED);
       assert.deepEqual(createDFSPIngressResult.url, body.url);
       assert.deepEqual(getDFSPIngressResult.url, body.url);
+      assert.notProperty(createDFSPIngressResult, 'direction');
+      assert.notProperty(getDFSPIngressResult, 'direction');
+      assert.beforeOrEqualDate(new Date(createDFSPIngressResult.createdAt), new Date());
+      assert.beforeOrEqualDate(new Date(getDFSPIngressResult.createdAt), new Date());
     });
   });
 });

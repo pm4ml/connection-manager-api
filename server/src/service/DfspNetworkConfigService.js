@@ -29,14 +29,27 @@ const PhaseEnum = Object.freeze({ BUSINESS_SETUP: 'BUSINESS_SETUP', TECNICAL_SET
 const StepEnum = Object.freeze({ ID_GENERATION: 'ID_GENERATION', ENDPOINTS: 'ENDPOINTS', CSR_EXCHANGE: 'CSR_EXCHANGE', CERTIFICATE_AUTHORITY: 'CERTIFICATE_AUTHORITY', SERVER_CERTIFICATES_EXCHANGE: 'SERVER_CERTIFICATES_EXCHANGE', JWS_CERTIFICATES: 'JWS_CERTIFICATES' });
 const DirectionEnum = Object.freeze({ EGRESS: 'EGRESS', INGRESS: 'INGRESS' });
 
+// export enums for unit
+exports.StatusEnum = StatusEnum;
+exports.PhaseEnum = PhaseEnum;
+exports.StepEnum = StepEnum;
+exports.DirectionEnum = DirectionEnum;
+
 /**
  * Internal function to transform endpoint results from DFSPEndpointModel to API DFSPEndpoint response
  * dfspId String ID of dfsp
  * returns inline_response_200_1
  **/
 const transformEndpointModeltoApiRes = (endpointMode) => {
-  const {direction, ...result} = endpointMode;
-  return result;
+  const {id, dfsp_id, created_by, created_at, state, direction, ...config} = endpointMode;
+  return {
+    id,
+    dfspId: dfsp_id,
+    state,
+    createdBy: created_by,
+    createdAt: created_at,
+    ...config
+  }
 };
 
 /**

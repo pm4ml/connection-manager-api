@@ -19,10 +19,10 @@ exports.up = function (knex, Promise) {
   return knex.schema.createTable('dfsp_endpoint', (table) => {
     table.increments('id').primary();
     table.integer('dfsp_id').unsigned().notNullable();
-    table.string('state', 512).defaultTo(null);
-    table.string('direction', 512).defaultTo(null);
-    table.jsonb('value').defaultTo(null);
-    table.datetime('created_date').notNullable().defaultTo(knex.fn.now());
+    table.string('state', 512).notNullable().defaultTo(null);
+    table.string('direction', 512).notNullable().defaultTo(null);
+    table.jsonb('value').notNullable().defaultTo(null);
+    table.datetime('created_at').notNullable().defaultTo(knex.fn.now());
     table.string('created_by', 1024).defaultTo(null);
     table.foreign('dfsp_id', 'FK_ENDPT_DFSP_ID').references('dfsps.id').onDelete('CASCADE').onUpdate('NO ACTION');
     table.index('dfsp_id', 'FK_ENDPT_DFSP_ID_idx');

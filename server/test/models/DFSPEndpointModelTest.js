@@ -24,9 +24,7 @@ const { setupTestDB, tearDownTestDB } = require('../test-database');
 // import module for testing
 const DFSPModel = require('../../src/models/DFSPModel');
 const DFSPEndpointModel = require('../../src/models/DFSPEndpointModel');
-
-const StatusEnum = Object.freeze({ NOT_STARTED: 'NOT_STARTED', IN_PROGRESS: 'IN_PROGRESS', COMPLETED: 'COMPLETED' });
-const DirectionEnum = Object.freeze({ EGRESS: 'EGRESS', INGRESS: 'INGRESS' });
+const { StatusEnum, DirectionEnum } = require('../../src/service/DfspNetworkConfigService');
 
  describe('DFSPEndpointModel', async function () {
   let ctx;
@@ -119,7 +117,7 @@ const DirectionEnum = Object.freeze({ EGRESS: 'EGRESS', INGRESS: 'INGRESS' });
       assert.equal(result.state, endpointData.state);
       assert.equal(result.created_by, null);
       assert.deepEqual(result.ipList, endpointData.value.ipList);
-      assert.beforeOrEqualDate(new Date(result.created_date), new Date());
+      assert.beforeOrEqualDate(new Date(result.created_at), new Date());
     });
 
     it('should return latest Endpoint config record from findLastestObjectByDirection ordered by dfsp_endpoint.id', async () => {
@@ -146,7 +144,7 @@ const DirectionEnum = Object.freeze({ EGRESS: 'EGRESS', INGRESS: 'INGRESS' });
       assert.equal(result.state, endpointData.state);
       assert.equal(result.created_by, null);
       assert.deepEqual(result.ipList, endpointData.value.ipList);
-      assert.beforeOrEqualDate(new Date(result.created_date), new Date());
+      assert.beforeOrEqualDate(new Date(result.created_at), new Date());
     });
 
     it('should return all results by direction from findObjectByDirection', async () => {
@@ -177,7 +175,7 @@ const DirectionEnum = Object.freeze({ EGRESS: 'EGRESS', INGRESS: 'INGRESS' });
         assert.equal(item.state, endpointData.state);
         assert.equal(item.created_by, null);
         assert.deepEqual(item.ipList, endpointData.value.ipList);
-        assert.beforeOrEqualDate(new Date(item.created_date), new Date());
+        assert.beforeOrEqualDate(new Date(item.created_at), new Date());
       }
     });
 
@@ -209,7 +207,7 @@ const DirectionEnum = Object.freeze({ EGRESS: 'EGRESS', INGRESS: 'INGRESS' });
         assert.equal(item.state, endpointData.state);
         assert.equal(item.created_by, null);
         assert.deepEqual(item.ipList, endpointData.value.ipList);
-        assert.beforeOrEqualDate(new Date(item.created_date), new Date());
+        assert.beforeOrEqualDate(new Date(item.created_at), new Date());
       }
     });
   });
