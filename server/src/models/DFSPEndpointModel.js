@@ -72,7 +72,7 @@ exports.findObjectAll = async (dfspId) => {
   const rawObjects = await knex.table(ENDPOINT_TABLE)
     .where('dfsp_id', dfsp_id)
     .select();
-  const endpoints = Promise.all(rawObjects.map(async row => rowToObject(row)));
+  const endpoints = Promise.all(rawObjects.map(row => rowToObject(row)));
   return endpoints;
 };
 
