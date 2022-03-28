@@ -41,15 +41,30 @@ exports.DirectionEnum = DirectionEnum;
  * returns inline_response_200_1
  **/
 const transformEndpointModeltoApiRes = (endpointMode) => {
-  const {id, dfsp_id, created_by, created_at, state, direction, ...config} = endpointMode;
-  return {
+  const { // lets filter out endpointMode properties
     id,
+    // eslint-disable-next-line camelcase
+    dfsp_id,
+    // eslint-disable-next-line camelcase
+    created_by,
+    // eslint-disable-next-line camelcase
+    created_at,
+    state,
+    direction, // we are going to ignore this!
+    ...config
+  } = endpointMode;
+
+  return { // map endpointMode properties to API specification
+    id,
+    // eslint-disable-next-line camelcase
     dfspId: dfsp_id,
     state,
+    // eslint-disable-next-line camelcase
     createdBy: created_by,
+    // eslint-disable-next-line camelcase
     createdAt: created_at,
     ...config
-  }
+  };
 };
 
 /**
@@ -96,12 +111,12 @@ exports.getDfspStatus = async (ctx, dfspId) => {
   ];
   let dfsp = [];
   let endpoints = [];
-  const csrexch = [];
-  const csrexchin = [];
-  const csrexchout = [];
-  const ca = [];
-  const servercerts = [];
-  const jwscerts = [];
+  // const csrexch = [];
+  // const csrexchin = [];
+  // const csrexchout = [];
+  // const ca = [];
+  // const servercerts = [];
+  // const jwscerts = [];
 
   try {
     // ID_GENERATION
@@ -198,7 +213,7 @@ const createDFSPIp = async (ctx, dfspId, body, direction) => {
  * @param body {Object} DFSPEgress
  * @returns BaseEndpoint + DFSPEgress
  **/
- exports.createDFSPEgress = async (ctx, dfspId, body) => {
+exports.createDFSPEgress = async (ctx, dfspId, body) => {
   await PkiService.validateDfsp(ctx, dfspId);
   const resultId = await DFSPEndpointModel.create(dfspId, StatusEnum.NOT_STARTED, DirectionEnum.EGRESS, body);
   return transformEndpointModeltoApiRes(await DFSPEndpointModel.findObjectById(resultId));
@@ -210,7 +225,7 @@ const createDFSPIp = async (ctx, dfspId, body, direction) => {
  * @param {String} dfspId DFSP id
  * @returns BaseEndpoint + DFSPEgress
  **/
- exports.getDFSPEgress = async (ctx, dfspId) => {
+exports.getDFSPEgress = async (ctx, dfspId) => {
   await PkiService.validateDfsp(ctx, dfspId);
   const result = await DFSPEndpointModel.findLastestObjectByDirection(dfspId, DirectionEnum.EGRESS);
   if (result == null) throw new NotFoundError('Endpoint configuration not found!');
@@ -237,7 +252,7 @@ exports.createDFSPEgressIp = async (ctx, dfspId, body) => {
  * @param body {Object} DFSPIngress
  * @returns BaseEndpoint + DFSPIngress
  **/
- exports.createDFSPIngress = async (ctx, dfspId, body) => {
+exports.createDFSPIngress = async (ctx, dfspId, body) => {
   await PkiService.validateDfsp(ctx, dfspId);
   const resultId = await DFSPEndpointModel.create(dfspId, StatusEnum.NOT_STARTED, DirectionEnum.INGRESS, body);
   return transformEndpointModeltoApiRes(await DFSPEndpointModel.findObjectById(resultId));
@@ -250,7 +265,7 @@ exports.createDFSPEgressIp = async (ctx, dfspId, body) => {
  * body InputIP DFSP ingress IP
  * returns DFSPIngress
  **/
- exports.getDFSPIngress = async (ctx, dfspId) => {
+exports.getDFSPIngress = async (ctx, dfspId) => {
   await PkiService.validateDfsp(ctx, dfspId);
   const result = await DFSPEndpointModel.findLastestObjectByDirection(dfspId, DirectionEnum.INGRESS);
   if (result == null) throw new NotFoundError('Endpoint configuration not found!');

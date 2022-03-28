@@ -63,9 +63,9 @@ exports.findObjectById = async (id) => {
 };
 
 exports.findObjectAll = async (dfspId) => {
-  const dfsp_id = await DFSPModel.findIdByDfspId(dfspId);
+  const validatedDfspId = await DFSPModel.findIdByDfspId(dfspId);
   const rawObjects = await knex.table(ENDPOINT_TABLE)
-    .where('dfsp_id', dfsp_id)
+    .where('dfsp_id', validatedDfspId)
     .select();
   const endpoints = Promise.all(rawObjects.map(row => rowToObject(row)));
   return endpoints;
@@ -87,10 +87,10 @@ exports.findObjectByDirection = async (dfspId, direction) => {
 /**
  * Gets an endpoint by its id & direction, and parses the JSON in value, returning an Object.
  */
- exports.findLastestObjectByDirection = async (dfspId, direction) => {
-  const dfsp_id = await DFSPModel.findIdByDfspId(dfspId);
+exports.findLastestObjectByDirection = async (dfspId, direction) => {
+  const validatedDfspId = await DFSPModel.findIdByDfspId(dfspId);
   const rawObject = await knex.table(ENDPOINT_TABLE)
-    .where('dfsp_id', dfsp_id)
+    .where('dfsp_id', validatedDfspId)
     .where('direction', direction)
     .orderBy('id', 'desc')
     .first();
@@ -102,11 +102,11 @@ exports.findObjectByDirection = async (dfspId, direction) => {
  * Creates an endpoint, and parses the JSON in value, returning an Object.
  */
 exports.create = async (dfspId, state, direction, value) => {
-  const dfsp_id = await DFSPModel.findIdByDfspId(dfspId);
+  const validatedDfspId = await DFSPModel.findIdByDfspId(dfspId);
   const record = {
     state,
     value,
-    dfsp_id,
+    dfsp_id: validatedDfspId,
     direction: direction,
   };
   return knex.table(ENDPOINT_TABLE).insert(record);
