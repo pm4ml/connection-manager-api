@@ -19,7 +19,7 @@ const BaseError = require('../errors/BaseError');
 const ErrorCategory = require('../errors/ErrorCategory');
 const ApiResponse = require('../response/ApiResponse');
 
-var ResponsePayload = function (code, payload) {
+const ResponsePayload = function (code, payload) {
   this.code = code;
   this.payload = payload;
 };
@@ -28,9 +28,9 @@ exports.respondWithCode = function (code, payload) {
   return new ResponsePayload(code, payload);
 };
 
-var writeJson = exports.writeJson = function (response, arg1, arg2) {
-  var code;
-  var payload;
+const writeJson = exports.writeJson = function (response, arg1, arg2) {
+  let code;
+  let payload;
 
   if (arg1 && arg1 instanceof ResponsePayload) {
     writeJson(response, arg1.payload, arg1.code);

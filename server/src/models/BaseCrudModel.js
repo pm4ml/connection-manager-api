@@ -22,7 +22,7 @@ const InternalError = require('../errors/InternalError');
 module.exports = class BaseCrudModel {
   constructor (baseTable) {
     if (!baseTable) {
-      throw new InternalError(`BaseCrudModel needs a baseTable`);
+      throw new InternalError('BaseCrudModel needs a baseTable');
     }
     this.baseTable = baseTable;
   }
@@ -32,11 +32,11 @@ module.exports = class BaseCrudModel {
   };
 
   async findById (id) {
-    let rows = await knex.table(this.baseTable).where('id', id).select();
+    const rows = await knex.table(this.baseTable).where('id', id).select();
     if (rows.length === 0) {
       throw new NotFoundError(`${this.baseTable} with id: ${id}`);
     } else if (rows.length === 1) {
-      let row = rows[0];
+      const row = rows[0];
       return row;
     } else {
       throw new InternalError('E_TOO_MANY_ROWS');
@@ -50,7 +50,7 @@ module.exports = class BaseCrudModel {
    * @returns {id : Integer}
    */
   async create (values) {
-    let result = await knex.table(this.baseTable).insert(values);
+    const result = await knex.table(this.baseTable).insert(values);
     if (result.length === 1) {
       return { id: result[0] };
     } else {
@@ -70,7 +70,7 @@ module.exports = class BaseCrudModel {
    * @returns {id : Integer}
    */
   async update (id, values) {
-    let result = await knex.table(this.baseTable).where({ id }).update(values);
+    const result = await knex.table(this.baseTable).where({ id }).update(values);
     if (result === 0) {
       throw new NotFoundError('object with id: ' + id);
     } else if (result === 1) {
@@ -87,10 +87,10 @@ module.exports = class BaseCrudModel {
    */
   async upsert (id, values) {
     if (id === null) {
-      let idObj = await this.create(values);
+      const idObj = await this.create(values);
       return idObj;
     }
-    let rows = await knex.table(this.baseTable).where({ id }).select();
+    const rows = await knex.table(this.baseTable).where({ id }).select();
     if (rows.length === 0) {
       return this.create(values);
     } else if (rows.length === 1) {

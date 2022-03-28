@@ -39,7 +39,7 @@ exports.retrieveSecretKey = async (username) => {
     }
   };
   try {
-    let secretKeyResponse = await rp(options); // MP-757
+    const secretKeyResponse = await rp(options); // MP-757
     let secretKeyValue;
     parseString(secretKeyResponse, (err, result) => {
       if (err) throw new UnauthorizedError('XML parse of the response failed');
@@ -71,11 +71,11 @@ exports.validateTOTP = async (username, verificationCode) => {
   };
 
   try {
-    let validateTotpResponse = await rp(options); // MP-757
+    const validateTotpResponse = await rp(options); // MP-757
     parseString(validateTotpResponse, (err, result) => {
       if (err) throw new UnauthorizedError('XML parse of the response failed');
       console.log('Validate boolean :: ' + JSON.stringify(result['ns:validateTOTPResponse']['ns:return'][0]));
-      let validate = result['ns:validateTOTPResponse']['ns:return'][0];
+      const validate = result['ns:validateTOTPResponse']['ns:return'][0];
       if (!validate || validate === 'false') throw new UnauthorizedError('Verification code not validated');
       return validate;
     });

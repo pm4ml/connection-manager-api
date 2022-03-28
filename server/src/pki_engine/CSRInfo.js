@@ -46,7 +46,7 @@ module.exports = class CSRInfo {
     // When that is fixed with our fork, we can get the Subject emailAddress as emailAddress: doc && doc.Subject && doc.Subject.EmailAddress ? Array.isArray(doc.Subject.EmailAddress) ? doc.Subject.EmailAddress.join() : doc.Subject.EmailAddress : null,
     // Until then we'll pick it from the Names array
     if (doc && doc.Subject && doc.Subject.Names && Array.isArray(doc.Subject.Names)) {
-      let emailEntry = doc.Subject.Names.find(entry => entry.Type.length === emailAddressOIDN.length && entry.Type.every((value, index) => value === emailAddressOIDN[index]));
+      const emailEntry = doc.Subject.Names.find(entry => entry.Type.length === emailAddressOIDN.length && entry.Type.every((value, index) => value === emailAddressOIDN[index]));
       emailAddress = emailEntry ? emailEntry.Value : null;
     }
     this.subject = {
@@ -83,7 +83,7 @@ module.exports = class CSRInfo {
 
   getSubjectAlternativeNamesQuantity () {
     let total = 0;
-    let subjectAltName = this.extensions.subjectAltName;
+    const subjectAltName = this.extensions.subjectAltName;
 
     total += subjectAltName.dns.length;
     total += subjectAltName.ips.length;
@@ -94,8 +94,8 @@ module.exports = class CSRInfo {
   }
 
   getAllSubjectAltNameOneList () {
-    let subjectAltName = this.extensions.subjectAltName;
-    let allTogether = [];
+    const subjectAltName = this.extensions.subjectAltName;
+    const allTogether = [];
 
     allTogether.push(...subjectAltName.dns);
     allTogether.push(...subjectAltName.ips);
