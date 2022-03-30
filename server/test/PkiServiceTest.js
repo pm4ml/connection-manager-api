@@ -24,13 +24,13 @@ const { createInternalHubCA, getHubCA } = require('../src/service/HubCAService')
 const { createContext, destroyContext } = require('./context');
 
 const ROOT_CA = {
-    CN: 'hub.modusbox.org',
-    O: 'Modusbox',
-    OU: 'TSP',
-    L: '-',
-    ST: '-',
-    C: '-'
-  };
+  CN: 'hub.modusbox.org',
+  O: 'Modusbox',
+  OU: 'TSP',
+  L: '-',
+  ST: '-',
+  C: '-'
+};
 
 describe('PkiService', () => {
   let ctx;

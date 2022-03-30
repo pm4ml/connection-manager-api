@@ -26,7 +26,7 @@ const NotFoundError = require('../src/errors/NotFoundError');
 const ROOT_CA = require('./Root_CA');
 const { createInternalHubCA, deleteHubCA } = require('../src/service/HubCAService');
 const { createContext, destroyContext } = require('./context');
-const Constants = require("../src/constants/Constants");
+const Constants = require('../src/constants/Constants');
 
 const AMAZON_ROOT_CA_PATH = 'resources/amazon.com/RootCA.pem';
 const AMAZON_CHAIN_PATH = 'resources/amazon.com/amazon.chain.pem';
