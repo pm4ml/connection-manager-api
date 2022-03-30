@@ -107,7 +107,7 @@ describe('DFSPEndpointModel', async function () {
       endpointIdList.push(endpointData.id);
       console.log(`endpointCreateResult=${endpointData.id}`);
 
-      const result = await DFSPEndpointModel.findObjectById(endpointData.id);
+      const result = await DFSPEndpointModel.findById(endpointData.id);
 
       // Assert
       assert.equal(result.id, endpointData.id);
@@ -119,7 +119,7 @@ describe('DFSPEndpointModel', async function () {
       assert.beforeOrEqualDate(new Date(result.created_at), new Date());
     });
 
-    it('should return latest Endpoint config record from findLastestObjectByDirection ordered by dfsp_endpoint.id', async () => {
+    it('should return latest Endpoint config record from findLastestByDirection ordered by dfsp_endpoint.id', async () => {
       // Act
 
       // DFSPEndpointModel.create = async (id, state, direction, value) => {
@@ -133,7 +133,7 @@ describe('DFSPEndpointModel', async function () {
       endpointIdList.push(endpointData.id);
       console.log(`endpointCreateResult.3=${endpointData.id}`);
 
-      const result = await DFSPEndpointModel.findLastestObjectByDirection(endpointData.dfsp_id, DirectionEnum.EGRESS);
+      const result = await DFSPEndpointModel.findLastestByDirection(endpointData.dfsp_id, DirectionEnum.EGRESS);
       console.log(result);
 
       // Assert
@@ -146,7 +146,7 @@ describe('DFSPEndpointModel', async function () {
       assert.beforeOrEqualDate(new Date(result.created_at), new Date());
     });
 
-    it('should return all results by direction from findObjectByDirection', async () => {
+    it('should return all results by direction from findAllByDirection', async () => {
       // Act
 
       // DFSPEndpointModel.create = async (id, state, direction, value) => {
@@ -160,7 +160,7 @@ describe('DFSPEndpointModel', async function () {
       endpointIdList.push(endpointData.id);
       console.log(`endpointCreateResult.3=${endpointData.id}`);
 
-      const result = await DFSPEndpointModel.findObjectByDirection(endpointData.dfsp_id, DirectionEnum.EGRESS);
+      const result = await DFSPEndpointModel.findAllByDirection(endpointData.dfsp_id, DirectionEnum.EGRESS);
       console.log(result);
 
       // Assert
@@ -178,7 +178,7 @@ describe('DFSPEndpointModel', async function () {
       }
     });
 
-    it('should return all results from findObjectAll', async () => {
+    it('should return all results from findAll', async () => {
       // Act
 
       // DFSPEndpointModel.create = async (id, state, direction, value) => {
@@ -192,7 +192,7 @@ describe('DFSPEndpointModel', async function () {
       endpointIdList.push(endpointData.id);
       console.log(`endpointCreateResult.3=${endpointData.id}`);
 
-      const result = await DFSPEndpointModel.findObjectAll(endpointData.dfsp_id);
+      const result = await DFSPEndpointModel.findAll(endpointData.dfsp_id);
       console.log(result);
 
       // Assert

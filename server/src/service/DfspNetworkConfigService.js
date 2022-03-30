@@ -216,7 +216,7 @@ const createDFSPIp = async (ctx, dfspId, body, direction) => {
 exports.createDFSPEgress = async (ctx, dfspId, body) => {
   await PkiService.validateDfsp(ctx, dfspId);
   const resultId = await DFSPEndpointModel.create(dfspId, StatusEnum.NOT_STARTED, DirectionEnum.EGRESS, body);
-  return transformEndpointModeltoApiRes(await DFSPEndpointModel.findObjectById(resultId));
+  return transformEndpointModeltoApiRes(await DFSPEndpointModel.findById(resultId));
 };
 
 /**
@@ -227,7 +227,7 @@ exports.createDFSPEgress = async (ctx, dfspId, body) => {
  **/
 exports.getDFSPEgress = async (ctx, dfspId) => {
   await PkiService.validateDfsp(ctx, dfspId);
-  const result = await DFSPEndpointModel.findLastestObjectByDirection(dfspId, DirectionEnum.EGRESS);
+  const result = await DFSPEndpointModel.findLastestByDirection(dfspId, DirectionEnum.EGRESS);
   if (result == null) throw new NotFoundError('Endpoint configuration not found!');
   return transformEndpointModeltoApiRes(result);
 };
@@ -255,7 +255,7 @@ exports.createDFSPEgressIp = async (ctx, dfspId, body) => {
 exports.createDFSPIngress = async (ctx, dfspId, body) => {
   await PkiService.validateDfsp(ctx, dfspId);
   const resultId = await DFSPEndpointModel.create(dfspId, StatusEnum.NOT_STARTED, DirectionEnum.INGRESS, body);
-  return transformEndpointModeltoApiRes(await DFSPEndpointModel.findObjectById(resultId));
+  return transformEndpointModeltoApiRes(await DFSPEndpointModel.findById(resultId));
 };
 
 /**
@@ -267,7 +267,7 @@ exports.createDFSPIngress = async (ctx, dfspId, body) => {
  **/
 exports.getDFSPIngress = async (ctx, dfspId) => {
   await PkiService.validateDfsp(ctx, dfspId);
-  const result = await DFSPEndpointModel.findLastestObjectByDirection(dfspId, DirectionEnum.INGRESS);
+  const result = await DFSPEndpointModel.findLastestByDirection(dfspId, DirectionEnum.INGRESS);
   if (result == null) throw new NotFoundError('Endpoint configuration not found!');
   return transformEndpointModeltoApiRes(result);
 };
