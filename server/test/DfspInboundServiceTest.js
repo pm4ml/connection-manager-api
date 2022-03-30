@@ -173,25 +173,9 @@ describe('DfspInboundService', async function () {
 
     it('should create a cert with SHA256 if specified as the signature_algorithm on the ca_config for a 2048bits csr', async () => {
       const caBody = {
-        default: {
-          expiry: '44800h',
-          usages: ['signing', 'key encipherment', 'client auth'],
-          signature_algorithm: 'SHA256WithRSA'
-        },
-        csr: {
-          key: {
-            algo: 'rsa',
-            size: 4096
-          },
-          hosts: ['hub1.test.modusbox.com', 'hub2.test.modusbox.com', '163.10.5.24', '163.10.5.22'],
-          names: [
-            {
-              CN: 'Mojaloop PKI',
-              O: 'Mojaloop',
-              OU: 'PKI'
-            }
-          ]
-        }
+        CN: 'Mojaloop PKI',
+        O: 'Mojaloop',
+        OU: 'PKI'
       };
       await createInternalHubCA(ctx, caBody);
 
@@ -223,25 +207,9 @@ describe('DfspInboundService', async function () {
 
     it('should create a cert with SHA256 if specified as the signature_algorithm on the ca_config for a 4096bits csr', async () => {
       const caBody = {
-        default: {
-          expiry: '44800h',
-          usages: ['signing', 'key encipherment', 'client auth'],
-          signature_algorithm: 'SHA256WithRSA'
-        },
-        csr: {
-          key: {
-            algo: 'rsa',
-            size: 4096
-          },
-          hosts: ['hub1.test.modusbox.com', 'hub2.test.modusbox.com', '163.10.5.24', '163.10.5.22'],
-          names: [
-            {
-              CN: 'Mojaloop PKI',
-              O: 'Mojaloop',
-              OU: 'PKI'
-            }
-          ]
-        }
+        CN: 'Mojaloop PKI',
+        O: 'Mojaloop',
+        OU: 'PKI'
       };
       await createInternalHubCA(ctx, caBody);
 

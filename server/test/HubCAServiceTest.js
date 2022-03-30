@@ -142,18 +142,8 @@ describe('HubCAServiceTest', () => {
 
     it('should create internal CA', async () => {
       const body = {
-        csr: {
-          hosts: ['example.com'],
-          names: [
-            {
-              CN: 'Example CA',
-              O: 'Example Company'
-            }
-          ],
-          key: {
-            algo: 'rsa',
-          }
-        }
+        CN: 'Example CA',
+        O: 'Example Company'
       };
       await HubCAService.createInternalHubCA(ctx, body);
     }).timeout(15000);
