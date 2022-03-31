@@ -10,7 +10,7 @@ echo "\nStarting DB - creating init script - /tmp/init.sql"
 
 echo "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;" > /tmp/init.sql
 
-echo "\nStarting DB - wait-for-db script - /tmp/wait-for-db.sh"
+echo "\nStarting DB - creating wait-for-db script - /tmp/wait-for-db.sh"
 
 echo "
   echo -n 'Waiting for $DATABASE_SCHEMA DB to startup';
