@@ -9,10 +9,21 @@ mkdir -p $TEMP_DIR
 
 ./kill-vault.sh
 
+PLATFORM=$(uname)
+
 cd $TEMP_DIR
 if [ ! -f vault ]; then
-	wget https://releases.hashicorp.com/vault/1.8.1/vault_1.8.1_linux_amd64.zip -N -q --show-progress
+  echo "Downloading vault for $PLATFORM"
+  if [[ $PLATFORM == 'Linux' ]]; then
+    wget https://releases.hashicorp.com/vault/1.8.1/vault_1.8.1_linux_amd64.zip -N -q --show-progress
+  elif [[ $PLATFORM == 'Darwin' ]]; then
+    wget https://releases.hashicorp.com/vault/1.8.1/vault_1.8.1_darwin_amd64.zip -N -q --show-progress
+  else
+    echo "UNKNOWN PLATFORM! exiting..."
+    exit 1
+  fi
 	unzip vault*.zip
+  chmod +x vault
 fi
 VAULT_DEV_ROOT_TOKEN_ID=$VAULT_TOKEN VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8233 ./vault server -dev &
 PID="$PID $!"
@@ -32,7 +43,7 @@ sleep 3
 ./vault write pki/config/urls \
     issuing_certificates="http://127.0.0.1:8200/v1/pki/ca" \
     crl_distribution_points="http://127.0.0.1:8200/v1/pki/crl"
-./vault write pki/roles/example.com allowed_domains=example.com allow_subdomains=true allow_any_name=true allow_localhost=true enforce_hostnames=false max_ttl=97600h
+./vault write pki/roles/example.com allowed_domains=example.com allow_subdomains=true allow_any_name=true allow_localhost=true enforce_hostnames=false max_ttl=720h
 
 tee policy.hcl <<EOF
 # List, create, update, and delete key/value secrets
@@ -66,9 +77,9 @@ EOF
 ./vault secrets tune -max-lease-ttl=43800h pki_int
 ./vault write pki_int/roles/example.com allowed_domains=example.com allow_subdomains=true allow_any_name=true allow_localhost=true enforce_hostnames=false max_ttl=600h
 
-export VAULT_AUTH_METHOD=APP_ROLE
-export VAULT_ROLE_ID_FILE=$(realpath role-id)
-export VAULT_ROLE_SECRET_ID_FILE=$(realpath secret-id)
+# export VAULT_AUTH_METHOD=APP_ROLE
+# export VAULT_ROLE_ID_FILE=$(realpath ./role-id)
+# export VAULT_ROLE_SECRET_ID_FILE=$(realpath ./secret-id)
 
 # trap "kill -TERM $PID &> /dev/null" TERM INT
 # wait $PID || true

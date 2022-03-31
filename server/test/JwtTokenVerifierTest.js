@@ -19,7 +19,6 @@ const { createJwtStrategy } = require('../src/oauth/OAuthHelper');
 const Constants = require('../src/constants/Constants');
 
 const { assert } = require('chai');
-const { createContext, destroyContext } = require('./context');
 
 describe('JwtTokenVerifierTest tests', () => {
   before(() => {

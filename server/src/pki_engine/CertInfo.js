@@ -62,7 +62,7 @@ module.exports = class CertInfo {
   // FIXME: put a better email validation
   tryToGetEmailSubject (doc) {
     if (doc && doc.subject && doc.subject.names) {
-      let array = doc.subject.names;
+      const array = doc.subject.names;
       for (let index = 0; index < array.length; index++) {
         const name = array[index];
         if ((/^\S+@\S+$/).test(name)) {

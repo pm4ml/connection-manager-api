@@ -27,7 +27,7 @@ exports.validateIpAddress = (candidate) => {
 
 exports.validateURL = (candidate) => {
   try {
-    let url = new URL(candidate);
+    const url = new URL(candidate);
     if (!(url.protocol.toLowerCase() === 'http:' || url.protocol.toLowerCase() === 'https:')) {
       return false;
     }
@@ -53,7 +53,7 @@ exports.validatePort = (inputValue) => {
   if (!Number.isInteger(Number(inputValue))) {
     throw new ValidationError(`port range validation error: ${inputValue} is not an Integer`);
   }
-  let value = Number(inputValue);
+  const value = Number(inputValue);
   if (value < 0 || value > 65535) {
     throw new ValidationError(`port range validation error: ${inputValue} is not in the [0,65535] range`);
   }
@@ -62,7 +62,7 @@ exports.validatePort = (inputValue) => {
 exports.validatePorts = (ports) => {
   ports.forEach(element => {
     if (/^([0-9]+)-([0-9]+)$/.test(element)) {
-      let limits = element.split('-');
+      const limits = element.split('-');
       limits.forEach(limit => {
         exports.validatePort(limit);
       });

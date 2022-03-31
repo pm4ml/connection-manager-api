@@ -26,6 +26,7 @@ const NotFoundError = require('../src/errors/NotFoundError');
 const ROOT_CA = require('./Root_CA');
 const { createInternalHubCA, deleteHubCA } = require('../src/service/HubCAService');
 const { createContext, destroyContext } = require('./context');
+const Constants = require('../src/constants/Constants');
 
 const AMAZON_ROOT_CA_PATH = 'resources/amazon.com/RootCA.pem';
 const AMAZON_CHAIN_PATH = 'resources/amazon.com/amazon.chain.pem';
@@ -51,23 +52,23 @@ describe('ServerCertsService', () => {
 
   describe('Hub Server Certificates', () => {
     it('should create a HubServerCerts entry', async () => {
-      const body = {
+      Constants.serverCsrParameters = {
         subject: {
           CN: 'example.com',
         },
       };
-      const result = await ServerCertsService.createHubServerCerts(ctx, body);
+      const result = await ServerCertsService.createHubServerCerts(ctx);
       assert.isNotNull(result.serverCertificate);
       assert.isNotNull(result.rootCertificate);
     }).timeout(30000);
 
     it('should create and delete a HubServerCerts entry', async () => {
-      const body = {
+      Constants.serverCsrParameters = {
         subject: {
           CN: 'example.com',
         },
       };
-      const result = await ServerCertsService.createHubServerCerts(ctx, body);
+      const result = await ServerCertsService.createHubServerCerts(ctx);
       assert.isNotNull(result.serverCertificate);
       await ServerCertsService.deleteHubServerCerts(ctx);
       try {

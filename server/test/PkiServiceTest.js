@@ -19,38 +19,17 @@ const { setupTestDB, tearDownTestDB } = require('./test-database');
 
 const PkiService = require('../src/service/PkiService');
 const { assert } = require('chai');
-const NotFoundError = require('../src/errors/NotFoundError');
 const ValidationError = require('../src/errors/ValidationError');
 const { createInternalHubCA, getHubCA } = require('../src/service/HubCAService');
 const { createContext, destroyContext } = require('./context');
 
 const ROOT_CA = {
-  csr: {
-    hosts: [
-      'root-ca.modusbox.com',
-      'www.root-ca.modusbox.com'
-    ],
-    key: {
-      algo: 'rsa',
-      size: 4096
-    },
-    names: [
-      {
-        CN: 'hub.modusbox.org',
-        O: 'Modusbox',
-        OU: 'TSP',
-        L: '-',
-        ST: '-',
-        C: '-'
-      }
-    ]
-  },
-  default: {
-    expiry: '87600h',
-    usages: [
-      'signing'
-    ]
-  }
+  CN: 'hub.modusbox.org',
+  O: 'Modusbox',
+  OU: 'TSP',
+  L: '-',
+  ST: '-',
+  C: '-'
 };
 
 describe('PkiService', () => {

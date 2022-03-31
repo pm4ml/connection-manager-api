@@ -19,7 +19,6 @@
 const DFSPModel = require('../models/DFSPModel');
 const PkiService = require('./PkiService');
 const ValidationError = require('../errors/ValidationError');
-const Constants = require('../constants/Constants');
 
 exports.createDfspJWSCerts = async (ctx, dfspId, body) => {
   if (body === null || typeof body === 'undefined') {

@@ -350,6 +350,7 @@ class PKIEngine {
    */
   compareSubjectBetweenCSRandCert (csrInfo, certInfo) {
     for (const p in csrInfo.subject) {
+      // eslint-disable-next-line no-prototype-builtins
       if (csrInfo.subject.hasOwnProperty(p)) {
         if (csrInfo.subject[p] !== certInfo.subject[p]) {
           return { valid: false, reason: `csr subject ${p}: ${csrInfo.subject[p]} is not equals cert subject ${p}: ${certInfo.subject[p]}` };
@@ -357,6 +358,7 @@ class PKIEngine {
       }
     }
     for (const p in certInfo.subject) {
+      // eslint-disable-next-line no-prototype-builtins
       if (certInfo.subject.hasOwnProperty(p)) {
         if (csrInfo.subject[p] !== certInfo.subject[p]) {
           return { valid: false, reason: `csr subject ${p}: ${csrInfo.subject[p]} is not equals cert subject ${p}: ${certInfo.subject[p]}` };

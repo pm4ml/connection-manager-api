@@ -15,28 +15,22 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const Wso2TotpClient = require('../src/service/Wso2TotpClient');
-const { assert } = require('chai');
-const rp = require('request-promise-native');
-const sinon = require('sinon');
-const xml2js = require('xml2js');
-
-describe('TOTP admin server client', () => {
-  it('should return a secret key when valid credentials', async () => {
-    const obj = {
-      'ns:retrieveSecretKeyResponse':
-            {
-              $:
-                    { 'xmlns:ns': 'http://services.totp.authenticator.application.identity.carbon.wso2.org' },
-              'ns:return': ['XXX']
-            }
-    };
-    const builder = new xml2js.Builder();
-    const xml = builder.buildObject(obj);
-
-    const stub = sinon.stub(rp, 'Request');
-    stub.resolves(xml);
-    const response = await Wso2TotpClient.retrieveSecretKey('validuser');
-    assert.equal(response, 'XXX');
+exports.up = function (knex, Promise) {
+  return knex.schema.createTable('dfsp_endpoint', (table) => {
+    table.increments('id').primary();
+    table.integer('dfsp_id').unsigned().notNullable();
+    table.string('state', 512).notNullable().defaultTo(null);
+    table.string('direction', 512).notNullable().defaultTo(null);
+    table.jsonb('value').notNullable().defaultTo(null);
+    table.datetime('created_at').notNullable().defaultTo(knex.fn.now());
+    table.string('created_by', 1024).defaultTo(null);
+    table.foreign('dfsp_id', 'FK_ENDPT_DFSP_ID').references('dfsps.id').onDelete('CASCADE').onUpdate('NO ACTION');
+    table.index('dfsp_id', 'FK_ENDPT_DFSP_ID_idx');
+    if (!process.env.TEST) table.engine('InnoDB');
+    if (!process.env.TEST) table.charset('utf8mb4');
   });
-});
+};
+
+exports.down = function (knex, Promise) {
+  return knex.schema.dropTableIfExists('dfsp_endpoint_items');
+};

@@ -1,9 +1,20 @@
 tmpdir
 private
 tmpdir
-.vscode
 **/cfssl-bins/**
 **/node_modules/**
 .DS_Store
 localEnvs
 
+# VScode
+.vscode
+.code-workspace
+
+# ignore all log files
+**/*.log
+
+# ignore .env files
+.env
+
+# ignore vault install from server/run-vault.sh
+.vault
