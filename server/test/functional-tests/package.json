@@ -1,0 +1,33 @@
+{
+  "name": "functional-tests",
+  "version": "1.0.0",
+  "description": FUnctional tests for MCM",
+  "main": "index.js",
+  "//": "We explicitly configure testcafe to compile our tests with our installed version of typescript. We therefore alias typescript to 'ts4' in order to reduce the chance of accidentally using the wrong module.",
+  "dependencies": {
+    "@js-temporal/polyfill": "^0.2.0",
+    "@slack/webhook": "^6.1.0",
+    "@types/uuid": "^8.3.1",
+    "@types/ws": "^6.0.4",
+    "axios": "^0.21.1",
+    "cli-table3": "^0.6.1",
+    "dotenv": "^10.0.0",
+    "env-var": "^7.0.1",
+    "file-system": "^2.2.2",
+    "mojaloop-voodoo-client": "0.7.0",
+    "mv": "^2.1.1",
+    "node-strings": "^1.0.2",
+    "request": "2.88.2",
+    "ts4": "npm:typescript@^4.3.5",
+    "uuid": "^3.4.0"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "testcafe ${BROWSER_TCAFE:-chrome}"
+  },
+  "author": "sridevi.miriyala@modusbox.com",
+  "devDependencies": {
+    "html-webpack-plugin": "^5.3.1"
+  }
+}
