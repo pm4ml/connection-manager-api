@@ -1,3 +1,9 @@
+#!/bin/bash
+
+set -e
+
+./kill-mysql.sh
+
 echo "Starting DB..."
 
 DATABASE_ROOT_PASSWORD=${DATABASE_ROOT_PASSWORD:="mcm"}
