@@ -17,7 +17,7 @@ echo "
   echo -n '' && sleep 2; 
   while ! mysql --protocol=tcp -u root --password=$DATABASE_ROOT_PASSWORD $DATABASE_SCHEMA -ss -N -e 'select 1'  > /dev/null 2>&1;
   do 
-    echo -n '.' && sleep 2; 
+    echo -n '.' && sleep 1; 
   done;
   echo;
   echo 'Successfully connected to $DATABASE_SCHEMA DB!';
