@@ -121,13 +121,11 @@ Variables:
 |CFSSL_VERSION|Expected CFSSL version to use. Should be updated to keep in sync with the cfssl development|1.3.4
 |CFSSL_COMMAND_PATH|cfssl command; it should be just cfssl if it's in the PATH or the full path|cfssl
 
-
-
-
-
 ## Testing
 
-- Unit testing: run `npm test`. The tests are implemented using `mocha`. If you need some test certificates, see the [test resources readme](./server/test/resources/README.md)
+- Unit testing:
+  - run `npm run start:backend` as a pre-requisite to `npm test`
+  - run `npm test`. The tests are implemented using `mocha`. If you need some test certificates, see the [test resources readme](./server/test/resources/README.md)
 - Smoke testing ( `zsh` script ): run the [cmd-line-tester.sh](./scripts/cmd-line-tester.sh) script from a tmp directory
 - swagger: see "running the server" below
 

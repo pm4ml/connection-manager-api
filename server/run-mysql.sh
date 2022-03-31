@@ -1,3 +1,13 @@
-echo 'CREATE DATABASE mcm;' > /tmp/init.sql
+echo "Starting DB"
 
-docker run -d --rm --name mysql-mbox-mcm -p 3306:3306 -e MYSQL_ROOT_PASSWORD=mcm -v "/tmp/init.sql:/docker-entrypoint-initdb.d/init.sql" mysql:8
+DATABASE_ROOT_PASSWORD=${DATABASE_ROOT_PASSWORD:="mcm"}
+DATABASE_USER=${DATABASE_USER:="mcm"}
+DATABASE_PASSWORD=${DATABASE_PASSWORD:="mcm"}
+DATABASE_SCHEMA=${DATABASE_SCHEMA:="mcm"}
+DATABASE_TAG=${DATABASE_TAG:-"8"}
+
+docker run -d --rm --name mysql-mbox-mcm -p 3306:3306 -e MYSQL_ROOT_PASSWORD=$DATABASE_ROOT_PASSWORD -e MYSQL_USER=$DATABASE_USER -e MYSQL_PASSWORD=$DATABASE_PASSWORD -e MYSQL_DATABASE=$DATABASE_SCHEMA mysql:$DATABASE_TAG
+
+sleep 15
+
+npm run migrate-and-seed

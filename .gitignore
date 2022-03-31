@@ -14,7 +14,7 @@ localEnvs
 **/*.log
 
 # ignore .env files
-.env
+**/*.env
 
 # ignore vault install from server/run-vault.sh
 .vault
