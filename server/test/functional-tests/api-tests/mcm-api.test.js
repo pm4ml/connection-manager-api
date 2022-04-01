@@ -10,28 +10,41 @@
 
 const { apiHelper } = require("./util/api-helper");
 const config = require("./config");
-const util = require("util");
-const axios = require("axios");
-const { isTypedArray } = require("util/types");
-const { assert } = require("console");
+let dfspId;
 
 describe("MCM API Tests", () => {
   
+    beforeAll(() => {
+        var addDFSPReq = {
+            dfspId: dfspId,
+            name: 'DFSP 1',
+            "monetaryZoneId": "USD"
+          }
+        var addDFSPResponse = apiHelper.getResponseBody({
+            httpMethod: 'POST',
+            url: `${config.mcmEndpoint}/dfsps`,
+            httpHeaders: {'Content-Type':'application/json'},
+            body: JSON.stringify(addDFSPReq)
+        });
+        dfspId = addDFSPResponse.id;
+    });
+
     describe("DFSP Ingress Endpoint", () => {
     
-        it("200 Response Code", async () => {
+        test("200 Response Code", async () => {
             const response = await apiHelper.getResponseBody({
                 httpMethod: "GET",
-                url: `config.mcmEndpoint/dfsps/1/endpoints/ingress`,
-                httpHeaders: { "Content-Type": "application/json" },
+                url: `${config.mcmEndpoint}/dfsps/${dfspId}/endpoints/ingress` },
             });
 
-        expect(response.id).not.toEqual(null);
-        expect(response.dfspId).toEqual('1');
-        expect(response.state).toEqual('NOT_STARTED');
+        expect(response.id).not.toBeNull();
+        expect(response.dfspId).toBe('1');
+        expect(response.state).toBe('NOT_STARTED');
         
 
     });
+
+    
 
   });
 
