@@ -1,23 +1,25 @@
 {
   "name": "connection-manager-api",
-  "version": "1.8.15",
+  "version": "1.8.16",
   "description": "ModusBox Connection Manager API",
   "main": "index.js",
   "scripts": {
-    "testX": "standardx --verbose | snazzy && mocha",
-    "test": "./run-vault.sh && mocha ; ./kill-vault.sh",
+    "test": "echo 'WARNING: Run \"npm run start:backend\" before executing...\n' && TEST=true mocha",
     "test-self-signed-server": "./run-vault.sh && TEST_START_SELF_SIGNED_SERVER=true npm test ; ./kill-vault.sh",
     "lint": "npx eslint ./src ./test",
-    "wtftest": "wtfnode ./node_modules/.bin/_mocha",
     "test-with-coverage": "./run-vault.sh && nyc --reporter=text mocha --timeout 20000 --colors -exit ; ./kill-vault.sh",
     "start": "node src/index.js",
     "start-with-oauth-enabled": "source oauth.env && node src/index.js",
-    "start-for-tips": "source ../localEnvs/tips.env  && node src/index.js",
-    "build": "babel src --out-dir ./dist --source-maps",
-    "serve": "node ./dist/index.js",
     "migrate": "DOTENV_CONFIG_PATH=$(pwd)/.env npx knex --knexfile src/knexfile.js migrate:latest",
     "seed": "DOTENV_CONFIG_PATH=$(pwd)/.env npx knex --knexfile src/knexfile.js seed:run",
-    "migrate-and-seed": "npm -s run migrate && npm -s run seed"
+    "migrate-and-seed": "npm -s run migrate && npm -s run seed",
+    "start:db": "./run-mysql.sh",
+    "stop:db": "./kill-mysql.sh",
+    "start:vault": "./run-vault.sh",
+    "stop:vault": "./kill-vault.sh",
+    "start:backend": "npm -s run start:db && npm run -s start:vault",
+    "stop:backend": "npm -s run stop:db && npm run -s stop:vault",
+    "restart:backend": "npm run stop:backend && npm run start:backend"
   },
   "keywords": [
     "swagger"
