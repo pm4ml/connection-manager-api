@@ -1,3 +1,5 @@
+#!/bin/bash
+
 TEMP_DIR=.vault
 
 if [ -f $TEMP_DIR/pid ]; then
