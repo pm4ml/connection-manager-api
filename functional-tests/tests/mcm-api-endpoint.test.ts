@@ -27,13 +27,14 @@ const { ApiHelper, MethodEnum, ApiHelperOptions } = require('../util/api-helper'
 const Config = require('../util/config');
 
 describe('MCM API Tests', () => {
+
   let dfspId: string;
 
-  const randomId = Math.floor(Math.random() * (1000 - 1)) + 1;
+  const randomSeed = Math.floor(Math.random() * (1000 - 1)) + 1;
 
   const dfspObject = {
-    dfspId: `test${randomId}`,
-    name: `test${randomId}`,
+    dfspId: `test${randomSeed}`,
+    name: `test${randomSeed}`,
     monetaryZoneId: 'XTS'
   }
 
@@ -49,7 +50,6 @@ describe('MCM API Tests', () => {
   const apiHelper = new ApiHelper(apiHelperOptions);
 
   beforeAll(async () => {
-
     // lets see if the DFSP already exists
     const getDFSPResponse = await apiHelper.sendRequest({
       method: MethodEnum.GET,
@@ -86,9 +86,8 @@ describe('MCM API Tests', () => {
   afterEach(() => {
     // TODO: cleanup test-data
   })
-  
 
-  describe('DFSP Egress Endpoint should', () => {
+  describe('DFSP Egress Endpoint Configuration should', () => {
 
     test('MCMAPI.3 - return a 404 when querying a DFSP Endpoint Egress Configuration for a DFSP that does not exist', async () => {
       // ### Setup
@@ -212,6 +211,170 @@ describe('MCM API Tests', () => {
       expect(createEndpointEgressResponse.data.ipList).toMatchObject(endpoitConfiguration.ipList);
       expect(createEndpointEgressResponse?.status).toBe(200);
       expect(createEndpointEgressResponse.data.id).toBeGreaterThan(getEgressResponse.data.id);
+    });
+
+    test('MCMAPI.9 - create DFSP Endpoint Egress Configurations with invalid request', async () => {
+      // ### Setup
+      const endpoitConfiguration = {
+        "ipList": [
+          {
+            "description": "Notification Callback Egress IP & Ports",
+            "address": "163.10.24.28/30",
+            "ports": [
+              "80",
+              "8000-8080"
+            ]
+          }
+        ],
+        "SHOULD": "NOT_EXIST"
+      }
+
+      // ### Act
+      const createEndpointEgressResponse = await apiHelper.sendRequest({
+        method: 'POST',
+        url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/egress`,
+        body: JSON.stringify(endpoitConfiguration),
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+      });
+
+
+      // ### Test
+      expect(createEndpointEgressResponse.data.message).toContain('request.body should NOT have additional properties');
+      expect(createEndpointEgressResponse?.status).toBe(400);
+    });
+  });
+
+  describe('DFSP Egress Ingress Configuration should', () => {
+
+    test('MCMAPI.7 - return a 404 when querying a DFSP Endpoint Ingress Configuration for a DFSP that does not exist', async () => {
+      // ### Setup
+      const errorId = 'NotFoundError';
+      const errorMessage = 'DFSP with id DFSP_DOES_NOT_EXIST not found';
+      const invalidDfspId = 'DFSP_DOES_NOT_EXIST'
+
+      // ### Act
+      const response = await apiHelper.sendRequest({
+        method: 'GET',
+        url: `${Config.mcmEndpoint}/dfsps/${invalidDfspId}/endpoints/ingress`,
+      });
+
+      // ### Test
+      expect(response?.data?.payload?.id).toBe(errorId);
+      expect(response?.data?.payload?.message).toBe(errorMessage);
+      expect(response?.data?.message).toBe(errorMessage);
+      expect(response?.status).toBe(404);
+    });
+
+    test('MCMAPI.8 - return a 404 when querying a DFSP Endpoint Ingress Configuration that does not exist', async () => {
+      // ### Setup
+      const errorId = 'NotFoundError';
+      const errorMessage = 'Endpoint configuration not found!';
+
+      // ### Act
+      const response = await apiHelper.sendRequest({
+        method: 'GET',
+        url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/ingress`,
+      });
+
+      // ### Test
+      expect(response?.data?.payload?.id).toBe(errorId);
+      expect(response?.data?.payload?.message).toBe(errorMessage);
+      expect(response?.data?.message).toBe(errorMessage);
+      expect(response?.status).toBe(404);
+    });
+
+    test('MCMAPI.5 - create DFSP Endpoint Ingress Configurations for the first time', async () => {
+      // ### Setup
+      const endpoitConfiguration = {
+        "url": `http://local.test.${randomSeed}`
+      }
+
+      // ### Act
+      const createEndpointIngressResponse = await apiHelper.sendRequest({
+        method: 'POST',
+        url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/ingress`,
+        body: JSON.stringify(endpoitConfiguration),
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+      });
+
+      const getIngressResponse = await apiHelper.sendRequest({
+        method: 'GET',
+        url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/ingress`,
+      });
+
+
+      // ### Test
+      expect(createEndpointIngressResponse.data.dfspId).toBe(dfspId);
+      expect(createEndpointIngressResponse.data.id).toBeGreaterThan(0);
+      expect(createEndpointIngressResponse.data.state).toBe('NOT_STARTED');
+      expect(createEndpointIngressResponse.data).toHaveProperty('createdBy');
+      expect(createEndpointIngressResponse.data).toHaveProperty('createdAt');
+      expect(createEndpointIngressResponse.data.url).toBe(endpoitConfiguration.url);
+      expect(createEndpointIngressResponse?.status).toBe(200);
+      expect(createEndpointIngressResponse.data.id).toBe(getIngressResponse.data.id);
+      expect(getIngressResponse?.status).toBe(200);
+    });
+
+    test('MCMAPI.6 - create DFSP Endpoint Egress Configurations when an existing record already exists', async () => {
+      // ### Setup
+      const endpoitConfiguration = {
+        "url": `http://local.test.${randomSeed}`
+      }
+
+      // ### Act
+
+      const getIngressResponse = await apiHelper.sendRequest({
+        method: 'GET',
+        url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/ingress`,
+      });
+
+      const createEndpointIngressResponse = await apiHelper.sendRequest({
+        method: 'POST',
+        url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/ingress`,
+        body: JSON.stringify(endpoitConfiguration),
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+      });
+
+      // ### Test
+      expect(getIngressResponse?.status).toBe(200);
+
+      expect(createEndpointIngressResponse.data.dfspId).toBe(dfspId);
+      expect(createEndpointIngressResponse.data.id).toBeGreaterThan(0);
+      expect(createEndpointIngressResponse.data.state).toBe('NOT_STARTED');
+      expect(createEndpointIngressResponse.data).toHaveProperty('createdBy');
+      expect(createEndpointIngressResponse.data).toHaveProperty('createdAt');
+      expect(createEndpointIngressResponse.data.url).toBe(endpoitConfiguration.url);
+      expect(createEndpointIngressResponse?.status).toBe(200);
+      expect(createEndpointIngressResponse.data.id).toBeGreaterThan(getIngressResponse.data.id);
+    });
+
+    test('MCMAPI.10 - create DFSP Endpoint Ingress Configurations with invalid request', async () => {
+      // ### Setup
+      const endpoitConfiguration = {
+        "url": `http://local.test.${randomSeed}`,
+        "SHOULD": "NOT_EXIST"
+      }
+
+      // ### Act
+      const createEndpointIngressResponse = await apiHelper.sendRequest({
+        method: 'POST',
+        url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/egress`,
+        body: JSON.stringify(endpoitConfiguration),
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+      });
+
+
+      // ### Test
+      expect(createEndpointIngressResponse.data.message).toContain('request.body should NOT have additional properties');
+      expect(createEndpointIngressResponse?.status).toBe(400);
     });
   });
 });
