@@ -167,7 +167,6 @@ const requestToken = async (options?: OauthConfig): Promise<string|undefined> =>
     
     // return a new string
     const token = `${response?.data?.access_token}`;
-    console.log(token)
     return token;
   } catch (error) {
     console.error(error);
