@@ -38,6 +38,7 @@ export enum MethodEnum {
   GET = 'GET',
   PUT = 'PUT',
   PATCH = 'PATCH',
+  DELETE = 'DELETE',
 }
 
 export type RequestConfig = {
@@ -49,6 +50,7 @@ export type RequestConfig = {
 
 export class ApiHelper {
   private _options: ApiHelperOptions
+  private _token: string | undefined
 
   constructor (options: ApiHelperOptions) {
     this._options = { ...options };
@@ -73,16 +75,19 @@ export class ApiHelper {
   }
 
   async sendRequest (config: RequestConfig) {
-    // let token = null;
-    // if (this._options?.oauth != null) {
-    //   token = requestToken(this._options?.oauth?.url, this._options?.oauth?.clientId, this._options?.oauth?.clientSecret)
-    // }
+    if (this._token == null && this._options?.oauth != null) {
+      this._token = await requestToken({
+        url: this._options?.oauth?.url,
+        clientId: this._options?.oauth?.clientId,
+        clientSecret: this._options?.oauth?.clientSecret
+      })
+    }
 
     const requestOptions = {
       method: config.method,
       url: config.url,
-      data: config?.body || '',
-      headers: processHeaders(config?.headers),
+      data: config?.body || '{}',
+      headers: processHeaders(config?.headers, this._token),
       validateStatus: (status: number) => {
         return status < 900; // Reject only if the status code is greater than or equal to 900
       }
@@ -91,18 +96,9 @@ export class ApiHelper {
     let responseObj;
 
     try {
+      // this is needed for axios to complete its house-keeping and elegantly close its connections
+      await process.nextTick(() => {});
       responseObj = await axios(requestOptions);
-      // TODO: not sure what this is for?
-      //   if (responseObj.data) {
-      //     try {
-      //       return responseObj.data;
-      //     } catch (err) {
-      //       if (!err.message.match(/Unexpected token .* in JSON/)) {
-      //         // if it's not error with parsing json
-      //         throw err;
-      //       }
-      //     }
-      //   }
     } catch (error) {
       throw error;
     }
@@ -113,12 +109,15 @@ export class ApiHelper {
 
 export default ApiHelper;
 
-const processHeaders = (rawHeaders: HeaderType | undefined) => {
-  if (rawHeaders == null) {
-    return []
-  }
-  // convert map to object
+const processHeaders = (rawHeaders: HeaderType | undefined, bearerToken?: string | undefined): HeaderType => {
   let headers: { [key:string]:string; } = {};
+
+  if (rawHeaders == null) {
+    if (bearerToken) {
+      headers['Authorization'] = `Bearer ${bearerToken}`
+    }
+    return headers;
+  }
 
   if (rawHeaders instanceof Map) {
     rawHeaders.forEach((value, key) => {
@@ -128,12 +127,16 @@ const processHeaders = (rawHeaders: HeaderType | undefined) => {
     headers = rawHeaders;
   }
 
+  if (bearerToken) {
+    headers['Authorization'] = `Bearer ${bearerToken}`
+  }
+
   return headers;
 };
 
-const requestToken = async (options?: OauthConfig) => {
+const requestToken = async (options?: OauthConfig): Promise<string|undefined> => {
   if (options == null) {
-    return null;
+    return;
   }
   const data = qs.stringify({
     grant_type: 'client_credentials',
@@ -152,10 +155,18 @@ const requestToken = async (options?: OauthConfig) => {
   };
 
   try {
+    // this is needed for axios to complete its house-keeping and elegantly close its connections
+    await process.nextTick(() => {});
     const response = await axios(config);
-    return response?.data?.access_token;
+
+    if (response?.status != 200) throw new Error('Unable to attain a valid Bearer Token!');
+    
+    // return a new string
+    const token = `${response?.data?.access_token}`;
+    console.log(token)
+    return token;
   } catch (error) {
-    console.log(error);
+    console.error(error);
     throw error;
   }
 };

@@ -23,15 +23,15 @@ jest.setTimeout(999999)
 const { ApiHelper, MethodEnum, ApiHelperOptions } = require('../util/api-helper');
 const Config = require('../util/config');
 
-const dfspObject = {
-  dfspId: 'test2117',
-  name: 'test2117',
-  monetaryZoneId: 'XTS'
-}
-
-let dfspId: string;
-
 describe('MCM API Tests', () => {
+  let dfspId: string;
+
+  const dfspObject = {
+    dfspId: 'test2113',
+    name: 'test2113',
+    monetaryZoneId: 'XTS'
+  }
+
   const apiHelperOptions: typeof ApiHelperOptions = {};
   if (Config.oauth2Issuer && Config.oauthClientKey && Config.oauthClientSecret){
     apiHelperOptions.oauth = {
@@ -40,24 +40,48 @@ describe('MCM API Tests', () => {
       clientSecret: Config.oauthClientSecret,
     }
   }
+
   const apiHelper = new ApiHelper(apiHelperOptions);
 
   beforeAll(async () => {
-    const addDFSPReq = {
-      dfspId,
-      name: 'DFSP 1',
-      monetaryZoneId: 'USD',
-    };
-    const addDFSPResponse = await apiHelper.getResponseBody({
-      method: MethodEnum.POST,
+
+    // lets see if the DFSP already exists
+    const getDFSPResponse = await apiHelper.sendRequest({
+      method: MethodEnum.GET,
       url:`${Config.mcmEndpoint}/dfsps`,
-      body: JSON.stringify(dfspObject),
       headers: { 
         'Content-Type': 'application/json'
       }
     });
-    dfspId = addDFSPResponse.id;
+
+    if (getDFSPResponse.status == 200) {
+      // filter results
+      const result = getDFSPResponse?.data.filter( (dfspRecord: any) => {
+        return dfspRecord.id === dfspObject.dfspId
+      })
+      // if we find it, set the dfspId value
+      if (result?.length === 1) dfspId = result[0]?.id
+    }
+    
+    // if not found, we should create it
+    if (dfspId == null) {
+      const addDFSPResponse = await apiHelper.getResponseBody({
+        method: MethodEnum.POST,
+        url:`${Config.mcmEndpoint}/dfsps`,
+        body: JSON.stringify(dfspObject),
+        headers: { 
+          'Content-Type': 'application/json'
+        }
+      });
+      // set the dfspId value
+      dfspId = addDFSPResponse.id;
+    }
   });
+
+  afterEach(() => {
+    // TODO: cleanup test-data
+  })
+  
 
   describe('DFSP Ingress Endpoint', () => {
     test('200 Response Code', async () => {
@@ -65,6 +89,7 @@ describe('MCM API Tests', () => {
         method: 'GET',
         url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/ingress`,
       });
+      // expect(response.status).toBe(200);
     });
     // expect(response.id).not.toBeNull();
     // expect(response.dfspId).toBe('1');
