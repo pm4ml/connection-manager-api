@@ -16,6 +16,10 @@
  *                                                                        *
  *  ORIGINAL AUTHOR:                                                      *
  *       Sridevi Miriyala - sridevi.miriyala@modusbox.com                **
+ * 
+ *  CONTRIBUTORS:                                                      *
+ *       Miguel de Barros - miguel.debarros@modusbox.com                **
+ * 
  ************************************************************************* */
 
 require('dotenv').config();
