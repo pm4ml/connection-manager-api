@@ -1,4 +1,4 @@
-/**************************************************************************
+/** ************************************************************************
  *  Copyright 2019 ModusBox, Inc.                                             *
  *                                                                            *
  *  info@modusbox.com                                                         *
@@ -16,11 +16,14 @@
  *                                                                        *
  *  ORIGINAL AUTHOR:                                                      *
  *       Sridevi Miriyala - sridevi.miriyala@modusbox.com                **
- **************************************************************************/
+ ************************************************************************* */
 
 require('dotenv').config();
 const env = require('env-var');
 
 module.exports = {
-  mcmEndpoint: env.get('MCM_ENDPOINT').asString()
+  mcmEndpoint: env.get('MCM_ENDPOINT').default('http://localhost:3001/api').asString(),
+  oauth2Issuer: env.get('OAUTH2_ISSUER').asString(),
+  oauthClientKey: env.get('APP_OAUTH_CLIENT_KEY').asString(),
+  oauthClientSecret: env.get('APP_OAUTH_CLIENT_SECRET').asString()
 };
