@@ -129,6 +129,10 @@ Variables:
 - Smoke testing ( `zsh` script ): run the [cmd-line-tester.sh](./scripts/cmd-line-tester.sh) script from a tmp directory
 - swagger: see "running the server" below
 
+### Functioanl Tests
+
+Refer to [README](./functional-tests/README.md).
+
 ## Style
 
 [![js-semistandard-style](https://cdn.rawgit.com/flet/semistandard/master/badge.svg)](https://github.com/Flet/semistandard)
