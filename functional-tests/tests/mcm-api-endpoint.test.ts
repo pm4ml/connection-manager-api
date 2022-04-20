@@ -30,7 +30,7 @@ describe('MCM API Tests', () => {
 
   let dfspId: string;
 
-  const randomSeed = Math.floor(Math.random() * (1000 - 1)) + 1;
+  const randomSeed = Math.floor(Math.random() * (10000 - 1)) + 1;
 
   const dfspObject = {
     dfspId: `test${randomSeed}`,
