@@ -16,6 +16,9 @@
  *                                                                        *
  *  ORIGINAL AUTHOR:                                                      *
  *       Sridevi Miriyala - sridevi.miriyala@modusbox.com                **
+ * 
+ *  CONTRIBUTORS:                                                      *
+ *       Miguel de Barros - miguel.debarros@modusbox.com                **
  ************************************************************************* */
 
 jest.setTimeout(999999)
@@ -26,9 +29,11 @@ const Config = require('../util/config');
 describe('MCM API Tests', () => {
   let dfspId: string;
 
+  const randomId = Math.floor(Math.random() * (1000 - 1)) + 1;
+
   const dfspObject = {
-    dfspId: 'test2113',
-    name: 'test2113',
+    dfspId: `test${randomId}`,
+    name: `test${randomId}`,
     monetaryZoneId: 'XTS'
   }
 
@@ -83,16 +88,130 @@ describe('MCM API Tests', () => {
   })
   
 
-  describe('DFSP Ingress Endpoint', () => {
-    test('200 Response Code', async () => {
-      const response = await apiHelper.getResponseBody({
+  describe('DFSP Egress Endpoint should', () => {
+
+    test('MCMAPI.3 - return a 404 when querying a DFSP Endpoint Egress Configuration for a DFSP that does not exist', async () => {
+      // ### Setup
+      const errorId = 'NotFoundError';
+      const errorMessage = 'DFSP with id DFSP_DOES_NOT_EXIST not found';
+      const invalidDfspId = 'DFSP_DOES_NOT_EXIST'
+
+      // ### Act
+      const response = await apiHelper.sendRequest({
         method: 'GET',
-        url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/ingress`,
+        url: `${Config.mcmEndpoint}/dfsps/${invalidDfspId}/endpoints/egress`,
       });
-      // expect(response.status).toBe(200);
+
+      // ### Test
+      expect(response?.data?.payload?.id).toBe(errorId);
+      expect(response?.data?.payload?.message).toBe(errorMessage);
+      expect(response?.data?.message).toBe(errorMessage);
+      expect(response?.status).toBe(404);
     });
-    // expect(response.id).not.toBeNull();
-    // expect(response.dfspId).toBe('1');
-    // expect(response.state).toBe('NOT_STARTED');
+
+    test('MCMAPI.4 - return a 404 when querying a DFSP Endpoint Egress Configuration that does not exist', async () => {
+      // ### Setup
+      const errorId = 'NotFoundError';
+      const errorMessage = 'Endpoint configuration not found!';
+
+      // ### Act
+      const response = await apiHelper.sendRequest({
+        method: 'GET',
+        url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/egress`,
+      });
+
+      // ### Test
+      expect(response?.data?.payload?.id).toBe(errorId);
+      expect(response?.data?.payload?.message).toBe(errorMessage);
+      expect(response?.data?.message).toBe(errorMessage);
+      expect(response?.status).toBe(404);
+    });
+
+    test('MCMAPI.1 - create DFSP Endpoint Egress Configurations for the first time', async () => {
+      // ### Setup
+      const endpoitConfiguration = {
+        "ipList": [
+          {
+            "description": "Notification Callback Egress IP & Ports",
+            "address": "163.10.24.28/30",
+            "ports": [
+              "80",
+              "8000-8080"
+            ]
+          }
+        ]
+      }
+
+      // ### Act
+      const createEndpointEgressResponse = await apiHelper.sendRequest({
+        method: 'POST',
+        url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/egress`,
+        body: JSON.stringify(endpoitConfiguration),
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+      });
+
+      const getEgressResponse = await apiHelper.sendRequest({
+        method: 'GET',
+        url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/egress`,
+      });
+
+
+      // ### Test
+      expect(createEndpointEgressResponse.data.dfspId).toBe(dfspId);
+      expect(createEndpointEgressResponse.data.id).toBeGreaterThan(0);
+      expect(createEndpointEgressResponse.data.state).toBe('NOT_STARTED');
+      expect(createEndpointEgressResponse.data).toHaveProperty('createdBy');
+      expect(createEndpointEgressResponse.data).toHaveProperty('createdAt');
+      expect(createEndpointEgressResponse.data.ipList).toMatchObject(endpoitConfiguration.ipList);
+      expect(createEndpointEgressResponse?.status).toBe(200);
+      expect(createEndpointEgressResponse.data.id).toBe(getEgressResponse.data.id);
+      expect(getEgressResponse?.status).toBe(200);
+    });
+
+    test('MCMAPI.2 - create DFSP Endpoint Egress Configurations when an existing record already exists', async () => {
+      // ### Setup
+      const endpoitConfiguration = {
+        "ipList": [
+          {
+            "description": "Notification Callback Egress IP & Ports",
+            "address": "163.10.24.28/30",
+            "ports": [
+              "80",
+              "8000-8080"
+            ]
+          }
+        ]
+      }
+
+      // ### Act
+
+      const getEgressResponse = await apiHelper.sendRequest({
+        method: 'GET',
+        url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/egress`,
+      });
+
+      const createEndpointEgressResponse = await apiHelper.sendRequest({
+        method: 'POST',
+        url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/egress`,
+        body: JSON.stringify(endpoitConfiguration),
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+      });
+
+      // ### Test
+      expect(getEgressResponse?.status).toBe(200);
+
+      expect(createEndpointEgressResponse.data.dfspId).toBe(dfspId);
+      expect(createEndpointEgressResponse.data.id).toBeGreaterThan(0);
+      expect(createEndpointEgressResponse.data.state).toBe('NOT_STARTED');
+      expect(createEndpointEgressResponse.data).toHaveProperty('createdBy');
+      expect(createEndpointEgressResponse.data).toHaveProperty('createdAt');
+      expect(createEndpointEgressResponse.data.ipList).toMatchObject(endpoitConfiguration.ipList);
+      expect(createEndpointEgressResponse?.status).toBe(200);
+      expect(createEndpointEgressResponse.data.id).toBeGreaterThan(getEgressResponse.data.id);
+    });
   });
 });

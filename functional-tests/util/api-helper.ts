@@ -96,7 +96,7 @@ export class ApiHelper {
     let responseObj;
 
     try {
-      // this is needed for axios to complete its house-keeping and elegantly close its connections
+      // Allow Axios to complete its housekeeping and be ready to track new connections
       await process.nextTick(() => {});
       responseObj = await axios(requestOptions);
     } catch (error) {
@@ -155,7 +155,7 @@ const requestToken = async (options?: OauthConfig): Promise<string|undefined> =>
   };
 
   try {
-    // this is needed for axios to complete its house-keeping and elegantly close its connections
+    // Allow Axios to complete its housekeeping and be ready to track new connections
     await process.nextTick(() => {});
     const response = await axios(config);
 
