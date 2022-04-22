@@ -140,6 +140,19 @@ jobs:
         working-directory: ${{env.APP_WORK_DIRECTORY}}
         run: docker run -d --rm --name ${{env.IMAGE_NAME}} -p 3001:3001 -e TEST=true ${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
 
+      - name: Wait for App
+        run: | 
+          echo "
+            echo -n 'Waiting for ${{env.IMAGE_NAME}}';
+            while ! docker run --rm alpine/curl:3.14 -fsSL https://localhost:3001/docs > /dev/null 2>&1;
+            do 
+              echo -n '.' && sleep 1; 
+            done;
+            echo;
+            echo 'Successfully connected to ${{env.IMAGE_NAME}}!';
+          " > /tmp/wait-for-app.sh
+          sh /tmp/wait-for-app.sh
+
       - name: Validate Functional Tests
         working-directory: ${{env.TEST_FUNC_WORK_DIRECTORY}}
         run: npm test
