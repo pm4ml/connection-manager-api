@@ -100,3 +100,7 @@ jobs:
       - name: start backends
         working-directory: ${{env.APP_WORK_DIRECTORY}}
         run: npm run start:backend
+
+      - name: Validate Integration Tests
+        working-directory: ${{env.APP_WORK_DIRECTORY}}
+        run: npm test
