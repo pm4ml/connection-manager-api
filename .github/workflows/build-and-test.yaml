@@ -9,7 +9,7 @@ on: [pull_request]
 env:
   IMAGE_NAME: ${{github.event.repository.name}}
   IMAGE_TAG: ${{ github.sha }}
-  APP_WORK_DIRECTORY: ./server
+  APP_WORK_DIRECTORY: server
   APP_CACHE_NAME: cache-app-node-modules
   NODE_VERSION: lts/*
   # IMAGE_TAG: 
@@ -30,17 +30,18 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{env.NODE_VERSION}}
+          cache: npm
+          cache-dependency-path: ${{env.APP_WORK_DIRECTORY}}/package-lock.json
       - name: Install dependencies
         working-directory: ${{env.APP_WORK_DIRECTORY}}
-        run: |
-          npm i
-      - name: Cache Node Modules
-        uses: actions/cache@v3
-        with:
-          # npm cache files are stored in `~/.npm` on Linux/macOS
-          path: ~/${{env.APP_WORK_DIRECTORY}}/.node_modules
-          key: ${{ runner.os }}-build-${{ env.APP_CACHE_NAME }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-build-${{ env.APP_CACHE_NAME}}-${{ hashFiles('**/package-lock.json') }}
+        run: npm i
+      # - name: Cache Node Modules
+      #   uses: actions/cache@v3
+      #   with:
+      #     # npm cache files are stored in `~/.npm` on Linux/macOS
+      #     path: ~/${{env.APP_WORK_DIRECTORY}}/.node_modules
+      #     key: ${{ runner.os }}-build-${{ env.APP_CACHE_NAME }}-${{ hashFiles('**/package-lock.json') }}
+      #     restore-keys: ${{ runner.os }}-build-${{ env.APP_CACHE_NAME}}-${{ hashFiles('**/package-lock.json') }}
   build-docker:
     runs-on: ubuntu-latest
     steps:
@@ -84,13 +85,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{env.NODE_VERSION}}
-      - name: Cache Node Modules
-        uses: actions/cache@v3
-        with:
-          # npm cache files are stored in `~/.npm` on Linux/macOS
-          path: ~/${{env.APP_WORK_DIRECTORY}}/.node_modules
-          key: ${{ runner.os }}-build-${{ env.APP_CACHE_NAME }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-build-${{ env.APP_CACHE_NAME}}-${{ hashFiles('**/package-lock.json') }}
+          cache: npm
+          cache-dependency-path: ${{env.APP_WORK_DIRECTORY}}/package-lock.json
+      # - name: Cache Node Modules
+      #   uses: actions/cache@v3
+      #   with:
+      #     # npm cache files are stored in `~/.npm` on Linux/macOS
+      #     path: ~/${{env.APP_WORK_DIRECTORY}}/.node_modules
+      #     key: ${{ runner.os }}-build-${{ env.APP_CACHE_NAME }}-${{ hashFiles('**/package-lock.json') }}
+      #     restore-keys: ${{ runner.os }}-build-${{ env.APP_CACHE_NAME}}-${{ hashFiles('**/package-lock.json') }}
       - name: start backends
         working-directory: ${{env.APP_WORK_DIRECTORY}}
         run: npm run start:backend
