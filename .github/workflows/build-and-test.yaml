@@ -6,14 +6,36 @@ on: [pull_request]
 #     branches:
 #       - 'main'
 
-# env:
-#   APP_WORK_DIRECTORY: ./server
-#   APP_CACHE_NAME: cache-app-node-modules
+env:
   # IMAGE_NAME: ${GITHUB_REPOSITORY#*/}
+  APP_WORK_DIRECTORY: ./server
+  APP_CACHE_NAME: cache-app-node-modules
   # IMAGE_TAG: 
 
 jobs:
-  build:
+  build-node:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      - 
+        uses: actions/setup-node@v3
+        with:
+          node-version: 'lts/*'
+      -
+        name: Install dependencies
+        working-directory: ${{env.APP_WORK_DIRECTORY}}
+        run: |
+          npm i
+      - name: Cache Node Modules
+        uses: actions/cache@v3
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/${{env.APP_WORK_DIRECTORY}}/.node_modules
+          key: ${{ runner.os }}-build-${{ env.APP_CACHE_NAME }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-build-${{ env.APP_CACHE_NAME}}-${{ hashFiles('**/package-lock.json') }}
+  build-docker:
     runs-on: ubuntu-latest
     steps:
       -
@@ -57,5 +79,5 @@ jobs:
         run: |
           docker load --input /tmp/connection-manager-api.tar
           docker image ls -a
-      - 
-        name: start backends
+      # - 
+      #   name: start backends
