@@ -130,23 +130,30 @@ jobs:
         working-directory: ${{env.APP_WORK_DIRECTORY}}
         run: docker run -d --rm --name ${{env.IMAGE_NAME}} -p 3001:3001 -e TEST=true ${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
 
-      - name: Wait for App
-        run: | 
-          echo "
-            echo -n 'Waiting for ${{env.IMAGE_NAME}}';
-            COUNTER=0
-            while ! docker run --rm alpine/curl:3.14 http://localhost:3001/docs > /dev/null 2>&1;
-            do 
-              echo -n '.' && sleep 1;
-              COUNTER=$((COUNTER+1))
-              if [ "$COUNTER" -e 10 ]; then
-                  break
-              fi
-            done;
-            echo;
-            echo 'Successfully connected to ${{env.IMAGE_NAME}}!';
-          " > /tmp/wait-for-app.sh
-          sh /tmp/wait-for-app.sh
+      - uses: cygnetdigital/wait_for_response@v2.0.0
+        with:
+          url: 'http://localhost:3001/'
+          responseCode: 200
+          timeout: 2000
+          interval: 500
+
+      # - name: Wait for App
+      #   run: | 
+      #     echo "
+      #       echo -n 'Waiting for ${{env.IMAGE_NAME}}';
+      #       COUNTER=0
+      #       while ! docker run --rm alpine/curl:3.14 http://localhost:3001/docs > /dev/null 2>&1;
+      #       do 
+      #         echo -n '.' && sleep 1;
+      #         COUNTER=$((COUNTER+1))
+      #         if [ "$COUNTER" -e 10 ]; then
+      #             break
+      #         fi
+      #       done;
+      #       echo;
+      #       echo 'Successfully connected to ${{env.IMAGE_NAME}}!';
+      #     " > /tmp/wait-for-app.sh
+      #     sh /tmp/wait-for-app.sh
 
       - name: Validate Functional Tests
         working-directory: ${{env.TEST_FUNC_WORK_DIRECTORY}}
