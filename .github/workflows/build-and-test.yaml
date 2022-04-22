@@ -7,9 +7,9 @@ on: [pull_request]
 #       - 'main'
 
 env:
-  # IMAGE_NAME: ${GITHUB_REPOSITORY#*/}
   APP_WORK_DIRECTORY: ./server
   APP_CACHE_NAME: cache-app-node-modules
+  # IMAGE_NAME: ${GITHUB_REPOSITORY#*/}
   # IMAGE_TAG: 
 
 jobs:
