@@ -79,5 +79,14 @@ jobs:
         run: |
           docker load --input /tmp/connection-manager-api.tar
           docker image ls -a
-      # - 
-      #   name: start backends
+      - name: Cache Node Modules
+        uses: actions/cache@v3
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/${{env.APP_WORK_DIRECTORY}}/.node_modules
+          key: ${{ runner.os }}-build-${{ env.APP_CACHE_NAME }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-build-${{ env.APP_CACHE_NAME}}-${{ hashFiles('**/package-lock.json') }}
+      - name: start backends
+        working-directory: ${{env.APP_WORK_DIRECTORY}}
+        run: npm run start:backend
+
