@@ -30,7 +30,7 @@ echo "
 
 echo "\nStarting DB - starting docker"
 
-docker run -d --rm --name mysql-mbox-mcm -p 3306:3306 -e MYSQL_ROOT_PASSWORD=$DATABASE_ROOT_PASSWORD -e MYSQL_USER=$DATABASE_USER -e MYSQL_PASSWORD=$DATABASE_PASSWORD -e MYSQL_DATABASE=$DATABASE_SCHEMA -v "/tmp/init.sql:/docker-entrypoint-initdb.d/init.sql" -v "/tmp/wait-for-db.sh:/tmp/wait-for-db.sh" mysql:$DATABASE_TAG
+docker run -td --rm --name mysql-mbox-mcm -p 3306:3306 -e MYSQL_ROOT_PASSWORD=$DATABASE_ROOT_PASSWORD -e MYSQL_USER=$DATABASE_USER -e MYSQL_PASSWORD=$DATABASE_PASSWORD -e MYSQL_DATABASE=$DATABASE_SCHEMA -v "/tmp/init.sql:/docker-entrypoint-initdb.d/init.sql" -v "/tmp/wait-for-db.sh:/tmp/wait-for-db.sh" mysql:$DATABASE_TAG
 
 echo "\nStarting DB - waiting for DB to startup..."
 
