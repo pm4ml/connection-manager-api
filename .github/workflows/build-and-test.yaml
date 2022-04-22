@@ -87,6 +87,9 @@ jobs:
           node-version: ${{env.NODE_VERSION}}
           cache: npm
           cache-dependency-path: ${{env.APP_WORK_DIRECTORY}}/package-lock.json
+      - name: Install dependencies
+        working-directory: ${{env.APP_WORK_DIRECTORY}}
+        run: npm i
       # - name: Cache Node Modules
       #   uses: actions/cache@v3
       #   with:
