@@ -144,9 +144,14 @@ jobs:
         run: | 
           echo "
             echo -n 'Waiting for ${{env.IMAGE_NAME}}';
+            COUNTER=0
             while ! docker run --rm alpine/curl:3.14 http://localhost:3001/docs > /dev/null 2>&1;
             do 
-              echo -n '.' && sleep 1; 
+              echo -n '.' && sleep 1;
+              ((COUNTER++))
+              if [ "$COUNTER" -e 10 ]; then
+                  break
+              fi
             done;
             echo;
             echo 'Successfully connected to ${{env.IMAGE_NAME}}!';
