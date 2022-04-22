@@ -144,7 +144,7 @@ jobs:
         with:
           url: http://localhost:3001/docs
           responseCode: 200
-          timeout: 2000
+          timeout: 10000
           interval: 500
 
       # - name: Wait for App
