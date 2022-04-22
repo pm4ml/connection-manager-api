@@ -1,15 +1,10 @@
-name: ci-build-and-test
+name: build-and-test
 
-# on:
-#   pull_request
-#   push:
-#     branches:
-#       - 'main'
 on:
   pull_request: {}
   push:
     branches:
-      - 'main'
+      - main
 
 env:
   IMAGE_NAME: ${{github.event.repository.name}}
@@ -18,12 +13,12 @@ env:
   APP_CACHE_NAME: cache-app-node-modules
   TEST_FUNC_WORK_DIRECTORY: functional-tests
   NODE_VERSION: lts/*
-  # IMAGE_TAG: 
 
 jobs:
   build-node:
     runs-on: ubuntu-latest
     steps:
+      # Setup
       - name: print env
         run: |
           echo "${IMAGE_NAME}"
@@ -38,23 +33,19 @@ jobs:
           node-version: ${{env.NODE_VERSION}}
           cache: npm
           cache-dependency-path: ${{env.APP_WORK_DIRECTORY}}/package-lock.json
+      # Actions
       - name: Install App dependencies
         working-directory: ${{env.APP_WORK_DIRECTORY}}
         run: npm i
-      # - name: Cache Node Modules
-      #   uses: actions/cache@v3
-      #   with:
-      #     # npm cache files are stored in `~/.npm` on Linux/macOS
-      #     path: ~/${{env.APP_WORK_DIRECTORY}}/.node_modules
-      #     key: ${{ runner.os }}-build-${{ env.APP_CACHE_NAME }}-${{ hashFiles('**/package-lock.json') }}
-      #     restore-keys: ${{ runner.os }}-build-${{ env.APP_CACHE_NAME}}-${{ hashFiles('**/package-lock.json') }}
   build-docker:
     runs-on: ubuntu-latest
     steps:
+      # Setup
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+      # Actions
       - name: Build and export
         uses: docker/build-push-action@v2
         with:
@@ -71,8 +62,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build-node
-      # - build-docker
     steps:
+      # Setup
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set up Docker Buildx
@@ -86,7 +77,7 @@ jobs:
       - name: Install App dependencies
         working-directory: ${{env.APP_WORK_DIRECTORY}}
         run: npm i
-
+      # Actions
       - name: Start backends
         working-directory: ${{env.APP_WORK_DIRECTORY}}
         run: npm run start:backend
@@ -105,6 +96,7 @@ jobs:
       - build-node
       - build-docker
     steps:
+      # Setup
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set up Docker Buildx
@@ -129,14 +121,7 @@ jobs:
       - name: Install Functional-tests dependencies
         working-directory: ${{env.TEST_FUNC_WORK_DIRECTORY}}
         run: npm i
-      # - name: Cache Node Modules
-      #   uses: actions/cache@v3
-      #   with:
-      #     # npm cache files are stored in `~/.npm` on Linux/macOS
-      #     path: ~/${{env.APP_WORK_DIRECTORY}}/.node_modules
-      #     key: ${{ runner.os }}-build-${{ env.APP_CACHE_NAME }}-${{ hashFiles('**/package-lock.json') }}
-      #     restore-keys: ${{ runner.os }}-build-${{ env.APP_CACHE_NAME}}-${{ hashFiles('**/package-lock.json') }}
-
+      # Actions
       - name: Start backends
         working-directory: ${{env.APP_WORK_DIRECTORY}}
         run: npm run start:backend
