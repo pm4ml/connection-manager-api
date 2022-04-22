@@ -138,8 +138,8 @@ jobs:
       - name: App logs
         working-directory: ${{env.APP_WORK_DIRECTORY}}
         run: |
-        docker ps -a
-        docker logs ${{env.IMAGE_NAME}}
+          docker ps -a
+          docker logs ${{env.IMAGE_NAME}}
 
       - name: Wait for App
         # uses: cygnetdigital/wait_for_response@v2.0.0
