@@ -11,7 +11,7 @@ env:
   IMAGE_TAG: ${{ github.sha }}
   APP_WORK_DIRECTORY: server
   APP_CACHE_NAME: cache-app-node-modules
-  TEST_FUNC_WORK_DIRECTORY: functional-test
+  TEST_FUNC_WORK_DIRECTORY: functional-tests
   NODE_VERSION: lts/*
   # IMAGE_TAG: 
 
