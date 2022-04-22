@@ -8,7 +8,7 @@ on: [pull_request]
 
 env:
   IMAGE_NAME: ${{github.event.repository.name}}
-  IMAGE_TAG: ${GITHUB_SHA::6}
+  IMAGE_TAG: ${{ github.sha }}
   APP_WORK_DIRECTORY: ./server
   APP_CACHE_NAME: cache-app-node-modules
   # IMAGE_TAG: 
