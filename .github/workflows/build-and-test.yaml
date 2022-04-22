@@ -140,6 +140,7 @@ jobs:
         run: |
           docker ps -a
           docker logs ${{env.IMAGE_NAME}}
+          ps -ef | grep vault
 
       - name: Wait for App
         # uses: cygnetdigital/wait_for_response@v2.0.0
