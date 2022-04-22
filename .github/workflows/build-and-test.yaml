@@ -137,16 +137,23 @@ jobs:
 
       - name: App logs
         working-directory: ${{env.APP_WORK_DIRECTORY}}
-        run: docker logs ${{env.IMAGE_NAME}}
+        run: |
+        docker ps -a
+        docker logs ${{env.IMAGE_NAME}}
 
       - name: Wait for App
-        uses: cygnetdigital/wait_for_response@v2.0.0
+        # uses: cygnetdigital/wait_for_response@v2.0.0
+        # with:
+        #   url: http://localhost:3001/docs
+        #   responseCode: 200
+        #   timeout: 10000
+        #   interval: 500
+        uses: nev7n/wait_for_response@v1
         with:
           url: http://localhost:3001/docs
           responseCode: 200
           timeout: 10000
           interval: 500
-
       # - name: Wait for App
       #   run: | 
       #     echo "
