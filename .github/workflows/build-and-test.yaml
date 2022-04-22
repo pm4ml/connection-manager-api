@@ -132,7 +132,7 @@ jobs:
 
       - uses: cygnetdigital/wait_for_response@v2.0.0
         with:
-          url: 'http://localhost:3001/'
+          url: http://localhost:3001/docs
           responseCode: 200
           timeout: 2000
           interval: 500
