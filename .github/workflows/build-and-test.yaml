@@ -146,7 +146,6 @@ jobs:
         run: npm test
 
       - name: Upload Test Results to GitHub
-        if: failure()
         uses: actions/upload-artifact@master
         with:
           name: junit.xml
