@@ -30,13 +30,10 @@ if (process.env.TEST) {
   process.env = {
     ...process.env,
     AUTH_ENABLED: 'false',
-    AUTH_2FA: 'false',
     AUTH_2FA_ENABLED: 'false',
     VAULT_AUTH_METHOD: 'APP_ROLE',
     VAULT_ROLE_ID_FILE: '.vault/role-id',
     VAULT_ROLE_SECRET_ID_FILE: '.vault/secret-id',
-    VAULT_ENDPOINT: 'http://127.0.0.1:8233',
-    VAULT_PKI_BASE_DOMAIN: 'example.com',
     VAULT_PKI_CLIENT_ROLE: 'example.com',
     VAULT_PKI_SERVER_ROLE: 'example.com'
   };
@@ -145,7 +142,7 @@ module.exports = {
   },
   switchFQDN: env.get('SWITCH_FQDN').default('switch.example.com').asString(),
   vault: {
-    endpoint: env.get('VAULT_ENDPOINT').required().asString(),
+    endpoint: env.get('VAULT_ENDPOINT').default('http://localhost:8233').asString(),
     mounts: {
       pki: env.get('VAULT_MOUNT_PKI').default('pki').asString(),
       intermediatePki: env.get('VAULT_MOUNT_INTERMEDIATE_PKI').default('pki_int').asString(),
@@ -154,8 +151,8 @@ module.exports = {
       dfspInternalIPWhitelistBundle: env.get('VAULT_MOUNT_DFSP_INT_IP_WHITELIST_BUNDLE').default('whitelist_pm4mls').asString(),
       dfspExternalIPWhitelistBundle: env.get('VAULT_MOUNT_DFSP_EXT_IP_WHITELIST_BUNDLE').default('whitelist_fsps').asString(),
     },
-    pkiServerRole: env.get('VAULT_PKI_SERVER_ROLE').asString(),
-    pkiClientRole: env.get('VAULT_PKI_CLIENT_ROLE').asString(),
+    pkiServerRole: env.get('VAULT_PKI_SERVER_ROLE').required().asString(),
+    pkiClientRole: env.get('VAULT_PKI_CLIENT_ROLE').required().asString(),
     auth: vaultAuth,
     signExpiryHours: env.get('VAULT_SIGN_EXPIRY_HOURS').default('43800').asString(),
     keyLength: env.get('PRIVATE_KEY_LENGTH').default(4096).asIntPositive(),

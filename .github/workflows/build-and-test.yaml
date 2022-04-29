@@ -11,6 +11,7 @@ env:
   IMAGE_TAG: ${{ github.sha }}
   APP_WORK_DIRECTORY: server
   APP_CACHE_NAME: cache-app-node-modules
+  APP_SCRIPT_DIRECTORY: scripts
   TEST_FUNC_WORK_DIRECTORY: functional-tests
   NODE_VERSION: lts/*
 
@@ -19,12 +20,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Setup
-      - name: print env
-        run: |
-          echo "${IMAGE_NAME}"
-          echo "${IMAGE_TAG}"
-          echo "${APP_WORK_DIRECTORY}"
-          echo "${APP_CACHE_NAME}"
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install node
@@ -38,6 +33,7 @@ jobs:
       - name: Install App dependencies
         working-directory: ${{env.APP_WORK_DIRECTORY}}
         run: npm i
+
   build-docker:
     runs-on: ubuntu-latest
     steps:
@@ -133,51 +129,45 @@ jobs:
 
       - name: Start App
         working-directory: ${{env.APP_WORK_DIRECTORY}}
-        run: docker run -d --rm --name ${{env.IMAGE_NAME}} -p 3001:3001 -e TEST=true ${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
-
-      - name: App logs
-        working-directory: ${{env.APP_WORK_DIRECTORY}}
         run: |
-          docker ps -a
-          docker logs ${{env.IMAGE_NAME}}
-          ps -ef | grep vault
+          VAULT_DIR="`pwd`/.vault"
+          docker run --net=host -d --rm --name ${{env.IMAGE_NAME}} --env-file ../docker/functional-tests.env -v $VAULT_DIR:/tmp/vault ${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
 
       - name: Wait for App
-        # uses: cygnetdigital/wait_for_response@v2.0.0
-        # with:
-        #   url: http://localhost:3001/docs
-        #   responseCode: 200
-        #   timeout: 10000
-        #   interval: 500
-        uses: nev7n/wait_for_response@v1
+        uses: cygnetdigital/wait_for_response@v2.0.0
         with:
           url: http://localhost:3001/docs
           responseCode: 200
           timeout: 10000
           interval: 500
-      # - name: Wait for App
-      #   run: | 
-      #     echo "
-      #       echo -n 'Waiting for ${{env.IMAGE_NAME}}';
-      #       COUNTER=0
-      #       while ! docker run --rm alpine/curl:3.14 http://localhost:3001/docs > /dev/null 2>&1;
-      #       do 
-      #         echo -n '.' && sleep 1;
-      #         COUNTER=$((COUNTER+1))
-      #         if [ "$COUNTER" -e 10 ]; then
-      #             break
-      #         fi
-      #       done;
-      #       echo;
-      #       echo 'Successfully connected to ${{env.IMAGE_NAME}}!';
-      #     " > /tmp/wait-for-app.sh
-      #     sh /tmp/wait-for-app.sh
 
       - name: Validate Functional Tests
         working-directory: ${{env.TEST_FUNC_WORK_DIRECTORY}}
         run: npm test
 
+      - name: Upload Test Results to GitHub
+        if: failure()
+        uses: actions/upload-artifact@master
+        with:
+          name: junit.xml
+          path: ${{env.TEST_FUNC_WORK_DIRECTORY}}/junit.xml
+
       # Cleanup
+      - name: Collect docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v1
+        with:
+          dest: '/tmp/logs'
+      - name: Tar logs
+        if: failure()
+        run: tar cvzf /tmp/logs.tgz /tmp/logs
+      - name: Upload logs to GitHub
+        if: failure()
+        uses: actions/upload-artifact@master
+        with:
+          name: logs.tgz
+          path: /tmp/logs.tgz
+
       - name: Stop backends
         working-directory: ${{env.APP_WORK_DIRECTORY}}
         run: npm run stop:backend
