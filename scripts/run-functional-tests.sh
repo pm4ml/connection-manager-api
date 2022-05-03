@@ -38,6 +38,7 @@ cd ./functional-tests
 echo "Installing dependencies"
 
 if [[ -f ".nvmrc" ]]; then
+    nvm install $(cat .nvmrc)
     nvm use
 fi
 
