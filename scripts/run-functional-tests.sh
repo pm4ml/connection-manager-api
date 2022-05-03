@@ -37,6 +37,10 @@ cd ./functional-tests
 
 echo "Installing dependencies"
 
+if [[ -f ".nvmrc" ]]; then
+    nvm use
+fi
+
 npm i
 
 echo "Executong Functional Tests for $GIT_TAG"
