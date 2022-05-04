@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
 
-env
-
 # {{{ Bash settings
 # abort on nonzero exitstatus
   set -o errexit
-# abort on unbound variable
-  # set -o nounset
 # don't hide errors within pipes
   set -o pipefail
 # }}}
@@ -15,8 +11,8 @@ env
   # local
   readonly script_name=$(basename "${0}")
   readonly script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-  # from exports
 
+  # from exports
   readonly GIT_URL=${GIT_URL:-"https://github.com/modusbox/connection-manager-api.git"}
   readonly GIT_TAG=${GIT_TAG:-"v13.1.0"}
   readonly TARGET_DIR=${TARGET_DIR:-"/tmp/tests"}
