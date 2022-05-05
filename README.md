@@ -1,5 +1,7 @@
 # Connection Manager API
 
+[![build-and-test](https://github.com/modusbox/connection-manager-api/actions/workflows/build-and-test.yaml/badge.svg)](https://github.com/modusbox/connection-manager-api/actions/workflows/build-and-test.yaml)
+
 Connection Manager API is a component of the Mojaloop ecosystem that allows an administrator to manage the network configuration and PKI information for the Hub and a set of DFSPs.
 
 It provides a REST API, described using a [Swagger/OpenAPI document](./server/src/api/swagger.yaml).
@@ -128,6 +130,10 @@ Variables:
   - run `npm test`. The tests are implemented using `mocha`. If you need some test certificates, see the [test resources readme](./server/test/resources/README.md)
 - Smoke testing ( `zsh` script ): run the [cmd-line-tester.sh](./scripts/cmd-line-tester.sh) script from a tmp directory
 - swagger: see "running the server" below
+
+### Functioanl Tests
+
+Refer to [README](./functional-tests/README.md).
 
 ## Style
 

@@ -34,7 +34,7 @@ docker run -d --rm --name mysql-mbox-mcm -p 3306:3306 -e MYSQL_ROOT_PASSWORD=$DA
 
 echo "\nStarting DB - waiting for DB to startup..."
 
-docker exec -it mysql-mbox-mcm bash /tmp/wait-for-db.sh
+docker exec -i mysql-mbox-mcm bash /tmp/wait-for-db.sh
 
 echo "\nStarting DB - running 'npm run migrate-and-seed' to initialise database and seeds..."
 

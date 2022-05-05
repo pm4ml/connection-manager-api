@@ -18,3 +18,9 @@ localEnvs
 
 # ignore vault install from server/run-vault.sh
 .vault
+
+# Typescript
+**/dist
+
+# tests
+**/junit.xml
