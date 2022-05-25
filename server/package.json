@@ -16,7 +16,7 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "prepare": "npx husky install",	
+    "prepare": "cd .. && npx husky install server/.husky",
     "prepublishOnly": "npm run build",	
     "pretest": "npm run build",
     "test": "echo 'WARNING: Run \"npm run start:backend\" before executing...\n' && TEST=true mocha",
