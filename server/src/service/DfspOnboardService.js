@@ -22,7 +22,7 @@ const { DirectionEnum } = require('./DfspNetworkConfigService');
 
 const getIPsBundle = async () => {
   const endpoints = await DFSPEndpointModel.findAllLatestByDirection(DirectionEnum.EGRESS);
-  return Object.fromEntries(endpoints.map((e) => [e.dfsp_id, e.value.ipList.map((ip) => ip.address).join(',')]));
+  return Object.fromEntries(endpoints.map((e) => [e.dfsp_id, e.ipList.map((ip) => ip.address).join(',')]));
 };
 
 exports.onboardDFSP = async (ctx, dfspId) => {
