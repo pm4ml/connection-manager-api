@@ -9,7 +9,7 @@ on:
 env:
   IMAGE_NAME: ${{github.event.repository.name}}
   IMAGE_TAG: ${{ github.sha }}
-  APP_WORK_DIRECTORY: server
+  APP_WORK_DIRECTORY: .
   APP_CACHE_NAME: cache-app-node-modules
   APP_SCRIPT_DIRECTORY: scripts
   TEST_FUNC_WORK_DIRECTORY: functional-tests

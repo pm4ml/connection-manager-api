@@ -86,8 +86,8 @@ jobs:
           push: ${{ github.event_name == 'release' }}
           # The following two lines are required in concert with the checkout action above, because
           # the Dockerfile is in a subdirectory in the repo.
-          context: ./server
-          file: ./server/Dockerfile
+          context: ./
+          file: ./Dockerfile
           tags: ${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}
       -

@@ -15,13 +15,7 @@
 
 1. Start the MCM API Service from root with OAuth disabled
 
-    From the root of the project
-
-    ```bash
-    cd ./server
-    ```
-
-    Open .env in this directory and set AUTH_ENABLED=false
+    From the root of the project open .env and set AUTH_ENABLED=false
 
     ```bash
     npm i
@@ -47,10 +41,6 @@
 1. Start the MCM API Service from Docker with OAuth disabled.
 
     From the root of the project
-
-    ```bash
-    cd ./server
-    ```
 
     ```bash
     npm i

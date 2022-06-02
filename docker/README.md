@@ -1,6 +1,6 @@
 # Docker config
 
-We're using `docker compose`, which runs 3 containers including the [Connection-Manager web app](https://github.com/modusbox/connection-manager-ui), [Connection-Manager API server](../server), and a mysql instance.
+We're using `docker compose`, which runs 3 containers including the [Connection-Manager web app](https://github.com/modusbox/connection-manager-ui), [Connection-Manager API server](../), and a mysql instance.
 
 
 ## Local dev environment
