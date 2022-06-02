@@ -17,19 +17,12 @@
 
 const PkiService = require('./PkiService');
 const DFSPModel = require('../models/DFSPModel');
-const DFSPEndpointItemModel = require('../models/DFSPEndpointItemModel');
+const DFSPEndpointModel = require('../models/DFSPEndpointModel');
+const { DirectionEnum } = require('./DfspNetworkConfigService');
 
 const getIPsBundle = async () => {
-  const ips = await DFSPEndpointItemModel.findConfirmedByDirectionType('EGRESS', 'IP');
-  const bundle = {};
-  for (const ip of ips) {
-    if (bundle[ip.dfsp_id]) {
-      bundle[ip.dfsp_id] += ',' + ip.value.address;
-    } else {
-      bundle[ip.dfsp_id] = ip.value.address;
-    }
-  }
-  return bundle;
+  const endpoints = await DFSPEndpointModel.findAllLatestByDirection(DirectionEnum.EGRESS);
+  return Object.fromEntries(endpoints.map((e) => [e.dfsp_id, e.value.ipList.map((ip) => ip.address).join(',')]));
 };
 
 exports.onboardDFSP = async (ctx, dfspId) => {

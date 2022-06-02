@@ -1,6 +1,6 @@
 {
   "name": "connection-manager-api",
-  "version": "1.8.17",
+  "version": "1.8.18",
   "description": "ModusBox Connection Manager API",
   "main": "index.js",
   "scripts": {
