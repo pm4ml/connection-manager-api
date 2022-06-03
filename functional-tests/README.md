@@ -19,7 +19,7 @@
 
     ```bash
     npm i
-    npm run start:backend
+    npm run backend:start
     npm start
     ```
 
@@ -44,7 +44,7 @@
 
     ```bash
     npm i
-    npm run start:backend
+    npm run backend:start
     ```
 
     Build MCM API Service Docker image
@@ -99,7 +99,7 @@
 
     ```bash
     npm i
-    npm run start:backend
+    npm run backend:start
     npm start
     ```
 

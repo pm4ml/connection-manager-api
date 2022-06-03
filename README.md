@@ -125,7 +125,7 @@ Variables:
 ## Testing
 
 - Unit testing:
-  - run `npm run start:backend` as a pre-requisite to `npm test`
+  - run `npm run backend:start` as a pre-requisite to `npm test`
   - run `npm test`. The tests are implemented using `mocha`. If you need some test certificates, see the [test resources readme](./test/resources/README.md)
 - Smoke testing ( `zsh` script ): run the [cmd-line-tester.sh](./scripts/cmd-line-tester.sh) script from a tmp directory
 - swagger: see "running the server" below

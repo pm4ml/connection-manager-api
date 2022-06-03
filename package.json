@@ -17,7 +17,7 @@
   ],
   "scripts": {
     "prepare": "npx husky install",
-    "test": "echo 'WARNING: Run \"npm run start:backend\" before executing...\n' && TEST=true mocha",
+    "test": "echo 'WARNING: Run \"npm run backend:start\" before executing...\n' && TEST=true mocha",
     "test-self-signed-server": "./run-vault.sh && TEST_START_SELF_SIGNED_SERVER=true npm test ; ./kill-vault.sh",
     "lint": "npx eslint ./src ./test",
     "lint:fix": "npm run lint -- --fix",	
@@ -38,9 +38,9 @@
     "stop:db": "./kill-mysql.sh",
     "start:vault": "./run-vault.sh",
     "stop:vault": "./kill-vault.sh",
-    "start:backend": "npm -s run start:db && npm run -s start:vault",
-    "stop:backend": "npm -s run stop:db && npm run -s stop:vault",
-    "restart:backend": "npm run stop:backend && npm run start:backend"
+    "backend:start": "npm -s run start:db && npm run -s start:vault",
+    "backend:stop": "npm -s run stop:db && npm run -s stop:vault",
+    "backend:restart": "npm run backend:stop && npm run backend:start"
   },
   "keywords": [
     "swagger"

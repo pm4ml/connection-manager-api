@@ -79,7 +79,7 @@ jobs:
       # Actions
       - name: Start backends
         working-directory: ${{env.APP_WORK_DIRECTORY}}
-        run: npm run start:backend
+        run: npm run backend:start
 
       - name: Validate Integration Tests
         working-directory: ${{env.APP_WORK_DIRECTORY}}
@@ -88,7 +88,7 @@ jobs:
       # Cleanup
       - name: Stop backends
         working-directory: ${{env.APP_WORK_DIRECTORY}}
-        run: npm run stop:backend
+        run: npm run backend:stop
 
   test-functional:
     runs-on: ubuntu-latest
@@ -125,7 +125,7 @@ jobs:
       # Actions
       - name: Start backends
         working-directory: ${{env.APP_WORK_DIRECTORY}}
-        run: npm run start:backend
+        run: npm run backend:start
 
       - name: Start App
         working-directory: ${{env.APP_WORK_DIRECTORY}}
@@ -169,7 +169,7 @@ jobs:
 
       - name: Stop backends
         working-directory: ${{env.APP_WORK_DIRECTORY}}
-        run: npm run stop:backend
+        run: npm run backend:stop
 
       - name: Stop App
         working-directory: ${{env.APP_WORK_DIRECTORY}}
