@@ -1,12 +1,13 @@
 {
   "name": "connection-manager-api",
-  "version": "1.8.20",
+  "version": "1.8.21",
   "description": "ModusBox Connection Manager API",
   "license": "Apache-2.0",
   "author": "ModusBox",
   "contributors": [
     "@Yevhen Kyriukha <yevhen.kyriukha@modusbox.com>",
-    "Miguel de Barros <miguel.debarros@modusbox.com>"
+    "Miguel de Barros <miguel.debarros@modusbox.com>",
+    "Juan Correa <juan.correa@modusbox.com>"
   ],
   "main": "index.js",
   "files": [
