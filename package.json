@@ -34,12 +34,12 @@
     "migrate": "DOTENV_CONFIG_PATH=$(pwd)/.env npx knex --knexfile src/knexfile.js migrate:latest",
     "seed": "DOTENV_CONFIG_PATH=$(pwd)/.env npx knex --knexfile src/knexfile.js seed:run",
     "migrate-and-seed": "npm -s run migrate && npm -s run seed",
-    "start:db": "./run-mysql.sh",
-    "stop:db": "./kill-mysql.sh",
-    "start:vault": "./run-vault.sh",
-    "stop:vault": "./kill-vault.sh",
-    "backend:start": "npm -s run start:db && npm run -s start:vault",
-    "backend:stop": "npm -s run stop:db && npm run -s stop:vault",
+    "db:start": "./run-mysql.sh",
+    "db:stop": "./kill-mysql.sh",
+    "vault:start": "./run-vault.sh",
+    "vault:stop": "./kill-vault.sh",
+    "backend:start": "npm -s run db:start && npm run -s vault:start",
+    "backend:stop": "npm -s run db:stop && npm run -s vault:stop",
     "backend:restart": "npm run backend:stop && npm run backend:start"
   },
   "keywords": [
