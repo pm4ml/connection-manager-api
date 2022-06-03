@@ -55,7 +55,7 @@ exports.getDFSPOutboundEnrollments = async (ctx, dfspId, state) => {
   const { pkiEngine } = ctx;
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   const enrollments = await pkiEngine.getDFSPOutboundEnrollments(dbDfspId);
-  return enrollments.filter((en) => en.state === state).map(({ key, ...en }) => en);
+  return enrollments.filter((en) => state ? en.state === state : true).map(({ key, ...en }) => en);
 };
 
 /**
