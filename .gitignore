@@ -105,7 +105,7 @@ localEnvs
 # ignore .env files
 **/*.env
 
-# ignore vault install from server/run-vault.sh
+# ignore vault install from run-vault.sh
 .vault
 
 # Typescript

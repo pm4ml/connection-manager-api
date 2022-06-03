@@ -47,7 +47,7 @@ jobs:
       - name: Build and export
         uses: docker/build-push-action@v2
         with:
-          context: ./server
+          context: .
           tags: ${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
           outputs: type=docker,dest=/tmp/${{env.IMAGE_NAME}}.tar
       - name: Upload artifact

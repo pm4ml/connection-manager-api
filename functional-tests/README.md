@@ -83,23 +83,19 @@
 
     From the root of the project
 
-    ```bash
-    1.1 cd ./server
-    ```
+    1.1 Open .env in this directory and set AUTH_ENABLED=true
 
-    1.2 Open .env in this directory and set AUTH_ENABLED=true
+    1.2 Open Vault for product-dev environment. Go to secrets->secret->wso2->adminpwd and copy the admin password for wso2 ISKM
 
-    1.3 Open Vault for product-dev environment. Go to secrets->secret->wso2->adminpwd and copy the admin password for wso2 ISKM
+    1.3 Open wso2 ISKM. Click List in Service Providers. Click MCM_Portal and click Edit
 
-    1.4 Open wso2 ISKM. Click List in Service Providers. Click MCM_Portal and click Edit
+    1.4. Open Inbound Authentication COnfiguration -> OAuth/Open ID Connect Configuration and copy OAuth Client Key and OAuth Client Secret and paste it in the APP_OAUTH_CLIENT_KEY, APP_OAUTH_CLIENT_SECRET variables in .env and functional_tests/.env file.
 
-    1.5. Open Inbound Authentication COnfiguration -> OAuth/Open ID Connect Configuration and copy OAuth Client Key and OAuth Client Secret and paste it in the APP_OAUTH_CLIENT_KEY, APP_OAUTH_CLIENT_SECRET variables in server/.env and functional_tests/.env file.
+    1.5. Fill in the OAUTH2_ISSUER with the corresponding env. For example if you are using product dev env, it should be ISKM.dev.product.mbox-dev.io/oauth2/token
 
-    1.6. Fill in the OAUTH2_ISSUER with the corresponding env. For example if you are using product dev env, it should be ISKM.dev.product.mbox-dev.io/oauth2/token
+    1.6. Go to mcm k8s cluster, acess connection-manager-secret and copy the certificate and paste its contents as a single line in the value for EMBEDDED_CERTIFICATE variable.
 
-    1.7. Go to mcm k8s cluster, acess connection-manager-secret and copy the certificate and paste its contents as a single line in the value for EMBEDDED_CERTIFICATE variable.
-
-    1.8 Make sure the 4 env vars are updated in both /server/.env
+    1.7 Make sure the 4 env vars are updated in both .env
 
     ```bash
     npm i

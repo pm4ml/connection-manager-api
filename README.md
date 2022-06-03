@@ -15,7 +15,6 @@ The API servers uses OAuth2 to implement security, as defined in the [OAuth2 imp
 To run the server with all the defaults and no security, the simplest way is to run:
 
 ```bash
-cd server
 P12_PASS_PHRASE="choose your own password" npm start
 ```
 
@@ -68,7 +67,7 @@ If you want to start the app with auth enabled:
 
 ## Configuration
 
-There's a [Constants.js file](./server/src/constants/Constants.js) that pulls the values from the environment or uses defaults if not defined.
+There's a [Constants.js file](./src/constants/Constants.js) that pulls the values from the environment or uses defaults if not defined.
 
 Variables:
 
@@ -127,7 +126,7 @@ Variables:
 
 - Unit testing:
   - run `npm run start:backend` as a pre-requisite to `npm test`
-  - run `npm test`. The tests are implemented using `mocha`. If you need some test certificates, see the [test resources readme](./server/test/resources/README.md)
+  - run `npm test`. The tests are implemented using `mocha`. If you need some test certificates, see the [test resources readme](./test/resources/README.md)
 - Smoke testing ( `zsh` script ): run the [cmd-line-tester.sh](./scripts/cmd-line-tester.sh) script from a tmp directory
 - swagger: see "running the server" below
 
@@ -142,6 +141,6 @@ Refer to [README](./functional-tests/README.md).
 
 ## Building a docker image
 
-The server includes a [Dockerfile](./server/Dockerfile).
+The server includes a [Dockerfile](./Dockerfile).
 
 There's a set of scripts to build the image and tag it for a local minikube or other environments. Take a look at [./docker-build.sh](./docker-build.sh)
