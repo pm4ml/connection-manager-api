@@ -85,6 +85,27 @@ exports.findAllByDirection = async (dfspId, direction) => {
 };
 
 /**
+ * Gets all latest endpoints by its direction, and parses the JSON in value, returning an Object.
+ */
+ exports.findAllLatestByDirection = async (direction) => {
+  const rawObjects = await knex.raw(`
+    WITH ep AS (
+       SELECT *, RANK() OVER (PARTITION BY dfsp_id
+                               ORDER BY id DESC
+                          ) AS ep_rank
+         FROM dfsp_endpoint
+         WHERE direction = '${direction}'
+    )
+    SELECT *
+      FROM ep
+      WHERE ep_rank = 1
+    ORDER BY dfsp_id;
+  `);
+  const endpoints = Promise.all(rawObjects[0].map(row => rowToObject(row)));
+  return endpoints;
+};
+
+/**
  * Gets an endpoint by its id & direction, and parses the JSON in value, returning an Object.
  */
 exports.findLastestByDirection = async (dfspId, direction) => {
