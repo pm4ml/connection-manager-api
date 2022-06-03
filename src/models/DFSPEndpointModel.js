@@ -87,7 +87,7 @@ exports.findAllByDirection = async (dfspId, direction) => {
 /**
  * Gets all latest endpoints by its direction, and parses the JSON in value, returning an Object.
  */
- exports.findAllLatestByDirection = async (direction) => {
+exports.findAllLatestByDirection = async (direction) => {
   const rawObjects = await knex.raw(`
     WITH ep AS (
        SELECT *, RANK() OVER (PARTITION BY dfsp_id
