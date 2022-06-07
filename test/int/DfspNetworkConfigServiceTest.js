@@ -17,13 +17,13 @@
 
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 
-const PkiService = require('../src/service/PkiService');
-const DfspNetworkConfigService = require('../src/service/DfspNetworkConfigService');
-const ValidationError = require('../src/errors/ValidationError');
-const NotFoundError = require('../src/errors/NotFoundError');
+const PkiService = require('../../src/service/PkiService');
+const DfspNetworkConfigService = require('../../src/service/DfspNetworkConfigService');
+const ValidationError = require('../../src/errors/ValidationError');
+const NotFoundError = require('../../src/errors/NotFoundError');
 const { assert } = require('chai').use(require('chai-datetime'));
 const { createContext, destroyContext } = require('./context');
-const { StatusEnum } = require('../src/service/DfspNetworkConfigService');
+const { StatusEnum } = require('../../src/service/DfspNetworkConfigService');
 
 describe('DfspNetworkConfigService', () => {
   let ctx;

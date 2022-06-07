@@ -17,11 +17,11 @@
 
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 
-const JWSCertsService = require('../src/service/JWSCertsService');
-const PkiService = require('../src/service/PkiService');
+const JWSCertsService = require('../../src/service/JWSCertsService');
+const PkiService = require('../../src/service/PkiService');
 const { assert } = require('chai');
-const NotFoundError = require('../src/errors/NotFoundError');
-const ValidationCodes = require('../src/pki_engine/ValidationCodes');
+const NotFoundError = require('../../src/errors/NotFoundError');
+const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
 const forge = require('node-forge');
 const { createContext, destroyContext } = require('./context');
 

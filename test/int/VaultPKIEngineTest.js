@@ -17,7 +17,7 @@
 
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 
-const ValidationError = require('../src/errors/ValidationError');
+const ValidationError = require('../../src/errors/ValidationError');
 
 const fs = require('fs');
 const path = require('path');

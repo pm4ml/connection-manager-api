@@ -17,10 +17,10 @@
 
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 
-const PkiService = require('../src/service/PkiService');
+const PkiService = require('../../src/service/PkiService');
 const { assert } = require('chai');
-const ValidationError = require('../src/errors/ValidationError');
-const { createInternalHubCA, getHubCA } = require('../src/service/HubCAService');
+const ValidationError = require('../../src/errors/ValidationError');
+const { createInternalHubCA, getHubCA } = require('../../src/service/HubCAService');
 const { createContext, destroyContext } = require('./context');
 
 const ROOT_CA = {

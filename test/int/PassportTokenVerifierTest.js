@@ -16,9 +16,9 @@
  ******************************************************************************/
 
 const { assert } = require('chai');
-const { createJwtStrategy } = require('../src/oauth/OAuthHelper');
+const { createJwtStrategy } = require('../../src/oauth/OAuthHelper');
 const passport = require('passport');
-const Constants = require('../src/constants/Constants');
+const Constants = require('../../src/constants/Constants');
 
 describe('PassportTokenVerifierTest tests', () => {
   before(() => {

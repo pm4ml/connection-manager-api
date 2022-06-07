@@ -19,13 +19,13 @@ const { setupTestDB, tearDownTestDB } = require('./test-database');
 
 const fs = require('fs');
 const path = require('path');
-const PkiService = require('../src/service/PkiService');
+const PkiService = require('../../src/service/PkiService');
 const { assert } = require('chai');
 const ROOT_CA = require('./Root_CA.js');
 
-const ValidationCodes = require('../src/pki_engine/ValidationCodes');
-const { createInternalHubCA } = require('../src/service/HubCAService');
-const DFSPModel = require('../src/models/DFSPModel');
+const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
+const { createInternalHubCA } = require('../../src/service/HubCAService');
+const DFSPModel = require('../../src/models/DFSPModel');
 const { createContext, destroyContext } = require('./context');
 
 describe('DfspPkiService', () => {

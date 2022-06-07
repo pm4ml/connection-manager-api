@@ -15,14 +15,14 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const LoginService = require('../src/service/LoginService');
-const Constants = require('../src/constants/Constants');
-const Wso2TotpClient = require('../src/service/Wso2TotpClient');
-const Wso2MSClient = require('../src/service/Wso2ManagerServiceClient');
-const Wso2Client = require('../src/service/Wso2Client');
-const BadRequestError = require('../src/errors/BadRequestError');
-const UnauthorizedError = require('../src/errors/UnauthorizedError');
-const ExternalProcessError = require('../src/errors/ExternalProcessError');
+const LoginService = require('../../src/service/LoginService');
+const Constants = require('../../src/constants/Constants');
+const Wso2TotpClient = require('../../src/service/Wso2TotpClient');
+const Wso2MSClient = require('../../src/service/Wso2ManagerServiceClient');
+const Wso2Client = require('../../src/service/Wso2Client');
+const BadRequestError = require('../../src/errors/BadRequestError');
+const UnauthorizedError = require('../../src/errors/UnauthorizedError');
+const ExternalProcessError = require('../../src/errors/ExternalProcessError');
 const { createContext, destroyContext } = require('./context');
 
 const { assert } = require('chai');

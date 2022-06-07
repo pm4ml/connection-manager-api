@@ -15,25 +15,17 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { setupTestDB, tearDownTestDB } = require('./test-database');
-const MonetaryZoneService = require('../src/service/MonetaryZoneService');
-const { assert } = require('chai');
-const { createContext, destroyContext } = require('./context');
+const db = require('../../src/db/database');
 
-describe('MonetaryZoneTest', () => {
-  let ctx;
-  before(async () => {
-    await setupTestDB();
-    ctx = await createContext();
-  });
+let setup = false;
 
-  after(async () => {
-    await tearDownTestDB();
-    destroyContext(ctx);
-  });
+exports.setupTestDB = async () => {
+  if (!setup) {
+    await db.waitForConnection();
+    setup = true;
+  }
+};
 
-  it('get all MZ Enables', async () => {
-    const mzs = await MonetaryZoneService.getMonetaryZones(ctx);
-    assert.isTrue(mzs.length > 1);
-  });
-});
+exports.tearDownTestDB = async () => {
+  // await db.knex.destroy();
+};

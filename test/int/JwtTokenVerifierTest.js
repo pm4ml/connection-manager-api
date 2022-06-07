@@ -15,12 +15,13 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { createJwtStrategy } = require('../src/oauth/OAuthHelper');
-const Constants = require('../src/constants/Constants');
+const { createJwtStrategy } = require('../../src/oauth/OAuthHelper');
+const Constants = require('../../src/constants/Constants');
 
 const { assert } = require('chai');
 
-describe('JwtTokenVerifierTest tests', () => {
+describe('JwtTokenVerifierTest tests', function() {
+  this.timeout(0);
   before(() => {
   });
 

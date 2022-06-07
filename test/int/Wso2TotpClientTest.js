@@ -15,17 +15,28 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const db = require('../src/db/database');
+const Wso2TotpClient = require('../../src/service/Wso2TotpClient');
+const { assert } = require('chai');
+const rp = require('request-promise-native');
+const sinon = require('sinon');
+const xml2js = require('xml2js');
 
-let setup = false;
+describe('TOTP admin server client', () => {
+  it('should return a secret key when valid credentials', async () => {
+    const obj = {
+      'ns:retrieveSecretKeyResponse':
+            {
+              $:
+                    { 'xmlns:ns': 'http://services.totp.authenticator.application.identity.carbon.wso2.org' },
+              'ns:return': ['XXX']
+            }
+    };
+    const builder = new xml2js.Builder();
+    const xml = builder.buildObject(obj);
 
-exports.setupTestDB = async () => {
-  if (!setup) {
-    await db.waitForConnection();
-    setup = true;
-  }
-};
-
-exports.tearDownTestDB = async () => {
-  // await db.knex.destroy();
-};
+    const stub = sinon.stub(rp, 'Request');
+    stub.resolves(xml);
+    const response = await Wso2TotpClient.retrieveSecretKey('validuser');
+    assert.equal(response, 'XXX');
+  });
+});

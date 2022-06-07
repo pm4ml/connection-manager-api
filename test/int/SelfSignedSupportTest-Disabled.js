@@ -15,16 +15,14 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const Constants = require('../src/constants/Constants');
-const Wso2MSClient = require('../src/service/Wso2ManagerServiceClient');
-const Wso2Client = require('../src/service/Wso2Client');
-const ExternalProcessError = require('../src/errors/ExternalProcessError');
-const { enableCustomRootCAs } = require('../src/utils/tlsUtils');
+const Constants = require('../../src/constants/Constants');
+const Wso2MSClient = require('../../src/service/Wso2ManagerServiceClient');
+const Wso2Client = require('../../src/service/Wso2Client');
+const ExternalProcessError = require('../../src/errors/ExternalProcessError');
 
 const { assert } = require('chai');
-const path = require('path');
 
-describe('SelfSignedSupportTest', () => {
+describe('SelfSignedSupportTest - Disabled', () => {
   if (!process.env.TEST_START_SELF_SIGNED_SERVER) {
     console.log('Not running self-signed tests');
     xit('Not running self-signed tests', async () => {});
@@ -45,9 +43,7 @@ describe('SelfSignedSupportTest', () => {
     Constants.OAUTH.RESET_PASSWORD_AUTH_USER = 'user';
     Constants.OAUTH.RESET_PASSWORD_AUTH_PASSWORD = 'passwd';
 
-    Constants.EXTRA_TLS.EXTRA_ROOT_CERT_FILE_NAME = path.join(__dirname, './selfSignedHttpsServer/ca.pem');
     if (process.env.TEST_START_SELF_SIGNED_SERVER) {
-      enableCustomRootCAs();
       server = require('./selfSignedHttpsServer/selfSignedHttpsServer').server;
     }
   });
@@ -60,31 +56,36 @@ describe('SelfSignedSupportTest', () => {
 
   after(() => {
     if (process.env.TEST_START_SELF_SIGNED_SERVER && server) {
-      server.close();
+      // HACK not closing it here because it will be closed in the "Enabled" test. after doesn't work with "async" functions
+      // server.close();
     }
   });
 
-  it('should not throw error when connecting to a Wso2MSClient self-signed server with the patch enabled', async () => {
+  it('should fail with SELF_SIGNED_CERT_IN_CHAIN when connecting to a Wso2MSClient self-signed server without a patch', async () => {
     try {
       await Wso2MSClient.getUserClaimValue('johndoe', 'admin');
       assert.fail('Should have raised an Error');
     } catch (error) {
-      // The response from our custom test server
       assert.instanceOf(error, ExternalProcessError);
-      assert.equal(error.payload.rootError.body, 'Alive!\n');
+      assert.equal(error.payload.rootError.code, 'SELF_SIGNED_CERT_IN_CHAIN');
     }
   });
 
-  it('should connect to a Wso2Client self-signed server - getToken', async () => {
+  it('should fail with SELF_SIGNED_CERT_IN_CHAIN when connecting to a Wso2Client self-signed server - getToken', async () => {
     try {
       await Wso2Client.getToken('johndoe', 'admin');
       assert.fail('Should have raised an Error');
     } catch (error) {
-      assert.isTrue(error.message.includes('Unexpected token A'));
+      assert.equal(error.error.code, 'SELF_SIGNED_CERT_IN_CHAIN');
     }
   });
 
-  it('should connect to a Wso2Client self-signed server - resetPassword', async () => {
-    await Wso2Client.resetPassword('johndoe', 'admin', '23');
+  it('should fail with SELF_SIGNED_CERT_IN_CHAIN when connecting to a Wso2Client self-signed server - resetPassword', async () => {
+    try {
+      await Wso2Client.resetPassword('johndoe', 'admin', '23');
+      assert.fail('Should have raised an Error');
+    } catch (error) {
+      assert.equal(error.error.code, 'SELF_SIGNED_CERT_IN_CHAIN');
+    }
   });
 });

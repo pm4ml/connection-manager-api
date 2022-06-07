@@ -15,10 +15,10 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const CSRInfo = require('../src/pki_engine/CSRInfo');
-const CertInfo = require('../src/pki_engine/CertInfo');
-const Constants = require('../src/constants/Constants');
-const VaultPKIEngine = require('../src/pki_engine/VaultPKIEngine');
+const CSRInfo = require('../../src/pki_engine/CSRInfo');
+const CertInfo = require('../../src/pki_engine/CertInfo');
+const Constants = require('../../src/constants/Constants');
+const VaultPKIEngine = require('../../src/pki_engine/VaultPKIEngine');
 
 const { assert } = require('chai');
 const PKIEngine = new VaultPKIEngine(Constants.vault);

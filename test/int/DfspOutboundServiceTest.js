@@ -19,15 +19,15 @@ const { setupTestDB, tearDownTestDB } = require('./test-database');
 
 const fs = require('fs');
 const path = require('path');
-const PkiService = require('../src/service/PkiService');
-const DfspOutboundService = require('../src/service/DfspOutboundService');
+const PkiService = require('../../src/service/PkiService');
+const DfspOutboundService = require('../../src/service/DfspOutboundService');
 const { assert } = require('chai');
 const ROOT_CA = require('./Root_CA.js');
-const DFSPModel = require('../src/models/DFSPModel');
+const DFSPModel = require('../../src/models/DFSPModel');
 const forge = require('node-forge');
 
-const ValidationCodes = require('../src/pki_engine/ValidationCodes');
-const { createInternalHubCA } = require('../src/service/HubCAService');
+const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
+const { createInternalHubCA } = require('../../src/service/HubCAService');
 const { createContext, destroyContext } = require('./context');
 
 // Sign CSR and return certificate ( what the DFSP would do )

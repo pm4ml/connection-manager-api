@@ -20,8 +20,8 @@ const { setupTestDB, tearDownTestDB } = require('./test-database');
 const fs = require('fs');
 const path = require('path');
 const { assert } = require('chai');
-const ValidationCodes = require('../src/pki_engine/ValidationCodes');
-const ValidationError = require('../src/errors/ValidationError');
+const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
+const ValidationError = require('../../src/errors/ValidationError');
 const moment = require('moment');
 const { createContext, destroyContext } = require('./context');
 

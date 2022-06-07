@@ -22,9 +22,9 @@ const { assert } = require('chai').use(require('chai-datetime'));
 const { setupTestDB, tearDownTestDB } = require('../test-database');
 
 // import module for testing
-const DFSPModel = require('../../src/models/DFSPModel');
-const DFSPEndpointModel = require('../../src/models/DFSPEndpointModel');
-const { StatusEnum, DirectionEnum } = require('../../src/service/DfspNetworkConfigService');
+const DFSPModel = require('../../../src/models/DFSPModel');
+const DFSPEndpointModel = require('../../../src/models/DFSPEndpointModel');
+const { StatusEnum, DirectionEnum } = require('../../../src/service/DfspNetworkConfigService');
 
 describe('DFSPEndpointModel', async function () {
   before(async () => {

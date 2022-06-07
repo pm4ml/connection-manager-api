@@ -17,15 +17,15 @@
 
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 
-const PkiService = require('../src/service/PkiService');
-const DfspInboundService = require('../src/service/DfspInboundService');
+const PkiService = require('../../src/service/PkiService');
+const DfspInboundService = require('../../src/service/DfspInboundService');
 const { assert } = require('chai');
 const ROOT_CA = require('./Root_CA');
 const fs = require('fs');
 const path = require('path');
-const ValidationCodes = require('../src/pki_engine/ValidationCodes');
-const ValidationError = require('../src/errors/ValidationError');
-const { createInternalHubCA, deleteHubCA } = require('../src/service/HubCAService');
+const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
+const ValidationError = require('../../src/errors/ValidationError');
+const { createInternalHubCA, deleteHubCA } = require('../../src/service/HubCAService');
 const { createContext, destroyContext } = require('./context');
 
 describe('DfspInboundService', async function () {

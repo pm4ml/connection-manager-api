@@ -16,10 +16,10 @@
  ******************************************************************************/
 
 const { setupTestDB, tearDownTestDB } = require('./test-database');
-const HubCAService = require('../src/service/HubCAService');
+const HubCAService = require('../../src/service/HubCAService');
 // const { assert } = require('chai');
-// const ValidationError = require('../src/errors/ValidationError');
-// const PkiService = require('../src/service/PkiService');
+// const ValidationError = require('../../src/errors/ValidationError');
+// const PkiService = require('../../src/service/PkiService');
 // const fs = require('fs');
 // const path = require('path');
 const { pki } = require('node-forge');

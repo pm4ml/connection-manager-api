@@ -19,14 +19,14 @@ const { setupTestDB, tearDownTestDB } = require('./test-database');
 
 const fs = require('fs');
 const path = require('path');
-const ServerCertsService = require('../src/service/ServerCertsService');
-const PkiService = require('../src/service/PkiService');
+const ServerCertsService = require('../../src/service/ServerCertsService');
+const PkiService = require('../../src/service/PkiService');
 const { assert } = require('chai');
-const NotFoundError = require('../src/errors/NotFoundError');
+const NotFoundError = require('../../src/errors/NotFoundError');
 const ROOT_CA = require('./Root_CA');
-const { createInternalHubCA, deleteHubCA } = require('../src/service/HubCAService');
+const { createInternalHubCA, deleteHubCA } = require('../../src/service/HubCAService');
 const { createContext, destroyContext } = require('./context');
-const Constants = require('../src/constants/Constants');
+const Constants = require('../../src/constants/Constants');
 
 const AMAZON_ROOT_CA_PATH = 'resources/amazon.com/RootCA.pem';
 const AMAZON_CHAIN_PATH = 'resources/amazon.com/amazon.chain.pem';

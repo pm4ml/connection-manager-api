@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "prepare": "npx husky install",
-    "test": "echo 'WARNING: Run \"npm run backend:start\" before executing...\n' && TEST=true mocha",
+    "test": "echo 'WARNING: Run \"npm run backend:start\" before executing...\n' && TEST=true mocha -p false  './test/int/**/*.js'",
     "test-self-signed-server": "./run-vault.sh && TEST_START_SELF_SIGNED_SERVER=true npm test ; ./kill-vault.sh",
     "lint": "npx eslint ./src ./test",
     "lint:fix": "npm run lint -- --fix",	
