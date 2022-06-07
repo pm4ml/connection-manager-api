@@ -132,7 +132,7 @@ Variables:
 
 ### Functioanl Tests
 
-Refer to [README](./functional-tests/README.md).
+Refer to [README](./test/functional-tests/README.md).
 
 ## Style
 

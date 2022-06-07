@@ -12,7 +12,7 @@ env:
   APP_WORK_DIRECTORY: .
   APP_CACHE_NAME: cache-app-node-modules
   APP_SCRIPT_DIRECTORY: scripts
-  TEST_FUNC_WORK_DIRECTORY: functional-tests
+  TEST_FUNC_WORK_DIRECTORY: test/functional-tests
   NODE_VERSION: lts/*
 
 jobs:

@@ -26,7 +26,7 @@
 2. Run Functional Tests
 
     ```bash
-    cd ./functional-tests
+    cd ./test/functional-tests
     ```
 
     Make sure in the local .env file and the file is empty, or if there are any oauth entries, they are commented out.
@@ -108,7 +108,7 @@
   2.1 Make sure APP_OAUTH_CLIENT_KEY and APP_OAUTH_CLIENT_SECRET are populated with the values from the steps described in the section above.
   
   ```bash
-  cd ./functional-tests
+  cd ./test/functional-tests
   npm i
   npm test
   ```
