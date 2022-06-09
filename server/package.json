@@ -1,6 +1,6 @@
 {
   "name": "connection-manager-api",
-  "version": "1.8.20",
+  "version": "1.9.0",
   "description": "ModusBox Connection Manager API",
   "main": "index.js",
   "scripts": {
@@ -40,9 +40,9 @@
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^8.5.1",
     "knex": "^1.0.2",
-    "moment": "^2.29.1",
+    "moment": "^2.29.3",
     "mysql2": "^2.3.3",
-    "node-forge": "^1.2.1",
+    "node-forge": "^1.3.1",
     "node-vault": "^0.9.22",
     "oas3-tools": "^2.2.3",
     "passport": "^0.5.2",
