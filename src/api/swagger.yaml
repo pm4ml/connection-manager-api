@@ -1018,6 +1018,11 @@ paths:
         required: true
         schema:
           type: string
+      - name: state
+        in: query
+        description: state to filter enrollments by
+        schema:
+          type: string
       responses:
         200:
           description: successful operation

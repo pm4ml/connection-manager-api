@@ -30,8 +30,8 @@ exports.createDFSPInboundEnrollment = (req, res, next, body, dfspId) => {
     });
 };
 
-exports.getDFSPInboundEnrollments = (req, res, next, dfspId) => {
-  DfspInbound.getDFSPInboundEnrollments(req.context, dfspId)
+exports.getDFSPInboundEnrollments = (req, res, next, state, dfspId) => {
+  DfspInbound.getDFSPInboundEnrollments(req.context, dfspId, state)
     .then(function (response) {
       utils.writeJson(res, response);
     })

@@ -68,11 +68,12 @@ exports.createDFSPInboundEnrollment = async (ctx, dfspId, body) => {
 /**
  * Get a list of DFSP Inbound enrollments
  */
-exports.getDFSPInboundEnrollments = async (ctx, dfspId) => {
+exports.getDFSPInboundEnrollments = async (ctx, dfspId, state) => {
   await PkiService.validateDfsp(ctx, dfspId);
   const { pkiEngine } = ctx;
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
-  return pkiEngine.getDFSPInboundEnrollments(dbDfspId);
+  const enrollments = await pkiEngine.getDFSPInboundEnrollments(dbDfspId);
+  return enrollments.filter((en) => state ? en.state === state : true);
 };
 
 /**
