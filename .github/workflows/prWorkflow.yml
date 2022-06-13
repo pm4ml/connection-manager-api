@@ -1,0 +1,34 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [ main ]
+
+##
+# Re-usable workflows can be found at https://github.com/modusbox/github-actions-node
+##
+
+jobs:
+  test_lint:
+    uses: modusbox/github-actions-node/.github/workflows/testLintJob.yml@v0.0.2
+
+  test_dependencies:
+    uses: modusbox/github-actions-node/.github/workflows/testDependencyJob.yml@v0.0.2
+
+  test_audit:
+    uses: modusbox/github-actions-node/.github/workflows/testAuditJob.yml@v0.0.2
+
+  test_license:
+    uses: modusbox/github-actions-node/.github/workflows/testLicenseJob.yml@v0.0.2
+
+#   test_unit:
+#     uses: modusbox/github-actions-node/.github/workflows/testUnitJob.yml@v0.0.2
+
+  test_coverage:
+    uses: modusbox/github-actions-node/.github/workflows/testCoverageJob.yml@v0.0.2
+
+  test_int:
+    uses: modusbox/github-actions-node/.github/workflows/testIntJob.yml@v0.0.2
+
+  test_func:
+    uses: modusbox/github-actions-node/.github/workflows/testFuncJob.yml@v0.0.2
