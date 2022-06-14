@@ -78,7 +78,7 @@ exports.create = async (values) => {
 };
 
 exports.delete = async (id) => {
-  return knex.table(ENDPOINT_ITEMS_TABLE).where({ id: id }).del();
+  return knex.table(ENDPOINT_ITEMS_TABLE).where({ id }).del();
 };
 
 /**

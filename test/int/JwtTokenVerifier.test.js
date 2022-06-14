@@ -20,7 +20,7 @@ const Constants = require('../../src/constants/Constants');
 
 const { assert } = require('chai');
 
-describe('JwtTokenVerifierTest tests', function() {
+describe('JwtTokenVerifierTest tests', function () {
   this.timeout(0);
   before(() => {
   });

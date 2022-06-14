@@ -66,7 +66,7 @@ exports.create = async (values) => {
 };
 
 exports.delete = async (id) => {
-  return knex.table(ENDPOINT_ITEMS_TABLE).where({ id: id }).del();
+  return knex.table(ENDPOINT_ITEMS_TABLE).where({ id }).del();
 };
 
 /**
@@ -81,7 +81,7 @@ exports.findObjectByDirectionType = async (direction, type) => {
 };
 
 exports.update = async (id, endpointItem) => {
-  const result = await knex.table(ENDPOINT_ITEMS_TABLE).where({ id: id }).update(endpointItem);
+  const result = await knex.table(ENDPOINT_ITEMS_TABLE).where({ id }).update(endpointItem);
   if (result === 1) {
     return exports.findObjectById(id);
   } else throw new Error(result);

@@ -47,7 +47,7 @@ const createHubIp = async (body, direction) => {
     state: 'NEW',
     type: 'IP',
     value: JSON.stringify(inputIpEntry),
-    direction: direction,
+    direction,
   };
   return endpointItem;
 };

@@ -20,7 +20,7 @@
     "prepare": "npx husky install",
     "test": "echo 'WARNING: Run \"npm run backend:start\" before executing...\n' && TEST=true mocha './test/int/**/*.test.js'",
     "test-self-signed-server": "./run-vault.sh && TEST_START_SELF_SIGNED_SERVER=true npm test ; ./kill-vault.sh",
-    "lint": "npx eslint ./src ./test",
+    "lint": "npx eslint ./src ./test/int",
     "lint:fix": "npm run lint -- --fix",	
     "audit:resolve": "echo 'TBD' && exit 1",	
     "audit:check": "npm audit",	

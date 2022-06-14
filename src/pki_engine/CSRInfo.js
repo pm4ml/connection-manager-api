@@ -51,7 +51,7 @@ module.exports = class CSRInfo {
     }
     this.subject = {
       CN: doc && doc.Subject && doc.Subject.CommonName ? Array.isArray(doc.Subject.CommonName) ? doc.Subject.CommonName.join() : doc.Subject.CommonName : null,
-      emailAddress: emailAddress,
+      emailAddress,
       O: doc && doc.Subject && doc.Subject.Organization ? Array.isArray(doc.Subject.Organization) ? doc.Subject.Organization.join() : doc.Subject.Organization : null,
       OU: doc && doc.Subject && doc.Subject.OrganizationalUnit ? Array.isArray(doc.Subject.OrganizationalUnit) ? doc.Subject.OrganizationalUnit.join() : doc.Subject.OrganizationalUnit : null,
       C: doc && doc.Subject && doc.Subject.Country ? Array.isArray(doc.Subject.Country) ? doc.Subject.Country.join() : doc.Subject.Country : null,

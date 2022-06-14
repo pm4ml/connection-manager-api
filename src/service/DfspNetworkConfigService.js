@@ -200,8 +200,8 @@ const createDFSPIp = async (ctx, dfspId, body, direction) => {
     state: 'NEW',
     type: 'IP',
     value: JSON.stringify(inputIpEntry),
-    dfspId: dfspId,
-    direction: direction,
+    dfspId,
+    direction,
   };
   return endpointItem;
 };
@@ -321,7 +321,7 @@ exports.createDFSPIngressUrl = async (ctx, dfspId, body) => {
     state: 'NEW',
     type: 'URL',
     value: JSON.stringify(inputURLAddress),
-    dfspId: dfspId,
+    dfspId,
     direction: 'INGRESS',
   };
   const id = await DFSPEndpointItemModel.create(endpointItem);

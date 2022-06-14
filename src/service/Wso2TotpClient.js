@@ -31,7 +31,7 @@ exports.retrieveSecretKey = async (username) => {
       'Content-Type': 'application/x-www-form-urlencoded'
     },
     form: {
-      username: username
+      username
     },
     auth: {
       user: Constants.AUTH_2FA.TOTP_ADMIN_AUTH_USER,
@@ -61,8 +61,8 @@ exports.validateTOTP = async (username, verificationCode) => {
       'Content-Type': 'application/x-www-form-urlencoded'
     },
     form: {
-      username: username,
-      verificationCode: verificationCode
+      username,
+      verificationCode
     },
     auth: {
       user: Constants.AUTH_2FA.TOTP_ADMIN_AUTH_USER,
