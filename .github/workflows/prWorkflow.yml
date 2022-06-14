@@ -2,7 +2,7 @@ name: PR Checks
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ mbp-315 ]
 
 ##
 # Re-usable workflows can be found at https://github.com/modusbox/github-actions-node
