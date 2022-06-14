@@ -23,7 +23,7 @@
     "test-self-signed-server": "./run-vault.sh && TEST_START_SELF_SIGNED_SERVER=true npm test ; ./kill-vault.sh",
     "lint": "npx eslint ./src ./test/int",
     "lint:fix": "npm run lint -- --fix",
-    "audit:resolve": "npx resolve-audit --production",	
+    "audit:resolve": "npx resolve-audit",	
     "audit:check": "npm audit",	
     "clean": "rm -rf ./dist",	
     "dep:check": "npx ncu -e 2",	
