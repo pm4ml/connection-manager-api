@@ -75,15 +75,16 @@ jobs:
       PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
   # ATTENTION: Choose this when you are creating a NPM library
-  publish_lib:
-    needs:
-      - release_tag
-      - release_gh
-    uses: modusbox/github-actions-node/.github/workflows/publishLibraryJob.yml@v0.0.2
-    with:
-      RELEASE_VERSION: v${{ needs.release_tag.outputs.VERSION }}
-    secrets:
-      NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#   Commentted out as this repo is no creating a NPM library
+#   publish_lib:
+#     needs:
+#       - release_tag
+#       - release_gh
+#     uses: modusbox/github-actions-node/.github/workflows/publishLibraryJob.yml@v0.0.2
+#     with:
+#       RELEASE_VERSION: v${{ needs.release_tag.outputs.VERSION }}
+#     secrets:
+#       NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   notify:
     needs:
@@ -91,7 +92,7 @@ jobs:
       - release_gh
       # ATTENTION: Choose 'publish_image' or/and 'publish_lib' depending on the type of project. Comment-out/Remove if not needed!
       - publish_image
-      - publish_lib
+#       - publish_lib
     if: ${{ always() }} # Here we report on the final state of the workflow!
     uses: modusbox/github-actions-node/.github/workflows/notifyReleaseJob.yml@v0.0.2
     with:
