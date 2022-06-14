@@ -20,12 +20,14 @@ jobs:
 
   test_license:
     uses: modusbox/github-actions-node/.github/workflows/testLicenseJob.yml@v0.0.2
-
+    
+# TODO: Uncomment if unit tests added
 #   test_unit:
 #     uses: modusbox/github-actions-node/.github/workflows/testUnitJob.yml@v0.0.2
 
-  test_coverage:
-    uses: modusbox/github-actions-node/.github/workflows/testCoverageJob.yml@v0.0.2
+# TODO: Test coverage applies to unit tests and since there is none is commentted out
+#   test_coverage:
+#     uses: modusbox/github-actions-node/.github/workflows/testCoverageJob.yml@v0.0.2
 
   test_int:
     uses: modusbox/github-actions-node/.github/workflows/testIntJob.yml@v0.0.2
