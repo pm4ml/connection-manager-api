@@ -90,7 +90,7 @@
     "sinon": "^14.0.0",
     "snazzy": "^9.0.0",
     "standardx": "^7.0.0",
-    "npm-check-updates": "^13.1.2",	
+    "npm-check-updates": "^13.1.5",	
     "standard-version": "^9.5.0"
   },
   "standardx": {
