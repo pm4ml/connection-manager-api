@@ -128,7 +128,7 @@ exports.create = async (dfspId, state, direction, value) => {
     state,
     value,
     dfsp_id: validatedDfspId,
-    direction: direction,
+    direction,
   };
   return knex.table(ENDPOINT_TABLE).insert(record);
 };
@@ -137,5 +137,5 @@ exports.create = async (dfspId, state, direction, value) => {
  * Deletes an endpoint by id. Note: This should never be used except to cleanup test data.
  */
 exports.delete = async (id) => {
-  return knex.table(ENDPOINT_TABLE).where({ id: id }).del();
+  return knex.table(ENDPOINT_TABLE).where({ id }).del();
 };

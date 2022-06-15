@@ -66,7 +66,7 @@ exports.create = async (values) => {
 };
 
 exports.deleteByRawId = async (id) => {
-  return knex.table(DFSP_TABLE).where({ id: id }).del();
+  return knex.table(DFSP_TABLE).where({ id }).del();
 };
 
 exports.delete = async (dfspId) => {

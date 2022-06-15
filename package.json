@@ -18,12 +18,13 @@
   ],
   "scripts": {
     "prepare": "npx husky install",
-    "test": "echo 'WARNING: Run \"npm run backend:start\" before executing...\n' && TEST=true mocha './test/int/**/*.test.js'",
+    "test": "npm run test:int",
+    "test:int": "echo 'WARNING: Run \"npm run backend:start\" before executing...\n' && TEST=true mocha './test/int/**/*.test.js'",
     "test-self-signed-server": "./run-vault.sh && TEST_START_SELF_SIGNED_SERVER=true npm test ; ./kill-vault.sh",
-    "lint": "npx eslint ./src ./test",
-    "lint:fix": "npm run lint -- --fix",	
-    "audit:resolve": "echo 'TBD' && exit 1",	
-    "audit:check": "npm audit",	
+    "lint": "npx eslint ./src ./test/int",
+    "lint:fix": "npm run lint -- --fix",
+    "audit:resolve": "npx resolve-audit --production",	
+    "audit:check": "npx check-audit --production",	
     "clean": "rm -rf ./dist",	
     "dep:check": "npx ncu -e 2",	
     "dep:update": "npx ncu -u",	
@@ -90,7 +91,8 @@
     "sinon": "^14.0.0",
     "snazzy": "^9.0.0",
     "standardx": "^7.0.0",
-    "npm-check-updates": "^13.1.2",	
+    "npm-audit-resolver": "3.0.0-7",
+    "npm-check-updates": "^13.1.5",	
     "standard-version": "^9.5.0"
   },
   "standardx": {

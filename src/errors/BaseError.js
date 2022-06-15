@@ -24,7 +24,7 @@ class BaseError extends Error {
     this.name = this.constructor.name;
     this.payload = {
       id: this.name,
-      message: message
+      message
     };
 
     this.headers = {};

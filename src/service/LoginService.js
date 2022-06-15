@@ -135,7 +135,7 @@ const buildJWTResponse = (decodedIdToken, accessToken, req, res) => {
 
   const cookies = new Cookies(req, res);
   const maxAge = 3600 * 1000; // ms
-  const cookieOptions = { maxAge: maxAge, httpOnly: true, sameSite: 'strict' }; // secure is automatic based on HTTP or HTTPS used
+  const cookieOptions = { maxAge, httpOnly: true, sameSite: 'strict' }; // secure is automatic based on HTTP or HTTPS used
   cookies.set(Constants.OAUTH.JWT_COOKIE_NAME, accessToken, cookieOptions);
 
   return {

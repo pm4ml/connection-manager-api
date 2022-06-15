@@ -22,8 +22,8 @@ const UnauthorizedError = require('../errors/UnauthorizedError');
 
 exports.getToken = async (username, password) => {
   const form = {
-    username: username,
-    password: password,
+    username,
+    password,
     scope: 'openid',
     grant_type: 'password',
   };

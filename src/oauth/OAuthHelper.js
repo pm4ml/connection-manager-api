@@ -117,7 +117,7 @@ function verifyCallback (req, jwtPayload, done) {
   for (const group of jwtPayload.groups) {
     roles[group] = true;
   }
-  const authInfo = { roles: roles };
+  const authInfo = { roles };
   console.log(`verifyCallback: returning authInfo: ${JSON.stringify(authInfo)} `);
   return done(null, client, authInfo);
 }
