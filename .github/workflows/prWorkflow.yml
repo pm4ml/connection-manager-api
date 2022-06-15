@@ -19,27 +19,27 @@ env:
   
 jobs:
   test_lint:
-    uses: modusbox/github-actions-node/.github/workflows/testLintJob.yml@v0.0.2
+    uses: modusbox/github-actions-node/.github/workflows/testLintJob.yml@v0.0.4
 
   test_dependencies:
-    uses: modusbox/github-actions-node/.github/workflows/testDependencyJob.yml@v0.0.2
+    uses: modusbox/github-actions-node/.github/workflows/testDependencyJob.yml@v0.0.4
 
   test_audit:
-    uses: modusbox/github-actions-node/.github/workflows/testAuditJob.yml@v0.0.2
+    uses: modusbox/github-actions-node/.github/workflows/testAuditJob.yml@v0.0.4
 
   test_license:
-    uses: modusbox/github-actions-node/.github/workflows/testLicenseJob.yml@v0.0.2
+    uses: modusbox/github-actions-node/.github/workflows/testLicenseJob.yml@v0.0.4
     
 # TODO: Uncomment if unit tests added
 #   test_unit:
-#     uses: modusbox/github-actions-node/.github/workflows/testUnitJob.yml@v0.0.2
+#     uses: modusbox/github-actions-node/.github/workflows/testUnitJob.yml@v0.0.4
 
 # TODO: Test coverage applies to unit tests and since there is none is commentted out
 #   test_coverage:
-#     uses: modusbox/github-actions-node/.github/workflows/testCoverageJob.yml@v0.0.2
+#     uses: modusbox/github-actions-node/.github/workflows/testCoverageJob.yml@v0.0.4
 
   test_int:
-    uses: modusbox/github-actions-node/.github/workflows/testIntJob.yml@v0.0.2
+    uses: modusbox/github-actions-node/.github/workflows/testIntJob.yml@v0.0.4
     
   build-node:
     runs-on: ubuntu-latest
@@ -81,62 +81,7 @@ jobs:
           name: ${{env.IMAGE_NAME}}-${{env.IMAGE_TAG}}
           path: /tmp/${{env.IMAGE_NAME}}.tar
 
-  test-integration:
-    runs-on: ubuntu-latest
-    needs:
-      - build-node
-    steps:
-      # Setup
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      - name: Install node
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{env.NODE_VERSION}}
-          cache: npm
-          cache-dependency-path: ${{env.APP_WORK_DIRECTORY}}/package-lock.json
-      - name: Install App dependencies
-        working-directory: ${{env.APP_WORK_DIRECTORY}}
-        run: npm i
-
-      # Actions
-      - name: Start backends
-        working-directory: ${{env.APP_WORK_DIRECTORY}}
-        run: npm run backend:start
-
-      - name: Validate Integration Tests
-        working-directory: ${{env.APP_WORK_DIRECTORY}}
-        run: npm test
-
-      # Cleanup
-      - name: Stop backends
-        working-directory: ${{env.APP_WORK_DIRECTORY}}
-        run: npm run backend:stop
-
   test_func:
-#     uses: modusbox/github-actions-node/.github/workflows/testFuncJob.yml@v0.0.2
-#     name: Run Integration Tests Job
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v3
-#       - name: Read .nvmrc
-#         run: echo ::set-output name=NVMRC::$(cat .nvmrc)
-#         id: nvm
-#       - name: Setup Node@${{ steps.nvm.outputs.NVMRC }}
-#         uses: actions/setup-node@v3
-#         with:
-#           node-version: '${{ steps.nvm.outputs.NVMRC }}'
-#       - run: npm ci
-#       - run: npm run backend:start
-#       - run: npm start
-#       - run: echo pwd
-#       - run: cd ./test/functional-tests
-#       - run: echo pwd
-#       - run: npm test
-      
-#   test-functional:
     runs-on: ubuntu-latest
     needs:
       - build-node
