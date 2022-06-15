@@ -24,7 +24,7 @@
     "lint": "npx eslint ./src ./test/int",
     "lint:fix": "npm run lint -- --fix",
     "audit:resolve": "npx resolve-audit --production",	
-    "audit:check": "npm audit",	
+    "audit:check": "npx check-audit --production",	
     "clean": "rm -rf ./dist",	
     "dep:check": "npx ncu -e 2",	
     "dep:update": "npx ncu -u",	
