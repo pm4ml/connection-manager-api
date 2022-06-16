@@ -1,6 +1,6 @@
 {
   "name": "connection-manager-api",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "description": "ModusBox Connection Manager API",
   "license": "Apache-2.0",
   "author": "ModusBox",
@@ -23,12 +23,12 @@
     "test-self-signed-server": "./run-vault.sh && TEST_START_SELF_SIGNED_SERVER=true npm test ; ./kill-vault.sh",
     "lint": "npx eslint ./src ./test/int",
     "lint:fix": "npm run lint -- --fix",
-    "audit:resolve": "npx resolve-audit --production",	
-    "audit:check": "npx check-audit --production",	
-    "clean": "rm -rf ./dist",	
-    "dep:check": "npx ncu -e 2",	
-    "dep:update": "npx ncu -u",	
-    "release": "npx standard-version --no-verify --releaseCommitMessageFormat 'ci(release): {{currentTag}} [skip ci]'",	
+    "audit:resolve": "npx resolve-audit --production",
+    "audit:check": "npx check-audit --production",
+    "clean": "rm -rf ./dist",
+    "dep:check": "npx ncu -e 2",
+    "dep:update": "npx ncu -u",
+    "release": "npx standard-version --no-verify --releaseCommitMessageFormat 'ci(release): {{currentTag}} [skip ci]'",
     "snapshot": "npx standard-version --no-verify --skip.changelog --prerelease snapshot --releaseCommitMessageFormat 'ci(snapshot): {{currentTag}}'",
     "test-with-coverage": "./run-vault.sh && nyc --reporter=text mocha --timeout 20000 --colors -exit ; ./kill-vault.sh",
     "start": "node src/index.js",
@@ -76,7 +76,7 @@
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.0.2",	
+    "@commitlint/cli": "^17.0.2",
     "@commitlint/config-conventional": "^17.0.2",
     "chai-datetime": "^1.8.0",
     "eslint": "^8.17.0",
@@ -92,13 +92,13 @@
     "snazzy": "^9.0.0",
     "standardx": "^7.0.0",
     "npm-audit-resolver": "3.0.0-7",
-    "npm-check-updates": "^14.0.1",	
+    "npm-check-updates": "^14.0.1",
     "standard-version": "^9.5.0"
   },
   "standardx": {
     "semistandard": true
   },
-  "publishConfig": {	
-    "registry": "https://npm.pkg.github.com/modusbox"	
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/modusbox"
   }
 }
