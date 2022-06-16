@@ -34,9 +34,7 @@ jobs:
     uses: modusbox/github-actions-node/.github/workflows/testIntJob.yml@v0.0.4
 
   test_func:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: ./.github/workflows/localTestFuncJob
+    uses: ./.github/workflows/localTestFuncJob.yml
 
   release_tag:
     needs:
