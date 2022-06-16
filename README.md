@@ -15,7 +15,7 @@ The API servers uses OAuth2 to implement security, as defined in the [OAuth2 imp
 To run the server with all the defaults and no security, the simplest way is to run:
 
 ```bash
-P12_PASS_PHRASE="choose your own password" npm start - JODO
+P12_PASS_PHRASE="choose your own password" npm start - JODO1
 ```
 
 The default config requires a `mysql` db running on the default port.
