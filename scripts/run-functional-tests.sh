@@ -31,7 +31,7 @@ git clone $GIT_URL .
 echo "Switching to $GIT_TAG"
 git checkout tags/$GIT_TAG
 
-cd ./functional-tests
+cd ./test/functional-tests
 
 echo "Installing dependencies"
 
