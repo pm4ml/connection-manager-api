@@ -7,15 +7,6 @@ on:
 ##
 # Re-usable workflows can be found at https://github.com/modusbox/github-actions-node
 ##
-
-env:
-  IMAGE_NAME: ${{github.event.repository.name}}
-  IMAGE_TAG: ${{ github.sha }}
-  APP_WORK_DIRECTORY: .
-  APP_CACHE_NAME: cache-app-node-modules
-  APP_SCRIPT_DIRECTORY: scripts
-  TEST_FUNC_WORK_DIRECTORY: test/functional-tests
-  NODE_VERSION: lts/*
   
 jobs:
   test_lint:
@@ -84,7 +75,7 @@ jobs:
   test_func:
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/workflows/localTestFuncJob
+      - uses: ./.github/workflows/localTestFuncJob.yml
   
 #     runs-on: ubuntu-latest
 #     needs:
