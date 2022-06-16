@@ -1,6 +1,6 @@
 # Connection Manager API
 
-[![build-and-test](https://github.com/modusbox/connection-manager-api/actions/workflows/build-and-test.yaml/badge.svg)](https://github.com/modusbox/connection-manager-api/actions/workflows/build-and-test.yaml)
+[![Release](https://github.com/modusbox/connection-manager-api/actions/workflows/releaseWorkflow.yml/badge.svg)](https://github.com/modusbox/connection-manager-api/actions/workflows/releaseWorkflow.yml)
 
 Connection Manager API is a component of the Mojaloop ecosystem that allows an administrator to manage the network configuration and PKI information for the Hub and a set of DFSPs.
 
