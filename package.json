@@ -9,9 +9,12 @@
     "Miguel de Barros <miguel.debarros@modusbox.com>",
     "Juan Correa <juan.correa@modusbox.com>"
   ],
-  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/modusbox/connection-manager-api"
+  },
+  "main": "src/index.js",
   "files": [
-    "/dist",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
