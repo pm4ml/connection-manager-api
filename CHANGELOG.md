@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.6](https://github.com/modusbox/connection-manager-api/compare/v1.9.5...v1.9.6) (2022-06-17)
+
+
+### Chore
+
+* Add repository info ([35db681](https://github.com/modusbox/connection-manager-api/commit/35db6817db35087157b2dbe6f67d1af6b84512bf))
+* add repository info and remove dist dir ([52d2bf5](https://github.com/modusbox/connection-manager-api/commit/52d2bf5374085605c31f0d744d86eedd8d62268a))
+* Remove dist dir from files ([d092626](https://github.com/modusbox/connection-manager-api/commit/d09262696200c89a38a6ad78eb1d4cdc10373a03))
+
 ### [1.9.5](https://github.com/modusbox/connection-manager-api/compare/v1.9.4...v1.9.5) (2022-06-17)
 
 
