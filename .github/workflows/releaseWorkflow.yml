@@ -85,8 +85,8 @@ jobs:
     with:
       JOB_STATUS: ${{ ((needs.release_tag.result  == 'success') && (needs.release_gh.result  == 'success') && (needs.publish_image.result  == 'success')) && 'success' || 'failed' }}
       TYPE: Release
-      RELEASE_VERSION: ${{ ((needs.release_tag.result  == 'success') && (needs.release_gh.result  == 'success') && (needs.publish_image.result  == 'success') && (needs.publish_lib.result  == 'success')) && format('v{0}', needs.release_tag.outputs.VERSION) || 'n/a' }}
-      RELEASE_URL: ${{ ((needs.release_tag.result  == 'success') && (needs.release_gh.result  == 'success') && (needs.publish_image.result  == 'success') && (needs.publish_lib.result  == 'success')) && format('{0} {1}/{2}/releases/tag/v{3}', ':shipit:', github.server_url, github.repository, needs.release_tag.outputs.VERSION) || ':fire:' }}
+      RELEASE_VERSION: ${{ ((needs.release_tag.result  == 'success') && (needs.release_gh.result  == 'success') && (needs.publish_image.result  == 'success')) && format('v{0}', needs.release_tag.outputs.VERSION) || 'n/a' }}
+      RELEASE_URL: ${{ ((needs.release_tag.result  == 'success') && (needs.release_gh.result  == 'success') && (needs.publish_image.result  == 'success')) && format('{0} {1}/{2}/releases/tag/v{3}', ':shipit:', github.server_url, github.repository, needs.release_tag.outputs.VERSION) || ':fire:' }}
     secrets:
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       SLACK_CHANEL: ${{ secrets.SLACK_CHANNEL_PSO_RELEASE }}
