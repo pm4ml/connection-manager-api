@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.4](https://github.com/modusbox/connection-manager-api/compare/v1.9.3...v1.9.4) (2022-06-17)
+
+
+### Chore
+
+* fix ci release flow to correctly report notifications ([a57c2d6](https://github.com/modusbox/connection-manager-api/commit/a57c2d6374d7dcb6c5fc4186b4ad27177d5eedfa))
+
 ### [1.9.3](https://github.com/modusbox/connection-manager-api/compare/v1.9.2...v1.9.3) (2022-06-17)
 
 
