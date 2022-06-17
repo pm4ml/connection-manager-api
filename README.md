@@ -64,7 +64,6 @@ If you want to start the app with auth enabled:
 
 `docker-compose build && docker-compose -f docker-compose.yml -f docker-compose-auth.local.yml up`
 
-
 ## Configuration
 
 There's a [Constants.js file](./src/constants/Constants.js) that pulls the values from the environment or uses defaults if not defined.
