@@ -74,6 +74,31 @@ jobs:
     secrets:
       USER: ${{ github.actor }}
       PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      
+# Adding additional release_gh and publish_image jobs to create an image without the v prefix in order for IaV CI/CD job to be able to deploy
+
+  release_gh_wov:
+    needs:
+      - release_tag
+    uses: modusbox/github-actions-node/.github/workflows/createReleaseGHJob.yml@v0.0.2
+    with:
+      RELEASE_VERSION: ${{ needs.release_tag.outputs.VERSION }}
+      RELEASE_CHANGE_ARTEFACT: ${{ needs.release_tag.outputs.RELEASE_CHANGE_ARTEFACT }}
+      RELEASE_CHANGE_FILENAME: ${{ needs.release_tag.outputs.RELEASE_CHANGE_FILENAME }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish_image_wov:
+    needs:
+      - release_tag
+      - release_gh_wov
+    uses: modusbox/github-actions-node/.github/workflows/publishImageJob.yml@v0.0.2
+    with:
+      RELEASE_VERSION: ${{ needs.release_tag.outputs.VERSION }}
+      RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ needs.release_tag.outputs.VERSION }}
+    secrets:
+      USER: ${{ github.actor }}
+      PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
   notify:
     needs:
