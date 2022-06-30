@@ -75,7 +75,7 @@ jobs:
       USER: ${{ github.actor }}
       PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       
-# Adding additional release_gh and publish_image jobs to create an image without the v prefix in order for IaV CI/CD job to be able to deploy
+# Adding additional release_gh and publish_image jobs to create an image without the v prefix in order for IaC CI/CD job to be able to deploy
 
   release_gh_wov:
     needs:
