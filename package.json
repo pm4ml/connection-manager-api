@@ -63,7 +63,7 @@
     "form-data": "^4.0.0",
     "joi": "^17.6.0",
     "js-yaml": "^4.1.0",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "knex": "^2.1.0",
     "moment": "^2.29.3",
     "mysql2": "^2.3.3",
