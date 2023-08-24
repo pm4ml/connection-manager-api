@@ -7,11 +7,12 @@
   "contributors": [
     "@Yevhen Kyriukha <yevhen.kyriukha@modusbox.com>",
     "Miguel de Barros <miguel.debarros@modusbox.com>",
-    "Juan Correa <juan.correa@modusbox.com>"
+    "Juan Correa <juan.correa@modusbox.com>",
+    "Aaron Reynoza <aaron.reynoza@infitx.com>"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/modusbox/connection-manager-api"
+    "url": "https://github.com/pm4ml/connection-manager-api"
   },
   "main": "src/index.js",
   "files": [
@@ -23,7 +24,6 @@
     "prepare": "npx husky install",
     "test": "npm run test:int",
     "test:int": "echo 'WARNING: Run \"npm run backend:start\" before executing...\n' && TEST=true mocha './test/int/**/*.test.js'",
-    "test-self-signed-server": "./run-vault.sh && TEST_START_SELF_SIGNED_SERVER=true npm test ; ./kill-vault.sh",
     "lint": "npx eslint ./src ./test/int",
     "lint:fix": "npm run lint -- --fix",
     "audit:resolve": "npx resolve-audit --production",
@@ -33,16 +33,16 @@
     "dep:update": "npx ncu -u",
     "release": "npx standard-version --no-verify --releaseCommitMessageFormat 'ci(release): {{currentTag}} [skip ci]'",
     "snapshot": "npx standard-version --no-verify --skip.changelog --prerelease snapshot --releaseCommitMessageFormat 'ci(snapshot): {{currentTag}}'",
-    "test-with-coverage": "./run-vault.sh && nyc --reporter=text mocha --timeout 20000 --colors -exit ; ./kill-vault.sh",
+    "test-with-coverage": "./scripts/run-vault.sh && nyc --reporter=text mocha --timeout 20000 --colors -exit ; ./scripts/kill-vault.sh",
     "start": "node src/index.js",
     "start-with-oauth-enabled": "source oauth.env && node src/index.js",
     "migrate": "DOTENV_CONFIG_PATH=$(pwd)/.env npx knex --knexfile src/knexfile.js migrate:latest",
     "seed": "DOTENV_CONFIG_PATH=$(pwd)/.env npx knex --knexfile src/knexfile.js seed:run",
     "migrate-and-seed": "npm -s run migrate && npm -s run seed",
-    "db:start": "./run-mysql.sh",
-    "db:stop": "./kill-mysql.sh",
-    "vault:start": "./run-vault.sh",
-    "vault:stop": "./kill-vault.sh",
+    "db:start": "./scripts/run-mysql.sh",
+    "db:stop": "./scripts/kill-mysql.sh",
+    "vault:start": "./scripts/run-vault.sh",
+    "vault:stop": "./scripts/kill-vault.sh",
     "backend:start": "npm -s run db:start && npm run -s vault:start",
     "backend:stop": "npm -s run db:stop && npm run -s vault:stop",
     "backend:restart": "npm run backend:stop && npm run backend:start"

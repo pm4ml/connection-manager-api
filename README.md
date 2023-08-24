@@ -6,63 +6,26 @@ Connection Manager API is a component of the Mojaloop ecosystem that allows an a
 
 It provides a REST API, described using a [Swagger/OpenAPI document](./src/api/swagger.yaml).
 
-The current version uses both [cfssl](https://github.com/modusintegration/cfssl) and [openssl](https://www.openssl.org/) as the PKI engines which issue and process CSRs and Certificates. The specific version of cfssl that MCM depends on is kept in the [Dockerfile](./Dockerfile) as the value of the `branch` argument ( as in `--branch=v1.3.4` ) and can also be specified as an environment variable ( see `CFSSL_VERSION` below ).
-
 The API servers uses OAuth2 to implement security, as defined in the [OAuth2 implementation doc](./oauth2.md)
 
 ## Running the server locally
 
-To run the server with all the defaults and no security, the simplest way is to run:
+You'll need a db instance available. you can setup one by running:
+```./run-mysql.sh```
 
-```bash
-P12_PASS_PHRASE="choose your own password" npm start
-```
+now install dependencies:
+```npm ci```
 
-The default config requires a `mysql` db running on the default port.
+install vault:
+```./run-vault.sh```
 
-Once running, you can access the [Swagger UI interface](http://localhost:3001/docs)
+specify a development test run:
+```export TEST=true```
 
-## Running the server + db + web UI locally while developing
+you can now start the service: 
+```npm start```
 
-The API server requires a mysql db. There's also a Web UI [https://github.com/modusbox/connection-manager-ui](https://github.com/modusbox/connection-manager-ui).
-
-To run them together, you can use the following setup:
-
-- Clone this repo and the Web UI repo at the same level
-- Use the `docker-compose` config in this repo to run a mysql DB, the WebUI and the API server
-
-```bash
-mkdir modusbox
-cd modusbox
-git clone https://github.com/modusbox/connection-manager-ui
-git clone https://github.com/modusbox/connection-manager-api
-cd connection-manager-api/docker
-docker-compose build
-docker-compose up
-```
-
-Once the docker containers are confirmed to be stable and up, you will need to create the initial HUB environment. From a new terminal
- session, execute the following;
-
- ```bash
-curl -X POST "http://localhost:3001/api/environments" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"name\": \"DEV\", \"defaultDN\": { \"CN\": \"tes1.centralhub.modusbox.live\", \"O\": \"Modusbox\", \"OU\": \"MCM\" }}"
- ```
-
-The UI 'localhost' can now be opened in your local browser.
-
-If you want to start the app with auth enabled:
-
-1) create a local copy of `docker-compose-auth.yml` as in:
-
-`cp docker-compose-auth.yml docker-compose-auth.local.yml`
-
-( `docker-compose-auth.local.yml` is git-ignored )
-
-1) Edit `docker-compose-auth.local.yml` and enter the security details.
-
-1) Run the bundle with:
-
-`docker-compose build && docker-compose -f docker-compose.yml -f docker-compose-auth.local.yml up`
+you can go see the swagger definition at `localhost:3001`
 
 ## Configuration
 
@@ -117,29 +80,13 @@ Variables:
 | **Support for self-signed certificates on OAuth Server and other TLS client connections**
 |EXTRA_CERTIFICATE_CHAIN_FILE_NAME|Extra trusted server certificate chain file name ( PEM-encoded, as explained in https://nodejs.org/api/tls.html#tls_tls_createsecurecontext_options )|
 |EXTRA_ROOT_CERT_FILE_NAME|Extra trusted server root certificate file name|
-| **CFSSL**
-|CFSSL_VERSION|Expected CFSSL version to use. Should be updated to keep in sync with the cfssl development|1.3.4
-|CFSSL_COMMAND_PATH|cfssl command; it should be just cfssl if it's in the PATH or the full path|cfssl
+
 
 ## Testing
 
-- Unit testing:
-  - run `npm run backend:start` as a pre-requisite to `npm test`
-  - run `npm test`. The tests are implemented using `mocha`. If you need some test certificates, see the [test resources readme](./test/resources/README.md)
-- Smoke testing ( `zsh` script ): run the [cmd-line-tester.sh](./scripts/cmd-line-tester.sh) script from a tmp directory
-- swagger: see "running the server" below
+- Run integration tests:
+  - `npm run test`
 
 ### Functioanl Tests
 
 Refer to [README](./test/functional-tests/README.md).
-
-## Style
-
-[![js-semistandard-style](https://cdn.rawgit.com/flet/semistandard/master/badge.svg)](https://github.com/Flet/semistandard)
- ( + dangling commas on Objects )
-
-## Building a docker image
-
-The server includes a [Dockerfile](./Dockerfile).
-
-There's a set of scripts to build the image and tag it for a local minikube or other environments. Take a look at [./docker-build.sh](./docker-build.sh)
