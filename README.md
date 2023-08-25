@@ -92,6 +92,8 @@ Variables:
 
 User authentication can be enabled using WSO2. The service is able to login, change password and logout. WSO2 Configuration must be set in place using the above ENV variables.
 
+You can refer to the Auth [README](oauth2.md)
+
 ## Cert Renewal
 
 When Registering or changing a CA, the API will use the Cert-Manager CRD to renew the Certificate.
