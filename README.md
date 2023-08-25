@@ -2,22 +2,29 @@
 
 [![Release](https://github.com/modusbox/connection-manager-api/actions/workflows/releaseWorkflow.yml/badge.svg)](https://github.com/modusbox/connection-manager-api/actions/workflows/releaseWorkflow.yml)
 
+![Connection Manager Architecture](architecture.png)
+
+
 Connection Manager API is a component of the Mojaloop ecosystem that allows an administrator to manage the network configuration and PKI information for the Hub and a set of DFSPs.
 
 It provides a REST API, described using a [Swagger/OpenAPI document](./src/api/swagger.yaml).
 
 The API servers uses OAuth2 to implement security, as defined in the [OAuth2 implementation doc](./oauth2.md)
 
+## DFSP onboarding process using MCM
+
+Here you can find a [document and video describing the onboarding processs using MCM](https://infitx.atlassian.net/wiki/spaces/CS/pages/18776713/SOP0009+-+HUB+PM4ML+-+On-boarding+Payment+Manager+v.0.1-20220307)
+
 ## Running the server locally
 
 You'll need a db instance available. you can setup one by running:
-```./run-mysql.sh```
+```./scripts/run-mysql.sh```
 
 now install dependencies:
 ```npm ci```
 
 install vault:
-```./run-vault.sh```
+```./scripts/run-vault.sh```
 
 specify a development test run:
 ```export TEST=true```
@@ -81,6 +88,13 @@ Variables:
 |EXTRA_CERTIFICATE_CHAIN_FILE_NAME|Extra trusted server certificate chain file name ( PEM-encoded, as explained in https://nodejs.org/api/tls.html#tls_tls_createsecurecontext_options )|
 |EXTRA_ROOT_CERT_FILE_NAME|Extra trusted server root certificate file name|
 
+## Authentication
+
+User authentication can be enabled using WSO2. The service is able to login, change password and logout. WSO2 Configuration must be set in place using the above ENV variables.
+
+## Cert Renewal
+
+When Registering or changing a CA, the API will use the Cert-Manager CRD to renew the Certificate.
 
 ## Testing
 
@@ -89,4 +103,4 @@ Variables:
 
 ### Functioanl Tests
 
-Refer to [README](./test/functional-tests/README.md).
+Refer to [the functional tests README](./test/functional-tests/README.md).
