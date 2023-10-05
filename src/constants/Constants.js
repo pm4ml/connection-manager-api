@@ -80,6 +80,7 @@ module.exports = {
   SERVER: {
     PORT: env.get('PORT').default('3001').asPortNumber(),
   },
+
   OAUTH: {
     AUTH_ENABLED: env.get('AUTH_ENABLED').default('false').asBool(),
     APP_OAUTH_CLIENT_KEY: env.get('APP_OAUTH_CLIENT_KEY').asString(), // Configured in WSO2 IM Service Provider
@@ -109,12 +110,12 @@ module.exports = {
       .get('OAUTH_RESET_PASSWORD_AUTH_PASSWORD')
       .asString(),
   },
+
   EXTRA_TLS: {
-    EXTRA_CERTIFICATE_CHAIN_FILE_NAME: env
-      .get('EXTRA_CERTIFICATE_CHAIN_FILE_NAME')
-      .asString(),
+    EXTRA_CERTIFICATE_CHAIN_FILE_NAME: env.get('EXTRA_CERTIFICATE_CHAIN_FILE_NAME').asString(),
     EXTRA_ROOT_CERT_FILE_NAME: env.get('EXTRA_ROOT_CERT_FILE_NAME').asString(),
   },
+
   AUTH_2FA: {
     AUTH_2FA_ENABLED: env.get('AUTH_2FA_ENABLED').default('false').asBool(),
     TOTP_ADMIN_ISSUER: env.get('TOTP_ADMIN_ISSUER').asString(),
@@ -124,10 +125,9 @@ module.exports = {
     TOTP_ISSUER: env.get('TOTP_ISSUER').default('MCM').asString(),
     WSO2_MANAGER_SERVICE_URL: env.get('WSO2_MANAGER_SERVICE_URL').asString(),
     WSO2_MANAGER_SERVICE_USER: env.get('WSO2_MANAGER_SERVICE_USER').asString(),
-    WSO2_MANAGER_SERVICE_PASSWORD: env
-      .get('WSO2_MANAGER_SERVICE_PASSWORD')
-      .asString(),
+    WSO2_MANAGER_SERVICE_PASSWORD: env.get('WSO2_MANAGER_SERVICE_PASSWORD').asString(),
   },
+
   DATABASE: {
     DATABASE_HOST: env.get('DATABASE_HOST').default('localhost').asString(),
     DATABASE_PORT: env.get('DATABASE_PORT').default(3306).asPortNumber(),
@@ -141,6 +141,7 @@ module.exports = {
       .asInt(),
   },
   switchFQDN: env.get('SWITCH_FQDN').default('switch.example.com').asString(),
+
   vault: {
     endpoint: env.get('VAULT_ENDPOINT').default('http://localhost:8233').asString(),
     mounts: {
@@ -159,6 +160,7 @@ module.exports = {
     keyAlgorithm: env.get('PRIVATE_KEY_ALGORITHM').default('rsa').asString(),
   },
   certManager,
+
   auth: {
     enabled: env.get('AUTH_ENABLED').asBoolStrict(),
     creds: {
@@ -166,7 +168,8 @@ module.exports = {
       pass: env.get('AUTH_PASS').asString(),
     }
   },
-  clientCsrParameters: env.get('CLIENT_CSR_PARAMETERS').asJsonConfig(),
-  serverCsrParameters: env.get('SERVER_CSR_PARAMETERS').asJsonConfig(),
-  caCsrParameters: env.get('CA_CSR_PARAMETERS').asJsonConfig(),
+
+  clientCsrParameters: env.get('CLIENT_CSR_PARAMETERS').required().asJsonConfig(),
+  serverCsrParameters: env.get('SERVER_CSR_PARAMETERS').required().asJsonConfig(),
+  caCsrParameters: env.get('CA_CSR_PARAMETERS').required().asJsonConfig(),
 };

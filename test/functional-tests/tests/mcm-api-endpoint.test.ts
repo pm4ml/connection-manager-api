@@ -16,7 +16,7 @@
  *                                                                        *
  *  ORIGINAL AUTHOR:                                                      *
  *       Sridevi Miriyala - sridevi.miriyala@modusbox.com                **
- * 
+ *
  *  CONTRIBUTORS:                                                      *
  *       Miguel de Barros - miguel.debarros@modusbox.com                **
  ************************************************************************* */
@@ -54,7 +54,7 @@ describe('MCM API Tests', () => {
     const getDFSPResponse = await apiHelper.sendRequest({
       method: MethodEnum.GET,
       url:`${Config.mcmEndpoint}/dfsps`,
-      headers: { 
+      headers: {
         'Content-Type': 'application/json'
       }
     });
@@ -67,14 +67,14 @@ describe('MCM API Tests', () => {
       // if we find it, set the dfspId value
       if (result?.length === 1) dfspId = result[0]?.id
     }
-    
+
     // if not found, we should create it
     if (dfspId == null) {
       const addDFSPResponse = await apiHelper.getResponseBody({
         method: MethodEnum.POST,
         url:`${Config.mcmEndpoint}/dfsps`,
         body: JSON.stringify(dfspObject),
-        headers: { 
+        headers: {
           'Content-Type': 'application/json'
         }
       });
@@ -146,7 +146,7 @@ describe('MCM API Tests', () => {
         method: 'POST',
         url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/egress`,
         body: JSON.stringify(endpoitConfiguration),
-        headers: { 
+        headers: {
           'Content-Type': 'application/json'
         },
       });
@@ -195,7 +195,7 @@ describe('MCM API Tests', () => {
         method: 'POST',
         url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/egress`,
         body: JSON.stringify(endpoitConfiguration),
-        headers: { 
+        headers: {
           'Content-Type': 'application/json'
         },
       });
@@ -234,7 +234,7 @@ describe('MCM API Tests', () => {
         method: 'POST',
         url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/egress`,
         body: JSON.stringify(endpoitConfiguration),
-        headers: { 
+        headers: {
           'Content-Type': 'application/json'
         },
       });
@@ -296,7 +296,7 @@ describe('MCM API Tests', () => {
         method: 'POST',
         url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/ingress`,
         body: JSON.stringify(endpoitConfiguration),
-        headers: { 
+        headers: {
           'Content-Type': 'application/json'
         },
       });
@@ -336,7 +336,7 @@ describe('MCM API Tests', () => {
         method: 'POST',
         url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/ingress`,
         body: JSON.stringify(endpoitConfiguration),
-        headers: { 
+        headers: {
           'Content-Type': 'application/json'
         },
       });
@@ -366,7 +366,7 @@ describe('MCM API Tests', () => {
         method: 'POST',
         url: `${Config.mcmEndpoint}/dfsps/${dfspId}/endpoints/egress`,
         body: JSON.stringify(endpoitConfiguration),
-        headers: { 
+        headers: {
           'Content-Type': 'application/json'
         },
       });

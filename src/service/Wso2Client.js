@@ -16,8 +16,9 @@
  ******************************************************************************/
 
 'use strict';
-const Constants = require('../constants/Constants');
+
 const rp = require('request-promise-native');
+const Constants = require('../constants/Constants');
 const UnauthorizedError = require('../errors/UnauthorizedError');
 
 exports.getToken = async (username, password) => {
@@ -30,7 +31,10 @@ exports.getToken = async (username, password) => {
 
   try {
     const url = Constants.OAUTH.OAUTH2_ISSUER;
-    const loginResponse = await rp.post(url).form(form).auth(Constants.OAUTH.APP_OAUTH_CLIENT_KEY, Constants.OAUTH.APP_OAUTH_CLIENT_SECRET); // MP-757
+    const loginResponse = await rp.post(url)
+      .form(form)
+      .auth(Constants.OAUTH.APP_OAUTH_CLIENT_KEY, Constants.OAUTH.APP_OAUTH_CLIENT_SECRET); // MP-757
+
     console.log(`Wso2Client.getToken received ${loginResponse}`);
     return JSON.parse(loginResponse);
   } catch (error) {

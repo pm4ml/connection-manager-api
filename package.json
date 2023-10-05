@@ -1,6 +1,6 @@
 {
   "name": "connection-manager-api",
-  "version": "1.9.6",
+  "version": "1.9.7",
   "description": "ModusBox Connection Manager API",
   "license": "Apache-2.0",
   "author": "ModusBox",
@@ -35,6 +35,7 @@
     "snapshot": "npx standard-version --no-verify --skip.changelog --prerelease snapshot --releaseCommitMessageFormat 'ci(snapshot): {{currentTag}}'",
     "test-with-coverage": "./run-vault.sh && nyc --reporter=text mocha --timeout 20000 --colors -exit ; ./kill-vault.sh",
     "start": "node src/index.js",
+    "start:dev": "node -r dotenv/config src/index.js",
     "start-with-oauth-enabled": "source oauth.env && node src/index.js",
     "migrate": "DOTENV_CONFIG_PATH=$(pwd)/.env npx knex --knexfile src/knexfile.js migrate:latest",
     "seed": "DOTENV_CONFIG_PATH=$(pwd)/.env npx knex --knexfile src/knexfile.js seed:run",
