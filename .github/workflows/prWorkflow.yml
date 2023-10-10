@@ -41,9 +41,13 @@ jobs:
         with:
           node-version: '${{ steps.nvm.outputs.NVMRC }}'
       - run: npm ci
-      - run: npm run backend:start
-      - run: nc -zv localhost 8233
-      - run: npm run test:int
+      - run: |
+          npm run backend:start
+          nc -zv localhost 8233
+          npm run test:int
+#      - run: npm run backend:start
+#      - run: nc -zv localhost 8233
+#      - run: npm run test:int
       - run: npm run backend:stop
 #  test_int:
 #    uses: modusbox/github-actions-node/.github/workflows/testIntJob.yml@v0.0.4
