@@ -43,6 +43,7 @@ jobs:
       - run: npm ci
       - run: npm run backend:start
       - run: nc -zv localhost 8233
+      - run: nc -zv localhost 7200
       - run: npm run test:int
       - run: npm run backend:stop
 #  test_int:
