@@ -94,8 +94,9 @@ describe('DFSPEndpointModel', async function () {
       }
       console.log(`deleting endpointList=${JSON.stringify(endpointIdList)}`);
       for (const endpointId of endpointIdList) {
-        console.log(`deleting endpoint record=${endpointId}`);
-        await DFSPEndpointModel.delete(endpointId);
+        const id = Array.isArray(endpointId) ? endpointId[0] : endpointId;
+        console.log(`deleting endpoint record=${id}`);
+        await DFSPEndpointModel.delete(id);
       }
     });
 
