@@ -169,7 +169,7 @@ module.exports = {
     }
   },
 
-  clientCsrParameters: env.get('CLIENT_CSR_PARAMETERS').required().asJsonConfig(),
-  serverCsrParameters: env.get('SERVER_CSR_PARAMETERS').required().asJsonConfig(),
-  caCsrParameters: env.get('CA_CSR_PARAMETERS').required().asJsonConfig(),
+  clientCsrParameters: env.get('CLIENT_CSR_PARAMETERS').asJsonConfig(),
+  serverCsrParameters: env.get('SERVER_CSR_PARAMETERS').asJsonConfig(),
+  caCsrParameters: env.get('CA_CSR_PARAMETERS').asJsonConfig(),
 };

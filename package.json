@@ -27,7 +27,8 @@
     "lint": "npx eslint ./src ./test/int",
     "lint:fix": "npm run lint -- --fix",
     "audit:resolve": "npx resolve-audit --production",
-    "audit:check": "npx check-audit --production",
+    "audit:check": "npx audit-ci --config ./audit-ci.jsonc",
+    "audit:fix": "npm audit fix",
     "clean": "rm -rf ./dist",
     "dep:check": "npx ncu -e 2",
     "dep:update": "npx ncu -u",
@@ -88,16 +89,16 @@
     "eslint-plugin-import": "^2.28.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
-    "jshint": "^2.13.6",
     "husky": "^8.0.3",
+    "jshint": "^2.13.6",
     "mocha": "^10.2.0",
+    "npm-audit-resolver": "3.0.0-RC.0",
+    "npm-check-updates": "^16.14.5",
     "nyc": "^15.1.0",
     "sinon": "^16.1.0",
     "snazzy": "^9.0.0",
-    "standardx": "^7.0.0",
-    "npm-audit-resolver": "3.0.0-RC.0",
-    "npm-check-updates": "^16.14.5",
-    "standard-version": "^9.5.0"
+    "standard-version": "^9.5.0",
+    "standardx": "^7.0.0"
   },
   "standardx": {
     "semistandard": true
