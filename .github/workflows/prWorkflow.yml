@@ -30,27 +30,7 @@ jobs:
 #     uses: modusbox/github-actions-node/.github/workflows/testCoverageJob.yml@v0.0.4
 
   test_int:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Read .nvmrc
-        run: echo ::set-output name=NVMRC::$(cat .nvmrc)
-        id: nvm
-      - name: Setup Node@${{ steps.nvm.outputs.NVMRC }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: '${{ steps.nvm.outputs.NVMRC }}'
-      - run: npm ci
-      - run: |
-          npm run backend:start
-          nc -zv localhost 8233
-          npm run test:int
-#      - run: npm run backend:start
-#      - run: nc -zv localhost 8233
-#      - run: npm run test:int
-      - run: npm run backend:stop
-#  test_int:
-#    uses: modusbox/github-actions-node/.github/workflows/testIntJob.yml@v0.0.4
+    uses: modusbox/github-actions-node/.github/workflows/testIntJob.yml@v0.0.4
 
   test_func:
     uses: ./.github/workflows/testFuncJob.yml
