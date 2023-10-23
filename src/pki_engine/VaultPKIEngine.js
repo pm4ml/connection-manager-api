@@ -304,7 +304,8 @@ class VaultPKIEngine extends PKIEngine {
     const cert = this.getCertInfo(dfspClientCert.certificate);
     const bundle = {
       ca_bundle: `${dfspCA.intermediateChain}\n${dfspCA.rootCertificate}`,
-      client_cert_chain: `${dfspClientCert.key}\n${dfspClientCert.certificate}\n${dfspCA.intermediateChain}\n${dfspCA.rootCertificate}`,
+      client_key: dfspClientCert.key,
+      client_cert_chain: `${dfspClientCert.certificate}\n${dfspCA.intermediateChain}\n${dfspCA.rootCertificate}`,
       fqdn: cert.subject.CN,
       host: dfspName,
     };
