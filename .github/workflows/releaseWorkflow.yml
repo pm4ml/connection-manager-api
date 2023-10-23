@@ -1,8 +1,10 @@
 name: Create Tagged Release
 
 on:
+  release:
+    types: [ published ]
   push:
-    branches: 
+    branches:
       - main
 
 ##
