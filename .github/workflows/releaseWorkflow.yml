@@ -2,7 +2,7 @@ name: Create Tagged Release
 
 on:
   release:
-    types: [ published ]
+    types: [published]
   push:
     branches:
       - main
@@ -24,13 +24,13 @@ jobs:
   test_license:
     uses: modusbox/github-actions-node/.github/workflows/testLicenseJob.yml@v0.0.4
 
-# TODO: Enable when there are unit tests
-#   test_unit:
-#     uses: modusbox/github-actions-node/.github/workflows/testUnitJob.yml@v0.0.4
+  # TODO: Enable when there are unit tests
+  #   test_unit:
+  #     uses: modusbox/github-actions-node/.github/workflows/testUnitJob.yml@v0.0.4
 
-# TODO: Enable when there is coveragte for unit tests
-#   test_coverage:
-#     uses: modusbox/github-actions-node/.github/workflows/testCoverageJob.yml@v0.0.4
+  # TODO: Enable when there is coveragte for unit tests
+  #   test_coverage:
+  #     uses: modusbox/github-actions-node/.github/workflows/testCoverageJob.yml@v0.0.4
 
   test_int:
     uses: modusbox/github-actions-node/.github/workflows/testIntJob.yml@v0.0.4
@@ -44,15 +44,15 @@ jobs:
       - test_dependencies
       - test_audit
       - test_license
-#       - test_unit
-#       - test_coverage
+      #       - test_unit
+      #       - test_coverage
       - test_int
       - test_func
     uses: modusbox/github-actions-node/.github/workflows/createReleaseTagJob.yml@v0.0.2
     secrets:
-      GIT_KEY: ${{ secrets.PSO_GIT_KEY }}
-      GIT_USER: ${{ secrets.PSO_GIT_USER }}
-      GIT_EMAIL: ${{ secrets.PSO_GIT_EMAIL }}
+      GIT_KEY: ${{ secrets.GITHUB_TOKEN }}
+      GIT_USER: ${{ github.actor }}
+      GIT_EMAIL: "cicd@infitx.com"
 
   release_gh:
     needs:
