@@ -2,7 +2,7 @@ name: Create Tagged Release
 
 on:
   release:
-    types: [ published ]
+    types: [published]
   push:
     branches:
       - main
@@ -24,13 +24,13 @@ jobs:
   test_license:
     uses: modusbox/github-actions-node/.github/workflows/testLicenseJob.yml@v0.0.4
 
-# TODO: Enable when there are unit tests
-#   test_unit:
-#     uses: modusbox/github-actions-node/.github/workflows/testUnitJob.yml@v0.0.4
+  # TODO: Enable when there are unit tests
+  #   test_unit:
+  #     uses: modusbox/github-actions-node/.github/workflows/testUnitJob.yml@v0.0.4
 
-# TODO: Enable when there is coveragte for unit tests
-#   test_coverage:
-#     uses: modusbox/github-actions-node/.github/workflows/testCoverageJob.yml@v0.0.4
+  # TODO: Enable when there is coveragte for unit tests
+  #   test_coverage:
+  #     uses: modusbox/github-actions-node/.github/workflows/testCoverageJob.yml@v0.0.4
 
   test_int:
     uses: modusbox/github-actions-node/.github/workflows/testIntJob.yml@v0.0.4
@@ -38,57 +38,13 @@ jobs:
   test_func:
     uses: ./.github/workflows/testFuncJob.yml
 
-  release_tag:
-    needs:
-      - test_lint
-      - test_dependencies
-      - test_audit
-      - test_license
-#       - test_unit
-#       - test_coverage
-      - test_int
-      - test_func
-    uses: modusbox/github-actions-node/.github/workflows/createReleaseTagJob.yml@v0.0.2
-    secrets:
-      GIT_KEY: ${{ secrets.PSO_GIT_KEY }}
-      GIT_USER: ${{ secrets.PSO_GIT_USER }}
-      GIT_EMAIL: ${{ secrets.PSO_GIT_EMAIL }}
-
-  release_gh:
-    needs:
-      - release_tag
-    uses: modusbox/github-actions-node/.github/workflows/createReleaseGHJob.yml@v0.0.2
-    with:
-      RELEASE_VERSION: v${{ needs.release_tag.outputs.VERSION }}
-      RELEASE_CHANGE_ARTEFACT: ${{ needs.release_tag.outputs.RELEASE_CHANGE_ARTEFACT }}
-      RELEASE_CHANGE_FILENAME: ${{ needs.release_tag.outputs.RELEASE_CHANGE_FILENAME }}
-    secrets:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish_image:
-    needs:
-      - release_tag
-      - release_gh
     uses: modusbox/github-actions-node/.github/workflows/publishImageJob.yml@v0.0.2
     with:
-      RELEASE_VERSION: v${{ needs.release_tag.outputs.VERSION }}
-      RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ needs.release_tag.outputs.VERSION }}
+      RELEASE_VERSION: ${{ github.event.release.tag_name }}
+      RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.event.release.tag_name }}
     secrets:
       USER: ${{ github.actor }}
       PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
-  notify:
-    needs:
-      - release_tag
-      - release_gh
-      - publish_image
-    if: ${{ always() }} # Here we report on the final state of the workflow!
-    uses: modusbox/github-actions-node/.github/workflows/notifyReleaseJob.yml@v0.0.2
-    with:
-      JOB_STATUS: ${{ ((needs.release_tag.result  == 'success') && (needs.release_gh.result  == 'success') && (needs.publish_image.result  == 'success')) && 'success' || 'failed' }}
-      TYPE: Release
-      RELEASE_VERSION: ${{ ((needs.release_tag.result  == 'success') && (needs.release_gh.result  == 'success') && (needs.publish_image.result  == 'success')) && format('v{0}', needs.release_tag.outputs.VERSION) || 'n/a' }}
-      RELEASE_URL: ${{ ((needs.release_tag.result  == 'success') && (needs.release_gh.result  == 'success') && (needs.publish_image.result  == 'success')) && format('{0} {1}/{2}/releases/tag/v{3}', ':shipit:', github.server_url, github.repository, needs.release_tag.outputs.VERSION) || ':fire:' }}
-    secrets:
-      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-      SLACK_CHANEL: ${{ secrets.SLACK_CHANNEL_PSO_RELEASE }}
