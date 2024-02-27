@@ -25,8 +25,11 @@ const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
 const forge = require('node-forge');
 const { createContext, destroyContext } = require('./context');
 
-describe('JWSCertsService', () => {
+const SWITCH_ID = 'switch';
+
+describe('JWSCertsService Tests', () => {
   let ctx;
+
   before(async () => {
     await setupTestDB();
     ctx = await createContext();
@@ -58,6 +61,21 @@ describe('JWSCertsService', () => {
       await PkiService.deleteDFSP(ctx, dfspId);
       const certs2 = await JWSCertsService.getAllDfspJWSCerts(ctx);
       console.log(certs2);
+    }).timeout(30000);
+
+    it('should set a hub JWSCerts', async () => {
+      const body = { publicKey };
+      const result = await JWSCertsService.setHubJWSCerts(ctx, body);
+      assert.equal(publicKey, result.publicKey);
+      const hubKeyData = await JWSCertsService.getHubJWSCerts(ctx);
+      console.log(hubKeyData);
+      assert.equal(hubKeyData.dfspId, SWITCH_ID);
+      assert.equal(hubKeyData.validationState, 'VALID');
+
+      const allKeysData = await JWSCertsService.getAllDfspJWSCerts(ctx);
+      console.log(allKeysData);
+      const hubKey = allKeysData.find(k => k.dfspId === SWITCH_ID);
+      assert.exists(hubKey);
     }).timeout(30000);
 
     it('should create and delete a DfspJWSCerts entry', async () => {
