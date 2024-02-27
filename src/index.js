@@ -39,7 +39,7 @@ const run = async ({
 
   // Start the server
   http.createServer(appConnected).listen(serverPort, function () {
-    console.log('Connection-Manager API server is listening on port %d (http://localhost:%d)', serverPort, serverPort);
+    console.log('Connection-Manager API server is listening on port %d...', serverPort);
     console.log('Swagger-ui is available on http://localhost:%d/docs', serverPort);
   });
 };

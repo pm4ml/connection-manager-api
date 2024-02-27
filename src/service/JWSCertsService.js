@@ -18,7 +18,9 @@
 'use strict';
 const DFSPModel = require('../models/DFSPModel');
 const PkiService = require('./PkiService');
+const NotFoundError = require('../errors/NotFoundError');
 const ValidationError = require('../errors/ValidationError');
+const { switchId } = require('../constants/Constants');
 
 exports.createDfspJWSCerts = async (ctx, dfspId, body) => {
   if (body === null || typeof body === 'undefined') {
@@ -40,15 +42,38 @@ exports.createDfspJWSCerts = async (ctx, dfspId, body) => {
   return jwsData;
 };
 
-exports.updateDfspJWSCerts = async (ctx, dfspId, body) => {
-  return exports.createDfspJWSCerts(dfspId, body);
+exports.setHubJWSCerts = async (ctx, body) => {
+  const switchData = await DFSPModel.findByDfspId(switchId)
+    .catch(err => {
+      console.log('Error on getting hub DFSP', err);
+      if (err instanceof NotFoundError) return null;
+      throw err;
+    });
+  // (?) think, if it's better to create DFSP for hub on service start
+  if (!switchData) {
+    console.log('No DFSP for hub, creating new one...');
+    await PkiService.createDFSPWithCSR(ctx, {
+      dfspId: switchId,
+      name: switchId,
+    });
+  }
+
+  return exports.createDfspJWSCerts(ctx, switchId, body);
 };
+
+// exports.updateDfspJWSCerts = async (ctx, dfspId, body) => {
+//   return exports.createDfspJWSCerts(dfspId, body);
+// };
 
 exports.getDfspJWSCerts = async (ctx, dfspId) => {
   await PkiService.validateDfsp(ctx, dfspId);
   const { pkiEngine } = ctx;
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   return pkiEngine.getDFSPJWSCerts(dbDfspId);
+};
+
+exports.getHubJWSCerts = async (ctx) => {
+  return exports.getDfspJWSCerts(ctx, switchId);
 };
 
 exports.deleteDfspJWSCerts = async (ctx, dfspId) => {
