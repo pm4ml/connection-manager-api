@@ -68,9 +68,11 @@ describe('JWSCertsService Tests', () => {
       const body = { publicKey };
       const result = await JWSCertsService.setHubJWSCerts(ctx, body);
       assert.equal(publicKey, result.publicKey);
+
       const hubKeyData = await JWSCertsService.getHubJWSCerts(ctx);
       console.log(hubKeyData);
       assert.equal(hubKeyData.dfspId, SWITCH_ID);
+      assert.equal(hubKeyData.publicKey, publicKey);
       assert.equal(hubKeyData.validationState, 'VALID');
 
       const allKeysData = await JWSCertsService.getAllDfspJWSCerts(ctx);
