@@ -1,8 +1,8 @@
 #!/bin/bash
 
-set -e
+./scripts/kill-mysql.sh
 
-./kill-mysql.sh
+set -e
 
 echo "Starting DB..."
 

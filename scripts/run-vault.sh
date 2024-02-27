@@ -9,7 +9,7 @@ export VAULT_TOKEN=myroot
 TEMP_DIR=.vault
 mkdir -p $TEMP_DIR
 
-./kill-vault.sh
+./scripts/kill-vault.sh
 
 PLATFORM=$(uname)
 
@@ -79,9 +79,11 @@ EOF
 ./vault secrets tune -max-lease-ttl=43800h pki_int
 ./vault write pki_int/roles/example.com allowed_domains=example.com allow_subdomains=true allow_any_name=true allow_localhost=true enforce_hostnames=false max_ttl=600h
 
-# export VAULT_AUTH_METHOD=APP_ROLE
-# export VAULT_ROLE_ID_FILE=$(realpath ./role-id)
-# export VAULT_ROLE_SECRET_ID_FILE=$(realpath ./secret-id)
+export VAULT_AUTH_METHOD=APP_ROLE
+export VAULT_ROLE_ID_FILE=$(realpath role-id)
+export VAULT_ROLE_SECRET_ID_FILE=$(realpath secret-id)
+export VAULT_ADDR='http://0.0.0.0:8233'
+
 
 # trap "kill -TERM $PID &> /dev/null" TERM INT
 # wait $PID || true
