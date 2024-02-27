@@ -15,14 +15,15 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { setupTestDB, tearDownTestDB } = require('./test-database');
+const { assert } = require('chai');
+const forge = require('node-forge');
 
 const JWSCertsService = require('../../src/service/JWSCertsService');
 const PkiService = require('../../src/service/PkiService');
-const { assert } = require('chai');
 const NotFoundError = require('../../src/errors/NotFoundError');
 const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
-const forge = require('node-forge');
+const DFSPModel = require('../../src/models/DFSPModel');
+const { setupTestDB, tearDownTestDB } = require('./test-database');
 const { createContext, destroyContext } = require('./context');
 
 const SWITCH_ID = 'switch';
@@ -76,6 +77,9 @@ describe('JWSCertsService Tests', () => {
       console.log(allKeysData);
       const hubKey = allKeysData.find(k => k.dfspId === SWITCH_ID);
       assert.exists(hubKey);
+
+      await JWSCertsService.deleteDfspJWSCerts(ctx, SWITCH_ID);
+      await DFSPModel.delete(SWITCH_ID);
     }).timeout(30000);
 
     it('should create and delete a DfspJWSCerts entry', async () => {
