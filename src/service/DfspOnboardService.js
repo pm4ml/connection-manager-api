@@ -28,8 +28,8 @@ const getIPsBundle = async () => {
 exports.onboardDFSP = async (ctx, dfspId) => {
   await PkiService.validateDfsp(ctx, dfspId);
   const { pkiEngine } = ctx;
-  const id = await DFSPModel.findIdByDfspId(dfspId);
-  await pkiEngine.populateDFSPClientCertBundle(id, dfspId);
+  const { id, monetaryZoneId } = await DFSPModel.findByDfspId(dfspId);
+  await pkiEngine.populateDFSPClientCertBundle(id, dfspId, monetaryZoneId);
 
   const ipsBundle = await getIPsBundle();
   await pkiEngine.populateDFSPInternalIPWhitelistBundle(ipsBundle);

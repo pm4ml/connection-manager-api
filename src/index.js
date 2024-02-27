@@ -15,8 +15,8 @@
  *  limitations under the License                                             *
  ******************************************************************************/
 
-const Constants = require('./constants/Constants');
 const nodeHttp = require('http');
+const Constants = require('./constants/Constants');
 const serverPort = Constants.SERVER.PORT;
 const appLoader = require('./appLoader');
 const {

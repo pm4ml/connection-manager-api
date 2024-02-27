@@ -111,9 +111,13 @@ function verifyCallback (req, jwtPayload, done) {
   const foundMTA = jwtPayload.groups.includes(Constants.OAUTH.MTA_ROLE);
   const foundPTA = jwtPayload.groups.includes(Constants.OAUTH.PTA_ROLE);
   const foundEveryone = jwtPayload.groups.includes(Constants.OAUTH.EVERYONE_ROLE);
-  let client = null;
-  client = { name: jwtPayload.sub };
-  const roles = { mta: foundMTA, pta: foundPTA, everyone: foundEveryone };
+
+  const client = { name: jwtPayload.sub };
+  const roles = {
+    mta: foundMTA,
+    pta: foundPTA,
+    everyone: foundEveryone,
+  };
   for (const group of jwtPayload.groups) {
     roles[group] = true;
   }
@@ -140,6 +144,7 @@ function verifyCallback (req, jwtPayload, done) {
 const createOAuth2Handler = () => {
   const jwtStrategy = createJwtStrategy();
   passport.use(jwtStrategy);
+
   const authenticate = (req) => new Promise((resolve, reject) =>
     passport.authenticate('jwt', { session: false, failureMessage: true }, (err, user, info) => {
       if (err) {
@@ -150,13 +155,15 @@ const createOAuth2Handler = () => {
         user,
       });
     })(req));
+
   return async (req, scopes, schema) => {
     const user = req.user;
     const authInfo = await authenticate(req);
-    const apiPath = req.openapi.openApiRoute;
+    const apiPath = req.openapi?.openApiRoute;
     const originalUrl = req.originalUrl;
     let error = null;
     console.log(`OAuthHelper.oauth2PermissionsVerifier: user ${util.inspect(authInfo.user)} authInfo:  ${util.inspect(authInfo)} originalUrl: ${originalUrl} apiPath: ${apiPath}`);
+
     // Now check that the user has all the roles(scopes)
     let rolesOk = false;
     if (scopes && Array.isArray(scopes) && authInfo && authInfo.roles) {

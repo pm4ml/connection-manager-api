@@ -16,14 +16,16 @@
  ******************************************************************************/
 
 'use strict';
+
+const Cookies = require('cookies');
+const jwt = require('jsonwebtoken');
 const Constants = require('../constants/Constants');
 const UnauthorizedError = require('../errors/UnauthorizedError');
 const BadRequestError = require('../errors/BadRequestError');
-const Cookies = require('cookies');
-const jwt = require('jsonwebtoken');
 const wso2TotpClient = require('./Wso2TotpClient');
 const wso2Client = require('./Wso2Client');
 const wso2ManagerServiceClient = require('./Wso2ManagerServiceClient');
+
 const ENROLLED_2FA = '2fa-enrolled';
 const PASSWORD_RESET = 'askPassword';
 
@@ -33,6 +35,7 @@ const PASSWORD_RESET = 'askPassword';
  */
 exports.loginUser = async (ctx, body, req, res) => {
   const { username, password } = body;
+
   if (!Constants.OAUTH.AUTH_ENABLED) {
     return {
       ok: false,
@@ -53,6 +56,7 @@ exports.loginUser = async (ctx, body, req, res) => {
       }
     };
   }
+
   try {
     const loginResponseObj = await wso2Client.getToken(username, password);
     let response; // there are 3 types of possible response depending on AUTH_2FA_ENABLED and if its enrolled or not
