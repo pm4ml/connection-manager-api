@@ -61,10 +61,6 @@ exports.setHubJWSCerts = async (ctx, body) => {
   return exports.createDfspJWSCerts(ctx, switchId, body);
 };
 
-// exports.updateDfspJWSCerts = async (ctx, dfspId, body) => {
-//   return exports.createDfspJWSCerts(dfspId, body);
-// };
-
 exports.getDfspJWSCerts = async (ctx, dfspId) => {
   await PkiService.validateDfsp(ctx, dfspId);
   const { pkiEngine } = ctx;

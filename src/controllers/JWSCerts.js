@@ -38,16 +38,6 @@ exports.setHubJWSCerts = (req, res, next, body) => {
     });
 };
 
-// exports.updateDfspJWSCerts = (req, res, next, body, dfspId) => {
-//   JWSCertsService.updateDfspJWSCerts(req.context, dfspId, body)
-//     .then(response => {
-//       utils.writeJson(res, response);
-//     })
-//     .catch(response => {
-//       utils.writeJson(res, response, response.status);
-//     });
-// };
-
 exports.getDfspJWSCerts = (req, res, next, dfspId) => {
   JWSCertsService.getDfspJWSCerts(req.context, dfspId)
     .then(response => {
