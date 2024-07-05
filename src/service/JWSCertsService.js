@@ -32,6 +32,7 @@ exports.createDfspJWSCerts = async (ctx, dfspId, body) => {
   const jwsData = {
     dfspId,
     publicKey: body.publicKey,
+    createdAt: body.createdAt,
     validations,
     validationState,
   };

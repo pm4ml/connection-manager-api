@@ -8,6 +8,7 @@
  *       Yevhen Kyriukha - yevhen.kyriukha@modusbox.com                   *
  **************************************************************************/
 
+require('dotenv/config');
 const env = require('env-var');
 const path = require('path');
 

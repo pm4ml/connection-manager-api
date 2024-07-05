@@ -3,8 +3,6 @@ info:
   title: Connection Manager API
   description: Connection Manager API
   version: 1.6.0
-servers:
-- url: http://localhost:3001/api
 tags:
 - name: dfsp-config
   description: DFSPs setup
@@ -2636,11 +2634,15 @@ components:
     BaseJWSCert:
       required:
       - publicKey
+      - createdAt
       type: object
       properties:
         publicKey:
           type: string
           description: PEM-encoded JWS public key
+        createdAt:
+          type: number
+          description: Creation timestamp in unix time format
       description: JWS Certificate.
     JWSCert:
       description: The JWS public key, with info and id.
