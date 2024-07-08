@@ -30,6 +30,16 @@ exports.createDfspJWSCerts = (req, res, next, body, dfspId) => {
     });
 };
 
+exports.createDfspExternalJWSCerts = (req, res, next, body) => {
+  JWSCertsService.createDfspExternalJWSCerts(req.context, body)
+    .then(response => {
+      utils.writeJson(res, response);
+    })
+    .catch(response => {
+      utils.writeJson(res, response, response.status);
+    });
+};
+
 exports.updateDfspJWSCerts = (req, res, next, body, dfspId) => {
   JWSCertsService.updateDfspJWSCerts(req.context, dfspId, body)
     .then(response => {

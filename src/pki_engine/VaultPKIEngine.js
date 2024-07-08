@@ -26,6 +26,7 @@ const vaultPaths = {
   HUB_SERVER_CERT: 'hub-server-cert',
   DFSP_SERVER_CERT: 'dfsp-server-cert',
   JWS_CERTS: 'dfsp-jws-certs',
+  EXTERNAL_JWS_CERTS: 'dfsp-external-jws-certs',
   HUB_ENDPOINTS: 'hub-endpoints',
   DFSP_CA: 'dfsp-ca',
   HUB_CA_DETAILS: 'hub-ca-details',
@@ -235,14 +236,25 @@ class VaultPKIEngine extends PKIEngine {
     return this.setSecret(`${vaultPaths.JWS_CERTS}/${dfspId}`, value);
   }
 
+  async setDFSPExternalJWSCerts (dfspId, value) {
+    return this.setSecret(`${vaultPaths.EXTERNAL_JWS_CERTS}/${dfspId}`, value);
+  }
+
   async getDFSPJWSCerts (dfspId) {
     this.validateId(dfspId, 'dfspId');
     return this.getSecret(`${vaultPaths.JWS_CERTS}/${dfspId}`);
   }
 
+  async getDFSPExternalJWSCerts (dfspId) {
+    return this.getSecret(`${vaultPaths.EXTERNAL_JWS_CERTS}/${dfspId}`);
+  }
+
   async getAllDFSPJWSCerts () {
     const secrets = await this.listSecrets(vaultPaths.JWS_CERTS);
-    return Promise.all(secrets.map(dfspId => this.getDFSPJWSCerts(dfspId)));
+    const externalSecrets = await this.listSecrets(vaultPaths.EXTERNAL_JWS_CERTS);
+    const nativeDfspJWSCerts = Promise.all(secrets.map(dfspId => this.getDFSPJWSCerts(dfspId)));
+    const externalDfspJWSCerts = Promise.all(externalSecrets.map(dfspId => this.getDFSPExternalJWSCerts(dfspId)));
+    return [...(await nativeDfspJWSCerts), ...(await externalDfspJWSCerts)];
   }
 
   async deleteDFSPJWSCerts (dfspId) {

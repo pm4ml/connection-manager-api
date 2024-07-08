@@ -41,6 +41,34 @@ exports.createDfspJWSCerts = async (ctx, dfspId, body) => {
   return jwsData;
 };
 
+exports.createDfspExternalJWSCerts = async (ctx, body) => {
+  if (body === null || typeof body === 'undefined' || !Array.isArray(body) || body.length === 0) {
+    throw new ValidationError(`Invalid body ${body}`);
+  }
+
+  // Filter out the DFSPs that are not external
+  const nativeDfsps = await PkiService.getDFSPs();
+  const nativeDfspIdList = nativeDfsps.map(dfsp => dfsp.dfspId);
+  const externalDfspList = body.filter(dfspJwsItem => !nativeDfspIdList.includes(dfspJwsItem.dfspId))
+
+  const { pkiEngine } = ctx;
+  const result = [];
+  externalDfspList.forEach(async dfspJwsItem => {
+    const { dfspId, publicKey, createdAt } = dfspJwsItem;
+    const { validations, validationState } = pkiEngine.validateJWSCertificate(publicKey);
+    const jwsData = {
+      dfspId,
+      publicKey,
+      createdAt,
+      validations,
+      validationState,
+    };
+    await pkiEngine.setDFSPExternalJWSCerts(dfspId, jwsData);
+    result.push(jwsData);
+  });
+  return result;
+};
+
 exports.updateDfspJWSCerts = async (ctx, dfspId, body) => {
   return exports.createDfspJWSCerts(dfspId, body);
 };
