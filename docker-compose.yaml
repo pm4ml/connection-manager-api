@@ -3,13 +3,9 @@ services:
 
   connection-manager-db:
     image: mysql/mysql-server
-    # Disable logging as it is far too verbose for debugging locally
-    logging:
-      driver: none
     ports:
       - "3306:3306"
     volumes:
-      # Note: this fixes the permissions issue, but docker-compose up will fail on first attempt
       - ./docker/sql-init/:/docker-entrypoint-initdb.d/
     environment:
       - MYSQL_USER=${DBUSER:-mcm}
@@ -17,7 +13,7 @@ services:
       - MYSQL_DATABASE=${DBUSER:-mcm}
       - MYSQL_ALLOW_EMPTY_PASSWORD=true
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "mysql"]
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       timeout: 20s
       retries: 10
       start_period: 40s
