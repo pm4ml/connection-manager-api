@@ -348,7 +348,7 @@ class VaultPKIEngine extends PKIEngine {
    * Create root CA
    * @param {object} csr
    */
-  async createCA (csr) {
+  async createCA (csr, ttl) {
     this.validateCSR(csr);
     try { await this.deleteCA(); } catch (e) { }
 
@@ -364,6 +364,7 @@ class VaultPKIEngine extends PKIEngine {
         province: csr.ST,
         key_type: this.keyAlgorithm,
         key_bits: this.keyLength,
+        ttl,
       },
     });
 
@@ -602,7 +603,7 @@ class VaultPKIEngine extends PKIEngine {
       const validation = new Validation(code, true);
       if (valid) {
         validation.result = ValidationCodes.VALID_STATES.VALID;
-        // eslint-disable-next-line no-template-curly-in-string
+         
         validation.messageTemplate = 'Certificate is valid for ${data.currentDate}';
         validation.data = {
           currentDate: {
@@ -613,7 +614,7 @@ class VaultPKIEngine extends PKIEngine {
         validation.message = `Certificate is valid for ${moment(validation.data.currentDate.value).format()}`;
       } else {
         validation.result = ValidationCodes.VALID_STATES.INVALID;
-        // eslint-disable-next-line no-template-curly-in-string
+         
         validation.messageTemplate = 'Certificate is not valid for ${data.currentDate}. It is not valid before ${data.notBeforeDate} and after ${data.notAfterDate}';
         validation.data = {
           currentDate: {
@@ -701,10 +702,10 @@ class VaultPKIEngine extends PKIEngine {
   validateCertificateKeyLength (serverCert, keyLength, code) {
     const { valid, reason } = this.verifyCertKeyLength(serverCert, keyLength);
     if (!valid) {
-      // eslint-disable-next-line no-template-curly-in-string
+       
       const validation = new Validation(code, true);
       validation.result = ValidationCodes.VALID_STATES.INVALID;
-      // eslint-disable-next-line no-template-curly-in-string
+       
       validation.messageTemplate = 'Certificate key length ${data.actualKeySize.value} invalid, should be ${data.keyLength.value}';
       validation.details = reason;
       validation.data = {

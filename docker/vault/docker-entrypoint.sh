@@ -119,13 +119,13 @@ vault write -field secret_id -f auth/approle/role/my-role/secret-id > /vault/tmp
 vault secrets enable -path=pki pki
 vault secrets enable -path=secrets kv
 vault secrets tune -max-lease-ttl=97600h pki
-vault write -field=certificate pki/root/generate/internal \
-        common_name="example.com" \
-        ttl=97600h
+# vault write -field=certificate pki/root/generate/internal \
+#         common_name="example.com" \
+#         ttl=97600h
 vault write pki/config/urls \
     issuing_certificates="http://127.0.0.1:8233/v1/pki/ca" \
     crl_distribution_points="http://127.0.0.1:8233/v1/pki/crl"
-vault write pki/roles/example.com allowed_domains=example.com allow_subdomains=true allow_any_name=true allow_localhost=true enforce_hostnames=false max_ttl=97600h
+vault write pki/roles/example.com allowed_domains=example.com allow_subdomains=true allow_any_name=true allow_localhost=true enforce_hostnames=false max_ttl=720h
 
 tee policy.hcl <<EOF
 # List, create, update, and delete key/value secrets
@@ -157,7 +157,7 @@ vault write auth/approle/role/my-role policies=test-policy ttl=1h
 
 vault secrets enable -path=pki_int pki
 vault secrets tune -max-lease-ttl=43800h pki_int
-vault write pki_int/roles/example.com allowed_domains=example.com allow_subdomains=true require_cn=false allow_any_name=true allow_localhost=true enforce_hostnames=false max_ttl=600h
+vault write pki_int/roles/example.com allowed_domains=example.com allow_subdomains=true allow_any_name=true allow_localhost=true enforce_hostnames=false max_ttl=600h
 
 touch /tmp/service_started
 

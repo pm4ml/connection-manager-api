@@ -35,13 +35,15 @@ const AMAZON_SERVER_CERT_PATH = 'resources/amazon.com/www.amazon.com.pem';
 const GOOGLE_CHAIN_PATH = 'resources/google.com/google.chain.pem';
 const GOOGLE_SERVER_CERT_PATH = 'resources/google.com/google.com.pem';
 
+const TTL_FOR_CA = '200h';
+
 describe('ServerCertsService', () => {
   let ctx;
   before(async function () {
     this.timeout(10000);
     await setupTestDB();
     ctx = await createContext();
-    await createInternalHubCA(ctx, ROOT_CA);
+    await createInternalHubCA(ctx, ROOT_CA, TTL_FOR_CA);
   });
 
   after(async () => {
