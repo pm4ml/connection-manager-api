@@ -49,12 +49,13 @@ exports.createDfspExternalJWSCerts = async (ctx, body, sourceDfspId) => {
 
   // Filter out the DFSPs that are not external
   const nativeDfsps = await PkiService.getDFSPs();
-  const nativeDfspIdList = nativeDfsps.map(dfsp => dfsp.dfspId);
+  const nativeDfspIdList = nativeDfsps.map(dfsp => dfsp.id);
   const externalDfspList = body.filter(dfspJwsItem => !nativeDfspIdList.includes(dfspJwsItem.dfspId));
 
   const { pkiEngine } = ctx;
   const result = [];
-  externalDfspList.forEach(async dfspJwsItem => {
+  for(let i = 0; i < externalDfspList.length; i++) {
+    const dfspJwsItem = externalDfspList[i];
     const { dfspId, publicKey, createdAt } = dfspJwsItem;
     const { validations, validationState } = pkiEngine.validateJWSCertificate(publicKey);
     const jwsData = {
@@ -67,14 +68,15 @@ exports.createDfspExternalJWSCerts = async (ctx, body, sourceDfspId) => {
     await pkiEngine.setDFSPExternalJWSCerts(dfspId, jwsData);
     if (sourceDfspId) {
       const externalDfspItem = {
-        external_fsp_id: dfspId,
-        source_fsp_id: sourceDfspId,
+        external_dfsp_id: dfspId,
+        source_dfsp_id: sourceDfspId,
         updated_at: new Date(),
       };
       await ExternalDFSPModel.upsert(externalDfspItem);
     }
     result.push(jwsData);
-  });
+  }
+
   return result;
 };
 
