@@ -10,7 +10,7 @@ env:
   APP_CACHE_NAME: cache-app-node-modules
   APP_SCRIPT_DIRECTORY: scripts
   TEST_FUNC_WORK_DIRECTORY: test/functional-tests
-  NODE_VERSION: lts/*
+  NODE_VERSION: 20.15.1
 
 jobs:
 
@@ -94,7 +94,7 @@ jobs:
       - name: Start App
         working-directory: ${{env.APP_WORK_DIRECTORY}}
         run: |
-          VAULT_DIR="`pwd`/.vault"
+          VAULT_DIR="`pwd`/docker/vault/tmp"
           docker run --net=host -d --rm --name ${{env.IMAGE_NAME}} --env-file ./docker/functional-tests.env -v $VAULT_DIR:/tmp/vault ${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
       - name: Wait for App
         uses: cygnetdigital/wait_for_response@v2.0.0
