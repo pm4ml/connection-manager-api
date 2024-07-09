@@ -1,6 +1,6 @@
 {
   "name": "connection-manager-api",
-  "version": "1.9.7",
+  "version": "2.0.0",
   "description": "ModusBox Connection Manager API",
   "license": "Apache-2.0",
   "author": "ModusBox",
