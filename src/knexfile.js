@@ -17,7 +17,7 @@ module.exports = {
   connection: {
     host: env.get('DATABASE_HOST').default('localhost').asString(),
     port: env.get('DATABASE_PORT').default(3306).asPortNumber(),
-    user: env.get('DATABASE_USER').default('root').asString(),
+    user: env.get('DATABASE_USER').default('mcm').asString(),
     password: env.get('DATABASE_PASSWORD').default('mcm').asString(),
     database: env.get('DATABASE_SCHEMA').default('mcm').asString(),
     charset: 'utf8mb4',
