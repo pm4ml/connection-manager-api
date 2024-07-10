@@ -4,7 +4,7 @@ info:
   description: Connection Manager API
   version: 1.6.0
 servers:
-- url: http://localhost:3001/api
+  - url: /api
 tags:
 - name: dfsp-config
   description: DFSPs setup
@@ -804,6 +804,37 @@ paths:
         - mta
         - pta
       x-swagger-router-controller: JWSCerts
+  /external-dfsps/jwscerts:
+    post:
+      tags:
+      - External-DFSPs-JWS-certificates-configuration
+      summary: post external JWS certificates
+      description: TBD
+      operationId: createDfspExternalJWSCerts
+      requestBody:
+        description: TBD
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/DFSPJWSCertInput'
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DFSPJWSCert'
+      security:
+      - OAuth2:
+        - mta
+        - pta
+      x-swagger-router-controller: JWSCerts
+      x-codegen-request-body-name: body
   /dfsps:
     get:
       tags:
@@ -2636,11 +2667,15 @@ components:
     BaseJWSCert:
       required:
       - publicKey
+      - createdAt
       type: object
       properties:
         publicKey:
           type: string
           description: PEM-encoded JWS public key
+        createdAt:
+          type: number
+          description: Creation timestamp in unix time format
       description: JWS Certificate.
     JWSCert:
       description: The JWS public key, with info and id.
@@ -2656,6 +2691,14 @@ components:
       description: The JWS certificate with the dfpsId.
       allOf:
       - $ref: '#/components/schemas/JWSCert'
+      - type: object
+        properties:
+          dfspId:
+            type: string
+    DFSPJWSCertInput:
+      description: The BaseJWSCert certificate with the dfpsId.
+      allOf:
+      - $ref: '#/components/schemas/BaseJWSCert'
       - type: object
         properties:
           dfspId:

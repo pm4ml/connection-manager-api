@@ -28,6 +28,8 @@ const ValidationError = require('../../src/errors/ValidationError');
 const { createInternalHubCA, deleteHubCA } = require('../../src/service/HubCAService');
 const { createContext, destroyContext } = require('./context');
 
+const TTL_FOR_CA = '200h';
+
 describe('DfspInboundService', async function () {
   let ctx;
   before(async () => {
@@ -48,7 +50,7 @@ describe('DfspInboundService', async function () {
     beforeEach('creating DFSP', async function () {
       this.timeout(30000);
 
-      await createInternalHubCA(ctx, ROOT_CA);
+      await createInternalHubCA(ctx, ROOT_CA, TTL_FOR_CA);
 
       const dfsp = {
         dfspId: DFSP_TEST_INBOUND,
@@ -177,7 +179,7 @@ describe('DfspInboundService', async function () {
         O: 'Mojaloop',
         OU: 'PKI'
       };
-      await createInternalHubCA(ctx, caBody);
+      await createInternalHubCA(ctx, caBody, TTL_FOR_CA);
 
       const csr = fs.readFileSync(path.join(__dirname, 'resources/signing_algo/sha256-2048bits.csr'), 'utf8');
       const enrollmentResult = await DfspInboundService.createDFSPInboundEnrollment(ctx, dfspId, { clientCSR: csr });
@@ -211,7 +213,7 @@ describe('DfspInboundService', async function () {
         O: 'Mojaloop',
         OU: 'PKI'
       };
-      await createInternalHubCA(ctx, caBody);
+      await createInternalHubCA(ctx, caBody, TTL_FOR_CA);
 
       const csr = fs.readFileSync(path.join(__dirname, 'resources/signing_algo/sha256-4096bits.csr'), 'utf8');
       const enrollmentResult = await DfspInboundService.createDFSPInboundEnrollment(ctx, dfspId, { clientCSR: csr });

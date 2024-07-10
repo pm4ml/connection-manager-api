@@ -152,5 +152,19 @@ describe('PKIEngine', () => {
         assert.isTrue(error instanceof ValidationError, error);
       }
     }).timeout(15000);
+
+    it('should create CA with ttl passed', async () => {
+      const caOptionsDoc = {
+        CN: 'Test CA',
+        O: 'L'
+      };
+
+      try {
+        await ctx.pkiEngine.createCA(caOptionsDoc, '1h');
+        assert.ok('Created CA with ttl');
+      } catch (error) {
+        assert.fail('Should not be here');
+      }
+    }).timeout(15000);
   });
 });
