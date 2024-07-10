@@ -15,19 +15,23 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { setupTestDB, tearDownTestDB } = require('./test-database');
+const { assert } = require('chai');
+const forge = require('node-forge');
 
 const JWSCertsService = require('../../src/service/JWSCertsService');
 const ExternalDFSPModel = require('../../src/models/ExternalDFSPModel');
 const PkiService = require('../../src/service/PkiService');
-const { assert } = require('chai');
 const NotFoundError = require('../../src/errors/NotFoundError');
 const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
-const forge = require('node-forge');
+const DFSPModel = require('../../src/models/DFSPModel');
+const { setupTestDB, tearDownTestDB } = require('./test-database');
 const { createContext, destroyContext } = require('./context');
 
-describe('JWSCertsService', () => {
+const SWITCH_ID = 'switch';
+
+describe('JWSCertsService Tests', () => {
   let ctx;
+
   before(async () => {
     await setupTestDB();
     ctx = await createContext();
@@ -59,6 +63,26 @@ describe('JWSCertsService', () => {
       await PkiService.deleteDFSP(ctx, dfspId);
       const certs2 = await JWSCertsService.getAllDfspJWSCerts(ctx);
       console.log(certs2);
+    }).timeout(30000);
+
+    it('should set a hub JWSCerts', async () => {
+      const body = { publicKey };
+      const result = await JWSCertsService.setHubJWSCerts(ctx, body);
+      assert.equal(publicKey, result.publicKey);
+
+      const hubKeyData = await JWSCertsService.getHubJWSCerts(ctx);
+      console.log(hubKeyData);
+      assert.equal(hubKeyData.dfspId, SWITCH_ID);
+      assert.equal(hubKeyData.publicKey, publicKey);
+      assert.equal(hubKeyData.validationState, 'VALID');
+
+      const allKeysData = await JWSCertsService.getAllDfspJWSCerts(ctx);
+      console.log(allKeysData);
+      const hubKey = allKeysData.find(k => k.dfspId === SWITCH_ID);
+      assert.exists(hubKey);
+
+      await JWSCertsService.deleteDfspJWSCerts(ctx, SWITCH_ID);
+      await DFSPModel.delete(SWITCH_ID);
     }).timeout(30000);
 
     it('should create and delete a DfspJWSCerts entry', async () => {

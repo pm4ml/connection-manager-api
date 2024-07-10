@@ -779,6 +779,54 @@ paths:
       - OAuth2:
         - pta
       x-swagger-router-controller: HubCAController
+  /hub/jwscerts:
+    get:
+      tags:
+        - JWS-certificates-configuration
+      summary: get Hub JWS certificate
+      description: TBD
+      operationId: getHubJWSCerts
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWSCert'
+        404:
+          description: Hub JWS certs not set
+          content: {}
+      security:
+        - OAuth2:
+            - mta
+            - pta
+      x-swagger-router-controller: JWSCerts
+    post:
+      tags:
+        - JWS-certificates-configuration
+      summary: Create/Update Hub JWS certificate
+      description: TBD
+      operationId: setHubJWSCerts
+      requestBody:
+        description: TBD
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaseJWSCert'
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWSCert'
+      security:
+        - OAuth2:
+            - mta
+            - pta
+      x-swagger-router-controller: JWSCerts
+      x-codegen-request-body-name: body
   /dfsps/jwscerts:
     get:
       tags:

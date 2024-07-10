@@ -141,6 +141,7 @@ module.exports = {
       .asInt(),
   },
   switchFQDN: env.get('SWITCH_FQDN').default('switch.example.com').asString(),
+  switchId: env.get('SWITCH_ID').default('switch').asString(),
 
   vault: {
     endpoint: env.get('VAULT_ENDPOINT').default('http://127.0.0.1:8233').asString(),
