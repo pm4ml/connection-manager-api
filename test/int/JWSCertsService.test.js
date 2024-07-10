@@ -19,6 +19,7 @@ const { assert } = require('chai');
 const forge = require('node-forge');
 
 const JWSCertsService = require('../../src/service/JWSCertsService');
+const ExternalDFSPModel = require('../../src/models/ExternalDFSPModel');
 const PkiService = require('../../src/service/PkiService');
 const NotFoundError = require('../../src/errors/NotFoundError');
 const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
@@ -150,6 +151,49 @@ describe('JWSCertsService Tests', () => {
       });
 
       await Promise.all(dfspIds.map(id => PkiService.deleteDFSP(ctx, id)));
+    }).timeout(30000);
+
+    it('should create a DfspExternalJWSCerts entries', async () => {
+      const body = [
+        {
+          dfspId: 'EXT_DFSP_TEST1',
+          publicKey,
+          createdAt: Math.floor(Date.now() / 1000)
+        },
+        {
+          dfspId: 'EXT_DFSP_TEST2',
+          publicKey,
+          createdAt: Math.floor(Date.now() / 1000)
+        }
+      ];
+      const result = await JWSCertsService.createDfspExternalJWSCerts(ctx, body);
+      assert.equal(result.length, 2);
+      const certs = await JWSCertsService.getAllDfspJWSCerts(ctx);
+      assert.include(certs.map(cert => cert.dfspId), 'EXT_DFSP_TEST1');
+      assert.include(certs.map(cert => cert.dfspId), 'EXT_DFSP_TEST2');
+    }).timeout(30000);
+
+    it('should create a DfspExternalJWSCerts entries and db entries when source dfsp is passed in header', async () => {
+      const body = [
+        {
+          dfspId: 'EXT_DFSP_TEST3',
+          publicKey,
+          createdAt: Math.floor(Date.now() / 1000)
+        },
+        {
+          dfspId: 'EXT_DFSP_TEST4',
+          publicKey,
+          createdAt: Math.floor(Date.now() / 1000)
+        }
+      ];
+      const sourceDfsp = 'DFSP_TEST';
+      const result = await JWSCertsService.createDfspExternalJWSCerts(ctx, body, sourceDfsp);
+      assert.equal(result.length, 2);
+      const certs = await JWSCertsService.getAllDfspJWSCerts(ctx);
+      assert.include(certs.map(cert => cert.dfspId), 'EXT_DFSP_TEST3');
+      assert.include(certs.map(cert => cert.dfspId), 'EXT_DFSP_TEST4');
+      const externalDfsps = await ExternalDFSPModel.findAll();
+      assert.equal(externalDfsps.length, 2);
     }).timeout(30000);
 
     it('should throw an error with a wrong key size', async () => {

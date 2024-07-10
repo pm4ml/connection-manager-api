@@ -28,6 +28,17 @@ exports.createDfspJWSCerts = (req, res, next, body, dfspId) => {
     });
 };
 
+exports.createDfspExternalJWSCerts = (req, res, next, body) => {
+  const sourceDfspId = req.headers['X-Source-DFSP-ID'];
+  JWSCertsService.createDfspExternalJWSCerts(req.context, body, sourceDfspId)
+    .then(response => {
+      utils.writeJson(res, response);
+    })
+    .catch(response => {
+      utils.writeJson(res, response, response.status);
+    });
+};
+
 exports.setHubJWSCerts = (req, res, next, body) => {
   JWSCertsService.setHubJWSCerts(req.context, body)
     .then(response => {

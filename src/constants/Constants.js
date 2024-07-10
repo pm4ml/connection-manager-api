@@ -32,8 +32,8 @@ if (process.env.TEST) {
     AUTH_ENABLED: 'false',
     AUTH_2FA_ENABLED: 'false',
     VAULT_AUTH_METHOD: 'APP_ROLE',
-    VAULT_ROLE_ID_FILE: '.vault/role-id',
-    VAULT_ROLE_SECRET_ID_FILE: '.vault/secret-id',
+    VAULT_ROLE_ID_FILE: 'docker/vault/tmp/role-id',
+    VAULT_ROLE_SECRET_ID_FILE: 'docker/vault/tmp/secret-id',
     VAULT_PKI_CLIENT_ROLE: 'example.com',
     VAULT_PKI_SERVER_ROLE: 'example.com'
   };

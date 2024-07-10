@@ -17,6 +17,7 @@
 
 'use strict';
 const DFSPModel = require('../models/DFSPModel');
+const ExternalDFSPModel = require('../models/ExternalDFSPModel');
 const PkiService = require('./PkiService');
 const NotFoundError = require('../errors/NotFoundError');
 const ValidationError = require('../errors/ValidationError');
@@ -34,12 +35,51 @@ exports.createDfspJWSCerts = async (ctx, dfspId, body) => {
   const jwsData = {
     dfspId,
     publicKey: body.publicKey,
+    createdAt: body.createdAt,
     validations,
     validationState,
   };
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   await pkiEngine.setDFSPJWSCerts(dbDfspId, jwsData);
   return jwsData;
+};
+
+exports.createDfspExternalJWSCerts = async (ctx, body, sourceDfspId) => {
+  if (body === null || typeof body === 'undefined' || !Array.isArray(body) || body.length === 0) {
+    throw new ValidationError(`Invalid body ${body}`);
+  }
+
+  // Filter out the DFSPs that are not external
+  const nativeDfsps = await PkiService.getDFSPs();
+  const nativeDfspIdList = nativeDfsps.map(dfsp => dfsp.id);
+  const externalDfspList = body.filter(dfspJwsItem => !nativeDfspIdList.includes(dfspJwsItem.dfspId));
+
+  const { pkiEngine } = ctx;
+  const result = [];
+  for(let i = 0; i < externalDfspList.length; i++) {
+    const dfspJwsItem = externalDfspList[i];
+    const { dfspId, publicKey, createdAt } = dfspJwsItem;
+    const { validations, validationState } = pkiEngine.validateJWSCertificate(publicKey);
+    const jwsData = {
+      dfspId,
+      publicKey,
+      createdAt,
+      validations,
+      validationState,
+    };
+    await pkiEngine.setDFSPExternalJWSCerts(dfspId, jwsData);
+    if (sourceDfspId) {
+      const externalDfspItem = {
+        external_dfsp_id: dfspId,
+        source_dfsp_id: sourceDfspId,
+        updated_at: new Date(),
+      };
+      await ExternalDFSPModel.upsert(externalDfspItem);
+    }
+    result.push(jwsData);
+  }
+
+  return result;
 };
 
 exports.setHubJWSCerts = async (ctx, body) => {

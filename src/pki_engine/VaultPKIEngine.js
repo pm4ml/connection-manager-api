@@ -26,6 +26,7 @@ const vaultPaths = {
   HUB_SERVER_CERT: 'hub-server-cert',
   DFSP_SERVER_CERT: 'dfsp-server-cert',
   JWS_CERTS: 'dfsp-jws-certs',
+  EXTERNAL_JWS_CERTS: 'dfsp-external-jws-certs',
   HUB_ENDPOINTS: 'hub-endpoints',
   DFSP_CA: 'dfsp-ca',
   HUB_CA_DETAILS: 'hub-ca-details',
@@ -235,14 +236,25 @@ class VaultPKIEngine extends PKIEngine {
     return this.setSecret(`${vaultPaths.JWS_CERTS}/${dfspId}`, value);
   }
 
+  async setDFSPExternalJWSCerts (dfspId, value) {
+    return this.setSecret(`${vaultPaths.EXTERNAL_JWS_CERTS}/${dfspId}`, value);
+  }
+
   async getDFSPJWSCerts (dfspId) {
     this.validateId(dfspId, 'dfspId');
     return this.getSecret(`${vaultPaths.JWS_CERTS}/${dfspId}`);
   }
 
+  async getDFSPExternalJWSCerts (dfspId) {
+    return this.getSecret(`${vaultPaths.EXTERNAL_JWS_CERTS}/${dfspId}`);
+  }
+
   async getAllDFSPJWSCerts () {
     const secrets = await this.listSecrets(vaultPaths.JWS_CERTS);
-    return Promise.all(secrets.map(dfspId => this.getDFSPJWSCerts(dfspId)));
+    const externalSecrets = await this.listSecrets(vaultPaths.EXTERNAL_JWS_CERTS);
+    const nativeDfspJWSCerts = Promise.all(secrets.map(dfspId => this.getDFSPJWSCerts(dfspId)));
+    const externalDfspJWSCerts = Promise.all(externalSecrets.map(dfspId => this.getDFSPExternalJWSCerts(dfspId)));
+    return [...(await nativeDfspJWSCerts), ...(await externalDfspJWSCerts)];
   }
 
   async deleteDFSPJWSCerts (dfspId) {
@@ -336,7 +348,7 @@ class VaultPKIEngine extends PKIEngine {
    * Create root CA
    * @param {object} csr
    */
-  async createCA (csr) {
+  async createCA (csr, ttl) {
     this.validateCSR(csr);
     try { await this.deleteCA(); } catch (e) { }
 
@@ -352,6 +364,7 @@ class VaultPKIEngine extends PKIEngine {
         province: csr.ST,
         key_type: this.keyAlgorithm,
         key_bits: this.keyLength,
+        ttl,
       },
     });
 
@@ -590,7 +603,7 @@ class VaultPKIEngine extends PKIEngine {
       const validation = new Validation(code, true);
       if (valid) {
         validation.result = ValidationCodes.VALID_STATES.VALID;
-        // eslint-disable-next-line no-template-curly-in-string
+         
         validation.messageTemplate = 'Certificate is valid for ${data.currentDate}';
         validation.data = {
           currentDate: {
@@ -601,7 +614,7 @@ class VaultPKIEngine extends PKIEngine {
         validation.message = `Certificate is valid for ${moment(validation.data.currentDate.value).format()}`;
       } else {
         validation.result = ValidationCodes.VALID_STATES.INVALID;
-        // eslint-disable-next-line no-template-curly-in-string
+         
         validation.messageTemplate = 'Certificate is not valid for ${data.currentDate}. It is not valid before ${data.notBeforeDate} and after ${data.notAfterDate}';
         validation.data = {
           currentDate: {
@@ -689,10 +702,10 @@ class VaultPKIEngine extends PKIEngine {
   validateCertificateKeyLength (serverCert, keyLength, code) {
     const { valid, reason } = this.verifyCertKeyLength(serverCert, keyLength);
     if (!valid) {
-      // eslint-disable-next-line no-template-curly-in-string
+       
       const validation = new Validation(code, true);
       validation.result = ValidationCodes.VALID_STATES.INVALID;
-      // eslint-disable-next-line no-template-curly-in-string
+       
       validation.messageTemplate = 'Certificate key length ${data.actualKeySize.value} invalid, should be ${data.keyLength.value}';
       validation.details = reason;
       validation.data = {

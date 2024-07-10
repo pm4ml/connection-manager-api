@@ -30,10 +30,10 @@ const formatBody = (body, pkiEngine) => {
   };
 };
 
-exports.createInternalHubCA = async (ctx, body) => {
+exports.createInternalHubCA = async (ctx, body, ttl) => {
   const { pkiEngine, certManager } = ctx;
 
-  const { cert } = await pkiEngine.createCA(body);
+  const { cert } = await pkiEngine.createCA(body, ttl);
   const certInfo = pkiEngine.getCertInfo(cert);
 
   const info = {

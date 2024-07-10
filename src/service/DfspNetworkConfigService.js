@@ -43,11 +43,11 @@ exports.DirectionEnum = DirectionEnum;
 const transformEndpointModeltoApiRes = (endpointMode) => {
   const { // lets filter out endpointMode properties
     id,
-    // eslint-disable-next-line camelcase
+     
     dfsp_id,
-    // eslint-disable-next-line camelcase
+     
     created_by,
-    // eslint-disable-next-line camelcase
+     
     created_at,
     state,
     direction, // we are going to ignore this!
@@ -56,12 +56,12 @@ const transformEndpointModeltoApiRes = (endpointMode) => {
 
   return { // map endpointMode properties to API specification
     id,
-    // eslint-disable-next-line camelcase
+     
     dfspId: dfsp_id,
     state,
-    // eslint-disable-next-line camelcase
+     
     createdBy: created_by,
-    // eslint-disable-next-line camelcase
+     
     createdAt: created_at,
     ...config
   };
