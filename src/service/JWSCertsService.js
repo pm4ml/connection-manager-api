@@ -56,12 +56,12 @@ exports.createDfspExternalJWSCerts = async (ctx, body, sourceDfspId) => {
   const result = [];
   for(let i = 0; i < externalDfspList.length; i++) {
     const dfspJwsItem = externalDfspList[i];
-    const { dfspId, publicKey, createdAt } = dfspJwsItem;
+    const { dfspId, publicKey } = dfspJwsItem;
     const { validations, validationState } = pkiEngine.validateJWSCertificate(publicKey);
     const jwsData = {
       dfspId,
       publicKey,
-      createdAt,
+      createdAt: dfspJwsItem.createdAt || 0,
       validations,
       validationState,
     };
