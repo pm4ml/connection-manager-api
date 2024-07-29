@@ -2,7 +2,7 @@
 exports.seed = async (knex) => {
     if (process.env.DFSP_SEED) {
         const Constants = require('../../constants/Constants');
-        const { createCSRAndDFSPOutboundEnrollment } = require('../../service/DfspOutboundService');
+        const { createCSRAndDFSPOutboundEnrollment, getDFSPOutboundEnrollments } = require('../../service/DfspOutboundService');
         const PKIEngine = require('../../pki_engine/VaultPKIEngine');
         const dfsps = process.env.DFSP_SEED.split(',')
             .map(dfsp => dfsp.split(':').map(s => s.trim()));
@@ -18,10 +18,15 @@ exports.seed = async (knex) => {
 
         const pkiEngine = new PKIEngine(Constants.vault);
         await pkiEngine.connect();
-        for (const [dfsp_id] of dfsps) await createCSRAndDFSPOutboundEnrollment(
-            {pkiEngine},
-            dfsp_id,
-            Constants.clientCsrParameters
-        );
+        for (const [dfsp_id] of dfsps) {
+            const exists = await getDFSPOutboundEnrollments({pkiEngine}, dfsp_id);
+            if (exists.length === 0) {
+                await createCSRAndDFSPOutboundEnrollment(
+                    {pkiEngine},
+                    dfsp_id,
+                    Constants.clientCsrParameters
+                );
+            }
+        }
     }
 };
