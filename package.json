@@ -89,7 +89,7 @@
     "jshint": "^2.13.6",
     "mocha": "^10.7.0",
     "npm-audit-resolver": "3.0.0-RC.0",
-    "npm-check-updates": "^16.14.20",
+    "npm-check-updates": "^17.0.0",
     "nyc": "^17.0.0",
     "sinon": "^18.0.0",
     "snazzy": "^9.0.0",

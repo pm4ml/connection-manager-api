@@ -11,7 +11,7 @@ exports.seed = async (knex) => {
             dfsps.map(([dfsp_id, monetaryZoneId]) => ({
                 dfsp_id,
                 name: dfsp_id,
-                monetaryZoneId,
+                monetaryZoneId: monetaryZoneId || null,
                 security_group: `Application/DFSP:${dfsp_id}`,
             }))
         ).onConflict('dfsp_id').merge();
