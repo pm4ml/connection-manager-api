@@ -8,11 +8,12 @@ exports.seed = async (knex) => {
             .map(dfsp => dfsp.split(':').map(s => s.trim()));
 
         await knex('dfsps').insert(
-            dfsps.map(([dfsp_id, monetaryZoneId]) => ({
+            dfsps.map(([dfsp_id, monetaryZoneId, isProxy]) => ({
                 dfsp_id,
                 name: dfsp_id,
                 monetaryZoneId: monetaryZoneId || null,
                 security_group: `Application/DFSP:${dfsp_id}`,
+                isProxy: isProxy === 'proxy'
             }))
         ).onConflict('dfsp_id').merge();
 

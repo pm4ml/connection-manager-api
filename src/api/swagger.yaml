@@ -2728,6 +2728,9 @@ components:
         monetaryZoneId:
           type: string
           description: The monetary Zone
+        isProxy:
+          type: boolean
+          description: Proxy flag
         securityGroup:
           type: string
           description: OAuth role/group owner
@@ -2744,6 +2747,9 @@ components:
         monetaryZoneId:
           type: string
           description: The monetary Zone
+        isProxy:
+          type: boolean
+          description: Proxy flag
       example:
         name: DFSP 1
         monetaryZoneId: EUR
@@ -2759,6 +2765,9 @@ components:
         monetaryZoneId:
           type: string
           description: The monetary Zone
+        isProxy:
+          type: boolean
+          description: Proxy flag
         securityGroup:
           type: string
           description: DFSP Security group

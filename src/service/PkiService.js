@@ -40,6 +40,7 @@ exports.createDFSP = async (ctx, body) => {
     dfsp_id: body.dfspId,
     name: body.name,
     monetaryZoneId: body.monetaryZoneId ? body.monetaryZoneId : undefined,
+    isProxy: body.isProxy,
     security_group: body.securityGroup || 'Application/DFSP:' + dfspIdNoSpaces
   };
 
@@ -108,6 +109,7 @@ exports.updateDFSP = async (ctx, dfspId, newDfsp) => {
   const values = {
     name: newDfsp.name,
     monetaryZoneId: newDfsp.monetaryZoneId,
+    isProxy: newDfsp.isProxy,
     security_group: newDfsp.securityGroup
   };
 
@@ -205,6 +207,7 @@ const dfspRowToObject = (row) => {
     id: row.dfsp_id,
     name: row.name,
     monetaryZoneId: row.monetaryZoneId ? row.monetaryZoneId : undefined,
+    isProxy: row.isProxy,
     securityGroup: row.security_group,
   };
 };
