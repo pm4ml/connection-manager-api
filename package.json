@@ -1,6 +1,6 @@
 {
   "name": "connection-manager-api",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "ModusBox Connection Manager API",
   "license": "Apache-2.0",
   "author": "ModusBox",
@@ -71,12 +71,12 @@
     "passport-jwt": "^4.0.1",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9",
-    "soap": "^1.1.0",
-    "winston": "^3.13.1",
+    "soap": "^1.1.1",
+    "winston": "^3.14.0",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.3.0",
+    "@commitlint/cli": "^19.4.0",
     "@commitlint/config-conventional": "^19.2.2",
     "chai": "^4.4.1",
     "chai-datetime": "^1.8.0",
@@ -89,7 +89,7 @@
     "jshint": "^2.13.6",
     "mocha": "^10.7.0",
     "npm-audit-resolver": "3.0.0-RC.0",
-    "npm-check-updates": "^17.0.0",
+    "npm-check-updates": "^17.0.6",
     "nyc": "^17.0.0",
     "sinon": "^18.0.0",
     "snazzy": "^9.0.0",
