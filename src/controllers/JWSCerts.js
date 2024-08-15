@@ -15,8 +15,6 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-'use strict';
-
 const utils = require('../utils/writer.js');
 const JWSCertsService = require('../service/JWSCertsService');
 
@@ -41,8 +39,8 @@ exports.createDfspExternalJWSCerts = (req, res, next, body) => {
     });
 };
 
-exports.updateDfspJWSCerts = (req, res, next, body, dfspId) => {
-  JWSCertsService.updateDfspJWSCerts(req.context, dfspId, body)
+exports.setHubJWSCerts = (req, res, next, body) => {
+  JWSCertsService.setHubJWSCerts(req.context, body)
     .then(response => {
       utils.writeJson(res, response);
     })
@@ -53,6 +51,16 @@ exports.updateDfspJWSCerts = (req, res, next, body, dfspId) => {
 
 exports.getDfspJWSCerts = (req, res, next, dfspId) => {
   JWSCertsService.getDfspJWSCerts(req.context, dfspId)
+    .then(response => {
+      utils.writeJson(res, response);
+    })
+    .catch(response => {
+      utils.writeJson(res, response, response.status);
+    });
+};
+
+exports.getHubJWSCerts = (req, res, next) => {
+  JWSCertsService.getHubJWSCerts(req.context)
     .then(response => {
       utils.writeJson(res, response);
     })

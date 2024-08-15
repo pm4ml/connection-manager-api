@@ -1,6 +1,6 @@
 {
   "name": "connection-manager-api",
-  "version": "2.1.2",
+  "version": "2.2.0",
   "description": "ModusBox Connection Manager API",
   "license": "Apache-2.0",
   "author": "ModusBox",
@@ -22,7 +22,7 @@
   "scripts": {
     "prepare": "npx husky install",
     "test": "npm run test:int",
-    "test:int": "echo 'WARNING: Run \"npm run backend:start\" before executing...\n' && TEST=true mocha './test/int/**/*.test.js'",
+    "test:int": "echo 'WARNING: Run \"npm run backend:start\" before executing...\n' && TEST=true SWITCH_ID=switch mocha './test/int/**/*.test.js'",
     "test-self-signed-server": "./run-vault.sh && TEST_START_SELF_SIGNED_SERVER=true npm test ; ./kill-vault.sh",
     "lint": "npx eslint ./src ./test/int",
     "lint:fix": "npm run lint -- --fix",
@@ -38,8 +38,8 @@
     "start": "node src/index.js",
     "start:dev": "node -r dotenv/config src/index.js",
     "start-with-oauth-enabled": "source oauth.env && node src/index.js",
-    "migrate": "DOTENV_CONFIG_PATH=$(pwd)/.env npx knex --knexfile src/knexfile.js migrate:latest",
-    "seed": "DOTENV_CONFIG_PATH=$(pwd)/.env npx knex --knexfile src/knexfile.js seed:run",
+    "migrate": "NODE_OPTIONS='-r dotenv/config' npx knex --knexfile src/knexfile.js migrate:latest",
+    "seed": "NODE_OPTIONS='-r dotenv/config' npx knex --knexfile src/knexfile.js seed:run",
     "migrate-and-seed": "npm -s run migrate && npm -s run seed",
     "backend:start": "docker compose up -d --wait && npm run migrate-and-seed",
     "backend:stop": "docker compose down -v",
@@ -72,7 +72,7 @@
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9",
     "soap": "^1.1.1",
-    "winston": "^3.14.0",
+    "winston": "^3.14.2",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
@@ -87,14 +87,15 @@
     "eslint-plugin-promise": "^6.4.0",
     "husky": "^9.1.4",
     "jshint": "^2.13.6",
-    "mocha": "^10.7.0",
+    "mocha": "^10.7.3",
     "npm-audit-resolver": "3.0.0-RC.0",
     "npm-check-updates": "^17.0.6",
     "nyc": "^17.0.0",
     "sinon": "^18.0.0",
     "snazzy": "^9.0.0",
     "standard-version": "^9.5.0",
-    "standardx": "^7.0.0"
+    "standardx": "^7.0.0",
+    "supertest": "^7.0.0"
   },
   "standardx": {
     "semistandard": true
