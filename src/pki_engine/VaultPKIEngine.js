@@ -306,7 +306,7 @@ class VaultPKIEngine extends PKIEngine {
   }
   // endregion
 
-  async populateDFSPClientCertBundle (dfspId, dfspName, dfspMonetaryZoneId) {
+  async populateDFSPClientCertBundle (dfspId, dfspName, dfspMonetaryZoneId, isProxy) {
     this.validateId(dfspId, 'dfspId');
     const dfspCA = await this.getDFSPCA(dfspId);
     const enrollments = await this.getDFSPOutboundEnrollments(dfspId);
@@ -321,6 +321,7 @@ class VaultPKIEngine extends PKIEngine {
       fqdn: cert.subject.CN,
       host: dfspName,
       currency_code: dfspMonetaryZoneId,
+      isProxy,
     };
     await this.client.write(`${this.mounts.dfspClientCertBundle}/${dfspName}`, bundle);
   }
@@ -603,7 +604,7 @@ class VaultPKIEngine extends PKIEngine {
       const validation = new Validation(code, true);
       if (valid) {
         validation.result = ValidationCodes.VALID_STATES.VALID;
-         
+
         validation.messageTemplate = 'Certificate is valid for ${data.currentDate}';
         validation.data = {
           currentDate: {
@@ -614,7 +615,7 @@ class VaultPKIEngine extends PKIEngine {
         validation.message = `Certificate is valid for ${moment(validation.data.currentDate.value).format()}`;
       } else {
         validation.result = ValidationCodes.VALID_STATES.INVALID;
-         
+
         validation.messageTemplate = 'Certificate is not valid for ${data.currentDate}. It is not valid before ${data.notBeforeDate} and after ${data.notAfterDate}';
         validation.data = {
           currentDate: {
@@ -702,10 +703,10 @@ class VaultPKIEngine extends PKIEngine {
   validateCertificateKeyLength (serverCert, keyLength, code) {
     const { valid, reason } = this.verifyCertKeyLength(serverCert, keyLength);
     if (!valid) {
-       
+
       const validation = new Validation(code, true);
       validation.result = ValidationCodes.VALID_STATES.INVALID;
-       
+
       validation.messageTemplate = 'Certificate key length ${data.actualKeySize.value} invalid, should be ${data.keyLength.value}';
       validation.details = reason;
       validation.data = {
