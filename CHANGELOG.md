@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.3.0](https://github.com/modusbox/connection-manager-api/compare/v2.1.2...v2.3.0) (2024-08-15)
+
+
+### Features
+
+* **iprod-416:** added int test for hub jws-certs ([e28360b](https://github.com/modusbox/connection-manager-api/commit/e28360b4db77c305f249ead64fbcbf92ddbfcfe2))
+* **iprod-416:** added SWITCH_ID=switch to .env for testing ([aa3cb3f](https://github.com/modusbox/connection-manager-api/commit/aa3cb3f8a69c5995ab5caa193fc346c7734efdfc))
+* **iprod-416:** fixed new test-int ([e8cb1c7](https://github.com/modusbox/connection-manager-api/commit/e8cb1c7b38f1829aeeb7a1432da982274f419be7))
+* **iprod-416:** fixed new test-int ([95f11aa](https://github.com/modusbox/connection-manager-api/commit/95f11aa7108cbb97ec8b7367c017c2578680799d))
+* **iprod-416:** updated deps ([796f062](https://github.com/modusbox/connection-manager-api/commit/796f0623127930c333233a3490e96f5d46208502))
+* **iprod-416:** updated from main ([7df568f](https://github.com/modusbox/connection-manager-api/commit/7df568f8746f04cdda5c625e67f43472a7a4e504))
+
+
+### Chore
+
+* updated deps ([4ecaa00](https://github.com/modusbox/connection-manager-api/commit/4ecaa00fefa1f2cbebfdc740d1158ccfb6a49069))
+* updated from main ([c582ea6](https://github.com/modusbox/connection-manager-api/commit/c582ea6c39bc4d8e35698495c721e7feedf9dc21))
+
+### [1.9.8-snapshot.0](https://github.com/modusbox/connection-manager-api/compare/v1.9.7-snapshot.5...v1.9.8-snapshot.0) (2024-02-27)
+
+
+### Features
+
+* **iprod-416:** removed unused code ([e0d4f55](https://github.com/modusbox/connection-manager-api/commit/e0d4f55c447292a44fbf3453424e8b28835f0e4b))
+* **iprod-416:** updated deps ([e6cb537](https://github.com/modusbox/connection-manager-api/commit/e6cb537135f04d8f8fdc0175a374de51691e60ff))
+
 ### [1.9.6](https://github.com/modusbox/connection-manager-api/compare/v1.9.5...v1.9.6) (2022-06-17)
 
 
