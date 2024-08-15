@@ -21,6 +21,8 @@
  *       Miguel de Barros - miguel.debarros@modusbox.com                **
  ************************************************************************* */
 
+import { isProxy } from "util/types";
+
 jest.setTimeout(999999)
 
 const { ApiHelper, MethodEnum, ApiHelperOptions } = require('../util/api-helper');
@@ -35,7 +37,8 @@ describe('MCM API Tests', () => {
   const dfspObject = {
     dfspId: `test${randomSeed}`,
     name: `test${randomSeed}`,
-    monetaryZoneId: 'XTS'
+    monetaryZoneId: 'XTS',
+    isProxy: false
   }
 
   const apiHelperOptions: typeof ApiHelperOptions = {};

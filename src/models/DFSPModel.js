@@ -91,6 +91,7 @@ const rowToObject = (dfsp) => {
     dfspId: dfsp.dfsp_id,
     name: dfsp.name,
     monetaryZoneId: dfsp.monetaryZoneId ? dfsp.monetaryZoneId : undefined,
+    isProxy: dfsp.isProxy,
     securityGroup: dfsp.security_group
   };
 };

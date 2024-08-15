@@ -113,3 +113,4 @@ localEnvs
 
 # tests
 **/junit.xml
+.token
