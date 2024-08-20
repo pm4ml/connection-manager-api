@@ -2776,6 +2776,11 @@ components:
         monetaryZoneId:
           type: string
           description: The monetary Zone
+        fxpCurrencies:
+          type: array
+          description: List of FX currencies
+          items:
+            type: string
         isProxy:
           type: boolean
           description: Proxy flag

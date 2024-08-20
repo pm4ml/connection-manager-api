@@ -15,28 +15,20 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const PkiService = require('./PkiService');
-const DFSPModel = require('../models/DFSPModel');
-const DFSPEndpointModel = require('../models/DFSPEndpointModel');
-const { DirectionEnum } = require('./DfspNetworkConfigService');
-
-const getIPsBundle = async () => {
-  const endpoints = await DFSPEndpointModel.findAllLatestByDirection(DirectionEnum.EGRESS);
-  return Object.fromEntries(endpoints.map((e) => [e.dfsp_id, e.ipList.map((ip) => ip.address).join(',')]));
+exports.up = function (knex, Promise) {
+  return knex.schema.createTable('fxp_supported_currencies', (table) => {
+    table.increments('id').primary();
+    table.integer('dfspId').unsigned().notNullable();
+    table.string('monetaryZoneId', 3);
+    table.foreign('monetaryZoneId').references('monetaryZoneId').inTable('monetaryZone');
+    table.foreign('dfspId', 'FK_CURR_DFSP_ID').references('dfsps.id').onDelete('CASCADE').onUpdate('NO ACTION');
+    table.index('dfspId', 'FK_CURR_DFSP_ID_idx');
+    table.unique(['dfspId', 'monetaryZoneId']);
+    if (!process.env.TEST) table.engine('InnoDB');
+    if (!process.env.TEST) table.charset('utf8mb4');
+  });
 };
 
-exports.onboardDFSP = async (ctx, dfspId) => {
-  await PkiService.validateDfsp(ctx, dfspId);
-  const { pkiEngine } = ctx;
-  const { id, monetaryZoneId, isProxy } = await DFSPModel.findByDfspId(dfspId);
-  const fxpCurrencies = await DFSPModel.getFxpSupportedCurrencies(dfspId);
-  await pkiEngine.populateDFSPClientCertBundle(id, dfspId, monetaryZoneId, !!isProxy, fxpCurrencies);
-
-  const ipsBundle = await getIPsBundle();
-  await pkiEngine.populateDFSPInternalIPWhitelistBundle(ipsBundle);
-
-  // TODO: populate external IP whitelist
-  // await Promise.all(dfsps.map((dfsp) => pkiEngine.populateDFSPExternalIPWhitelistBundle(ipsBundle)));
-
-  return {};
+exports.down = function (knex, Promise) {
+  return knex.schema.dropTableIfExists('fxp_supported_currencies');
 };
