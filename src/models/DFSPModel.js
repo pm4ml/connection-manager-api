@@ -41,6 +41,16 @@ exports.getDfspsByMonetaryZones = async (monetaryZoneId) => {
   return findAllByField('monetaryZoneId', monetaryZoneId);
 };
 
+exports.getFxpSupportedCurrencies = async (dfspId) => {
+  return (await
+    knex
+      .table('fxp_supported_currencies')
+      .join(DFSP_TABLE, 'fxp_supported_currencies.dfspId', 'dfsps.id')
+      .where(DFSP_TABLE + '.dfsp_id', dfspId)
+      .select('fxp_supported_currencies.monetaryZoneId')
+  ).map((row) => row.monetaryZoneId);
+};
+
 const findByField = async (columnName, value) => {
   const rows = await knex.table(DFSP_TABLE).where(columnName, value).select();
   if (rows.length === 0) {
@@ -63,6 +73,14 @@ const findAllByField = async (columnName, value) => {
 
 exports.create = async (values) => {
   return knex.table(DFSP_TABLE).insert(values);
+};
+
+exports.createFxpSupportedCurrencies = async (dfsp_id, monetaryZoneIds) => {
+  if (!monetaryZoneIds?.length) return;
+  const dfspId = await findIdByDfspId(dfsp_id);
+  return knex.table('fxp_supported_currencies').insert(
+    monetaryZoneIds.map((monetaryZoneId) => ({ dfspId, monetaryZoneId }))
+  );
 };
 
 exports.deleteByRawId = async (id) => {

@@ -46,6 +46,7 @@ exports.createDFSP = async (ctx, body) => {
 
   try {
     await DFSPModel.create(values);
+    await DFSPModel.createFxpSupportedCurrencies(body.dfspId, body.fxpCurrencies);
     return { id: body.dfspId };
   } catch (err) {
     console.error(err);

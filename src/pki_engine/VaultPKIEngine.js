@@ -306,7 +306,7 @@ class VaultPKIEngine extends PKIEngine {
   }
   // endregion
 
-  async populateDFSPClientCertBundle (dfspId, dfspName, dfspMonetaryZoneId, isProxy) {
+  async populateDFSPClientCertBundle (dfspId, dfspName, dfspMonetaryZoneId, isProxy, fxpCurrencies) {
     this.validateId(dfspId, 'dfspId');
     const dfspCA = await this.getDFSPCA(dfspId);
     const enrollments = await this.getDFSPOutboundEnrollments(dfspId);
@@ -321,6 +321,7 @@ class VaultPKIEngine extends PKIEngine {
       fqdn: cert.subject.CN,
       host: dfspName,
       currency_code: dfspMonetaryZoneId,
+      fxpCurrencies: fxpCurrencies.join(' '),
       isProxy,
     };
     await this.client.write(`${this.mounts.dfspClientCertBundle}/${dfspName}`, bundle);
