@@ -42,7 +42,7 @@ exports.getDfspsByMonetaryZones = async (monetaryZoneId) => {
 };
 
 exports.getFxpSupportedCurrencies = async (dfspId) => {
-  return await(
+  return (await
     knex
       .table('fxp_supported_currencies')
       .join(DFSP_TABLE, 'fxp_supported_currencies.dfspId', 'dfsps.id')
