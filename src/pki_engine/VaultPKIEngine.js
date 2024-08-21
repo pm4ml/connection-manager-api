@@ -321,7 +321,7 @@ class VaultPKIEngine extends PKIEngine {
       fqdn: cert.subject.CN,
       host: dfspName,
       currency_code: dfspMonetaryZoneId,
-      fxpCurrencies,
+      fxpCurrencies: fxpCurrencies.join(' '),
       isProxy,
     };
     await this.client.write(`${this.mounts.dfspClientCertBundle}/${dfspName}`, bundle);
