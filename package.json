@@ -38,8 +38,8 @@
     "release": "npx standard-version --no-verify --releaseCommitMessageFormat 'ci(release): {{currentTag}} [skip ci]'",
     "snapshot": "npx standard-version --no-verify --skip.changelog --prerelease snapshot --releaseCommitMessageFormat 'ci(snapshot): {{currentTag}}'",
     "test-with-coverage": "./docker compose up -d --wait vault-dev && nyc --reporter=text mocha --timeout 20000 --colors -exit ; docker compose down -v",
-    "test:coverage": "npx nyc --reporter=lcov --reporter=text-summary tapes -- 'test/unit/**/**.test.js'",
-    "test:coverage-check": "npm run test:coverage && nyc check-coverage",
+    "test:coverage": "NODE_ENV=test nyc --reporter=lcov --reporter=text --reporter=text-summary mocha --recursive 'test/**/*.test.js'",
+    "test:coverage-check": "nyc --check-coverage --lines 90 --statements 90 --branches 90 --functions 90 mocha 'test/**/*.test.js'",
     "start": "node src/index.js",
     "start:dev": "node -r dotenv/config src/index.js",
     "start-with-oauth-enabled": "source oauth.env && node src/index.js",
@@ -100,9 +100,11 @@
     "nyc": "^17.1.0",
     "sinon": "^19.0.2",
     "snazzy": "^9.0.0",
+    "source-map-support": "^0.5.21",
     "standard-version": "^9.5.0",
     "standardx": "^7.0.0",
-    "supertest": "^7.0.0"
+    "supertest": "^7.0.0",
+    "tapes": "^4.1.0"
   },
   "standardx": {
     "semistandard": true
