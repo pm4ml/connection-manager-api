@@ -210,5 +210,46 @@ describe('DFSPEndpointModel', async function () {
         assert.beforeOrEqualDate(new Date(item.created_at), new Date());
       }
     });
+    it('should return null when no endpoint exists for findLastestByDirection', async () => {
+      // Arrange
+      const nonExistentDfspId = 'non.existent.dfsp';
+
+      // Act
+      const result = await DFSPEndpointModel.findLastestByDirection(nonExistentDfspId, DirectionEnum.EGRESS);
+
+      // Assert
+      assert.isNull(result);
+    });
+
+    it('should throw NotFoundError when getting non-existent endpoint by id', async () => {
+      // Arrange
+      const nonExistentId = 999999;
+
+      // Act & Assert
+      try {
+        await DFSPEndpointModel.findById(nonExistentId);
+        assert.fail('Should have thrown NotFoundError');
+      } catch (err) {
+        assert.equal(err.name, 'NotFoundError');
+      }
+    });
+
+    it('should return empty array when no endpoints exist for findAllByDirection', async () => {
+      // Act 
+      const result = await DFSPEndpointModel.findAllByDirection(dfspData[1].dfsp_id, DirectionEnum.EGRESS);
+
+      // Assert
+      assert.isArray(result);
+      assert.isEmpty(result);
+    });
+
+    it('should return empty array when no endpoints exist for findAllLatestByDirection', async () => {
+      // Act
+      const result = await DFSPEndpointModel.findAllLatestByDirection(DirectionEnum.INGRESS);
+      
+      // Assert
+      assert.isArray(result);
+      assert.isEmpty(result);
+    });
   });
 });
