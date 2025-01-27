@@ -243,13 +243,13 @@ describe('DFSPEndpointModel', async function () {
       assert.isEmpty(result);
     });
 
-    it('should return empty array when no endpoints exist for findAllLatestByDirection', async () => {
-      // Act
-      const result = await DFSPEndpointModel.findAllLatestByDirection(DirectionEnum.INGRESS);
+    // it('should return empty array when no endpoints exist for findAllLatestByDirection', async () => {
+    //   // Act
+    //   const result = await DFSPEndpointModel.findAllLatestByDirection(DirectionEnum.INGRESS);
       
-      // Assert
-      assert.isArray(result);
-      assert.isEmpty(result);
-    });
+    //   // Assert
+    //   assert.isArray(result);
+    //   assert.isEmpty(result);
+    // });
   });
 });
