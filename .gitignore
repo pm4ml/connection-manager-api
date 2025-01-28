@@ -114,3 +114,11 @@ localEnvs
 # tests
 **/junit.xml
 .token
+
+# Vault secrets
+docker/vault/tmp/*
+**/secret-id
+**/role-id
+
+# Keep temp directory but ignore contents
+docker/vault/tmp/.gitkeep
