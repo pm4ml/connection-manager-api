@@ -1,6 +1,6 @@
 {
-  "all": true,
   "check-coverage": true,
+  "per-file": true,
   "reporter": [
     "text",
     "lcov"
@@ -10,6 +10,11 @@
   "functions": 90,
   "statements": 90,
   "exclude": [
+    ".mocharc.js",
+    ".versionrc.js", 
+    "commitlint.config.js",
+    "eslint.config.js",
+    "knexfile.js",
     "test/**",
     "coverage/**",
     "dist/**"
