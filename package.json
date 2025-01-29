@@ -50,7 +50,7 @@
     "backend:stop": "docker compose down -v",
     "backend:restart": "npm run backend:stop && npm run backend:start",
     "test:integration": "./test/scripts/test-integration.sh",
-    "test:functional": "./test/scripts/test-functional.sh"
+    "test:functional": "./scripts/run-functional-tests.sh"
   },
   "keywords": [
     "swagger"
@@ -99,6 +99,7 @@
     "husky": "^9.1.7",
     "jshint": "^2.13.6",
     "mocha": "^11.1.0",
+    "mocha-xunit-reporter": "^2.3.0",
     "npm-audit-resolver": "3.0.0-RC.0",
     "npm-check-updates": "^17.1.14",
     "nyc": "^17.1.0",
