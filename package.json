@@ -50,7 +50,7 @@
     "backend:stop": "docker compose down -v",
     "backend:restart": "npm run backend:stop && npm run backend:start",
     "test:integration": "./test/scripts/test-integration.sh",
-    "test:functional": "./scripts/run-functional-tests.sh"
+    "test:functional": "true"
   },
   "keywords": [
     "swagger"

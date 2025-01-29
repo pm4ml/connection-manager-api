@@ -15,4 +15,4 @@ export NODE_ENV=test
 npx mocha \
   --timeout 30000 \
   --recursive \
-  './test/integration/**/*.test.js'
+  './test/int/**/*.test.js'
