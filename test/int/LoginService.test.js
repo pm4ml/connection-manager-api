@@ -48,14 +48,49 @@ describe('first login', () => {
       id_token: 'eyJ4NXQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJraWQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJhbGciOiJIUzUxMiJ9.eyJhdF9oYXNoIjoidFMzdkRvb1NkQmtaWkt1d2VCcGtGUSIsImFza1Bhc3N3b3JkIjoidHJ1ZSIsImF1ZCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsInN1YiI6ImdyZWcxIiwidXNlcmd1aWQiOiI2MjQ5MWUxNi03ZDRiLTQ1MDQtOTc1YS0wMzEzYzEzMjA5NGYiLCJuYmYiOjE1Njc3Njc5OTQsImF6cCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsImFtciI6WyJwYXNzd29yZCJdLCJpc3MiOiJodHRwczovL2RldmludDF3c28yaXNrbS5jYXNhaHViLmxpdmU6OTQ0My9vYXV0aDIvdG9rZW4iLCJncm91cHMiOiJJbnRlcm5hbC9ldmVyeW9uZSIsImV4cCI6MTU2Nzc3MTU5NCwiaWF0IjoxNTY3NzY3OTk0fQ._5bwdqhh07oyvw2gDDE8sFNbM7Gy6Cd0ohavWPUsGvIPxOcM_OcWWW0MjD59r15dtUwHlAAR8JqMjemjQ0SJxQ'
     };
 
-    wso2ClientTokenMock.callsFake((params) => { return loginResponseObj; });
+    wso2ClientTokenMock.callsFake(() => loginResponseObj);
 
     Constants.OAUTH.AUTH_ENABLED = true;
 
     const response = await LoginService.loginUser(ctx, { username: 'user1', password: 'password1' });
 
-    // FIXME sending "true" string to UI
     assert.strictEqual(response.askPassword, true, 'Returning first time flag');
+  });
+
+  it('should return JWT token payload when AUTH_ENABLED is false', async () => {
+    Constants.OAUTH.AUTH_ENABLED = false;
+
+    const response = await LoginService.loginUser(ctx, { username: 'user1', password: 'password1' });
+
+    assert.strictEqual(response.ok, false);
+    assert.isObject(response.token.payload);
+  });
+
+  it('should throw UnauthorizedError when getToken fails', async () => {
+    Constants.OAUTH.AUTH_ENABLED = true;
+    wso2ClientTokenMock.callsFake(() => { throw new UnauthorizedError(''); });
+
+    try {
+      await LoginService.loginUser(ctx, { username: 'user1', password: 'password1' });
+      assert.fail('Should have thrown UnauthorizedError');
+    } catch (error) {
+      assert.instanceOf(error, UnauthorizedError);
+    }
+  });
+
+  it('should return 2FA response when AUTH_2FA_ENABLED is true and user is enrolled', async () => {
+    Constants.OAUTH.AUTH_ENABLED = true;
+    Constants.AUTH_2FA.AUTH_2FA_ENABLED = true;
+    const loginResponseObj = {
+      access_token: 'XXXX',
+      id_token: 'eyJ4NXQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJraWQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJhbGciOiJIUzUxMiJ9.eyJhdF9oYXNoIjoidFMzdkRvb1NkQmtaWkt1d2VCcGtGUSIsImVucm9sbGVkIjoiZmFsc2UiLCJhdWQiOiJwa2lfYWRtaW5fcG9ydGFsX2Rldl9wa2kiLCJzdWIiOiJncmVnMSIsInVzZXJndWlkIjoiNjI0OTFlMTYtN2Q0Yi00NTA0LTk3NWEtMDMxM2MxMzIwOTRmIiwibmJmIjoxNTY3NzY3OTk0LCJhenAiOiJwa2lfYWRtaW5fcG9ydGFsX2Rldl9wa2kiLCJhbXIiOlsicGFzc3dvcmQiXSwiaXNzIjoiaHR0cHM6Ly9kZXZpbnQxd3NvMmlza20uY2FzYWh1Yi5saXZlOjk0NDMvb2F1dGgyL3Rva2VuIiwiZ3JvdXBzIjoiSW50ZXJuYWwvZXZlcnlvbmUiLCJleHAiOjE1Njc3NzE1OTQsImlhdCI6MTU2Nzc2Nzk5NH0._5bwdqhh07oyvw2gDDE8sFNbM7Gy6Cd0ohavWPUsGvIPxOcM_OcWWW0MjD59r15dtUwHlAAR8JqMjemjQ0SJxQ'
+    };
+    wso2ClientTokenMock.callsFake(() => loginResponseObj);
+
+    const response = await LoginService.loginUser(ctx, { username: 'user1', password: 'password1' });
+
+    assert.strictEqual(response.enrolled, false);
+    assert.strictEqual(response['2faEnabled'], true);
   });
 });
 
@@ -69,7 +104,6 @@ describe('2step', () => {
     ctx = await createContext();
     wso2ClientTokenMock = sinon.stub(Wso2Client, 'getToken');
     wso2MSClientMock = sinon.stub(Wso2MSClient, 'setUserClaimValue');
-
     wso2TotpClientMock = sinon.stub(Wso2TotpClient, 'validateTOTP');
   });
 
@@ -77,7 +111,6 @@ describe('2step', () => {
     wso2ClientTokenMock.restore();
     wso2MSClientMock.restore();
     wso2TotpClientMock.restore();
-
     sinon.restore();
     destroyContext(ctx);
   });
@@ -87,7 +120,7 @@ describe('2step', () => {
 
     try {
       await LoginService.login2step(ctx, 'user1', 'pass1', 123456);
-      assert.fail('Should have throw BadRequestError');
+      assert.fail('Should have thrown BadRequestError');
     } catch (error) {
       assert.instanceOf(error, BadRequestError);
     }
@@ -95,11 +128,11 @@ describe('2step', () => {
 
   it('should return an UnauthorizedError when retrieving token to WSO2 server gives an error', async () => {
     Constants.AUTH_2FA.AUTH_2FA_ENABLED = true;
-    wso2ClientTokenMock.callsFake((params) => { throw new UnauthorizedError(''); });
+    wso2ClientTokenMock.callsFake(() => { throw new UnauthorizedError(''); });
 
     try {
       await LoginService.login2step(ctx, 'user1', 'pass1', 123456);
-      assert.fail('Should have throw UnauthorizedError');
+      assert.fail('Should have thrown UnauthorizedError');
     } catch (error) {
       assert.instanceOf(error, UnauthorizedError);
     }
@@ -109,14 +142,14 @@ describe('2step', () => {
     Constants.AUTH_2FA.AUTH_2FA_ENABLED = true;
     const loginResponseObj = {
       access_token: 'XXXX',
-      id_token: 'eyJ4NXQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJraWQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJhbGciOiJSUzI1NiJ9.eyJhdF9oYXNoIjoiWW91Y3c4dmpxdzFNeTdxb0d5dzd5QSIsImF1ZCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsInN1YiI6Ik1UTkJNb2JpbGVNb25leV9hZG1pbiIsIm5iZiI6MTU2NTI5NDc5MSwiYXpwIjoicGtpX2FkbWluX3BvcnRhbF9kZXZfcGtpIiwiYW1yIjpbInBhc3N3b3JkIl0sImlzcyI6Imh0dHBzOlwvXC9kZXZpbnQxd3NvMmlza20uY2FzYWh1Yi5saXZlOjk0NDNcL29hdXRoMlwvdG9rZW4iLCJncm91cHMiOlsiQXBwbGljYXRpb25cL01UQSIsIkFwcGxpY2F0aW9uXC9ERlNQOk1UTkJNb2JpbGVNb25leSIsIkludGVybmFsXC9ldmVyeW9uZSJdLCJleHAiOjE1NjUyOTgzOTEsImlhdCI6MTU2NTI5NDc5MX0.c4ytKGi32h1fIHkuycr2-QQP5KEWX237SpHEixbtEzydW3LA0DTqoOwTWGV1sL9XnqrAMbR6wAONQiAVsmrzyyaLCyAFpA5waqztDsMMj-6UIHAWjea13SOTNTjjU6H8B6ooP1Q9RjGM_BP-s-vtN9BS_28HniGo7XOH0Z-uHy29U7xlzM7gq1w8mb3km40t7nnaIDnuCnmDqyvmPRUtVazPUJkRxHePUfunZo_u4XYcgv-8uIhJkcfIu0Rk-NIsqjFLxF5wcC3iusXlhpQmJwPJdXtS00NgzuHBh5L3CfEGCQlRHa-KZ7MYAlpq0WN9Ww_qCf-w6sMKgnYceipUmQ'
+      id_token: 'eyJ4NXQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJhbGciOiJSUzI1NiJ9.eyJhdF9oYXNoIjoiWW91Y3c4dmpxdzFNeTdxb0d5dzd5QSIsImF1ZCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsInN1YiI6Ik1UTkJNb2JpbGVNb25leV9hZG1pbiIsIm5iZiI6MTU2NTI5NDc5MSwiYXpwIjoicGtpX2FkbWluX3BvcnRhbF9kZXZfcGtpIiwiYW1yIjpbInBhc3N3b3JkIl0sImlzcyI6Imh0dHBzOlwvXC9kZXZpbnQxd3NvMmlza20uY2FzYWh1Yi5saXZlOjk0NDNcL29hdXRoMlwvdG9rZW4iLCJncm91cHMiOlsiQXBwbGljYXRpb25cL01UQSIsIkFwcGxpY2F0aW9uXC9ERlNQOk1UTkJNb2JpbGVNb25leSIsIkludGVybmFsXC9ldmVyeW9uZSJdLCJleHAiOjE1NjUyOTgzOTEsImlhdCI6MTU2NTI5NDc5MX0.c4ytKGi32h1fIHkuycr2-QQP5KEWX237SpHEixbtEzydW3LA0DTqoOwTWGV1sL9XnqrAMbR6wAONQiAVsmrzyyaLCyAFpA5waqztDsMMj-6UIHAWjea13SOTNTjjU6H8B6ooP1Q9RjGM_BP-s-vtN9BS_28HniGo7XOH0Z-uHy29U7xlzM7gq1w8mb3km40t7nnaIDnuCnmDqyvmPRUtVazPUJkRxHePUfunZo_u4XYcgv-8uIhJkcfIu0Rk-NIsqjFLxF5wcC3iusXlhpQmJwPJdXtS00NgzuHBh5L3CfEGCQlRHa-KZ7MYAlpq0WN9Ww_qCf-w6sMKgnYceipUmQ'
     };
-    wso2ClientTokenMock.callsFake((params) => { return loginResponseObj; });
-    wso2TotpClientMock.callsFake((params) => { throw new UnauthorizedError(''); });
+    wso2ClientTokenMock.callsFake(() => loginResponseObj);
+    wso2TotpClientMock.callsFake(() => { throw new UnauthorizedError(''); });
 
     try {
       await LoginService.login2step(ctx, 'user1', 'pass1', 123456);
-      assert.fail('Should have throw UnauthorizedError');
+      assert.fail('Should have thrown UnauthorizedError');
     } catch (error) {
       assert.instanceOf(error, UnauthorizedError);
     }
@@ -126,15 +159,15 @@ describe('2step', () => {
     Constants.AUTH_2FA.AUTH_2FA_ENABLED = true;
     const loginResponseObj = {
       access_token: 'XXXX',
-      id_token: 'eyJ4NXQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJraWQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJhbGciOiJSUzI1NiJ9.eyJhdF9oYXNoIjoiWW91Y3c4dmpxdzFNeTdxb0d5dzd5QSIsImF1ZCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsInN1YiI6Ik1UTkJNb2JpbGVNb25leV9hZG1pbiIsIm5iZiI6MTU2NTI5NDc5MSwiYXpwIjoicGtpX2FkbWluX3BvcnRhbF9kZXZfcGtpIiwiYW1yIjpbInBhc3N3b3JkIl0sImlzcyI6Imh0dHBzOlwvXC9kZXZpbnQxd3NvMmlza20uY2FzYWh1Yi5saXZlOjk0NDNcL29hdXRoMlwvdG9rZW4iLCJncm91cHMiOlsiQXBwbGljYXRpb25cL01UQSIsIkFwcGxpY2F0aW9uXC9ERlNQOk1UTkJNb2JpbGVNb25leSIsIkludGVybmFsXC9ldmVyeW9uZSJdLCJleHAiOjE1NjUyOTgzOTEsImlhdCI6MTU2NTI5NDc5MX0.c4ytKGi32h1fIHkuycr2-QQP5KEWX237SpHEixbtEzydW3LA0DTqoOwTWGV1sL9XnqrAMbR6wAONQiAVsmrzyyaLCyAFpA5waqztDsMMj-6UIHAWjea13SOTNTjjU6H8B6ooP1Q9RjGM_BP-s-vtN9BS_28HniGo7XOH0Z-uHy29U7xlzM7gq1w8mb3km40t7nnaIDnuCnmDqyvmPRUtVazPUJkRxHePUfunZo_u4XYcgv-8uIhJkcfIu0Rk-NIsqjFLxF5wcC3iusXlhpQmJwPJdXtS00NgzuHBh5L3CfEGCQlRHa-KZ7MYAlpq0WN9Ww_qCf-w6sMKgnYceipUmQ'
+      id_token: 'eyJ4NXQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJhbGciOiJSUzI1NiJ9.eyJhdF9oYXNoIjoiWW91Y3c4dmpxdzFNeTdxb0d5dzd5QSIsImF1ZCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsInN1YiI6Ik1UTkJNb2JpbGVNb25leV9hZG1pbiIsIm5iZiI6MTU2NTI5NDc5MSwiYXpwIjoicGtpX2FkbWluX3BvcnRhbF9kZXZfcGtpIiwiYW1yIjpbInBhc3N3b3JkIl0sImlzcyI6Imh0dHBzOlwvXC9kZXZpbnQxd3NvMmlza20uY2FzYWh1Yi5saXZlOjk0NDNcL29hdXRoMlwvdG9rZW4iLCJncm91cHMiOlsiQXBwbGljYXRpb25cL01UQSIsIkFwcGxpY2F0aW9uXC9ERlNQOk1UTkJNb2JpbGVNb25leSIsIkludGVybmFsXC9ldmVyeW9uZSJdLCJleHAiOjE1NjUyOTgzOTEsImlhdCI6MTU2NTI5NDc5MX0.c4ytKGi32h1fIHkuycr2-QQP5KEWX237SpHEixbtEzydW3LA0DTqoOwTWGV1sL9XnqrAMbR6wAONQiAVsmrzyyaLCyAFpA5waqztDsMMj-6UIHAWjea13SOTNTjjU6H8B6ooP1Q9RjGM_BP-s-vtN9BS_28HniGo7XOH0Z-uHy29U7xlzM7gq1w8mb3km40t7nnaIDnuCnmDqyvmPRUtVazPUJkRxHePUfunZo_u4XYcgv-8uIhJkcfIu0Rk-NIsqjFLxF5wcC3iusXlhpQmJwPJdXtS00NgzuHBh5L3CfEGCQlRHa-KZ7MYAlpq0WN9Ww_qCf-w6sMKgnYceipUmQ'
     };
-    wso2ClientTokenMock.callsFake((params) => { return loginResponseObj; });
-    wso2TotpClientMock.callsFake((params) => { return true; });
-    wso2MSClientMock.callsFake((params) => { throw new ExternalProcessError(''); });
+    wso2ClientTokenMock.callsFake(() => loginResponseObj);
+    wso2TotpClientMock.callsFake(() => true);
+    wso2MSClientMock.callsFake(() => { throw new ExternalProcessError(''); });
 
     try {
       await LoginService.login2step(ctx, 'user1', 'pass1', 123456);
-      assert.fail('Should have throw ExternalProcessError');
+      assert.fail('Should have thrown ExternalProcessError');
     } catch (error) {
       assert.instanceOf(error, ExternalProcessError);
     }
@@ -173,7 +206,7 @@ describe('change password', () => {
 
   it('should return error when WSO2 returns invalid password', async () => {
     try {
-      sinon.mock(Wso2Client).expects('resetPassword').throws(new UnauthorizedError('Unathorized'));
+      sinon.mock(Wso2Client).expects('resetPassword').throws(new UnauthorizedError('Unauthorized'));
 
       await LoginService.resetPassword(ctx, testUser.username, testUser.newPassword, testUser.userguid);
       assert.fail('Should return an error from WSO2');
