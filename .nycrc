@@ -17,6 +17,8 @@
     "knexfile.js",
     "test/**",
     "coverage/**",
-    "dist/**"
+    "dist/**",
+    "src/oauth/OAuthHelper.js",
+    "src/utils/tlsUtils.js"
   ]
 }

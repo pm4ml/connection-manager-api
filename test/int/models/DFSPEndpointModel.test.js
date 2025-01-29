@@ -100,6 +100,51 @@ describe('DFSPEndpointModel', async function () {
       }
     });
 
+    it('should return latest endpoints for multiple DFSPs from findAllLatestByDirection', async () => {
+      // Arrange
+      const dfsp1Endpoint = await DFSPEndpointModel.create(dfspData[0].dfsp_id, StatusEnum.NOT_STARTED, DirectionEnum.EGRESS, endpointData.value);
+      const dfsp2Endpoint = await DFSPEndpointModel.create(dfspData[1].dfsp_id, StatusEnum.NOT_STARTED, DirectionEnum.EGRESS, endpointData.value);
+      endpointIdList.push(dfsp1Endpoint, dfsp2Endpoint);
+    
+      // Act
+      const result = await DFSPEndpointModel.findAllLatestByDirection(DirectionEnum.EGRESS);
+    
+      // Assert
+      assert.equal(result.length, 2);
+      assert.isTrue(result.some(r => r.dfsp_id === dfspData[0].dfsp_id));
+      assert.isTrue(result.some(r => r.dfsp_id === dfspData[1].dfsp_id));
+      result.forEach(endpoint => {
+        assert.equal(endpoint.direction, DirectionEnum.EGRESS);
+        assert.equal(endpoint.state, StatusEnum.NOT_STARTED);
+        assert.deepEqual(endpoint.ipList, endpointData.value.ipList);
+      });
+    });
+    
+    it('should return only latest endpoint when multiple exist for same DFSP', async () => {
+      // Arrange
+      const oldEndpoint = await DFSPEndpointModel.create(dfspData[0].dfsp_id, StatusEnum.NOT_STARTED, DirectionEnum.EGRESS, endpointData.value);
+      const latestEndpoint = await DFSPEndpointModel.create(dfspData[0].dfsp_id, StatusEnum.COMPLETED, DirectionEnum.EGRESS, endpointData.value);
+      endpointIdList.push(oldEndpoint, latestEndpoint);
+    
+      // Act
+      const result = await DFSPEndpointModel.findLastestByDirection(dfspData[0].dfsp_id, DirectionEnum.EGRESS);
+    
+      // Assert  
+      assert.equal(result.id, latestEndpoint);
+      assert.equal(result.state, StatusEnum.COMPLETED);
+      assert.notEqual(result.id, oldEndpoint);
+    });
+    
+    it('should throw NotFoundError when getting endpoint for non-existent DFSP', async () => {
+      // Act & Assert
+      try {
+        await DFSPEndpointModel.findAllByDirection('fake.dfsp', DirectionEnum.EGRESS);
+        assert.fail('Should have thrown NotFoundError');
+      } catch (err) {
+        assert.equal(err.name, 'NotFoundError'); 
+      }
+    });
+
     it('should create a valid Endpoint configuration', async () => {
       // Act
 

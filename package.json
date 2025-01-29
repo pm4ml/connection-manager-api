@@ -39,7 +39,7 @@
     "snapshot": "npx standard-version --no-verify --skip.changelog --prerelease snapshot --releaseCommitMessageFormat 'ci(snapshot): {{currentTag}}'",
     "test-with-coverage": "./docker compose up -d --wait vault-dev && nyc --reporter=text mocha --timeout 20000 --colors -exit ; docker compose down -v",
     "test:coverage": "NODE_ENV=test nyc --reporter=lcov --reporter=text --reporter=text-summary mocha --recursive 'test/**/*.test.js'",
-    "test:coverage-check": "nyc --nycrc-path .nycrc mocha 'test/**/*.test.js'",
+    "test:coverage-check": "nyc --nycrc-path .nycrc --reporter=lcov --reporter=text --reporter=text-summary mocha 'test/**/*.test.js'",
     "start": "node src/index.js",
     "start:dev": "node -r dotenv/config src/index.js",
     "start-with-oauth-enabled": "source oauth.env && node src/index.js",
