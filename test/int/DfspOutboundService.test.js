@@ -208,7 +208,7 @@ describe('getDFSPOutboundEnrollments', () => {
   it('should return filtered enrollments when state is provided', async () => {
     const enrollments = [
       { key: 'key1', state: 'active' },
-      { key: 'key2', state: 'inactive' },
+      { key: 'key2', state: 'inactive' }
     ];
     getDFSPOutboundEnrollmentsStub.resolves(enrollments);
 
@@ -219,7 +219,7 @@ describe('getDFSPOutboundEnrollments', () => {
   it('should return all enrollments when state is not provided', async () => {
     const enrollments = [
       { key: 'key1', state: 'active' },
-      { key: 'key2', state: 'inactive' },
+      { key: 'key2', state: 'inactive' }
     ];
     getDFSPOutboundEnrollmentsStub.resolves(enrollments);
 
@@ -230,7 +230,7 @@ describe('getDFSPOutboundEnrollments', () => {
   it('should handle different state values', async () => {
     const enrollments = [
       { key: 'key1', state: 'active' },
-      { key: 'key2', state: 'inactive' },
+      { key: 'key2', state: 'inactive' }
     ];
     getDFSPOutboundEnrollmentsStub.resolves(enrollments);
 
