@@ -15,8 +15,8 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
+const sinon = require('sinon');
 const { setupTestDB, tearDownTestDB } = require('./test-database');
-
 const PkiService = require('../../src/service/PkiService');
 const DfspNetworkConfigService = require('../../src/service/DfspNetworkConfigService');
 const ValidationError = require('../../src/errors/ValidationError');
@@ -24,10 +24,10 @@ const NotFoundError = require('../../src/errors/NotFoundError');
 const { assert } = require('chai').use(require('chai-datetime'));
 const { createContext, destroyContext } = require('./context');
 const { StatusEnum } = require('../../src/service/DfspNetworkConfigService');
-const sinon = require('sinon');
 const DFSPEndpointModel = require('../../src/models/DFSPEndpointModel');
 const DFSPModel = require('../../src/models/DFSPModel');
 const DFSPEndpointItemModel = require('../../src/models/DFSPEndpointItemModel');
+const validateDirectionType = require('../../src/models/DFSPEndpointModel');
 
 describe('DfspNetworkConfigService Unit Tests', () => {
   let ctx;
@@ -188,6 +188,7 @@ describe('DfspNetworkConfigService Unit Tests', () => {
 describe('DfspNetworkConfigService', () => {
   let ctx;
   const dfspId = 'DFSP_TEST_1';
+  const epId = 'EP_TEST_1';
 
   before(async () => {
     ctx = await createContext();
@@ -196,7 +197,13 @@ describe('DfspNetworkConfigService', () => {
 
   beforeEach(() => {
     sinon.stub(PkiService, 'validateDfsp').resolves();
-    sinon.stub(DFSPEndpointItemModel, 'findObjectAll').resolves([{ id: 'endpoint1' }, { id: 'endpoint2' }, { id: 'item1', state: 'NEW' }, { id: 'item2', state: 'NEW' }]);
+    sinon.stub(DFSPEndpointItemModel, 'findObjectAll').resolves([
+      { id: 'endpoint1' },
+      { id: 'endpoint2' },
+      { id: 'item1', state: 'NEW' },
+      { id: 'item2', state: 'NEW' }]);
+    sinon.stub(DfspNetworkConfigService, 'validateDirectionType').resolves();
+    sinon.stub(DfspNetworkConfigService, 'deleteDFSPEndpoint').resolves({ success: true });
   });
 
   afterEach(() => {
@@ -236,32 +243,6 @@ describe('DfspNetworkConfigService', () => {
     } catch (error) {
       assert.equal(error.message, 'Invalid DFSP');
     }
-    
-  });
-});
-describe('DfspNetworkConfigService', () => {
-  let ctx;
-  const dfspId = 'DFSP_TEST_1';
-  const epId = 'EP_TEST_1';
-
-  before(async () => {
-    ctx = await createContext();
-    await setupTestDB();
-  });
-
-  beforeEach(() => {
-    sinon.stub(PkiService, 'validateDfsp').resolves();
-    sinon.stub(DfspNetworkConfigService, 'validateDirectionType').resolves();
-    sinon.stub(DfspNetworkConfigService, 'deleteDFSPEndpoint').resolves({ success: true });
-  });
-
-  afterEach(() => {
-    sinon.restore();
-  });
-
-  after(async () => {
-    await tearDownTestDB();
-    destroyContext(ctx);
   });
 
   it('should delete DFSP Ingress URL endpoint successfully', async () => {
@@ -281,6 +262,7 @@ describe('DfspNetworkConfigService', () => {
     }
   });
 });
+
 describe('DfspNetworkConfigService', () => {
   let ctx;
   before(async () => {
