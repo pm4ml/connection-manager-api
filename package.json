@@ -39,7 +39,7 @@
     "snapshot": "npx standard-version --no-verify --skip.changelog --prerelease snapshot --releaseCommitMessageFormat 'ci(snapshot): {{currentTag}}'",
     "test-with-coverage": "./docker compose up -d --wait vault-dev && nyc --reporter=text mocha --timeout 20000 --colors -exit ; docker compose down -v",
     "precoverage": "rm -rf .nyc_output coverage",
-    "test:coverage": "NODE_ENV=test node -r dotenv/config ./node_modules/.bin/nyc --clean --reporter=lcov --reporter=text mocha --recursive 'test/**/*.test.js' --timeout 20000 dotenv_config_path=.env.test",
+    "test:coverage": "NODE_ENV=test nyc --clean --reporter=lcov --reporter=text mocha --require dotenv/config --recursive './test/**/*.test.js' --timeout 20000",
     "test:coverage-check": "npm run test:coverage && nyc check-coverage",
     "start": "node src/index.js",
     "start:dev": "node -r dotenv/config src/index.js",
