@@ -241,5 +241,53 @@ describe('DfspInboundService', async function () {
       assert.isTrue(validationSignatureAlgo.message.includes('256'));
       assert.isFalse(validationSignatureAlgo.message.includes('512'));
     }).timeout(15000);
+
+    it('should create a cert with SHA512 if specified as the signature_algorithm on the ca_config', async () => {
+      const caBody = {
+        CN: 'Mojaloop PKI SHA512',
+        O: 'Mojaloop',
+        OU: 'PKI',
+        signatureAlgorithm: 'sha512WithRSAEncryption'
+      };
+      await createInternalHubCA(ctx, caBody, TTL_FOR_CA);
+
+      const csr = fs.readFileSync(path.join(__dirname, 'resources/signing_algo/sha512-4096bits.csr'), 'utf8');
+      const enrollmentResult = await DfspInboundService.createDFSPInboundEnrollment(ctx, dfspId, { clientCSR: csr });
+      assert.property(enrollmentResult, 'id');
+      assert.isNotNull(enrollmentResult.id);
+      const enrollmentId = enrollmentResult.id;
+
+      const signedEnrollment = await DfspInboundService.signDFSPInboundEnrollment(ctx, dfspId, enrollmentId);
+      assert.equal(signedEnrollment.state, 'CERT_SIGNED');
+      assert.equal(signedEnrollment.certInfo.signatureAlgorithm, 'sha512WithRSAEncryption');
+
+      const validationSignatureAlgo = signedEnrollment.validations.find((element) =>
+        element.validationCode === ValidationCodes.VALIDATION_CODES.CSR_SIGNATURE_ALGORITHM_SHA256_512.code
+      );
+      assert.isTrue(validationSignatureAlgo.message.includes('512')); 
+      assert.isFalse(validationSignatureAlgo.message.includes('256'));
+    }).timeout(15000);
+
+    it('should fail when creating enrollment with invalid CSR format', async () => {
+      const invalidCsr = '-----BEGIN CERTIFICATE REQUEST-----\ninvalid content\n-----END CERTIFICATE REQUEST-----';
+      
+      try {
+        await DfspInboundService.createDFSPInboundEnrollment(ctx, dfspId, { clientCSR: invalidCsr });
+        assert.fail('Should throw ValidationError');
+      } catch (err) {
+        assert.instanceOf(err, ValidationError);
+        assert.include(err.message, 'Could not parse the CSR content');
+      }
+    });
+
+    it('should fail when signing enrollment with non-existent ID', async () => {
+      const nonExistentId = 'non-existent-id';
+      try {
+        await DfspInboundService.signDFSPInboundEnrollment(ctx, dfspId, nonExistentId);
+        assert.fail('Should throw error');
+      } catch (err) {
+        assert.include(err.message, 'Could not retrieve current CA');
+      }
+    });
   });
 }).timeout(15000);
