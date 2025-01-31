@@ -22,10 +22,11 @@ const path = require('path');
 const PkiService = require('../../src/service/PkiService');
 const DfspOutboundService = require('../../src/service/DfspOutboundService');
 const { assert } = require('chai');
+const { expect } = require('chai');
 const ROOT_CA = require('./Root_CA.js');
 const DFSPModel = require('../../src/models/DFSPModel');
 const forge = require('node-forge');
-
+const sinon = require('sinon');
 const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
 const { createInternalHubCA } = require('../../src/service/HubCAService');
 const { createContext, destroyContext } = require('./context');
@@ -98,6 +99,19 @@ describe('DfspOutboundService', function () {
       await PkiService.deleteDFSP(ctx, dfspId);
     });
 
+    it('should get DFSP outbound enrollments', async () => {
+      const enrollments = await DfspOutboundService.getDFSPOutboundEnrollments(ctx, dfspId);
+      assert.isArray(enrollments);
+    });
+    
+    it('should get DFSP outbound enrollments filtered by state', async () => {
+      const state = 'CSR_LOADED';
+      const enrollments = await DfspOutboundService.getDFSPOutboundEnrollments(ctx, dfspId, state);
+      assert.isArray(enrollments);
+      enrollments.forEach(enrollment => {
+      assert.equal(enrollment.state, state);
+      });
+    });
     it('should create an OutboundEnrollment and its CSR and get a VALIDATED when validating the signed certificate', async () => {
       const body = {
         subject: {
@@ -173,3 +187,61 @@ describe('DfspOutboundService', function () {
     }).timeout(15000);
   }).timeout(30000);
 }).timeout(45000);
+
+describe('getDFSPOutboundEnrollments', () => {
+  let ctx;
+  let validateDfspStub;
+  let findIdByDfspIdStub;
+  let getDFSPOutboundEnrollmentsStub;
+
+  beforeEach(() => {
+    ctx = { pkiEngine: { getDFSPOutboundEnrollments: sinon.stub() } };
+    validateDfspStub = sinon.stub(PkiService, 'validateDfsp').resolves();
+    findIdByDfspIdStub = sinon.stub(DFSPModel, 'findIdByDfspId').resolves(1);
+    getDFSPOutboundEnrollmentsStub = ctx.pkiEngine.getDFSPOutboundEnrollments;
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('should return filtered enrollments when state is provided', async () => {
+    const enrollments = [
+      { key: 'key1', state: 'active' },
+      { key: 'key2', state: 'inactive' }
+    ];
+    getDFSPOutboundEnrollmentsStub.resolves(enrollments);
+
+    const result = await DfspOutboundService.getDFSPOutboundEnrollments(ctx, 'dfspId', 'active');
+    expect(result).to.deep.equal([{ state: 'active' }]);
+  });
+
+  it('should return all enrollments when state is not provided', async () => {
+    const enrollments = [
+      { key: 'key1', state: 'active' },
+      { key: 'key2', state: 'inactive' }
+    ];
+    getDFSPOutboundEnrollmentsStub.resolves(enrollments);
+
+    const result = await DfspOutboundService.getDFSPOutboundEnrollments(ctx, 'dfspId');
+    expect(result).to.deep.equal([{ state: 'active' }, { state: 'inactive' }]);
+  });
+
+  it('should handle different state values', async () => {
+    const enrollments = [
+      { key: 'key1', state: 'active' },
+      { key: 'key2', state: 'inactive' }
+    ];
+    getDFSPOutboundEnrollmentsStub.resolves(enrollments);
+
+    const result = await DfspOutboundService.getDFSPOutboundEnrollments(ctx, 'dfspId', 'inactive');
+    expect(result).to.deep.equal([{ state: 'inactive' }]);
+  });
+
+  it('should handle no enrollments', async () => {
+    getDFSPOutboundEnrollmentsStub.resolves([]);
+
+    const result = await DfspOutboundService.getDFSPOutboundEnrollments(ctx, 'dfspId');
+    expect(result).to.deep.equal([]);
+  });
+});

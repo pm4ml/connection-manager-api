@@ -27,6 +27,7 @@ const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
 const ValidationError = require('../../src/errors/ValidationError');
 const { createInternalHubCA, deleteHubCA } = require('../../src/service/HubCAService');
 const { createContext, destroyContext } = require('./context');
+const sinon = require('sinon');
 
 const TTL_FOR_CA = '200h';
 
@@ -287,6 +288,211 @@ describe('DfspInboundService', async function () {
         assert.fail('Should throw error');
       } catch (err) {
         assert.include(err.message, 'Could not retrieve current CA');
+      }
+    });
+  });
+  describe('getDFSPInboundEnrollments', () => {
+    let ctx;
+    let dfspId;
+    let dbDfspId;
+    let enrollments;
+
+    before(async () => {
+      ctx = await createContext();
+      await setupTestDB();
+      dfspId = 'test-dfsp-id';
+      dbDfspId = 'test-db-dfsp-id';
+      enrollments = [
+        { id: '1', state: 'CSR_LOADED' },
+        { id: '2', state: 'CERT_SIGNED' },
+        { id: '3', state: 'CSR_LOADED' }
+      ];
+
+      sinon.stub(PkiService, 'validateDfsp').resolves();
+      sinon.stub(require('../../src/models/DFSPModel'), 'findIdByDfspId').resolves(dbDfspId);
+      sinon.stub(ctx.pkiEngine, 'getDFSPInboundEnrollments').resolves(enrollments);
+    });
+
+    after(async () => {
+      await tearDownTestDB();
+      destroyContext(ctx);
+      sinon.restore();
+    });
+
+    it('should return all enrollments when state is not provided', async () => {
+      const result = await DfspInboundService.getDFSPInboundEnrollments(ctx, dfspId);
+      assert.deepEqual(result, enrollments);
+    });
+
+    it('should return enrollments filtered by state', async () => {
+      const state = 'CSR_LOADED';
+      const result = await DfspInboundService.getDFSPInboundEnrollments(ctx, dfspId, state);
+      assert.deepEqual(result, enrollments.filter(en => en.state === state));
+    });
+
+    it('should return an empty array if no enrollments match the state', async () => {
+      const state = 'NON_EXISTENT_STATE';
+      const result = await DfspInboundService.getDFSPInboundEnrollments(ctx, dfspId, state);
+      assert.deepEqual(result, []);
+    });
+
+    it('should throw an error if validateDfsp fails', async () => {
+      sinon.restore();
+      sinon.stub(PkiService, 'validateDfsp').rejects(new Error('Validation failed'));
+      try {
+        await DfspInboundService.getDFSPInboundEnrollments(ctx, dfspId);
+        assert.fail('Expected error not thrown');
+      } catch (error) {
+        assert.equal(error.message, 'Validation failed');
+      }
+    });
+
+    it('should throw an error if getDFSPInboundEnrollments fails', async () => {
+      sinon.restore();
+      sinon.stub(PkiService, 'validateDfsp').resolves();
+      sinon.stub(require('../../src/models/DFSPModel'), 'findIdByDfspId').resolves(dbDfspId);
+      sinon.stub(ctx.pkiEngine, 'getDFSPInboundEnrollments').rejects(new Error('PKI error'));
+      try {
+        await DfspInboundService.getDFSPInboundEnrollments(ctx, dfspId);
+        assert.fail('Expected error not thrown');
+      } catch (error) {
+        assert.equal(error.message, 'PKI error');
+      }
+    });
+  });
+
+  describe('signDFSPInboundEnrollment', () => {
+    let ctx;
+    let dfspId;
+    let enId;
+    let dbDfspId;
+    let enrollment;
+    let newCert;
+    let certInfo;
+    let validations;
+    let validationState;
+
+    beforeEach(async () => {
+      ctx = await createContext();
+      dfspId = 'test-dfsp-id';
+      enId = 'test-enrollment-id';
+      dbDfspId = 'test-db-dfsp-id';
+      enrollment = { id: enId, csr: 'test-csr' };
+      newCert = 'test-new-cert';
+      certInfo = { subject: 'test-subject' };
+      validations = [{ validationCode: 'VALID' }];
+      validationState = 'VALID';
+
+      sinon.stub(PkiService, 'validateDfsp').resolves();
+      sinon.stub(require('../../src/models/DFSPModel'), 'findIdByDfspId').resolves(dbDfspId);
+      sinon.stub(ctx.pkiEngine, 'getDFSPInboundEnrollment').resolves(enrollment);
+      sinon.stub(ctx.pkiEngine, 'sign').resolves(newCert);
+      sinon.stub(ctx.pkiEngine, 'getCertInfo').returns(certInfo);
+      sinon.stub(ctx.pkiEngine, 'validateInboundEnrollment').resolves({ validations, validationState });
+      sinon.stub(ctx.pkiEngine, 'setDFSPInboundEnrollment').resolves();
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it('should sign the CSR and update the enrollment state to CERT_SIGNED', async () => {
+      const result = await DfspInboundService.signDFSPInboundEnrollment(ctx, dfspId, enId);
+
+      assert.equal(result.state, 'CERT_SIGNED');
+      assert.equal(result.certificate, newCert);
+      assert.deepEqual(result.certInfo, certInfo);
+      assert.deepEqual(result.validations, validations);
+      assert.equal(result.validationState, validationState);
+    });
+
+    it('should throw an InvalidEntityError if the enrollment is not found', async () => {
+      sinon.restore();
+      sinon.stub(PkiService, 'validateDfsp').resolves();
+      sinon.stub(require('../../src/models/DFSPModel'), 'findIdByDfspId').resolves(dbDfspId);
+      sinon.stub(ctx.pkiEngine, 'getDFSPInboundEnrollment').resolves(null);
+
+      try {
+        await DfspInboundService.signDFSPInboundEnrollment(ctx, dfspId, enId);
+        assert.fail('Expected error not thrown');
+      } catch (error) {
+        assert.instanceOf(error, InvalidEntityError);
+        assert.equal(error.message, `Could not retrieve current CA for the endpoint ${enId}, dfsp id ${dfspId}`);
+      }
+    });
+
+    it('should throw an error if validateDfsp fails', async () => {
+      sinon.restore();
+      sinon.stub(PkiService, 'validateDfsp').rejects(new Error('Validation failed'));
+
+      try {
+        await DfspInboundService.signDFSPInboundEnrollment(ctx, dfspId, enId);
+        assert.fail('Expected error not thrown');
+      } catch (error) {
+        assert.equal(error.message, 'Validation failed');
+      }
+    });
+
+    it('should throw an error if findIdByDfspId fails', async () => {
+      sinon.restore();
+      sinon.stub(PkiService, 'validateDfsp').resolves();
+      sinon.stub(require('../../src/models/DFSPModel'), 'findIdByDfspId').rejects(new Error('DB error'));
+
+      try {
+        await DfspInboundService.signDFSPInboundEnrollment(ctx, dfspId, enId);
+        assert.fail('Expected error not thrown');
+      } catch (error) {
+        assert.equal(error.message, 'DB error');
+      }
+    });
+
+    it('should throw an error if sign fails', async () => {
+      sinon.restore();
+      sinon.stub(PkiService, 'validateDfsp').resolves();
+      sinon.stub(require('../../src/models/DFSPModel'), 'findIdByDfspId').resolves(dbDfspId);
+      sinon.stub(ctx.pkiEngine, 'getDFSPInboundEnrollment').resolves(enrollment);
+      sinon.stub(ctx.pkiEngine, 'sign').rejects(new Error('Sign error'));
+
+      try {
+        await DfspInboundService.signDFSPInboundEnrollment(ctx, dfspId, enId);
+        assert.fail('Expected error not thrown');
+      } catch (error) {
+        assert.equal(error.message, 'Sign error');
+      }
+    });
+
+    it('should throw an error if validateInboundEnrollment fails', async () => {
+      sinon.restore();
+      sinon.stub(PkiService, 'validateDfsp').resolves();
+      sinon.stub(require('../../src/models/DFSPModel'), 'findIdByDfspId').resolves(dbDfspId);
+      sinon.stub(ctx.pkiEngine, 'getDFSPInboundEnrollment').resolves(enrollment);
+      sinon.stub(ctx.pkiEngine, 'sign').resolves(newCert);
+      sinon.stub(ctx.pkiEngine, 'getCertInfo').returns(certInfo);
+      sinon.stub(ctx.pkiEngine, 'validateInboundEnrollment').rejects(new Error('Validation error'));
+
+      try {
+        await DfspInboundService.signDFSPInboundEnrollment(ctx, dfspId, enId);
+        assert.fail('Expected error not thrown');
+      } catch (error) {
+        assert.equal(error.message, 'Validation error');
+      }
+    });
+
+    it('should throw an error if setDFSPInboundEnrollment fails', async () => {
+      sinon.restore();
+      sinon.stub(PkiService, 'validateDfsp').resolves();
+      sinon.stub(require('../../src/models/DFSPModel'), 'findIdByDfspId').resolves(dbDfspId);
+      sinon.stub(ctx.pkiEngine, 'getDFSPInboundEnrollment').resolves(enrollment);
+      sinon.stub(ctx.pkiEngine, 'sign').resolves(newCert);
+      sinon.stub(ctx.pkiEngine, 'getCertInfo').returns(certInfo);
+      sinon.stub(ctx.pkiEngine, 'validateInboundEnrollment').resolves({ validations, validationState });
+      sinon.stub(ctx.pkiEngine, 'setDFSPInboundEnrollment').rejects(new Error('Set enrollment error'));
+
+      try {
+        await DfspInboundService.signDFSPInboundEnrollment(ctx, dfspId, enId);
+        assert.fail('Expected error not thrown');
+      } catch (error) {
+        assert.equal(error.message, 'Set enrollment error');
       }
     });
   });
