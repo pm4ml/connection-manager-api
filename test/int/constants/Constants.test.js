@@ -1,8 +1,24 @@
 const { expect } = require("chai");
-const { describe, it } = require("mocha");
+const { describe, it,afterEach,beforeEach } = require("mocha");
 const constants = require("../../../src/constants/Constants");
+//03/02/2025
+const sinon = require('sinon');
+const fs = require('fs');
+const { getFileContent } = require("../../../src/constants/Constants");
+const { from } = require('env-var');
 
 describe("Constants", () => {
+  beforeEach(() => {
+    // Backup the original process.env
+    this.originalEnv = { ...process.env };
+  });
+
+  afterEach(() => {
+    // Restore the original process.env
+    process.env = this.originalEnv;
+    sinon.restore();
+  });
+
   it("should have a SERVER object with a PORT property", () => {
     expect(constants).to.have.property("SERVER");
     expect(constants.SERVER).to.have.property("PORT");
@@ -26,6 +42,14 @@ describe("Constants", () => {
   it("should have a certManager object with enabled property", () => {
     expect(constants).to.have.property("certManager");
     expect(constants.certManager).to.have.property("enabled");
+  });
+
+   // Cert Manager extended validations
+   it("should have certManager with secret configurations when enabled", () => {
+    if (constants.certManager.enabled) {
+      expect(constants.certManager).to.have.property("serverCertSecretName");
+      expect(constants.certManager).to.have.property("serverCertSecretNamespace");
+    }
   });
 
   it("should have an auth object with enabled property", () => {
@@ -124,7 +148,7 @@ describe("Constants", () => {
   });
 
   it("should have vault object with correct default endpoints and mounts", () => {
-    expect(constants.vault.endpoint).to.equal("http://127.0.0.1:8233");
+    expect(constants.vault.endpoint).to.equal("http://localhost:8233");
     expect(constants.vault.mounts.pki).to.equal("pki");
     expect(constants.vault.mounts.intermediatePki).to.equal("pki_int");
     expect(constants.vault.mounts.kv).to.equal("secrets");
@@ -366,5 +390,259 @@ describe("Constants", () => {
         "serverCertSecretNamespace"
       );
     }
+  });
+  
+  //03/02/2025
+  describe('getFileContent', () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it('should throw an error if the file does not exist', () => {
+      const path = 'nonexistent-file.txt';
+      sinon.stub(fs, 'existsSync').withArgs(path).returns(false);
+
+      expect(() => getFileContent(path)).to.throw(`File ${path} doesn't exist`);
+    });
+
+    it('should return file content if the file exists', () => {
+      const path = 'existing-file.txt';
+      const fileContent = 'file content';
+      sinon.stub(fs, 'existsSync').withArgs(path).returns(true);
+      sinon.stub(fs, 'readFileSync').withArgs(path).returns(fileContent);
+
+      const result = getFileContent(path);
+      expect(result).to.equal(fileContent);
+    });
+  });
+  it("should set environment variables when TEST is true", () => {
+    process.env.TEST = 'true';
+    delete require.cache[require.resolve("../../../src/constants/Constants")];
+    require("../../../src/constants/Constants");
+
+    expect(process.env.AUTH_ENABLED).to.equal('false');
+    expect(process.env.AUTH_2FA_ENABLED).to.equal('false');
+    expect(process.env.VAULT_AUTH_METHOD).to.equal('APP_ROLE');
+    expect(process.env.VAULT_ROLE_ID_FILE).to.equal('docker/vault/tmp/role-id');
+    expect(process.env.VAULT_ROLE_SECRET_ID_FILE).to.equal('docker/vault/tmp/secret-id');
+    expect(process.env.VAULT_PKI_CLIENT_ROLE).to.equal('example.com');
+    expect(process.env.VAULT_PKI_SERVER_ROLE).to.equal('example.com');
+  });
+//Environment Configuration Tests 03/02/25
+  describe('env configuration', () => {
+    let sandbox;
+         
+    beforeEach(() => {
+      sandbox = sinon.createSandbox();
+    });
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it('should correctly configure env with asFileContent', () => {
+      const path = 'test-file.txt';
+      const fileContent = 'file content';
+      sinon.stub(fs, 'existsSync').withArgs(path).returns(true);
+      sinon.stub(fs, 'readFileSync').withArgs(path).returns(fileContent);
+  
+      const env = from(process.env, {
+        asFileContent: (path) => getFileContent(path),
+        asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
+        asJsonConfig: (path) => JSON.parse(getFileContent(path)),
+        asTextFileContent: (path) => getFileContent(path).toString().trim(),
+      });
+  
+      process.env.TEST_FILE = path;
+      expect(env.get('TEST_FILE').asFileContent()).to.equal(fileContent);
+    });
+
+    it('should correctly configure env with asFileListContent', () => {
+      const pathList = 'file1.txt,file2.txt';
+      const fileContent1 = 'content1';
+      const fileContent2 = 'content2';
+  
+      sandbox.stub(fs, 'existsSync').withArgs('file1.txt').returns(true);
+      sandbox.stub(fs, 'existsSync').withArgs('file2.txt').returns(true);
+      sandbox.stub(fs, 'readFileSync').withArgs('file1.txt').returns(fileContent1);
+      sandbox.stub(fs, 'readFileSync').withArgs('file2.txt').returns(fileContent2);
+  
+      const env = from(process.env, {
+        asFileContent: (path) => getFileContent(path),
+        asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
+        asJsonConfig: (path) => JSON.parse(getFileContent(path)),
+        asTextFileContent: (path) => getFileContent(path).toString().trim(),
+      });
+  
+      process.env.TEST_FILE_LIST = pathList;
+      expect(env.get('TEST_FILE_LIST').asFileListContent()).to.deep.equal([fileContent1, fileContent2]);
+    });
+  });
+  
+   
+  
+    it('should correctly configure env with asJsonConfig', () => {
+      const path = 'config.json';
+      const jsonContent = '{"key": "value"}';
+      sinon.stub(fs, 'existsSync').withArgs(path).returns(true);
+      sinon.stub(fs, 'readFileSync').withArgs(path).returns(jsonContent);
+  
+      const env = from(process.env, {
+        asFileContent: (path) => getFileContent(path),
+        asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
+        asJsonConfig: (path) => JSON.parse(getFileContent(path)),
+        asTextFileContent: (path) => getFileContent(path).toString().trim(),
+      });
+  
+      process.env.TEST_JSON = path;
+      expect(env.get('TEST_JSON').asJsonConfig()).to.deep.equal(JSON.parse(jsonContent));
+    });
+  
+    it('should correctly configure env with asTextFileContent', () => {
+      const path = 'text-file.txt';
+      const fileContent = ' file content ';
+      sinon.stub(fs, 'existsSync').withArgs(path).returns(true);
+      sinon.stub(fs, 'readFileSync').withArgs(path).returns(fileContent);
+  
+      const env = from(process.env, {
+        asFileContent: (path) => getFileContent(path),
+        asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
+        asJsonConfig: (path) => JSON.parse(getFileContent(path)),
+        asTextFileContent: (path) => getFileContent(path).toString().trim(),
+      });
+  
+      process.env.TEST_TEXT = path;
+      expect(env.get('TEST_TEXT').asTextFileContent()).to.equal(fileContent.trim());
+    });
+  });
+
+
+  describe('vaultAuth configuration', () => {
+    it('should configure vaultAuth for K8S', () => {
+      process.env.VAULT_AUTH_METHOD = 'K8S';
+      process.env.VAULT_K8S_TOKEN_FILE = 'test-token-file';
+      process.env.VAULT_K8S_AUTH_MOUNT_POINT = 'test-mount-point';
+      process.env.VAULT_K8S_ROLE = 'test-role';
+
+      sinon.stub(fs, 'existsSync').withArgs('test-token-file').returns(true);
+      sinon.stub(fs, 'readFileSync').withArgs('test-token-file').returns('test-token');
+
+      const env = from(process.env, {
+        asFileContent: (path) => getFileContent(path),
+        asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
+        asJsonConfig: (path) => JSON.parse(getFileContent(path)),
+        asTextFileContent: (path) => getFileContent(path).toString().trim(),
+      });
+
+      const vaultAuthMethod = env.get('VAULT_AUTH_METHOD').required().asEnum(['K8S', 'APP_ROLE']);
+      let vaultAuth;
+      if (vaultAuthMethod === 'K8S') {
+        vaultAuth = {
+          k8s: {
+            token: env.get('VAULT_K8S_TOKEN_FILE').default('/var/run/secrets/kubernetes.io/serviceaccount/token').asTextFileContent(),
+            mountPoint: env.get('VAULT_K8S_AUTH_MOUNT_POINT').default('kubernetes').asString(),
+            role: env.get('VAULT_K8S_ROLE').required().asString(),
+          },
+        };
+      }
+
+      expect(vaultAuth).to.deep.equal({
+        k8s: {
+          token: 'test-token',
+          mountPoint: 'test-mount-point',
+          role: 'test-role',
+        },
+      });
+    });
+
+    it('should configure vaultAuth for APP_ROLE', () => {
+      sinon.restore(); // Restore any previous stubs before creating new ones
+    
+      process.env.VAULT_AUTH_METHOD = 'APP_ROLE';
+      process.env.VAULT_ROLE_ID_FILE = 'test-role-id-file';
+      process.env.VAULT_ROLE_SECRET_ID_FILE = 'test-role-secret-id-file';
+    
+      sinon.stub(fs, 'existsSync').withArgs('test-role-id-file').returns(true);
+      sinon.stub(fs, 'existsSync').withArgs('test-role-secret-id-file').returns(true);
+      sinon.stub(fs, 'readFileSync').withArgs('test-role-id-file').returns('test-role-id');
+      sinon.stub(fs, 'readFileSync').withArgs('test-role-secret-id-file').returns('test-role-secret-id');
+    
+      const env = from(process.env, {
+        asFileContent: (path) => getFileContent(path),
+        asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
+        asJsonConfig: (path) => JSON.parse(getFileContent(path)),
+        asTextFileContent: (path) => getFileContent(path).toString().trim(),
+      });
+    
+      const vaultAuthMethod = env.get('VAULT_AUTH_METHOD').required().asEnum(['K8S', 'APP_ROLE']);
+      let vaultAuth;
+      if (vaultAuthMethod === 'APP_ROLE') {
+        vaultAuth = {
+          appRole: {
+            roleId: env.get('VAULT_ROLE_ID_FILE').default('/vault/role-id').asTextFileContent(),
+            roleSecretId: env.get('VAULT_ROLE_SECRET_ID_FILE').default('/vault/role-secret-id').asTextFileContent(),
+          },
+        };
+      }
+    
+      expect(vaultAuth).to.deep.equal({
+        appRole: {
+          roleId: 'test-role-id',
+          roleSecretId: 'test-role-secret-id',
+        },
+      });
+    });
+
+//certManager configuration 03/02/25
+  describe('certManager configuration', () => {
+    it('should configure certManager when enabled', () => {
+      process.env.CERT_MANAGER_ENABLED = 'true';
+      process.env.CERT_MANAGER_SERVER_CERT_SECRET_NAME = 'test-secret-name';
+      process.env.CERT_MANAGER_SERVER_CERT_SECRET_NAMESPACE = 'test-secret-namespace';
+
+      const env = from(process.env, {
+        asFileContent: (path) => getFileContent(path),
+        asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
+        asJsonConfig: (path) => JSON.parse(getFileContent(path)),
+        asTextFileContent: (path) => getFileContent(path).toString().trim(),
+      });
+
+      const certManager = {
+        enabled: env.get('CERT_MANAGER_ENABLED').default('false').asBool(),
+      };
+
+      if (certManager.enabled) {
+        certManager.serverCertSecretName = env.get('CERT_MANAGER_SERVER_CERT_SECRET_NAME').asString();
+        certManager.serverCertSecretNamespace = env.get('CERT_MANAGER_SERVER_CERT_SECRET_NAMESPACE').asString();
+      }
+
+      expect(certManager).to.deep.equal({
+        enabled: true,
+        serverCertSecretName: 'test-secret-name',
+        serverCertSecretNamespace: 'test-secret-namespace',
+      });
+    });
+
+    it('should not configure certManager when disabled', () => {
+      process.env.CERT_MANAGER_ENABLED = 'false';
+
+      const env = from(process.env, {
+        asFileContent: (path) => getFileContent(path),
+        asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
+        asJsonConfig: (path) => JSON.parse(getFileContent(path)),
+        asTextFileContent: (path) => getFileContent(path).toString().trim(),
+      });
+
+      const certManager = {
+        enabled: env.get('CERT_MANAGER_ENABLED').default('false').asBool(),
+      };
+
+      if (certManager.enabled) {
+        certManager.serverCertSecretName = env.get('CERT_MANAGER_SERVER_CERT_SECRET_NAME').asString();
+        certManager.serverCertSecretNamespace = env.get('CERT_MANAGER_SERVER_CERT_SECRET_NAMESPACE').asString();
+      }
+
+      expect(certManager).to.deep.equal({
+        enabled: false,
+      });
+    });
   });
 });

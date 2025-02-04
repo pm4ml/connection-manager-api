@@ -77,6 +77,7 @@ if (certManager.enabled) {
 }
 
 module.exports = {
+  getFileContent,
   SERVER: {
     PORT: env.get('PORT').default('3001').asPortNumber(),
   },
