@@ -125,6 +125,67 @@ describe('DfspNetworkConfigService Unit Tests', () => {
         assert.equal(error.message, 'No ports received');
       }
     });
+
+    it('should throw ValidationError when creating DFSP Ingress with empty body', async () => {
+      const emptyBody = {};
+
+      try {
+        await DfspNetworkConfigService.createDFSPIngress(ctx, dfspId, emptyBody);
+        assert.fail('Expected ValidationError'); 
+      } catch (error) {
+        assert(error instanceof ValidationError);
+      }
+    });
+
+    it('should update existing DFSP Ingress config', async () => {
+      const originalBody = { url: 'http://original.com' };
+      const updatedBody = { url: 'http://updated.com' };
+
+      const original = await DfspNetworkConfigService.createDFSPIngress(ctx, dfspId, originalBody);
+      const updated = await DfspNetworkConfigService.createDFSPIngress(ctx, dfspId, updatedBody);
+
+      assert.equal(updated.url, updatedBody.url);
+      assert.notEqual(updated.url, original.url);
+      assert.equal(updated.state, StatusEnum.NOT_STARTED);
+    });
+
+    it('should maintain consistent state between create and get operations', async () => {
+      const body = { url: 'http://test.com' };
+      
+      const created = await DfspNetworkConfigService.createDFSPIngress(ctx, dfspId, body);
+      const retrieved = await DfspNetworkConfigService.getDFSPIngress(ctx, dfspId);
+
+      assert.deepEqual(created, retrieved);
+      assert.equal(created.dfspId, retrieved.dfspId);
+      assert.equal(created.state, retrieved.state); 
+      assert.equal(created.url, retrieved.url);
+    });
+
+    it('should throw NotFoundError when getting non-existent DFSP Ingress', async () => {
+      const nonExistentDfspId = 'NONEXISTENT_DFSP';
+
+      try {
+        await DfspNetworkConfigService.getDFSPIngress(ctx, nonExistentDfspId);
+        assert.fail('Expected NotFoundError');
+      } catch (error) {
+        assert(error instanceof NotFoundError);
+        assert.include(error.message, 'not found');
+      }
+    });
+
+    it('should create DFSP Ingress with minimum required fields', async () => {
+      const minimalBody = {
+        url: 'http://minimal.com'
+      };
+
+      const result = await DfspNetworkConfigService.createDFSPIngress(ctx, dfspId, minimalBody);
+
+      assert.equal(result.dfspId, dfspId);
+      assert.equal(result.url, minimalBody.url);
+      assert.equal(result.state, StatusEnum.NOT_STARTED);
+      assert.property(result, 'createdAt');
+      assert.notProperty(result, 'direction');
+    });
   });
 
   // Test getDFSPEgress
