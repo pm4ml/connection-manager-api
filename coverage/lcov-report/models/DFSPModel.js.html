@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">88.67% </span>
+                <span class="strong">96.22% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>47/53</span>
+                <span class='fraction'>51/53</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">71.42% </span>
+                <span class="strong">92.85% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>10/14</span>
+                <span class='fraction'>13/14</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">87.5% </span>
+                <span class="strong">93.75% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>14/16</span>
+                <span class='fraction'>15/16</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">88.46% </span>
+                <span class="strong">96.15% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>46/52</span>
+                <span class='fraction'>50/52</span>
             </div>
         
             
@@ -216,40 +216,40 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">389x</span>
+<span class="cline-any cline-yes">392x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">465x</span>
-<span class="cline-any cline-yes">465x</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">450x</span>
-<span class="cline-any cline-yes">450x</span>
+<span class="cline-any cline-yes">468x</span>
+<span class="cline-any cline-yes">468x</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">452x</span>
+<span class="cline-any cline-yes">451x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -260,15 +260,15 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">65x</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">67x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -356,8 +356,8 @@ const findByField = async (columnName, value) =&gt; {
     throw new NotFoundError(`dfsp with ${columnName} = ${value}`);
   } else if (rows.length === 1) {
     return rows[0];
-  } else <span class="missing-if-branch" title="else path not taken" >E</span>{
-<span class="cstat-no" title="statement not covered" >    throw new InternalError('E_TOO_MANY_ROWS');</span>
+  } else {
+    throw new InternalError('E_TOO_MANY_ROWS');
   }
 };
 &nbsp;
@@ -365,8 +365,8 @@ const findAllByField = async (columnName, value) =&gt; {
   const rows = await knex.table(DFSP_TABLE).where(columnName, value).select();
   if (rows.length === 0) {
     throw new NotFoundError(`dfsp with ${columnName} = ${value}`);
-  } else <span class="missing-if-branch" title="else path not taken" >E</span>{
-<span class="cstat-no" title="statement not covered" >    return rows;</span>
+  } else {
+    return rows;
   }
 };
 &nbsp;
@@ -378,14 +378,14 @@ exports.create = async (values) =&gt; {
 &nbsp;
 exports.createFxpSupportedCurrencies = async (dfsp_id, monetaryZoneIds) =&gt; {
   if (!monetaryZoneIds?.length) return;
-  const dfspId = <span class="cstat-no" title="statement not covered" >await findIdByDfspId(dfsp_id);</span>
+  const dfspId = await findIdByDfspId(dfsp_id);
 <span class="cstat-no" title="statement not covered" >  return knex.table('fxp_supported_currencies').insert(</span>
     monetaryZoneIds.map(<span class="fstat-no" title="function not covered" >(m</span>onetaryZoneId) =&gt; (<span class="cstat-no" title="statement not covered" >{ dfspId, monetaryZoneId })</span>)
   );
 };
 &nbsp;
-exports.deleteByRawId = <span class="fstat-no" title="function not covered" >as</span>ync (id) =&gt; {
-<span class="cstat-no" title="statement not covered" >  return knex.table(DFSP_TABLE).where({ id }).del();</span>
+exports.deleteByRawId = async (id) =&gt; {
+  return knex.table(DFSP_TABLE).where({ id }).del();
 };
 &nbsp;
 exports.delete = async (dfspId) =&gt; {
@@ -421,7 +421,7 @@ const rowToObject = (dfsp) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at Wed Feb 05 2025 10:24:01 GMT+0200 (Central Africa Time)
+                at Wed Feb 05 2025 11:10:05 GMT+0200 (Central Africa Time)
             </div>
         <script src="../prettify.js"></script>
         <script>
