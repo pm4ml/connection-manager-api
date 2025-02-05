@@ -30,9 +30,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">89.86% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>133/148</span>
+                <span class='fraction'>148/148</span>
             </div>
         
             
@@ -57,7 +57,7 @@
         <template id="filterTemplate">
             <div class="quiet">
                 Filter:
-                <input type="search" id="fileSearch">
+                <input oninput="onInput()" type="search" id="fileSearch">
             </div>
         </template>
     </div>
@@ -170,7 +170,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">22x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -179,7 +179,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">22x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -188,12 +188,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">16x</span>
-<span class="cline-any cline-yes">16x</span>
-<span class="cline-any cline-yes">16x</span>
-<span class="cline-any cline-yes">16x</span>
-<span class="cline-any cline-yes">16x</span>
-<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">22x</span>
+<span class="cline-any cline-yes">22x</span>
+<span class="cline-any cline-yes">22x</span>
+<span class="cline-any cline-yes">22x</span>
+<span class="cline-any cline-yes">22x</span>
+<span class="cline-any cline-yes">22x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -201,19 +201,19 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">22x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">17x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">27x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -251,22 +251,22 @@ module.exports = class CertInfo {
    */
   constructor (doc) {
     this.subject = {
-      CN: doc &amp;&amp; doc.subject &amp;&amp; doc.subject.common_name ? Array.isArray(doc.subject.common_name) ? <span class="branch-0 cbranch-no" title="branch not covered" >doc.subject.common_name.join() </span>: doc.subject.common_name : null,
-      O: doc &amp;&amp; doc.subject &amp;&amp; doc.subject.organization ? Array.isArray(doc.subject.organization) ? <span class="branch-0 cbranch-no" title="branch not covered" >doc.subject.organization.join() </span>: doc.subject.organization : null,
-      OU: doc &amp;&amp; doc.subject &amp;&amp; doc.subject.organizational_unit ? Array.isArray(doc.subject.organizational_unit) ? <span class="branch-0 cbranch-no" title="branch not covered" >doc.subject.organizational_unit.join() </span>: doc.subject.organizational_unit : null,
-      C: doc &amp;&amp; doc.subject &amp;&amp; doc.subject.country ? Array.isArray(doc.subject.country) ? <span class="branch-0 cbranch-no" title="branch not covered" >doc.subject.country.join() </span>: doc.subject.country : null,
-      L: doc &amp;&amp; doc.subject &amp;&amp; doc.subject.locality ? Array.isArray(doc.subject.locality) ? <span class="branch-0 cbranch-no" title="branch not covered" >doc.subject.locality.join() </span>: doc.subject.locality : null,
-      emailAddress: doc &amp;&amp; doc.subject &amp;&amp; doc.subject.email_address ? Array.isArray(doc.subject.email_address) ? <span class="branch-0 cbranch-no" title="branch not covered" >doc.subject.email_address.join() </span>: doc.subject.email_address : null,
-      ST: doc &amp;&amp; doc.subject &amp;&amp; doc.subject.province ? Array.isArray(doc.subject.province) ? <span class="branch-0 cbranch-no" title="branch not covered" >doc.subject.province.join() </span>: doc.subject.province : null
+      CN: doc &amp;&amp; doc.subject &amp;&amp; doc.subject.common_name ? Array.isArray(doc.subject.common_name) ? doc.subject.common_name.join() : doc.subject.common_name : null,
+      O: doc &amp;&amp; doc.subject &amp;&amp; doc.subject.organization ? Array.isArray(doc.subject.organization) ? doc.subject.organization.join() : doc.subject.organization : null,
+      OU: doc &amp;&amp; doc.subject &amp;&amp; doc.subject.organizational_unit ? Array.isArray(doc.subject.organizational_unit) ? doc.subject.organizational_unit.join() : doc.subject.organizational_unit : null,
+      C: doc &amp;&amp; doc.subject &amp;&amp; doc.subject.country ? Array.isArray(doc.subject.country) ? doc.subject.country.join() : doc.subject.country : null,
+      L: doc &amp;&amp; doc.subject &amp;&amp; doc.subject.locality ? Array.isArray(doc.subject.locality) ? doc.subject.locality.join() : doc.subject.locality : null,
+      emailAddress: doc &amp;&amp; doc.subject &amp;&amp; doc.subject.email_address ? Array.isArray(doc.subject.email_address) ? doc.subject.email_address.join() : doc.subject.email_address : null,
+      ST: doc &amp;&amp; doc.subject &amp;&amp; doc.subject.province ? Array.isArray(doc.subject.province) ? doc.subject.province.join() : doc.subject.province : null
     };
     this.issuer = {
-      CN: doc &amp;&amp; doc.issuer &amp;&amp; doc.issuer.common_name ? Array.isArray(doc.issuer.common_name) ? <span class="branch-0 cbranch-no" title="branch not covered" >doc.issuer.common_name.join() </span>: doc.issuer.common_name : null,
-      O: doc &amp;&amp; doc.issuer &amp;&amp; doc.issuer.organization ? Array.isArray(doc.issuer.organization) ? <span class="branch-0 cbranch-no" title="branch not covered" >doc.issuer.organization.join() </span>: doc.issuer.organization : null,
-      OU: doc &amp;&amp; doc.issuer &amp;&amp; doc.issuer.organizational_unit ? Array.isArray(doc.issuer.organizational_unit) ? <span class="branch-0 cbranch-no" title="branch not covered" >doc.issuer.organizational_unit.join() </span>: doc.issuer.organizational_unit : null,
-      C: doc &amp;&amp; doc.issuer &amp;&amp; doc.issuer.country ? Array.isArray(doc.issuer.country) ? <span class="branch-0 cbranch-no" title="branch not covered" >doc.issuer.country.join() </span>: doc.issuer.country : null,
-      L: doc &amp;&amp; doc.issuer &amp;&amp; doc.issuer.locality ? Array.isArray(doc.issuer.locality) ? <span class="branch-0 cbranch-no" title="branch not covered" >doc.issuer.locality.join() </span>: doc.issuer.locality : null,
-      emailAddress: doc &amp;&amp; doc.issuer &amp;&amp; doc.issuer.email_address ? Array.isArray(doc.issuer.email_address) ? <span class="branch-0 cbranch-no" title="branch not covered" >doc.issuer.email_address.join() </span>: doc.issuer.email_address : null,
-      ST: doc &amp;&amp; doc.issuer &amp;&amp; doc.issuer.province ? Array.isArray(doc.issuer.province) ? <span class="branch-0 cbranch-no" title="branch not covered" >doc.issuer.province.join() </span>: doc.issuer.province : null
+      CN: doc &amp;&amp; doc.issuer &amp;&amp; doc.issuer.common_name ? Array.isArray(doc.issuer.common_name) ? doc.issuer.common_name.join() : doc.issuer.common_name : null,
+      O: doc &amp;&amp; doc.issuer &amp;&amp; doc.issuer.organization ? Array.isArray(doc.issuer.organization) ? doc.issuer.organization.join() : doc.issuer.organization : null,
+      OU: doc &amp;&amp; doc.issuer &amp;&amp; doc.issuer.organizational_unit ? Array.isArray(doc.issuer.organizational_unit) ? doc.issuer.organizational_unit.join() : doc.issuer.organizational_unit : null,
+      C: doc &amp;&amp; doc.issuer &amp;&amp; doc.issuer.country ? Array.isArray(doc.issuer.country) ? doc.issuer.country.join() : doc.issuer.country : null,
+      L: doc &amp;&amp; doc.issuer &amp;&amp; doc.issuer.locality ? Array.isArray(doc.issuer.locality) ? doc.issuer.locality.join() : doc.issuer.locality : null,
+      emailAddress: doc &amp;&amp; doc.issuer &amp;&amp; doc.issuer.email_address ? Array.isArray(doc.issuer.email_address) ? doc.issuer.email_address.join() : doc.issuer.email_address : null,
+      ST: doc &amp;&amp; doc.issuer &amp;&amp; doc.issuer.province ? Array.isArray(doc.issuer.province) ? doc.issuer.province.join() : doc.issuer.province : null
     };
     this.serialNumber = doc &amp;&amp; doc.serial_number ? doc.serial_number : null;
     this.notBefore = doc &amp;&amp; doc.not_before ? doc.not_before : null;
@@ -290,7 +290,7 @@ module.exports = class CertInfo {
       const array = doc.subject.names;
       for (let index = 0; index &lt; array.length; index++) {
         const name = array[index];
-        <span class="missing-if-branch" title="else path not taken" >E</span>if ((/^\S+@\S+$/).test(name)) {
+        if ((/^\S+@\S+$/).test(name)) {
           // has email
           this.subject.emailAddress = name;
           break;
@@ -310,7 +310,7 @@ module.exports = class CertInfo {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-02-04T10:13:33.576Z
+                at Wed Feb 05 2025 09:12:15 GMT+0200 (Central Africa Time)
             </div>
         <script src="../prettify.js"></script>
         <script>

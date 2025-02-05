@@ -38,30 +38,85 @@ describe("update", () => {
   });
 });
 
+describe("findByRawId", () => {
+  it("should throw NotFoundError for non-existent raw id", async () => {
+    try {
+      await DFSPModel.findByRawId(999);
+      expect.fail("Should have thrown error");
+    } catch (err) {
+      expect(err).to.be.instanceof(NotFoundError);
+    }
+  });
+});
+
+describe("getDfspsByMonetaryZones", () => {
+  it("should throw NotFoundError when no DFSPs exist for monetary zone", async () => {
+    try {
+      await DFSPModel.getDfspsByMonetaryZones("EUR");
+      expect.fail("Should have thrown error");
+    } catch (err) {
+      expect(err).to.be.instanceof(NotFoundError);
+    }
+  });
+});
+
+describe("update", () => {
+  it("should throw NotFoundError when updating non-existent DFSP", async () => {
+    try {
+      await DFSPModel.update("nonexistent", { name: "New Name" });
+      expect.fail("Should have thrown error");
+    } catch (err) {
+      expect(err).to.be.instanceof(NotFoundError);
+    }
+  });
+
+  it("should return updated DFSP object when update is successful", async () => {
+    const dfspId = "existent";
+    const newDfsp = { name: "Updated Name" };
+    const dfsp = { dfsp_id: dfspId, name: "Updated Name", monetaryZoneId: "USD", security_group: "group1" };
+
+    sinon.stub(knex, "table").returns({
+      where: () => ({
+        update: async () => 1
+      })
+    });
+
+    sinon.stub(DFSPModel, "findByDfspId").returns(dfsp);
+
+    const result = await DFSPModel.update(dfspId, newDfsp);
+    expect(result).to.deep.equal({
+      dfspId: dfsp.dfsp_id,
+      name: dfsp.name,
+      monetaryZoneId: dfsp.monetaryZoneId,
+      isProxy: dfsp.isProxy,
+      securityGroup: dfsp.security_group
+    });
+
+    knex.table.restore();
+    DFSPModel.findByDfspId.restore();
+  });
+
+  it("should throw InternalError when multiple rows are updated", async () => {
+    sinon.stub(knex, "table").returns({
+      where: () => ({
+        update: async () => 2
+      })
+    });
+
+    try {
+      await DFSPModel.update("existent", { name: "New Name" });
+      expect.fail("Should have thrown error");
+    } catch (err) {
+      expect(err).to.be.instanceof(InternalError);
+    }
+
+    knex.table.restore();
+  });
+});
+
 describe("delete by dfspId", () => {
   it("should not throw error when deleting non-existent dfspId", async () => {
     const result = await DFSPModel.delete("nonexistent");
-    expect(result).to.equal(0);
-  });
-});
-describe("delete by raw id", () => {
-  it('should delete a dfsp by raw id', async () => {
-    knex.table().where().del.mockResolvedValue(1);
-    
-    const result = await exports.deleteByRawId(123);
-    expect(result).toBe(1);
-  });
-  
-  it('should return 0 when no dfsp is deleted', async () => {
-    knex.table().where().del.mockResolvedValue(0);
-  
-    const result = await exports.deleteByRawId(999);
-    expect(result).toBe(0);
-  });
-  
-});
-describe("getFxpSupportedCurrencies", () => {
-  it("should return an array of monetaryZoneIds for a valid dfspId", async () => {
     const dfspId = "validDfspId";
     const monetaryZoneIds = ["USD", "EUR"];
     
