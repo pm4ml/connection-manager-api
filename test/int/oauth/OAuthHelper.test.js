@@ -164,4 +164,262 @@ describe('OAuthHelper', () => {
       }
     });
   });
+
+  describe('createOAuth2Handler - additional tests', () => {
+    let handler;
+    let mockReq;
+  
+    beforeEach(() => {
+      handler = createOAuth2Handler();
+      mockReq = {
+        user: { name: 'testUser' },
+        openapi: {
+          openApiRoute: '/api/test',
+          pathParams: { dfspId: 'test-dfsp' }
+        },
+        context: { testContext: true }
+      };
+    });
+  
+    it('should reject when authentication fails', async () => {
+      sandbox.stub(passport, 'authenticate').callsFake((strategy, options, callback) => {
+        return (req) => callback(new Error('Auth failed'));
+      });
+  
+      try {
+        await handler(mockReq, ['PTA_ROLE'], {});
+        expect.fail('Should have thrown error');
+      } catch (err) {
+        expect(err.message).to.equal('Auth failed');
+      }
+    });
+  
+    it('should handle PkiService errors gracefully', async () => {
+      mockReq.openapi.openApiRoute = '/dfsps/{dfspId}';
+      sandbox.stub(PkiService, 'getDFSPById').rejects(new Error('Database error'));
+  
+      try {
+        await handler(mockReq, ['MTA_ROLE'], {});
+        expect.fail('Should have thrown error');
+      } catch (err) {
+        expect(err.statusCode).to.equal(500);
+        expect(err.headers['X-AUTH-ERROR']).to.equal('Database error');
+      }
+    });
+  
+    it('should pass for non-DFSP routes with valid roles', async () => {
+      sandbox.stub(passport, 'authenticate').callsFake((strategy, options, callback) => {
+        return (req) => callback(null, req.user, { roles: { MTA_ROLE: true } });
+      });
+  
+      const result = await handler(mockReq, ['MTA_ROLE'], {});
+      expect(result).to.be.true;
+    });
+  
+    it('should handle missing openapi path info', async () => {
+      delete mockReq.openapi;
+      sandbox.stub(passport, 'authenticate').callsFake((strategy, options, callback) => {
+        return (req) => callback(null, req.user, { roles: { MTA_ROLE: true } });
+      });
+  
+      const result = await handler(mockReq, ['MTA_ROLE'], {});
+      expect(result).to.be.true;
+    });
+  });
+  
+  describe('verifyCallback - additional tests', () => {
+    let strategy;
+  
+    beforeEach(() => {
+      strategy = createJwtStrategy();
+    });
+  
+    it('should reject payload with invalid issuer', (done) => {
+      const invalidPayload = {
+        sub: 'testUser',
+        iss: 'https://wrong.issuer',
+        groups: ['MTA_ROLE']
+      };
+  
+      strategy._verify({}, invalidPayload, (err, client, info) => {
+        expect(client).to.be.false;
+        expect(info).to.contain('wrong issuer');
+        done();
+      });
+    });
+  
+    it('should reject payload without groups', (done) => {
+      const invalidPayload = {
+        sub: 'testUser',
+        iss: Constants.OAUTH.OAUTH2_ISSUER
+      };
+  
+      strategy._verify({}, invalidPayload, (err, client, info) => {
+        expect(client).to.be.false;
+        expect(info).to.contain('no groups');
+        done();
+      });
+    });
+  
+    it('should correctly process multiple roles including custom ones', (done) => {
+      const payload = {
+        sub: 'testUser',
+        iss: Constants.OAUTH.OAUTH2_ISSUER,
+        groups: ['MTA_ROLE', 'CUSTOM_ROLE', 'EVERYONE_ROLE']
+      };
+  
+      strategy._verify({}, payload, (err, client, authInfo) => {
+        expect(err).to.be.null;
+        expect(client).to.deep.equal({ name: 'testUser' });
+        expect(authInfo.roles).to.have.property('mta', true);
+        expect(authInfo.roles).to.have.property('everyone', true);
+        expect(authInfo.roles).to.have.property('CUSTOM_ROLE', true);
+        done();
+      });
+    });
+  
+    it('should accept alternative token issuer', (done) => {
+      const payload = {
+        sub: 'testUser',
+        iss: Constants.OAUTH.OAUTH2_TOKEN_ISS,
+        groups: ['PTA_ROLE']
+      };
+  
+      strategy._verify({}, payload, (err, client, authInfo) => {
+        expect(err).to.be.null;
+        expect(client).to.deep.equal({ name: 'testUser' });
+        expect(authInfo.roles).to.have.property('pta', true);
+        done();
+      });
+    });
+  });
+
+  describe('createOAuth2Handler - additional tests', () => {
+    let handler;
+    let mockReq;
+  
+    beforeEach(() => {
+      handler = createOAuth2Handler();
+      mockReq = {
+        user: { name: 'testUser' },
+        openapi: {
+          openApiRoute: '/api/test',
+          pathParams: { dfspId: 'test-dfsp' }
+        },
+        context: { testContext: true }
+      };
+    });
+  
+    it('should reject when authentication fails', async () => {
+      sandbox.stub(passport, 'authenticate').callsFake((strategy, options, callback) => {
+        return (req) => callback(new Error('Auth failed'));
+      });
+  
+      try {
+        await handler(mockReq, ['PTA_ROLE'], {});
+        expect.fail('Should have thrown error');
+      } catch (err) {
+        expect(err.message).to.equal('Auth failed');
+      }
+    });
+  
+    it('should handle PkiService errors gracefully', async () => {
+      mockReq.openapi.openApiRoute = '/dfsps/{dfspId}';
+      sandbox.stub(PkiService, 'getDFSPById').rejects(new Error('Database error'));
+  
+      try {
+        await handler(mockReq, ['MTA_ROLE'], {});
+        expect.fail('Should have thrown error');
+      } catch (err) {
+        expect(err.statusCode).to.equal(500);
+        expect(err.headers['X-AUTH-ERROR']).to.equal('Database error');
+      }
+    });
+  
+    it('should pass for non-DFSP routes with valid roles', async () => {
+      sandbox.stub(passport, 'authenticate').callsFake((strategy, options, callback) => {
+        return (req) => callback(null, req.user, { roles: { MTA_ROLE: true } });
+      });
+  
+      const result = await handler(mockReq, ['MTA_ROLE'], {});
+      expect(result).to.be.true;
+    });
+  
+    it('should handle missing openapi path info', async () => {
+      delete mockReq.openapi;
+      sandbox.stub(passport, 'authenticate').callsFake((strategy, options, callback) => {
+        return (req) => callback(null, req.user, { roles: { MTA_ROLE: true } });
+      });
+  
+      const result = await handler(mockReq, ['MTA_ROLE'], {});
+      expect(result).to.be.true;
+    });
+  });
+  
+  describe('verifyCallback - additional tests', () => {
+    let strategy;
+  
+    beforeEach(() => {
+      strategy = createJwtStrategy();
+    });
+  
+    it('should reject payload with invalid issuer', (done) => {
+      const invalidPayload = {
+        sub: 'testUser',
+        iss: 'https://wrong.issuer',
+        groups: ['MTA_ROLE']
+      };
+  
+      strategy._verify({}, invalidPayload, (err, client, info) => {
+        expect(client).to.be.false;
+        expect(info).to.contain('wrong issuer');
+        done();
+      });
+    });
+  
+    it('should reject payload without groups', (done) => {
+      const invalidPayload = {
+        sub: 'testUser',
+        iss: Constants.OAUTH.OAUTH2_ISSUER
+      };
+  
+      strategy._verify({}, invalidPayload, (err, client, info) => {
+        expect(client).to.be.false;
+        expect(info).to.contain('no groups');
+        done();
+      });
+    });
+  
+    it('should correctly process multiple roles including custom ones', (done) => {
+      const payload = {
+        sub: 'testUser',
+        iss: Constants.OAUTH.OAUTH2_ISSUER,
+        groups: ['MTA_ROLE', 'CUSTOM_ROLE', 'EVERYONE_ROLE']
+      };
+  
+      strategy._verify({}, payload, (err, client, authInfo) => {
+        expect(err).to.be.null;
+        expect(client).to.deep.equal({ name: 'testUser' });
+        expect(authInfo.roles).to.have.property('mta', true);
+        expect(authInfo.roles).to.have.property('everyone', true);
+        expect(authInfo.roles).to.have.property('CUSTOM_ROLE', true);
+        done();
+      });
+    });
+  
+    it('should accept alternative token issuer', (done) => {
+      const payload = {
+        sub: 'testUser',
+        iss: Constants.OAUTH.OAUTH2_TOKEN_ISS,
+        groups: ['PTA_ROLE']
+      };
+  
+      strategy._verify({}, payload, (err, client, authInfo) => {
+        expect(err).to.be.null;
+        expect(client).to.deep.equal({ name: 'testUser' });
+        expect(authInfo.roles).to.have.property('pta', true);
+        done();
+      });
+    });
+  });
 });

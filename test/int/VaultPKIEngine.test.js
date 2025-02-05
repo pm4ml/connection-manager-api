@@ -137,6 +137,67 @@ describe("PKIEngine", () => {
         csrInfo.extensions.subjectAltName.dns[0]
       );
     }).timeout(15000);
+
+    it("should create a CSR with only required subject fields", async () => {
+      const csrParameters = {
+        subject: {
+          CN: "dfsp.test.modusbox.com",
+          O: "Modusbox"
+        }
+      };
+      const keyCSRPair = await ctx.pkiEngine.createCSR(csrParameters);
+      const csrInfo = ctx.pkiEngine.getCSRInfo(keyCSRPair.csr);
+      assert.equal(csrInfo.subject.CN, csrParameters.subject.CN);
+      assert.equal(csrInfo.subject.O, csrParameters.subject.O);
+    });
+
+    it("should create a CSR with only DNS subject alternative names", async () => {
+      const csrParameters = {
+        subject: {
+          CN: "dfsp.test.modusbox.com",
+          O: "Modusbox"
+        },
+        extensions: {
+          subjectAltName: {
+            dns: ["dfsp1.test.modusbox.com", "dfsp2.test.modusbox.com"]
+          }
+        }
+      };
+      const keyCSRPair = await ctx.pkiEngine.createCSR(csrParameters);
+      const csrInfo = ctx.pkiEngine.getCSRInfo(keyCSRPair.csr);
+      assert.deepEqual(csrInfo.extensions.subjectAltName.dns, csrParameters.extensions.subjectAltName.dns);
+      assert.isEmpty(csrInfo.extensions.subjectAltName.ips);
+    });
+
+    it("should create a CSR with only IP subject alternative names", async () => {
+      const csrParameters = {
+        subject: {
+          CN: "dfsp.test.modusbox.com",
+          O: "Modusbox"
+        },
+        extensions: {
+          subjectAltName: {
+            ips: ["192.168.1.1", "192.168.1.2"]
+          }
+        }
+      };
+      const keyCSRPair = await ctx.pkiEngine.createCSR(csrParameters);
+      const csrInfo = ctx.pkiEngine.getCSRInfo(keyCSRPair.csr);
+      assert.deepEqual(csrInfo.extensions.subjectAltName.ips, csrParameters.extensions.subjectAltName.ips);
+      assert.isEmpty(csrInfo.extensions.subjectAltName.dns);
+    });
+
+    it("should create a CSR with configured key length", async () => {
+      const csrParameters = {
+        subject: {
+          CN: "dfsp.test.modusbox.com",
+          O: "Modusbox"
+        }
+      };
+      const keyCSRPair = await ctx.pkiEngine.createCSR(csrParameters);
+      const csrInfo = ctx.pkiEngine.getCSRInfo(keyCSRPair.csr);
+      assert.equal(csrInfo.publicKeyLength, ctx.pkiEngine.keyLength);
+    });
   });
 
   describe("verify Certs", () => {
