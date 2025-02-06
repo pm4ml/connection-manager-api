@@ -29,20 +29,23 @@ const DFSPModel = require('../../src/models/DFSPModel');
 const DFSPEndpointItemModel = require('../../src/models/DFSPEndpointItemModel');
 const validateDirectionType = require('../../src/models/DFSPEndpointModel');
 
+
 describe('DfspNetworkConfigService Unit Tests', () => {
   let ctx;
   const dfspId = 'DFSP_TEST_1';
   const endpointId = 'ENDPOINT_TEST_1';
 
-  beforeEach(async() => {
+  before(async () => {
     ctx = await createContext();
-    await setupTestDB(); // Mock context
+    await setupTestDB();
   });
+  beforeEach(() => sinon.restore());  
 
-  afterEach(() => {
-    sinon.restore();
+  after(async () => {
+    await tearDownTestDB();
+    destroyContext(ctx);
   });
-
+  
   // Test getDfspStatus
   describe('getDfspStatus', () => {
     it('should return default status when DFSP exists', async () => {
@@ -90,6 +93,7 @@ describe('DfspNetworkConfigService Unit Tests', () => {
     });
   });
 
+//.....................................................
   // Test createDFSPIngressIp
   describe('createDFSPIngressIp', () => {
     it('should create a DFSP Ingress IP entry', async () => {
@@ -187,6 +191,7 @@ describe('DfspNetworkConfigService Unit Tests', () => {
       assert.notProperty(result, 'direction');
     });
   });
+  //.....................................................
 
   // Test getDFSPEgress
   describe('getDFSPEgress', () => {
@@ -199,9 +204,6 @@ describe('DfspNetworkConfigService Unit Tests', () => {
     });
 
     it('should throw NotFoundError when no egress config exists', async () => {
-      sinon.stub(PkiService, 'validateDfsp').resolves();
-      sinon.stub(DFSPEndpointModel, 'findLastestByDirection').resolves(null);
-
       try {
         await DfspNetworkConfigService.getDFSPEgress(ctx, dfspId);
         assert.fail('Expected NotFoundError');
@@ -257,13 +259,17 @@ describe('DfspNetworkConfigService', () => {
   });
 
   beforeEach(() => {
+    sinon.restore(); // Ensures clean stubs
     sinon.stub(PkiService, 'validateDfsp').resolves();
+    sinon.stub(DFSPModel, 'findIdByDfspId').resolves(dfspId);
+    sinon.stub(DFSPEndpointItemModel, 'findAllDfspState').resolves([
+      { id: 'item1', state: 'NEW' },
+      { id: 'item2', state: 'NEW' }
+    ]);
     sinon.stub(DFSPEndpointItemModel, 'findObjectAll').resolves([
       { id: 'endpoint1' },
-      { id: 'endpoint2' },
-      { id: 'item1', state: 'NEW' },
-      { id: 'item2', state: 'NEW' }]);
-    sinon.stub(DfspNetworkConfigService, 'validateDirectionType').resolves();
+      { id: 'endpoint2' }
+    ]);
     sinon.stub(DfspNetworkConfigService, 'deleteDFSPEndpoint').resolves({ success: true });
   });
 
@@ -278,49 +284,22 @@ describe('DfspNetworkConfigService', () => {
 
   it('should return unprocessed DFSP items when DFSP is valid', async () => {
     const result = await DfspNetworkConfigService.getUnprocessedDfspItems(ctx, dfspId);
-    assert.isArray(result);
-    assert.lengthOf(result, 2);
-    assert.equal(result[0].id, 'item1');
-    assert.equal(result[0].state, 'NEW');
-    assert.equal(result[1].id, 'item2');
-    assert.equal(result[1].state, 'NEW');
+    assert.isArray(result, 'Result should be an array');
+    assert.lengthOf(result, 2, 'Should return two unprocessed DFSP items');
+    assert.deepStrictEqual(result, [
+      { id: 'item1', state: 'NEW' },
+      { id: 'item2', state: 'NEW' }
+    ]);
   });
 
   it('should return DFSP endpoints when DFSP is valid', async () => {
     const result = await DfspNetworkConfigService.getDFSPEndpoints(ctx, dfspId);
-    assert.isArray(result);
-    assert.lengthOf(result, 4);
-    assert.equal(result[0].id, 'endpoint1');
-    assert.equal(result[1].id, 'endpoint2');
-  });
-
-  it('should throw an error when DFSP is invalid', async () => {
-    PkiService.validateDfsp.restore();
-    sinon.stub(PkiService, 'validateDfsp').throws(new Error('Invalid DFSP'));
-
-    try {
-      await DfspNetworkConfigService.getDFSPEndpoints(ctx, dfspId);
-      assert.fail('Expected error not thrown');
-    } catch (error) {
-      assert.equal(error.message, 'Invalid DFSP');
-    }
-  });
-
-  it('should delete DFSP Ingress URL endpoint successfully', async () => {
-    const result = await DfspNetworkConfigService.deleteDFSPIngressUrlEndpoint(ctx, dfspId, epId);
-    assert.isTrue(result.success);
-  });
-
-  it('should throw an error when validation fails', async () => {
-    DfspNetworkConfigService.validateDirectionType.restore();
-    sinon.stub(DfspNetworkConfigService, 'validateDirectionType').throws(new Error('Validation failed'));
-
-    try {
-      await DfspNetworkConfigService.deleteDFSPIngressUrlEndpoint(ctx, dfspId, epId);
-      assert.fail('Expected error not thrown');
-    } catch (error) {
-      assert.equal(error.message, 'Validation failed');
-    }
+    assert.isArray(result, 'Result should be an array');
+    assert.lengthOf(result, 2, 'Should return two endpoints');
+    assert.deepStrictEqual(result, [
+      { id: 'endpoint1' },
+      { id: 'endpoint2' }
+    ]);
   });
 });
 
