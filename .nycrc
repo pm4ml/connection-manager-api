@@ -2,7 +2,9 @@
   "check-coverage": true,
   "per-file": true,
   "reporter": [
+    "html",
     "text",
+    "text-summary",
     "lcov"
   ],
   "branches": 90,
