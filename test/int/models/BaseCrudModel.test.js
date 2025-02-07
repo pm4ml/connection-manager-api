@@ -6,16 +6,16 @@ const InternalError = require('../../../src/errors/InternalError');
 const sinon = require('sinon');
 
 describe('BaseCrudModel', () => {
-    const TEST_TABLE = 'test_table';
-    let model;
+        const TEST_TABLE = 'test_table';
+        let model;
 
-    before(async () => {
-        await knex.schema.createTable(TEST_TABLE, (table) => {
-            table.increments('id');
-            table.string('name');
+        before(async () => {
+            await knex.schema.createTable(TEST_TABLE, (table) => {
+                table.increments('id');
+                table.string('name');
+            });
+            model = new BaseCrudModel(TEST_TABLE);
         });
-        model = new BaseCrudModel(TEST_TABLE);
-    });
 
     afterEach(async () => {
         await knex(TEST_TABLE).del();
@@ -232,6 +232,7 @@ describe('BaseCrudModel', () => {
       }
     });     
     });
+<<<<<<< HEAD
     it('should return the inserted ID when one row is created', async () => {
         // Stub the insert method to simulate one row being inserted
         const stub = sinon.stub(knex.table(TEST_TABLE), 'insert').resolves([1]);  // Simulating one row inserted
@@ -297,5 +298,45 @@ describe('BaseCrudModel', () => {
     
         stub.restore();  // Restore the original insert method
       });
+=======
+    describe('BaseCrudModel', () => {
+      // existing code...
+>>>>>>> 479767893837417d4b574ecf6ff47cf913f171e8
 
+      describe('create', () => {
+        it('should create a single row successfully', async () => {
+          const result = await model.create({ name: 'test' });
+          expect(result).to.have.property('id');
+        });
+      });
+
+      describe('delete', () => {
+        it('should delete a row successfully', async () => {
+          const created = await model.create({ name: 'test' });
+          const result = await model.delete(created.id);
+          expect(result).to.equal(1);
+        });
+      });
+
+      describe('update', () => {
+        it('should update a row successfully', async () => {
+          const created = await model.create({ name: 'test' });
+          const result = await model.update(created.id, { name: 'updated' });
+          expect(result).to.have.property('id');
+        });
+      });
+
+      describe('upsert', () => {
+        it('should create a row if it does not exist', async () => {
+          const result = await model.upsert(null, { name: 'test' });
+          expect(result).to.have.property('id');
+        });
+
+        it('should update a row if it exists', async () => {
+          const created = await model.create({ name: 'test' });
+          const result = await model.upsert(created.id, { name: 'updated' });
+          expect(result).to.have.property('id');
+        });
+      });
+    });
 });

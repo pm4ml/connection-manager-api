@@ -548,7 +548,7 @@ describe('PKIEngine', () => {
           ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code,
           ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code,
           ValidationCodes.VALIDATION_CODES.CA_CERTIFICATE_USAGE.code,
-          ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code,
+          ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code
         ]
       };
       pkiEngine = new PKIEngine({ validationConfig: validationConfigStub });

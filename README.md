@@ -142,4 +142,5 @@ Refer to [README](./test/functional-tests/README.md).
 
 The server includes a [Dockerfile](./Dockerfile).
 
-There's a set of scripts to build the image and tag it for a local minikube or other environments. Take a look at [./docker-build.sh](./docker-build.sh)
+There's a set of scripts to build the image and tag it for a local minikube or other environments. Take a look at 
+[./docker-build.sh](./docker-build.sh)

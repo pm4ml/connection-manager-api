@@ -31,6 +31,21 @@ describe('DFSPEndpointItemModel', () => {
       expect(result).to.deep.equal(mockRow);
     });
 
+    it('should return the item when found with id in array', async () => {
+      // initialize const id as an array
+      const id = [1];
+      // const id = 1;
+      const mockRow = { id: 1, value: 'test' };
+      sandbox.stub(knex, 'table').returns({
+        where: sinon.stub().returns({
+          select: sinon.stub().resolves([mockRow])
+        })
+      });
+
+      const result = await DFSPEndpointItemModel.findById(id);
+      expect(result).to.deep.equal(mockRow);
+    });
+
     it('should throw NotFoundError when item is not found', async () => {
       const id = 1;
       sandbox.stub(knex, 'table').returns({
@@ -231,6 +246,29 @@ describe('DFSPEndpointItemModel', () => {
 
       const result = await DFSPEndpointItemModel.update(dfspId, id, endpointItem);
       expect(result).to.deep.equal({ id: 1, value: { ip: '127.0.0.1' }, dfsp_id: 1 });
+    });
+
+    it('should throw error when updating an endpoint item by id and dfspId', async () => {
+      const dfspId = 'dfsp10000';
+      const id = 'xxx';
+      const endpointItem = { state: 'INACTIVE' };
+      const mockDfspId = 1;
+      const mockRow = { id: 1, value: JSON.stringify({ ip: '127.0.0.1' }), dfsp_id: 1 };
+      const mockDfsp = { dfsp_id: 1 };
+      sandbox.stub(DFSPModel, 'findIdByDfspId').resolves(mockDfspId);
+      sandbox.stub(knex, 'table').returns({
+        where: sinon.stub().returns({
+          update: sinon.stub().resolves(1)
+        })
+      });
+      sandbox.stub(DFSPEndpointItemModel, 'findObjectById').resolves(mockRow);
+      sandbox.stub(DFSPModel, 'findByRawId').resolves(mockDfsp);
+
+      try {
+        await DFSPEndpointItemModel.update(dfspId, id, endpointItem);
+      } catch (error) {
+        expect(error).to.be.instanceOf(InternalError);
+      }
     });
   });
 describe('findAllDfspState', () => {
