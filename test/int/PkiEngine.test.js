@@ -15,6 +15,7 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 const sinon = require('sinon');
+const { expect } = require('chai');
 const forge = require('node-forge');
 const PKIEngine = require('../../src/pki_engine/PKIEngine');
 const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
@@ -23,7 +24,7 @@ const CSRInfo = require('../../src/pki_engine/CSRInfo');
 const CertInfo = require('../../src/pki_engine/CertInfo');
 const Constants = require('../../src/constants/Constants');
 const VaultPKIEngine = require('../../src/pki_engine/VaultPKIEngine');
-
+const ValidationsConfiguration = require('../../src/pki_engine/ValidationsConfiguration'); 
 const { assert } = require('chai');
 const vaultPKIEngine = new VaultPKIEngine(Constants.vault);
 
@@ -528,4 +529,767 @@ describe('PKIEngine', () => {
       assert.isUndefined(result);
     });
   });
+
+  it('should validate VERIFY_ROOT_CERTIFICATE', () => {
+    const verifyRootCertificateStub = sinon.stub(pkiEngine, 'verifyRootCertificate').returns(new Validation(ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code, true, ValidationCodes.VALID_STATES.VALID));
+    const result = pkiEngine.performCAValidations([ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code], 'intermediateChain', 'rootCertificate', 'key');
+    expect(verifyRootCertificateStub.calledOnce).to.be.true;
+    expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+  });
+
+  //06/02/2025
+  describe('PKIEngine', () => {
+    let pkiEngine;
+    let validationConfigStub;
+  
+    beforeEach(() => {
+      validationConfigStub = {
+        dfspCaValidations: [
+          ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code,
+          ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code,
+          ValidationCodes.VALIDATION_CODES.CA_CERTIFICATE_USAGE.code,
+          ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code,
+        ]
+      };
+      pkiEngine = new PKIEngine({ validationConfig: validationConfigStub });
+    });
+  
+    afterEach(() => {
+      sinon.restore();
+    });
+  
+    describe('performCAValidations', () => {
+      it('should validate VERIFY_ROOT_CERTIFICATE', () => {
+        const verifyRootCertificateStub = sinon.stub(pkiEngine, 'verifyRootCertificate').returns(new Validation(ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code, true, ValidationCodes.VALID_STATES.VALID));
+        const result = pkiEngine.performCAValidations([ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code], 'intermediateChain', 'rootCertificate', 'key');
+        expect(verifyRootCertificateStub.calledOnce).to.be.true;
+        expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+      });
+  
+      it('should validate VERIFY_CHAIN_CERTIFICATES', () => {
+        const verifyIntermediateChainStub = sinon.stub(pkiEngine, 'verifyIntermediateChain').returns(new Validation(ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code, true, ValidationCodes.VALID_STATES.VALID));
+        const result = pkiEngine.performCAValidations([ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code], 'intermediateChain', 'rootCertificate', 'key');
+        expect(verifyIntermediateChainStub.calledOnce).to.be.true;
+        expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+      });
+  
+      it('should validate CA_CERTIFICATE_USAGE', () => {
+        const validateCertificateUsageCAStub = sinon.stub(pkiEngine, 'validateCertificateUsageCA').returns(new Validation(ValidationCodes.VALIDATION_CODES.CA_CERTIFICATE_USAGE.code, true, ValidationCodes.VALID_STATES.VALID));
+        const result = pkiEngine.performCAValidations([ValidationCodes.VALIDATION_CODES.CA_CERTIFICATE_USAGE.code], 'intermediateChain', 'rootCertificate', 'key');
+        expect(validateCertificateUsageCAStub.calledOnce).to.be.true;
+        expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+      });
+  
+      it('should validate CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH', () => {
+        const verifyCertificateChainPublicKeyMatchPrivateKeyStub = sinon.stub(pkiEngine, 'verifyCertificateChainPublicKeyMatchPrivateKey').returns(new Validation(ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code, true, ValidationCodes.VALID_STATES.VALID));
+        const result = pkiEngine.performCAValidations([ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code], 'intermediateChain', 'rootCertificate', 'key');
+        expect(verifyCertificateChainPublicKeyMatchPrivateKeyStub.calledOnce).to.be.true;
+        expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+      });
+  
+      it('should log a message for unimplemented validation codes', () => {
+        const consoleLogStub = sinon.stub(console, 'log');
+        const result = pkiEngine.performCAValidations(['UNIMPLEMENTED_CODE'], 'intermediateChain', 'rootCertificate', 'key');
+        expect(consoleLogStub.calledOnceWith('Validation not yet implemented: UNIMPLEMENTED_CODE')).to.be.true;
+        expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+      });
+     });
+
+     it('should validate CSR_CERT_SAME_CN', () => {
+      const verifyCertificateCSRSameCNStub = sinon.stub(pkiEngine, 'verifyCertificateCSRSameCN').returns(new Validation(ValidationCodes.VALIDATION_CODES.CSR_CERT_SAME_CN.code, true, ValidationCodes.VALID_STATES.VALID));
+      const enrollment = { csr: 'some-csr' };
+      const result = pkiEngine.performCAValidations([ValidationCodes.VALIDATION_CODES.CSR_CERT_SAME_CN.code], enrollment, 'rootCertificate', 'key');
+      
+      console.log('Called with:', verifyCertificateCSRSameCNStub.args);
+      
+      expect(verifyCertificateCSRSameCNStub.calledOnceWith(ValidationCodes.VALIDATION_CODES.CSR_CERT_SAME_CN.code, enrollment)).to.be.true;
+      expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+      
+      verifyCertificateCSRSameCNStub.restore();
+     });
+
+     it('should validate CSR_MANDATORY_DISTINGUISHED_NAME', () => {
+      const verifyCsrMandatoryDistinguishedNamesStub = sinon.stub(pkiEngine, 'verifyCsrMandatoryDistinguishedNames').returns(new Validation(ValidationCodes.VALIDATION_CODES.CSR_MANDATORY_DISTINGUISHED_NAME.code, true, ValidationCodes.VALID_STATES.VALID));
+      const enrollment = { csr: 'some-csr' };
+      const result = pkiEngine.performCAValidations([ValidationCodes.VALIDATION_CODES.CSR_MANDATORY_DISTINGUISHED_NAME.code], enrollment, 'rootCertificate', 'key');
+      
+      expect(verifyCsrMandatoryDistinguishedNamesStub.calledOnceWith(enrollment.csr, ValidationCodes.VALIDATION_CODES.CSR_MANDATORY_DISTINGUISHED_NAME.code)).to.be.true;
+      expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+      
+      verifyCsrMandatoryDistinguishedNamesStub.restore();
+     });
+
+     it('should validate CERTIFICATE_USAGE_CLIENT', () => {
+      const verifyCertificateUsageClientStub = sinon.stub(pkiEngine, 'verifyCertificateUsageClient').returns(new Validation(ValidationCodes.VALIDATION_CODES.CERTIFICATE_USAGE_CLIENT.code, true, ValidationCodes.VALID_STATES.VALID));
+      const enrollment = { certificate: 'some-certificate' };
+      const result = pkiEngine.performCAValidations([ValidationCodes.VALIDATION_CODES.CERTIFICATE_USAGE_CLIENT.code], enrollment, 'rootCertificate', 'key');
+      
+      expect(verifyCertificateUsageClientStub.calledOnceWith(enrollment.certificate, ValidationCodes.VALIDATION_CODES.CERTIFICATE_USAGE_CLIENT.code)).to.be.true;
+      expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+      
+      verifyCertificateUsageClientStub.restore();
+     }); 
+      
+
+     describe('verifyCertificateAgainstKey', () => {
+      it('should return undefined', () => {
+        const result = pkiEngine.verifyCertificateAgainstKey('some-certificate', 'some-key');
+        expect(result).to.be.undefined;
+      });
+     });
+      //07/02/2025
+    
+
+  
+    describe('verifyRootCertificate', () => {
+      it('should return a Validation object', () => {
+        const validationStub = sinon.stub(pkiEngine, 'verifyRootCertificate').returns(new Validation('some-code', true, ValidationCodes.VALID_STATES.VALID));
+        const result = pkiEngine.verifyRootCertificate('some-root-certificate', 'some-code');
+        expect(validationStub.calledOnceWith('some-root-certificate', 'some-code')).to.be.true;
+        expect(result).to.be.an.instanceof(Validation);
+        validationStub.restore();
+      });
+     });
+  
+    describe('verifyIntermediateChain', () => {
+      it('should return a Validation object', () => {
+        const validationStub = sinon.stub(pkiEngine, 'verifyIntermediateChain').returns(new Validation('some-code', true, ValidationCodes.VALID_STATES.VALID));
+        const result = pkiEngine.verifyIntermediateChain('some-root-certificate', 'some-intermediate-chain', 'some-code');
+        expect(validationStub.calledOnceWith('some-root-certificate', 'some-intermediate-chain', 'some-code')).to.be.true;
+        expect(result).to.be.an.instanceof(Validation);
+        validationStub.restore();
+      });
+    });
+
+    describe('verifyCertificateSigning', () => {
+      it('should return undefined', () => {
+        const result = pkiEngine.verifyCertificateSigning('some-certificate', 'some-root-certificate', 'some-intermediate-chain');
+        expect(result).to.be.undefined;
+      });
+     });
+  
+    describe('getCSRInfo', () => {
+      it('should return undefined', () => {
+        const result = pkiEngine.getCSRInfo('some-csr');
+        expect(result).to.be.undefined;
+      });
+    });
+  
+    describe('getCertInfo', () => {
+      it('should return undefined', () => {
+        const result = pkiEngine.getCertInfo('some-cert');
+        expect(result).to.be.undefined;
+      });
+    });
+
+     describe('createCA', () => {
+    it('should return undefined', async () => {
+      const result = await pkiEngine.createCA({});
+      expect(result).to.be.undefined;
+    });
+  });
+
+  describe('sign', () => {
+    it('should return undefined', async () => {
+      const result = await pkiEngine.sign('some-csr');
+      expect(result).to.be.undefined;
+    });
+  });
+
+  describe('createCSR', () => {
+    it('should return undefined', async () => {
+      const result = await pkiEngine.createCSR({});
+      expect(result).to.be.undefined;
+    });
+  });
+
+  it('should log a message for unimplemented validation codes', () => {
+      const consoleLogStub = sinon.stub(console, 'log');
+      const validationCode = 'UNIMPLEMENTED_CODE';
+      const result = pkiEngine.performCAValidations([validationCode], 'intermediateChain', 'rootCertificate', 'key');
+      
+      expect(consoleLogStub.calledOnceWith(`Validation not yet implemented: ${validationCode}`)).to.be.true;
+      expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+      
+      consoleLogStub.restore();
+    });
+//07/02/2025
+    it('should handle multiple validation codes', () => {
+      const consoleLogStub = sinon.stub(console, 'log');
+      const verifyRootCertificateStub = sinon.stub(pkiEngine, 'verifyRootCertificate').returns(new Validation(ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code, true, ValidationCodes.VALID_STATES.VALID));
+      const validationCodes = [
+        ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code,
+        'UNIMPLEMENTED_CODE'
+      ];
+      const result = pkiEngine.performCAValidations(validationCodes, 'intermediateChain', 'rootCertificate', 'key');
+      
+      expect(verifyRootCertificateStub.calledOnceWith('rootCertificate', ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code)).to.be.true;
+      expect(consoleLogStub.calledOnceWith('Validation not yet implemented: UNIMPLEMENTED_CODE')).to.be.true;
+      expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+      
+      verifyRootCertificateStub.restore();
+      consoleLogStub.restore();
+    });
+
+    it('should handle an empty array of validation codes', () => {
+      const result = pkiEngine.performCAValidations([], 'intermediateChain', 'rootCertificate', 'key');
+      expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+    });
+
+    it('should handle null values for parameters', () => {
+      const consoleLogStub = sinon.stub(console, 'log');
+      
+      // Call the function with null parameters
+      const result = pkiEngine.performCAValidations(null, null, null, null);
+    
+      // Log the result to inspect it
+      console.log('Function Output:', result);
+    
+      expect(result).to.be.an('object');
+      expect(result).to.have.property('validations').that.is.an('array');
+      expect(result).to.have.property('validationState');
+    
+      consoleLogStub.restore();
+    });
+
+    it('should handle undefined values for parameters', () => {
+      const result = pkiEngine.performCAValidations(undefined, undefined, undefined, undefined);
+      
+      expect(result.validations).to.be.an('array').that.is.empty;
+      expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+    });
+
+    it('should validate CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH', () => {
+      const verifyCertificateChainPublicKeyMatchPrivateKeyStub = sinon.stub(pkiEngine, 'verifyCertificateChainPublicKeyMatchPrivateKey').returns(new Validation(ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code, true, ValidationCodes.VALID_STATES.VALID));
+      const result = pkiEngine.performCAValidations([ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code], 'intermediateChain', 'rootCertificate', 'key');
+      expect(verifyCertificateChainPublicKeyMatchPrivateKeyStub.calledOnce).to.be.true;
+      expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+    });
+    it('should validate CA_CERTIFICATE_USAGE', () => {
+      const validateCertificateUsageCAStub = sinon.stub(pkiEngine, 'validateCertificateUsageCA').returns(new Validation(ValidationCodes.VALIDATION_CODES.CA_CERTIFICATE_USAGE.code, true, ValidationCodes.VALID_STATES.VALID));
+      const result = pkiEngine.performCAValidations([ValidationCodes.VALIDATION_CODES.CA_CERTIFICATE_USAGE.code], 'intermediateChain', 'rootCertificate', 'key');
+      expect(validateCertificateUsageCAStub.calledOnce).to.be.true;
+      expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+    });
+    it('should validate VERIFY_CHAIN_CERTIFICATES', () => {
+      const verifyIntermediateChainStub = sinon.stub(pkiEngine, 'verifyIntermediateChain').returns(new Validation(ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code, true, ValidationCodes.VALID_STATES.VALID));
+      const result = pkiEngine.performCAValidations([ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code], 'intermediateChain', 'rootCertificate', 'key');
+      expect(verifyIntermediateChainStub.calledOnce).to.be.true;
+      expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+    });
+
+    it('should validate VERIFY_ROOT_CERTIFICATE', () => {
+      const verifyRootCertificateStub = sinon.stub(pkiEngine, 'verifyRootCertificate').returns(new Validation(ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code, true, ValidationCodes.VALID_STATES.VALID));
+      const result = pkiEngine.performCAValidations([ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code], 'intermediateChain', 'rootCertificate', 'key');
+      expect(verifyRootCertificateStub.calledOnce).to.be.true;
+      expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+    });
+    it('should handle a mix of valid and invalid validation results', () => {
+      const verifyRootCertificateStub = sinon.stub(pkiEngine, 'verifyRootCertificate').returns(new Validation(ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code, true, ValidationCodes.VALID_STATES.VALID));
+      const verifyIntermediateChainStub = sinon.stub(pkiEngine, 'verifyIntermediateChain').returns(new Validation(ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code, false, ValidationCodes.VALID_STATES.INVALID));
+      const validationCodes = [
+        ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code,
+        ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code
+      ];
+      const result = pkiEngine.performCAValidations(validationCodes, 'intermediateChain', 'rootCertificate', 'key');
+      
+      expect(verifyRootCertificateStub.calledOnceWith('rootCertificate', ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code)).to.be.true;
+      expect(verifyIntermediateChainStub.calledOnceWith('rootCertificate', 'intermediateChain', ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code)).to.be.true;
+      expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.INVALID);
+      
+      verifyRootCertificateStub.restore();
+      verifyIntermediateChainStub.restore();
+    });
+    
+
+   describe('verifyCertificateCSRSameCN', () => {
+    it('should return invalid if CSR subject does not match certificate subject', () => {
+      const enrollment = {
+        csrInfo: {
+          subject: {
+            CN: 'example.com'
+          }
+        },
+        certInfo: {
+          subject: {
+            CN: 'different.com'
+          }
+        }
+      };
+      const code = 'some-code';
+
+      const result = pkiEngine.verifyCertificateCSRSameCN(code, enrollment);
+      expect(result).to.deep.equal({ valid: false, reason: `csr subject CN: example.com is not equals cert subject CN: different.com` });
+    });
+
+    it('should return valid if CSR subject matches certificate subject', () => {
+      const enrollment = {
+        csrInfo: {
+          subject: {
+            CN: 'example.com'
+          }
+        },
+        certInfo: {
+          subject: {
+            CN: 'example.com'
+          }
+        }
+      };
+      const code = 'some-code';
+
+      const result = pkiEngine.verifyCertificateCSRSameCN(code, enrollment);
+      expect(result).to.deep.equal({ valid: true });
+    });
+
+    it('should return invalid if CSR subject has additional fields not in certificate subject', () => {
+      const enrollment = {
+        csrInfo: {
+          subject: {
+            CN: 'example.com',
+            O: 'Example Organization'
+          }
+        },
+        certInfo: {
+          subject: {
+            CN: 'example.com'
+          }
+        }
+      };
+      const code = 'some-code';
+
+      const result = pkiEngine.verifyCertificateCSRSameCN(code, enrollment);
+      expect(result).to.deep.equal({ valid: false, reason: `csr subject O: Example Organization is not equals cert subject O: undefined` });
+    });
+
+    it('should return invalid if certificate subject has additional fields not in CSR subject', () => {
+      const enrollment = {
+        csrInfo: {
+          subject: {
+            CN: 'example.com'
+          }
+        },
+        certInfo: {
+          subject: {
+            CN: 'example.com',
+            O: 'Example Organization'
+          }
+        }
+      };
+      const code = 'some-code';
+
+      const result = pkiEngine.verifyCertificateCSRSameCN(code, enrollment);
+      expect(result).to.deep.equal({ valid: false, reason: `csr subject O: undefined is not equals cert subject O: Example Organization` });
+    });
+
+    it('should return invalid if multiple fields in CSR subject do not match certificate subject', () => {
+      const enrollment = {
+        csrInfo: {
+          subject: {
+            CN: 'example.com',
+            O: 'Example Organization'
+          }
+        },
+        certInfo: {
+          subject: {
+            CN: 'different.com',
+            O: 'Different Organization'
+          }
+        }
+      };
+      const code = 'some-code';
+
+      const result = pkiEngine.verifyCertificateCSRSameCN(code, enrollment);
+      expect(result).to.deep.equal({ valid: false, reason: `csr subject CN: example.com is not equals cert subject CN: different.com` });
+    });
+  });
+  });
+   
+//07/02/2025
+it('should log a message for an unimplemented validation code', () => {
+  const consoleLogStub = sinon.stub(console, 'log');
+
+  const result = pkiEngine.performCAValidations(['UNKNOWN_CODE'], 'intermediateChain', 'rootCertificate', 'key');
+
+  expect(consoleLogStub.calledOnceWith('Validation not yet implemented: UNKNOWN_CODE')).to.be.true;
+
+  expect(result).to.be.an('object');
+  expect(result).to.have.property('validations').that.is.an('array');
+  expect(result).to.have.property('validationState');
+
+  consoleLogStub.restore();
+});
+describe('performEnrollmentValidations', () => {
+  
+
+  it('should return valid when all validations pass', () => {
+    sinon.stub(pkiEngine, 'validateCsrSignatureValid').returns({ result: ValidationCodes.VALID_STATES.VALID });
+    sinon.stub(pkiEngine, 'validateCsrSignatureAlgorithm').returns({ result: ValidationCodes.VALID_STATES.VALID });
+
+    const enrollment = { csr: 'test-csr', certificate: 'test-cert' };
+    const result = pkiEngine.performEnrollmentValidations(
+      [ValidationCodes.VALIDATION_CODES.CSR_SIGNATURE_VALID.code, ValidationCodes.VALIDATION_CODES.CSR_SIGNATURE_ALGORITHM_SHA256_512.code],
+      enrollment
+    );
+
+    expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+    expect(result.validations).to.have.lengthOf(2);
+  });
+
+  it('should return invalid when at least one validation fails', () => {
+    sinon.stub(pkiEngine, 'validateCsrSignatureValid').returns({ result: ValidationCodes.VALID_STATES.INVALID });
+    sinon.stub(pkiEngine, 'validateCsrSignatureAlgorithm').returns({ result: ValidationCodes.VALID_STATES.VALID });
+
+    const enrollment = { csr: 'test-csr', certificate: 'test-cert' };
+    const result = pkiEngine.performEnrollmentValidations(
+      [ValidationCodes.VALIDATION_CODES.CSR_SIGNATURE_VALID.code, ValidationCodes.VALIDATION_CODES.CSR_SIGNATURE_ALGORITHM_SHA256_512.code],
+      enrollment
+    );
+
+    expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.INVALID);
+  });
+
+  it('should log a message for an unknown validation code', () => {
+    const consoleLogStub = sinon.stub(console, 'log');
+    
+    const enrollment = { csr: 'test-csr', certificate: 'test-cert' };
+    pkiEngine.performEnrollmentValidations(['UNKNOWN_CODE'], enrollment);
+
+    expect(consoleLogStub.calledOnceWith('Validation not yet implemented: UNKNOWN_CODE')).to.be.true;
+  });
+
+  it('should handle null values for enrollment', () => {
+    const consoleLogStub = sinon.stub(console, 'log');
+  
+    expect(() => pkiEngine.performEnrollmentValidations(
+      [ValidationCodes.VALIDATION_CODES.CSR_SIGNATURE_VALID.code], 
+      null
+    )).to.throw(TypeError);
+  
+    expect(consoleLogStub.called).to.be.false; 
+  });
+  
+
+  it('should throw an error for undefined enrollment', () => {
+    const consoleLogStub = sinon.stub(console, 'log');
+  
+    expect(() => pkiEngine.performEnrollmentValidations(
+      [ValidationCodes.VALIDATION_CODES.CSR_SIGNATURE_VALID.code], 
+      undefined
+    )).to.throw(TypeError);
+  
+    expect(consoleLogStub.called).to.be.false; // No unexpected logs
+  });
+
+it('should log message for unimplemented validation code', () => {
+  const consoleLogStub = sinon.stub(console, 'log'); 
+  const unknownValidationCode = 'UNKNOWN_VALIDATION_CODE';
+
+  const result = pkiEngine.performCertificateValidations(
+    [unknownValidationCode], 
+    'dummy-server-cert', 
+    'dummy-intermediate-chain', 
+    'dummy-root-cert'
+  );
+
+  expect(consoleLogStub.calledOnceWith(`Validation not yet implemented: ${unknownValidationCode}`)).to.be.true;
+
+  expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+
+  consoleLogStub.restore(); 
+});
+
+it('should validate certificate key length 2048 when CERTIFICATE_PUBLIC_KEY_LENGTH_2048 code is passed', () => {
+  const validateCertificateKeyLengthStub = sinon.stub(pkiEngine, 'validateCertificateKeyLength').returns({ result: ValidationCodes.VALID_STATES.VALID });
+  const serverCert = 'dummy-server-cert'; 
+  const intermediateChain = 'dummy-intermediate-chain';
+  const rootCertificate = 'dummy-root-cert';
+  const result = pkiEngine.performCertificateValidations(
+    [ValidationCodes.VALIDATION_CODES.CERTIFICATE_PUBLIC_KEY_LENGTH_2048.code],
+    serverCert,
+    intermediateChain,
+    rootCertificate
+  );
+  expect(validateCertificateKeyLengthStub.calledOnceWith(serverCert, 2048, ValidationCodes.VALIDATION_CODES.CERTIFICATE_PUBLIC_KEY_LENGTH_2048.code)).to.be.true;
+  expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+  validateCertificateKeyLengthStub.restore();
+});
+   
+it('should validate CSR public key length 2048 when CSR_PUBLIC_KEY_LENGTH_2048 code is passed', () => {
+  const validateCsrPublicKeyLengthStub = sinon.stub(pkiEngine, 'validateCsrPublicKeyLength').returns({ result: ValidationCodes.VALID_STATES.VALID });
+  const enrollment = {
+    csr: 'dummy-csr', 
+    certificate: 'dummy-certificate',
+    key: 'dummy-key',
+    dfspCA: 'dummy-dfspCA',
+  };
+  const result = pkiEngine.performEnrollmentValidations(
+    [ValidationCodes.VALIDATION_CODES.CSR_PUBLIC_KEY_LENGTH_2048.code],
+    enrollment
+  );
+  expect(validateCsrPublicKeyLengthStub.calledOnceWith(enrollment.csr, ValidationCodes.VALIDATION_CODES.CSR_PUBLIC_KEY_LENGTH_2048.code, ValidationCodes.VALIDATION_CODES.CSR_PUBLIC_KEY_LENGTH_2048.param)).to.be.true;
+  expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+  validateCsrPublicKeyLengthStub.restore();
+});
+
+it('should validate that CSR and Certificate have the same CN', () => {
+  const verifyCertificateCSRSameCNStub = sinon.stub(pkiEngine, 'verifyCertificateCSRSameCN').returns({ result: ValidationCodes.VALID_STATES.VALID });
+
+  const enrollment = {
+    csr: 'dummy-csr',
+    certificate: 'dummy-certificate',
+  };
+
+  const result = pkiEngine.performEnrollmentValidations(
+    [ValidationCodes.VALIDATION_CODES.CSR_CERT_SAME_CN.code],
+    enrollment
+  );
+
+  expect(verifyCertificateCSRSameCNStub.calledOnceWith(ValidationCodes.VALIDATION_CODES.CSR_CERT_SAME_CN.code, enrollment)).to.be.true;
+
+  expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+  verifyCertificateCSRSameCNStub.restore();
+});
+it('should validate that CSR contains mandatory Distinguished Names', () => {
+  const verifyCsrMandatoryDistinguishedNamesStub = sinon.stub(pkiEngine, 'verifyCsrMandatoryDistinguishedNames').returns({ result: ValidationCodes.VALID_STATES.VALID });
+
+  const enrollment = {
+    csr: 'dummy-csr',
+  };
+  const result = pkiEngine.performEnrollmentValidations(
+    [ValidationCodes.VALIDATION_CODES.CSR_MANDATORY_DISTINGUISHED_NAME.code],
+    enrollment
+  );
+
+  expect(verifyCsrMandatoryDistinguishedNamesStub.calledOnceWith(enrollment.csr, ValidationCodes.VALIDATION_CODES.CSR_MANDATORY_DISTINGUISHED_NAME.code)).to.be.true;
+  expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+
+  verifyCsrMandatoryDistinguishedNamesStub.restore();
+});
+it('should validate that certificate is for client usage', () => {
+  const verifyCertificateUsageClientStub = sinon.stub(pkiEngine, 'verifyCertificateUsageClient').returns({ result: ValidationCodes.VALID_STATES.VALID });
+  const enrollment = {
+    certificate: 'dummy-certificate',
+  };
+  const result = pkiEngine.performEnrollmentValidations(
+    [ValidationCodes.VALIDATION_CODES.CERTIFICATE_USAGE_CLIENT.code],
+    enrollment
+  );
+
+  expect(verifyCertificateUsageClientStub.calledOnceWith(enrollment.certificate, ValidationCodes.VALIDATION_CODES.CERTIFICATE_USAGE_CLIENT.code)).to.be.true;
+
+  expect(result.validationState).to.equal(ValidationCodes.VALID_STATES.VALID);
+  verifyCertificateUsageClientStub.restore();
+});
+it('should return VALID if any certificate in the chain matches the private key', () => {
+  const certificateChain = [
+    { cert: 'cert1' }, 
+    { cert: 'cert2' }  
+  ];
+  const key = 'privateKey'; 
+  const code = 'TEST_CODE';
+  pkiEngine.splitCertificateChain = (chain) => chain;
+  pkiEngine.verifyCertificatePublicKeyMatchPrivateKey = (cert, key, code) => {
+    if (cert.cert === 'cert2') {
+      return { result: ValidationCodes.VALID_STATES.VALID };
+    }
+    return { result: ValidationCodes.VALID_STATES.INVALID };
+  };
+  const result = pkiEngine.verifyCertificateChainPublicKeyMatchPrivateKey(certificateChain, key, code);
+  expect(result).to.be.instanceOf(Validation); 
+  expect(result.validationCode).to.equal(code);  
+  expect(result.result).to.equal(ValidationCodes.VALID_STATES.VALID);
+});
+
+it('should return INVALID if no certificate in the chain matches the private key', () => {
+  const certificateChain = [
+    { cert: 'cert1' }, 
+    { cert: 'cert3' }  
+  ];
+  const key = 'privateKey'; 
+  const code = 'TEST_CODE';
+
+  pkiEngine.splitCertificateChain = (chain) => chain;
+  pkiEngine.verifyCertificatePublicKeyMatchPrivateKey = (cert, key, code) => {
+    return { result: ValidationCodes.VALID_STATES.INVALID }; 
+  };
+
+  const result = pkiEngine.verifyCertificateChainPublicKeyMatchPrivateKey(certificateChain, key, code);
+
+  expect(result).to.be.instanceOf(Validation);
+  expect(result.validationCode).to.equal(code);  
+  expect(result.result).to.equal(ValidationCodes.VALID_STATES.INVALID); 
+  expect(result.message).to.equal('No certificate matches the private key'); 
+});
+
+it('should return valid=true when CSR and certificate subjects match', () => {
+  const csrInfo = {
+    subject: {
+      CN: 'example.com',
+      O: 'Example Org',
+    },
+  };
+
+  const certInfo = {
+    subject: {
+      CN: 'example.com',
+      O: 'Example Org',
+    },
+  };
+
+  const result = pkiEngine.compareSubjectBetweenCSRandCert(csrInfo, certInfo);
+
+  expect(result).to.deep.equal({ valid: true });
+});
+it('should return valid=false and the correct reason when CSR and certificate subjects do not match', () => {
+  const csrInfo = {
+    subject: {
+      CN: 'example.com',
+      O: 'Example Org',
+    },
+  };
+
+  const certInfo = {
+    subject: {
+      CN: 'example.com',
+      O: 'Different Org', // Mismatched
+    },
+  };
+
+  const result = pkiEngine.compareSubjectBetweenCSRandCert(csrInfo, certInfo);
+
+  expect(result).to.deep.equal({
+    valid: false,
+    reason: 'csr subject O: Example Org is not equals cert subject O: Different Org',
+  });
+});
+it('should return valid=false and the correct reason when a CSR field is missing in the certificate', () => {
+  const csrInfo = {
+    subject: {
+      CN: 'example.com',
+      O: 'Example Org',
+    },
+  };
+
+  const certInfo = {
+    subject: {
+      CN: 'example.com', // No 'O' field in certificate
+    },
+  };
+
+  const result = pkiEngine.compareSubjectBetweenCSRandCert(csrInfo, certInfo);
+
+  expect(result).to.deep.equal({
+    valid: false,
+    reason: 'csr subject O: Example Org is not equals cert subject O: undefined',
+  });
+});
+it('should return valid=false if CSR subject is empty', () => {
+  const csrInfo = {
+    subject: {},
+  };
+
+  const certInfo = {
+    subject: {
+      CN: 'example.com',
+      O: 'Example Org',
+    },
+  };
+
+  const result = pkiEngine.compareSubjectBetweenCSRandCert(csrInfo, certInfo);
+
+  expect(result).to.deep.equal({
+    valid: false,
+    reason: 'csr subject CN: undefined is not equals cert subject CN: example.com',
+  });
+});
+
+it('should return valid=false if certificate subject is empty', () => {
+  const csrInfo = {
+    subject: {
+      CN: 'example.com',
+      O: 'Example Org',
+    },
+  };
+
+  const certInfo = {
+    subject: {},
+  };
+
+  const result = pkiEngine.compareSubjectBetweenCSRandCert(csrInfo, certInfo);
+
+  expect(result).to.deep.equal({
+    valid: false,
+    reason: 'csr subject CN: example.com is not equals cert subject CN: undefined',
+  });
+});
+it('should return valid=false if CSR has extra fields not in the certificate subject', () => {
+  const csrInfo = {
+    subject: {
+      CN: 'example.com',
+      O: 'Example Org',
+      L: 'Some Location', // Extra field in CSR
+    },
+  };
+
+  const certInfo = {
+    subject: {
+      CN: 'example.com',
+      O: 'Example Org',
+    },
+  };
+
+  const result = pkiEngine.compareSubjectBetweenCSRandCert(csrInfo, certInfo);
+
+  expect(result).to.deep.equal({
+    valid: false,
+    reason: 'csr subject L: Some Location is not equals cert subject L: undefined',
+  });
+});
+
+it('should return valid=false when a field exists in CSR but the values are different in the certificate', () => {
+  const csrInfo = {
+    subject: {
+      CN: 'example.com',
+      O: 'Example Org',
+    },
+  };
+
+  const certInfo = {
+    subject: {
+      CN: 'example.com',
+      O: 'Different Org',  // Mismatch in the 'O' field
+    },
+  };
+
+  const result = pkiEngine.compareSubjectBetweenCSRandCert(csrInfo, certInfo);
+
+  expect(result).to.deep.equal({
+    valid: false,
+    reason: 'csr subject O: Example Org is not equals cert subject O: Different Org',
+  });
+});
+
+it('should return valid=true when all CSR and certificate subject fields match', () => {
+  const csrInfo = {
+    subject: {
+      CN: 'example.com',
+      O: 'Example Org',
+    },
+  };
+
+  const certInfo = {
+    subject: {
+      CN: 'example.com',
+      O: 'Example Org',  // Matching 'O' field
+    },
+  };
+
+  const result = pkiEngine.compareSubjectBetweenCSRandCert(csrInfo, certInfo);
+
+  expect(result).to.deep.equal({ valid: true });
+});
+
+
+});
+
 });

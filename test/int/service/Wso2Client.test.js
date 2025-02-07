@@ -7,6 +7,7 @@ const UnauthorizedError = require('../../../src/errors/UnauthorizedError');
 
 const { expect } = chai;
 
+
 describe('Wso2Client', () => {
     afterEach(() => {
         sinon.restore();
