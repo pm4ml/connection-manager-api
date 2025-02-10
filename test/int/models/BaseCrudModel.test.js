@@ -232,76 +232,8 @@ describe('BaseCrudModel', () => {
       }
     });     
     });
-<<<<<<< HEAD
-    it('should return the inserted ID when one row is created', async () => {
-        // Stub the insert method to simulate one row being inserted
-        const stub = sinon.stub(knex.table(TEST_TABLE), 'insert').resolves([1]);  // Simulating one row inserted
-    
-        const result = await model.create({ name: 'test' });  // Call the create method
-        expect(result).to.deep.equal({ id: 1 });  // Ensure it returns the expected result
-    
-        stub.restore();  // Restore the original insert method
-      });
-
-      it('should throw InternalError if more than one row is created', async () => {
-        // Stub the insert method to simulate multiple rows being created
-        const stub = sinon.stub(knex.table(TEST_TABLE), 'insert').resolves([1, 2]);  // Simulating multiple rows inserted
-      
-        let caughtError;
-      
-        try {
-          // Attempt to create an object, expecting an error
-          await model.create({ name: 'test' });
-        } catch (err) {
-          caughtError = err;  // Capture the caught error
-          console.log('Caught Error:', err);  // Log the error for debugging
-        }
-      
-        // Check if we caught an error, otherwise the test fails
-        expect(caughtError).to.not.be.undefined;  // Ensure an error was caught
-      
-        // Assert the caught error is an instance of InternalError
-        expect(caughtError).to.be.instanceof(InternalError);
-      
-        // Assert that the error message matches
-        expect(caughtError.message).to.equal('More than one row created');
-      
-        // Check if category and payload are correctly set
-        if (caughtError.category) {
-          expect(caughtError.category).to.equal('INTERNAL');  // Adjust this if necessary
-        }
-      
-        if (caughtError.payload) {
-          expect(caughtError.payload.message).to.equal('More than one row created');
-        }
-      
-        stub.restore();  // Restore the original insert method
-      });
-      
-      
-      
-      
-      
-
-      it('should throw InternalError if no rows are created (empty result)', async () => {
-        // Stub the insert method to simulate no rows being created
-        const stub = sinon.stub(knex.table(TEST_TABLE), 'insert').resolves([]);  // Simulating no rows inserted
-    
-        try {
-          await model.create({ name: 'test' });  // This should throw the error
-          expect.fail('Should have thrown InternalError');  // Fail the test if no error is thrown
-        } catch (err) {
-          // Assert that the error is of type InternalError and has the correct message
-          expect(err).to.be.instanceof(InternalError);
-          expect(err.message).to.equal('More than one row created');
-        }
-    
-        stub.restore();  // Restore the original insert method
-      });
-=======
     describe('BaseCrudModel', () => {
       // existing code...
->>>>>>> 479767893837417d4b574ecf6ff47cf913f171e8
 
       describe('create', () => {
         it('should create a single row successfully', async () => {
