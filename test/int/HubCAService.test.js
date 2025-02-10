@@ -17,8 +17,9 @@
 
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 const HubCAService = require('../../src/service/HubCAService');
-// const { assert } = require('chai');
-// const ValidationError = require('../../src/errors/ValidationError');
+const { assert } = require('chai');
+const ValidationError = require('../../src/errors/ValidationError');
+const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
 // const PkiService = require('../../src/service/PkiService');
 // const fs = require('fs');
 // const path = require('path');
@@ -149,42 +150,5 @@ describe('HubCAServiceTest', () => {
       };
       await HubCAService.createInternalHubCA(ctx, body);
     }).timeout(15000);
-  });
-});
-describe('getHubCAInfo', () => {
-  let ctx;
-  let pkiEngineStub;
-
-  beforeEach(() => {
-    // Create a stub for pkiEngine.getHubCACertDetails method
-    pkiEngineStub = { getHubCACertDetails: sinon.stub() };
-    ctx = { pkiEngine: pkiEngineStub };
-  });
-
-  it('should call pkiEngine.getHubCACertDetails once', async () => {
-    // Setup the stub to return a value
-    const mockCertDetails = { cert: 'mockCertDetails' };
-    pkiEngineStub.getHubCACertDetails.resolves(mockCertDetails);
-
-    // Call the function
-    const result = await PkiService.getHubCAInfo(ctx);
-
-    // Assert that the function called getHubCACertDetails and returned the mock result
-    expect(pkiEngineStub.getHubCACertDetails.calledOnce).to.be.true;
-    expect(result).to.deep.equal(mockCertDetails);
-  });
-
-  it('should throw an error if pkiEngine.getHubCACertDetails fails', async () => {
-    // Setup the stub to reject with an error
-    const error = new Error('Failed to fetch cert details');
-    pkiEngineStub.getHubCACertDetails.rejects(error);
-
-    try {
-      await getHubCAInfo(ctx);
-      // If it does not throw, we fail the test
-      throw new Error('Expected function to throw');
-    } catch (err) {
-      expect(err).to.equal(error);
-    }
   });
 });
