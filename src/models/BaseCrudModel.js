@@ -30,8 +30,7 @@ module.exports = class BaseCrudModel {
   async findAll () {
     return knex.table(this.baseTable).select();
   };
-
-  async findById (id) {
+async findById(id) {
     const rows = await knex.table(this.baseTable).where('id', id).select();
     if (rows.length === 0) {
       throw new NotFoundError(`${this.baseTable} with id: ${id}`);
@@ -41,8 +40,8 @@ module.exports = class BaseCrudModel {
     } else {
       throw new InternalError('E_TOO_MANY_ROWS');
     }
-  };
-
+  }
+   
   /**
    * Creates an object
    *
