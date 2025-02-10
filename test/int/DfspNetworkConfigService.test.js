@@ -22,7 +22,6 @@ const PkiService = require('../../src/service/PkiService');
 const DfspNetworkConfigService = require('../../src/service/DfspNetworkConfigService');
 const ValidationError = require('../../src/errors/ValidationError');
 const NotFoundError = require('../../src/errors/NotFoundError');
-
 const { createContext, destroyContext } = require('./context');
 const { StatusEnum } = require('../../src/service/DfspNetworkConfigService');
 const DFSPEndpointModel = require('../../src/models/DFSPEndpointModel');
