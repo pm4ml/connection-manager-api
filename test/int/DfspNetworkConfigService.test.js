@@ -16,19 +16,19 @@
  ******************************************************************************/
 
 const sinon = require('sinon');
+const { assert } = require('chai');
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 const PkiService = require('../../src/service/PkiService');
 const DfspNetworkConfigService = require('../../src/service/DfspNetworkConfigService');
 const ValidationError = require('../../src/errors/ValidationError');
 const NotFoundError = require('../../src/errors/NotFoundError');
-const { assert } = require('chai').use(require('chai-datetime'));
 const { createContext, destroyContext } = require('./context');
 const { StatusEnum } = require('../../src/service/DfspNetworkConfigService');
 const DFSPEndpointModel = require('../../src/models/DFSPEndpointModel');
 const DFSPModel = require('../../src/models/DFSPModel');
 const DFSPEndpointItemModel = require('../../src/models/DFSPEndpointItemModel');
-const validateDirectionType = require('../../src/models/DFSPEndpointModel');
 
+const { validateDirectionType } = DfspNetworkConfigService;
 
 describe('DfspNetworkConfigService Unit Tests', () => {
   let ctx;
@@ -303,6 +303,67 @@ describe('DfspNetworkConfigService', () => {
 });
 
 //...........................................................
+describe('validateDirectionType Tests', () => {
+  const dfspId = 'DFSP_TEST';
+  const epId = 'EP_TEST';
+
+  beforeEach(() => {
+    sinon.restore();
+  });
+
+  it('should not throw an error when direction and type are correct', async () => {
+    sinon.stub(DfspNetworkConfigService, 'getDFSPEndpoint').resolves({
+      direction: 'EGRESS',
+      type: 'IP',
+    });
+
+    try {
+      await validateDirectionType('EGRESS', 'IP', epId, dfspId);
+    } catch (error) {
+      assert.fail(`Unexpected error thrown: ${error.message}`);
+    }
+
+    sinon.assert.calledOnce(DfspNetworkConfigService.getDFSPEndpoint);
+  });
+
+  it('should throw ValidationError when direction is incorrect', async () => {
+    sinon.stub(DfspNetworkConfigService, 'getDFSPEndpoint').resolves({
+      direction: 'INGRESS',
+      type: 'IP',
+    });
+
+    try {
+      await validateDirectionType('EGRESS', 'IP', epId, dfspId);
+      assert.fail('Expected ValidationError');
+    } catch (error) {
+      assert.instanceOf(error, ValidationError);
+      assert.equal(error.message, 'Wrong direction EGRESS, endpoint has already INGRESS');
+    }
+  });
+
+  it('should throw ValidationError when type is incorrect', async () => {
+    sinon.stub(DfspNetworkConfigService, 'getDFSPEndpoint').resolves({
+      direction: 'EGRESS',
+      type: 'URL',
+    });
+
+    try {
+      await validateDirectionType('EGRESS', 'IP', epId, dfspId);
+      assert.fail('Expected ValidationError');
+    } catch (error) {
+      assert.instanceOf(error, ValidationError);
+      assert.equal(error.message, 'Wrong type IP, endpoint has already URL');
+    }
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+});
+
+
+//...........................................................
+
 
 describe('DfspNetworkConfigService creating endpoint items', () => {
   let dfspId = null;
@@ -667,7 +728,18 @@ describe('DfspNetworkConfigService creating endpoint items', () => {
       assert.equal(error.message, 'No ports received');
     }
   });
-
+  it('should throw ValidationError if ports is not an array', async () => {
+    const invalidBody = { value: { address: '1.1.1.1', ports: '80' } }; // String instead of array
+  
+    try {
+      await DfspNetworkConfigService.createDFSPEgressIp(ctx, dfspId, invalidBody);
+      assert.fail('Expected ValidationError');
+    } catch (error) {
+      assert.instanceOf(error, ValidationError);
+      assert.equal(error.message, 'Ports must be an array');
+    }
+  });
+  
   it('should throw ValidationError when creating DFSP Egress IP with invalid IP format', async () => {
     const invalidBody = { value: { address: '999.999.999.999', ports: ['80'] } };
   
@@ -679,6 +751,7 @@ describe('DfspNetworkConfigService creating endpoint items', () => {
       assert.include(error.message, 'Invalid IP address or CIDR range'); // Updated message
     }
   });
+  
   
   it('should throw ValidationError when updating DFSP endpoint with invalid URL', async () => {
     const endpointId = 'some-endpoint-id';
