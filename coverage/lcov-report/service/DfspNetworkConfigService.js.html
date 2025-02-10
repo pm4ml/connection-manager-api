@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">73.54% </span>
+                <span class="strong">71.42% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>139/189</span>
+                <span class='fraction'>135/189</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">71.87% </span>
+                <span class="strong">65.62% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>23/32</span>
+                <span class='fraction'>21/32</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">72.82% </span>
+                <span class="strong">70.65% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>134/184</span>
+                <span class='fraction'>130/184</span>
             </div>
         
             
@@ -887,8 +887,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -897,20 +897,20 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -940,9 +940,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1389,9 +1389,9 @@ exports.getUnprocessedEndpointItems = async ctx =&gt; {
   return items;
 };
 &nbsp;
-exports.getUnprocessedDfspItems = async (ctx, dfspId) =&gt; {
-  await PkiService.validateDfsp(ctx, dfspId);
-  return DFSPEndpointItemModel.findAllDfspState(dfspId, 'NEW');
+exports.getUnprocessedDfspItems = <span class="fstat-no" title="function not covered" >as</span>ync (ctx, dfspId) =&gt; {
+<span class="cstat-no" title="statement not covered" >  await PkiService.validateDfsp(ctx, dfspId);</span>
+<span class="cstat-no" title="statement not covered" >  return DFSPEndpointItemModel.findAllDfspState(dfspId, 'NEW');</span>
 };
 &nbsp;
 exports.confirmEndpointItem = async (ctx, dfspId, epId) =&gt; DFSPEndpointItemModel.update(dfspId, epId, { state: 'CONFIRMED' });
@@ -1401,9 +1401,9 @@ exports.getDFSPEndpoint = async (ctx, dfspId, epId) =&gt; {
   return DFSPEndpointItemModel.findObjectById(epId);
 };
 &nbsp;
-exports.getDFSPEndpoints = async (ctx, dfspId) =&gt; {
-  await PkiService.validateDfsp(ctx, dfspId);
-  return DFSPEndpointItemModel.findObjectAll(dfspId);
+exports.getDFSPEndpoints = <span class="fstat-no" title="function not covered" >as</span>ync (ctx, dfspId) =&gt; {
+<span class="cstat-no" title="statement not covered" >  await PkiService.validateDfsp(ctx, dfspId);</span>
+<span class="cstat-no" title="statement not covered" >  return DFSPEndpointItemModel.findObjectAll(dfspId);</span>
 };
 &nbsp;
 /**
@@ -1549,11 +1549,7 @@ exports.deleteDFSPIngressUrlEndpoint = <span class="fstat-no" title="function no
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-<<<<<<< HEAD
-                at Fri Feb 07 2025 15:28:31 GMT+0200 (Central Africa Time)
-=======
-                at Thu Feb 06 2025 17:41:07 GMT+0200 (South Africa Standard Time)
->>>>>>> 479767893837417d4b574ecf6ff47cf913f171e8
+                at Mon Feb 10 2025 12:25:04 GMT+0200 (Central Africa Time)
             </div>
         <script src="../prettify.js"></script>
         <script>
