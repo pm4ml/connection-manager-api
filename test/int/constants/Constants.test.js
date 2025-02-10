@@ -1,648 +1,337 @@
-const { expect } = require("chai");
-const { describe, it,afterEach,beforeEach } = require("mocha");
-const constants = require("../../../src/constants/Constants");
-//03/02/2025
+const chai = require('chai');
 const sinon = require('sinon');
 const fs = require('fs');
-const { getFileContent } = require("../../../src/constants/Constants");
-const { from } = require('env-var');
+const constants = require('../../../src/constants/Constants');
 
-describe("Constants", () => {
+const { expect } = chai;
+
+describe('Constants', () => {
+  let sandbox;
+  let originalEnv;
+
   beforeEach(() => {
-    // Backup the original process.env
-    this.originalEnv = { ...process.env };
+    sandbox = sinon.createSandbox();
+    originalEnv = { ...process.env };
   });
 
   afterEach(() => {
-    // Restore the original process.env
-    process.env = this.originalEnv;
-    sinon.restore();
+    sandbox.restore();
+    process.env = originalEnv;
   });
 
-  it("should have a SERVER object with a PORT property", () => {
-    expect(constants).to.have.property("SERVER");
-    expect(constants.SERVER).to.have.property("PORT");
-  });
-
-  it("should have an OAUTH object with AUTH_ENABLED property", () => {
-    expect(constants).to.have.property("OAUTH");
-    expect(constants.OAUTH).to.have.property("AUTH_ENABLED");
-  });
-
-  it("should have a DATABASE object with DATABASE_HOST property", () => {
-    expect(constants).to.have.property("DATABASE");
-    expect(constants.DATABASE).to.have.property("DATABASE_HOST");
-  });
-
-  it("should have a vault object with endpoint property", () => {
-    expect(constants).to.have.property("vault");
-    expect(constants.vault).to.have.property("endpoint");
-  });
-
-  it("should have a certManager object with enabled property", () => {
-    expect(constants).to.have.property("certManager");
-    expect(constants.certManager).to.have.property("enabled");
-  });
-
-   // Cert Manager extended validations
-   it("should have certManager with secret configurations when enabled", () => {
-    if (constants.certManager.enabled) {
-      expect(constants.certManager).to.have.property("serverCertSecretName");
-      expect(constants.certManager).to.have.property("serverCertSecretNamespace");
-    }
-  });
-
-  it("should have an auth object with enabled property", () => {
-    expect(constants).to.have.property("auth");
-    expect(constants.auth).to.have.property("enabled");
-  });
-
-  it("should have a switchFQDN property", () => {
-    expect(constants).to.have.property("switchFQDN");
-  });
-
-  it("should have a switchId property", () => {
-    expect(constants).to.have.property("switchId");
-  });
-
-  it("should have clientCsrParameters property", () => {
-    expect(constants).to.have.property("clientCsrParameters");
-  });
-
-  it("should have serverCsrParameters property", () => {
-    expect(constants).to.have.property("serverCsrParameters");
-  });
-
-  it("should have caCsrParameters property", () => {
-    expect(constants).to.have.property("caCsrParameters");
-  });
-
-  it("should have EXTRA_TLS object with EXTRA_CERTIFICATE_CHAIN_FILE_NAME property", () => {
-    expect(constants).to.have.property("EXTRA_TLS");
-    expect(constants.EXTRA_TLS).to.have.property(
-      "EXTRA_CERTIFICATE_CHAIN_FILE_NAME"
-    );
-  });
-
-  it("should have EXTRA_TLS object with EXTRA_ROOT_CERT_FILE_NAME property", () => {
-    expect(constants.EXTRA_TLS).to.have.property("EXTRA_ROOT_CERT_FILE_NAME");
-  });
-
-  it("should have AUTH_2FA object with AUTH_2FA_ENABLED property", () => {
-    expect(constants).to.have.property("AUTH_2FA");
-    expect(constants.AUTH_2FA).to.have.property("AUTH_2FA_ENABLED");
-  });
-
-  it("should have AUTH_2FA object with TOTP_ISSUER property", () => {
-    expect(constants.AUTH_2FA).to.have.property("TOTP_ISSUER");
-  });
-
-  it("should have vault object with mounts property", () => {
-    expect(constants.vault).to.have.property("mounts");
-  });
-
-  it("should have vault object with pkiServerRole property", () => {
-    expect(constants.vault).to.have.property("pkiServerRole");
-  });
-
-  it("should have vault object with pkiClientRole property", () => {
-    expect(constants.vault).to.have.property("pkiClientRole");
-  });
-
-  it("should have vault object with signExpiryHours property", () => {
-    expect(constants.vault).to.have.property("signExpiryHours");
-  });
-
-  it("should have vault object with keyLength property", () => {
-    expect(constants.vault).to.have.property("keyLength");
-  });
-
-  it("should have vault object with keyAlgorithm property", () => {
-    expect(constants.vault).to.have.property("keyAlgorithm");
-  });
-
-  it("should have auth object with creds property", () => {
-    expect(constants.auth).to.have.property("creds");
-  });
-
-  it("should have auth.creds object with user property", () => {
-    expect(constants.auth.creds).to.have.property("user");
-  });
-
-  it("should have auth.creds object with pass property", () => {
-    expect(constants.auth.creds).to.have.property("pass");
-  });
-
-  it("should have OAUTH object with correct default roles", () => {
-    expect(constants.OAUTH.MTA_ROLE).to.equal("Application/MTA");
-    expect(constants.OAUTH.PTA_ROLE).to.equal("Application/PTA");
-    expect(constants.OAUTH.EVERYONE_ROLE).to.equal("Internal/everyone");
-  });
-
-  it("should have DATABASE object with correct default values", () => {
-    expect(constants.DATABASE.DATABASE_HOST).to.equal("localhost");
-    expect(constants.DATABASE.DATABASE_PORT).to.equal(3306);
-    expect(constants.DATABASE.DATABASE_USER).to.equal("mcm");
-    expect(constants.DATABASE.DATABASE_SCHEMA).to.equal("mcm");
-    expect(constants.DATABASE.DB_RETRIES).to.equal(10);
-  });
-
-  it("should have vault object with correct default endpoints and mounts", () => {
-    expect(constants.vault.endpoint).to.equal("http://localhost:8233");
-    expect(constants.vault.mounts.pki).to.equal("pki");
-    expect(constants.vault.mounts.intermediatePki).to.equal("pki_int");
-    expect(constants.vault.mounts.kv).to.equal("secrets");
-  });
-
-  it("should have vault object with correct default key settings", () => {
-    expect(constants.vault.keyLength).to.equal(4096);
-    expect(constants.vault.keyAlgorithm).to.equal("rsa");
-    expect(constants.vault.signExpiryHours).to.equal("43800");
-  });
-
-  it("should have certManager disabled by default", () => {
-    expect(constants.certManager.enabled).to.equal(false);
-  });
-
-  it("should have AUTH_2FA disabled by default", () => {
-    expect(constants.AUTH_2FA.AUTH_2FA_ENABLED).to.equal(false);
-    expect(constants.AUTH_2FA.TOTP_ISSUER).to.equal("MCM");
-  });
-
-  it("should have correct default switch settings", () => {
-    expect(constants.switchFQDN).to.equal("switch.example.com");
-    expect(constants.switchId).to.exist;
-  });
-
-  it("should have required vault authentication properties", () => {
-    expect(constants.vault.auth).to.be.an("object");
-    if (constants.vault.auth.k8s) {
-      expect(constants.vault.auth.k8s).to.have.property("mountPoint");
-      expect(constants.vault.auth.k8s).to.have.property("role");
-    } else if (constants.vault.auth.appRole) {
-      expect(constants.vault.auth.appRole).to.have.property("roleId");
-      expect(constants.vault.auth.appRole).to.have.property("roleSecretId");
-    }
-  });
-
-  it("should have OAUTH object with JWT cookie name", () => {
-    expect(constants.OAUTH).to.have.property("JWT_COOKIE_NAME");
-    expect(constants.OAUTH.JWT_COOKIE_NAME).to.equal("MCM-API_ACCESS_TOKEN");
-  });
-
-  it("should have OAUTH object with reset password configuration", () => {
-    expect(constants.OAUTH).to.have.property("RESET_PASSWORD_ISSUER");
-    expect(constants.OAUTH).to.have.property("RESET_PASSWORD_AUTH_USER");
-    expect(constants.OAUTH).to.have.property("RESET_PASSWORD_AUTH_PASSWORD");
-  });
-
-  // Database retry settings
-  it("should have DATABASE object with retry configuration", () => {
-    expect(constants.DATABASE.DB_CONNECTION_RETRY_WAIT_MILLISECONDS).to.equal(
-      1000
-    );
-    expect(constants.DATABASE.DB_RETRIES).to.be.a("number");
-  });
-
-  // Advanced AUTH_2FA validations
-  it("should have complete AUTH_2FA WSO2 configuration", () => {
-    expect(constants.AUTH_2FA).to.have.property("WSO2_MANAGER_SERVICE_URL");
-    expect(constants.AUTH_2FA).to.have.property("WSO2_MANAGER_SERVICE_USER");
-    expect(constants.AUTH_2FA).to.have.property(
-      "WSO2_MANAGER_SERVICE_PASSWORD"
-    );
-  });
-
-  it("should have AUTH_2FA TOTP admin configuration", () => {
-    expect(constants.AUTH_2FA).to.have.property("TOTP_ADMIN_ISSUER");
-    expect(constants.AUTH_2FA).to.have.property("TOTP_ADMIN_AUTH_USER");
-    expect(constants.AUTH_2FA).to.have.property("TOTP_ADMIN_AUTH_PASSWORD");
-    expect(constants.AUTH_2FA).to.have.property("TOTP_LABEL");
-  });
-
-  // Vault DFSP bundle configurations
-  it("should have vault mounts with DFSP bundle configurations", () => {
-    expect(constants.vault.mounts).to.have.property("dfspClientCertBundle");
-    expect(constants.vault.mounts).to.have.property(
-      "dfspInternalIPWhitelistBundle"
-    );
-    expect(constants.vault.mounts).to.have.property(
-      "dfspExternalIPWhitelistBundle"
-    );
-    expect(constants.vault.mounts.dfspClientCertBundle).to.equal(
-      "onboarding_pm4mls"
-    );
-    expect(constants.vault.mounts.dfspInternalIPWhitelistBundle).to.equal(
-      "whitelist_pm4mls"
-    );
-    expect(constants.vault.mounts.dfspExternalIPWhitelistBundle).to.equal(
-      "whitelist_fsps"
-    );
-  });
-
-  // Server configuration
-  it("should have SERVER with default port configuration", () => {
-    expect(constants.SERVER.PORT).to.equal(3001);
-  });
-
-  it("should have OAUTH object with certificate configuration", () => {
-    expect(constants.OAUTH).to.have.property("CERTIFICATE_FILE_NAME");
-    expect(constants.OAUTH).to.have.property("EMBEDDED_CERTIFICATE");
-    expect(constants.OAUTH.CERTIFICATE_FILE_NAME).to.equal(
-      "resources/wso2carbon-publickey.cert"
-    );
-  });
-
-  it("should have OAUTH object with OAuth2 configuration", () => {
-    expect(constants.OAUTH).to.have.property("OAUTH2_ISSUER");
-    expect(constants.OAUTH).to.have.property("OAUTH2_TOKEN_ISS");
-    expect(constants.OAUTH.OAUTH2_ISSUER).to.equal(
-      "https://WSO2_IM_SERVER:9443/oauth2/token"
-    );
-  });
-
-  it("should have OAUTH object with client credentials", () => {
-    expect(constants.OAUTH).to.have.property("APP_OAUTH_CLIENT_KEY");
-    expect(constants.OAUTH).to.have.property("APP_OAUTH_CLIENT_SECRET");
-  });
-
-  // Database extended validations
-  it("should have DATABASE object with credentials", () => {
-    expect(constants.DATABASE).to.have.property("DATABASE_USER");
-    expect(constants.DATABASE).to.have.property("DATABASE_PASSWORD");
-    expect(constants.DATABASE.DATABASE_PASSWORD).to.equal("mcm");
-  });
-
-  // Vault extended validations
-  it("should have vault PKI mounts configuration", () => {
-    expect(constants.vault.mounts.pki).to.equal("pki");
-    expect(constants.vault.mounts.intermediatePki).to.equal("pki_int");
-  });
-
-  // Cert Manager extended validations
-  it("should have certManager with secret configurations when enabled", () => {
-    if (constants.certManager.enabled) {
-      expect(constants.certManager).to.have.property("serverCertSecretName");
-      expect(constants.certManager).to.have.property(
-        "serverCertSecretNamespace"
-      );
-    }
-  });
-
-  // Database connection configuration tests
-  it("should have complete database connection configuration", () => {
-    expect(constants.DATABASE).to.include.all.keys([
-      "DATABASE_HOST",
-      "DATABASE_PORT",
-      "DATABASE_USER",
-      "DATABASE_PASSWORD",
-      "DATABASE_SCHEMA",
-      "DB_RETRIES",
-      "DB_CONNECTION_RETRY_WAIT_MILLISECONDS"
-    ]);
-
-    expect(constants.DATABASE.DB_CONNECTION_RETRY_WAIT_MILLISECONDS).to.be.a(
-      "number"
-    );
-    expect(
-      constants.DATABASE.DB_CONNECTION_RETRY_WAIT_MILLISECONDS
-    ).to.be.greaterThan(0);
-  });
-
-  // Vault auth configuration tests
-  it("should have proper vault authentication configuration", () => {
-    expect(constants.vault.auth).to.be.an("object");
-    if (process.env.VAULT_AUTH_METHOD === "K8S") {
-      expect(constants.vault.auth.k8s).to.include.all.keys([
-        "token",
-        "mountPoint",
-        "role"
-      ]);
-    } else if (process.env.VAULT_AUTH_METHOD === "APP_ROLE") {
-      expect(constants.vault.auth.appRole).to.include.all.keys([
-        "roleId",
-        "roleSecretId"
-      ]);
-    }
-  });
-
-  // OAuth token configuration tests
-  it("should have complete OAuth token configuration", () => {
-    expect(constants.OAUTH).to.have.property("JWT_COOKIE_NAME");
-    expect(constants.OAUTH.JWT_COOKIE_NAME).to.be.a("string");
-    expect(constants.OAUTH.JWT_COOKIE_NAME).to.equal("MCM-API_ACCESS_TOKEN");
-
-    if (constants.OAUTH.AUTH_ENABLED) {
-      expect(constants.OAUTH).to.have.property("OAUTH2_TOKEN_ISS");
-      expect(constants.OAUTH).to.have.property("APP_OAUTH_CLIENT_KEY");
-      expect(constants.OAUTH).to.have.property("APP_OAUTH_CLIENT_SECRET");
-    }
-  });
-
-  // Password reset configuration tests
-  it("should have complete password reset configuration when OAuth is enabled", () => {
-    if (constants.OAUTH.AUTH_ENABLED) {
-      expect(constants.OAUTH.RESET_PASSWORD_ISSUER).to.be.a("string");
-      expect(constants.OAUTH.RESET_PASSWORD_AUTH_USER).to.be.a("string");
-      expect(constants.OAUTH.RESET_PASSWORD_AUTH_PASSWORD).to.be.a("string");
-    }
-  });
-
-  it("should have OAUTH object with certificate configuration", () => {
-    expect(constants.OAUTH).to.have.property("CERTIFICATE_FILE_NAME");
-    expect(constants.OAUTH).to.have.property("EMBEDDED_CERTIFICATE");
-    expect(constants.OAUTH.CERTIFICATE_FILE_NAME).to.equal(
-      "resources/wso2carbon-publickey.cert"
-    );
-  });
-
-  it("should have OAUTH object with OAuth2 configuration", () => {
-    expect(constants.OAUTH).to.have.property("OAUTH2_ISSUER");
-    expect(constants.OAUTH).to.have.property("OAUTH2_TOKEN_ISS");
-    expect(constants.OAUTH.OAUTH2_ISSUER).to.equal(
-      "https://WSO2_IM_SERVER:9443/oauth2/token"
-    );
-  });
-
-  it("should have OAUTH object with client credentials", () => {
-    expect(constants.OAUTH).to.have.property("APP_OAUTH_CLIENT_KEY");
-    expect(constants.OAUTH).to.have.property("APP_OAUTH_CLIENT_SECRET");
-  });
-
-  // Database extended validations
-  it("should have DATABASE object with credentials", () => {
-    expect(constants.DATABASE).to.have.property("DATABASE_USER");
-    expect(constants.DATABASE).to.have.property("DATABASE_PASSWORD");
-    expect(constants.DATABASE.DATABASE_PASSWORD).to.equal("mcm");
-  });
-
-  // Vault extended validations
-  it("should have vault PKI mounts configuration", () => {
-    expect(constants.vault.mounts.pki).to.equal("pki");
-    expect(constants.vault.mounts.intermediatePki).to.equal("pki_int");
-  });
-
-  // Cert Manager extended validations
-  it("should have certManager with secret configurations when enabled", () => {
-    if (constants.certManager.enabled) {
-      expect(constants.certManager).to.have.property("serverCertSecretName");
-      expect(constants.certManager).to.have.property(
-        "serverCertSecretNamespace"
-      );
-    }
-  });
-  
-  //03/02/2025
   describe('getFileContent', () => {
-    afterEach(() => {
-      sinon.restore();
+    it('should throw error when file does not exist', () => {
+      sandbox.stub(fs, 'existsSync').returns(false);
+      
+      expect(() => constants.getFileContent('nonexistent.txt'))
+        .to.throw('File nonexistent.txt doesn\'t exist');
     });
 
-    it('should throw an error if the file does not exist', () => {
-      const path = 'nonexistent-file.txt';
-      sinon.stub(fs, 'existsSync').withArgs(path).returns(false);
-
-      expect(() => getFileContent(path)).to.throw(`File ${path} doesn't exist`);
-    });
-
-    it('should return file content if the file exists', () => {
-      const path = 'existing-file.txt';
-      const fileContent = 'file content';
-      sinon.stub(fs, 'existsSync').withArgs(path).returns(true);
-      sinon.stub(fs, 'readFileSync').withArgs(path).returns(fileContent);
-
-      const result = getFileContent(path);
-      expect(result).to.equal(fileContent);
-    });
-  });
-  it("should set environment variables when TEST is true", () => {
-    process.env.TEST = 'true';
-    delete require.cache[require.resolve("../../../src/constants/Constants")];
-    require("../../../src/constants/Constants");
-
-    expect(process.env.AUTH_ENABLED).to.equal('false');
-    expect(process.env.AUTH_2FA_ENABLED).to.equal('false');
-    expect(process.env.VAULT_AUTH_METHOD).to.equal('APP_ROLE');
-    expect(process.env.VAULT_ROLE_ID_FILE).to.equal('docker/vault/tmp/role-id');
-    expect(process.env.VAULT_ROLE_SECRET_ID_FILE).to.equal('docker/vault/tmp/secret-id');
-    expect(process.env.VAULT_PKI_CLIENT_ROLE).to.equal('example.com');
-    expect(process.env.VAULT_PKI_SERVER_ROLE).to.equal('example.com');
-  });
-//Environment Configuration Tests 03/02/25
-  describe('env configuration', () => {
-    let sandbox;
-         
-    beforeEach(() => {
-      sandbox = sinon.createSandbox();
-    });
-    afterEach(() => {
-      sandbox.restore();
-    });
-    it('should correctly configure env with asFileContent', () => {
-      const path = 'test-file.txt';
-      const fileContent = 'file content';
-      sinon.stub(fs, 'existsSync').withArgs(path).returns(true);
-      sinon.stub(fs, 'readFileSync').withArgs(path).returns(fileContent);
-  
-      const env = from(process.env, {
-        asFileContent: (path) => getFileContent(path),
-        asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
-        asJsonConfig: (path) => JSON.parse(getFileContent(path)),
-        asTextFileContent: (path) => getFileContent(path).toString().trim(),
-      });
-  
-      process.env.TEST_FILE = path;
-      expect(env.get('TEST_FILE').asFileContent()).to.equal(fileContent);
-    });
-
-    it('should correctly configure env with asFileListContent', () => {
-      const pathList = 'file1.txt,file2.txt';
-      const fileContent1 = 'content1';
-      const fileContent2 = 'content2';
-  
-      sandbox.stub(fs, 'existsSync').withArgs('file1.txt').returns(true);
-      sandbox.stub(fs, 'existsSync').withArgs('file2.txt').returns(true);
-      sandbox.stub(fs, 'readFileSync').withArgs('file1.txt').returns(fileContent1);
-      sandbox.stub(fs, 'readFileSync').withArgs('file2.txt').returns(fileContent2);
-  
-      const env = from(process.env, {
-        asFileContent: (path) => getFileContent(path),
-        asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
-        asJsonConfig: (path) => JSON.parse(getFileContent(path)),
-        asTextFileContent: (path) => getFileContent(path).toString().trim(),
-      });
-  
-      process.env.TEST_FILE_LIST = pathList;
-      expect(env.get('TEST_FILE_LIST').asFileListContent()).to.deep.equal([fileContent1, fileContent2]);
-    });
-  });
-  
-   
-  
-    it('should correctly configure env with asJsonConfig', () => {
-      const path = 'config.json';
-      const jsonContent = '{"key": "value"}';
-      sinon.stub(fs, 'existsSync').withArgs(path).returns(true);
-      sinon.stub(fs, 'readFileSync').withArgs(path).returns(jsonContent);
-  
-      const env = from(process.env, {
-        asFileContent: (path) => getFileContent(path),
-        asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
-        asJsonConfig: (path) => JSON.parse(getFileContent(path)),
-        asTextFileContent: (path) => getFileContent(path).toString().trim(),
-      });
-  
-      process.env.TEST_JSON = path;
-      expect(env.get('TEST_JSON').asJsonConfig()).to.deep.equal(JSON.parse(jsonContent));
-    });
-  
-    it('should correctly configure env with asTextFileContent', () => {
-      const path = 'text-file.txt';
-      const fileContent = ' file content ';
-      sinon.stub(fs, 'existsSync').withArgs(path).returns(true);
-      sinon.stub(fs, 'readFileSync').withArgs(path).returns(fileContent);
-  
-      const env = from(process.env, {
-        asFileContent: (path) => getFileContent(path),
-        asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
-        asJsonConfig: (path) => JSON.parse(getFileContent(path)),
-        asTextFileContent: (path) => getFileContent(path).toString().trim(),
-      });
-  
-      process.env.TEST_TEXT = path;
-      expect(env.get('TEST_TEXT').asTextFileContent()).to.equal(fileContent.trim());
+    it('should return file content when file exists', () => {
+      const expectedContent = 'test content';
+      sandbox.stub(fs, 'existsSync').returns(true);
+      sandbox.stub(fs, 'readFileSync').returns(expectedContent);
+      
+      const content = constants.getFileContent('test.txt');
+      
+      expect(content).to.equal(expectedContent);
     });
   });
 
-
-  describe('vaultAuth configuration', () => {
-    it('should configure vaultAuth for K8S', () => {
+  describe('vault configuration', () => {
+    it('should configure K8S auth when VAULT_AUTH_METHOD is K8S', () => {
       process.env.VAULT_AUTH_METHOD = 'K8S';
-      process.env.VAULT_K8S_TOKEN_FILE = 'test-token-file';
-      process.env.VAULT_K8S_AUTH_MOUNT_POINT = 'test-mount-point';
       process.env.VAULT_K8S_ROLE = 'test-role';
-
-      sinon.stub(fs, 'existsSync').withArgs('test-token-file').returns(true);
-      sinon.stub(fs, 'readFileSync').withArgs('test-token-file').returns('test-token');
-
-      const env = from(process.env, {
-        asFileContent: (path) => getFileContent(path),
-        asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
-        asJsonConfig: (path) => JSON.parse(getFileContent(path)),
-        asTextFileContent: (path) => getFileContent(path).toString().trim(),
-      });
-
-      const vaultAuthMethod = env.get('VAULT_AUTH_METHOD').required().asEnum(['K8S', 'APP_ROLE']);
-      let vaultAuth;
-      if (vaultAuthMethod === 'K8S') {
-        vaultAuth = {
-          k8s: {
-            token: env.get('VAULT_K8S_TOKEN_FILE').default('/var/run/secrets/kubernetes.io/serviceaccount/token').asTextFileContent(),
-            mountPoint: env.get('VAULT_K8S_AUTH_MOUNT_POINT').default('kubernetes').asString(),
-            role: env.get('VAULT_K8S_ROLE').required().asString(),
-          },
-        };
-      }
-
-      expect(vaultAuth).to.deep.equal({
-        k8s: {
-          token: 'test-token',
-          mountPoint: 'test-mount-point',
-          role: 'test-role',
-        },
-      });
+      
+      sandbox.stub(fs, 'existsSync').returns(true);
+      sandbox.stub(fs, 'readFileSync').returns('test-token');
+      
+      
+      expect(constants.vault.auth.k8s).to.exist;
+      expect(constants.vault.auth.k8s.role).to.equal('test-role');
+      expect(constants.vault.auth.k8s.token).to.equal('test-token');
     });
 
-    it('should configure vaultAuth for APP_ROLE', () => {
-      sinon.restore(); // Restore any previous stubs before creating new ones
-    
+    it('should configure APP_ROLE auth when VAULT_AUTH_METHOD is APP_ROLE', () => {
       process.env.VAULT_AUTH_METHOD = 'APP_ROLE';
-      process.env.VAULT_ROLE_ID_FILE = 'test-role-id-file';
-      process.env.VAULT_ROLE_SECRET_ID_FILE = 'test-role-secret-id-file';
-    
-      sinon.stub(fs, 'existsSync').withArgs('test-role-id-file').returns(true);
-      sinon.stub(fs, 'existsSync').withArgs('test-role-secret-id-file').returns(true);
-      sinon.stub(fs, 'readFileSync').withArgs('test-role-id-file').returns('test-role-id');
-      sinon.stub(fs, 'readFileSync').withArgs('test-role-secret-id-file').returns('test-role-secret-id');
-    
-      const env = from(process.env, {
-        asFileContent: (path) => getFileContent(path),
-        asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
-        asJsonConfig: (path) => JSON.parse(getFileContent(path)),
-        asTextFileContent: (path) => getFileContent(path).toString().trim(),
-      });
-    
-      const vaultAuthMethod = env.get('VAULT_AUTH_METHOD').required().asEnum(['K8S', 'APP_ROLE']);
-      let vaultAuth;
-      if (vaultAuthMethod === 'APP_ROLE') {
-        vaultAuth = {
-          appRole: {
-            roleId: env.get('VAULT_ROLE_ID_FILE').default('/vault/role-id').asTextFileContent(),
-            roleSecretId: env.get('VAULT_ROLE_SECRET_ID_FILE').default('/vault/role-secret-id').asTextFileContent(),
-          },
-        };
-      }
-    
-      expect(vaultAuth).to.deep.equal({
-        appRole: {
-          roleId: 'test-role-id',
-          roleSecretId: 'test-role-secret-id',
-        },
-      });
+      
+      sandbox.stub(fs, 'existsSync').returns(true);
+      sandbox.stub(fs, 'readFileSync')
+        .onFirstCall().returns('role-id-content')
+        .onSecondCall().returns('secret-id-content');
+      
+      
+      expect(constants.vault.auth.appRole).to.exist;
+      expect(constants.vault.auth.appRole.roleId).to.equal('role-id-content');
+      expect(constants.vault.auth.appRole.roleSecretId).to.equal('secret-id-content');
+    });
+  });
+
+  describe('cert manager configuration', () => {
+    it('should have default disabled state', () => {
+      expect(constants.certManager.enabled).to.be.false;
     });
 
-//certManager configuration 03/02/25
-  describe('certManager configuration', () => {
-    it('should configure certManager when enabled', () => {
+    it('should include secret configs when enabled', () => {
       process.env.CERT_MANAGER_ENABLED = 'true';
-      process.env.CERT_MANAGER_SERVER_CERT_SECRET_NAME = 'test-secret-name';
-      process.env.CERT_MANAGER_SERVER_CERT_SECRET_NAMESPACE = 'test-secret-namespace';
+      process.env.CERT_MANAGER_SERVER_CERT_SECRET_NAME = 'test-secret';
+      process.env.CERT_MANAGER_SERVER_CERT_SECRET_NAMESPACE = 'test-namespace';
+      
+      
+      expect(constants.certManager.enabled).to.be.true;
+      expect(constants.certManager.serverCertSecretName).to.equal('test-secret');
+      expect(constants.certManager.serverCertSecretNamespace).to.equal('test-namespace');
+    });
+  });
 
-      const env = from(process.env, {
-        asFileContent: (path) => getFileContent(path),
-        asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
-        asJsonConfig: (path) => JSON.parse(getFileContent(path)),
-        asTextFileContent: (path) => getFileContent(path).toString().trim(),
-      });
-
-      const certManager = {
-        enabled: env.get('CERT_MANAGER_ENABLED').default('false').asBool(),
-      };
-
-      if (certManager.enabled) {
-        certManager.serverCertSecretName = env.get('CERT_MANAGER_SERVER_CERT_SECRET_NAME').asString();
-        certManager.serverCertSecretNamespace = env.get('CERT_MANAGER_SERVER_CERT_SECRET_NAMESPACE').asString();
-      }
-
-      expect(certManager).to.deep.equal({
-        enabled: true,
-        serverCertSecretName: 'test-secret-name',
-        serverCertSecretNamespace: 'test-secret-namespace',
-      });
+  describe('server configuration', () => {
+    it('should use default port when not specified', () => {
+      delete process.env.PORT;
+      expect(constants.SERVER.PORT).to.equal(3001);
     });
 
-    it('should not configure certManager when disabled', () => {
-      process.env.CERT_MANAGER_ENABLED = 'false';
+    it('should use specified port when provided', () => {
+      process.env.PORT = '3002';
+      expect(constants.SERVER.PORT).to.equal(3002);
+    });
+  });
 
-      const env = from(process.env, {
-        asFileContent: (path) => getFileContent(path),
-        asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
-        asJsonConfig: (path) => JSON.parse(getFileContent(path)),
-        asTextFileContent: (path) => getFileContent(path).toString().trim(),
+  describe('database configuration', () => {
+    it('should have correct default values', () => {
+      
+      expect(constants.DATABASE.DATABASE_HOST).to.equal('localhost');
+      expect(constants.DATABASE.DATABASE_PORT).to.equal(3306);
+      expect(constants.DATABASE.DATABASE_USER).to.equal('mcm');
+      expect(constants.DATABASE.DATABASE_SCHEMA).to.equal('mcm');
+      expect(constants.DATABASE.DB_RETRIES).to.equal(10);
+    });
+
+    it('should override defaults with environment variables', () => {
+      process.env.DATABASE_HOST = 'testhost';
+      process.env.DATABASE_PORT = '3307';
+      process.env.DATABASE_USER = 'testuser';
+      
+      
+      expect(constants.DATABASE.DATABASE_HOST).to.equal('testhost');
+      expect(constants.DATABASE.DATABASE_PORT).to.equal(3307);
+      expect(constants.DATABASE.DATABASE_USER).to.equal('testuser');
+    });
+  });
+
+  describe('auth configuration', () => {
+    it('should handle auth configuration correctly', () => {
+      process.env.AUTH_ENABLED = 'true';
+      process.env.AUTH_USER = 'testuser';
+      process.env.AUTH_PASS = 'testpass';
+      
+      
+      expect(constants.auth.enabled).to.be.true;
+      expect(constants.auth.creds.user).to.equal('testuser');
+      expect(constants.auth.creds.pass).to.equal('testpass');
+    });
+  });
+
+  describe('env-var validation', () => {
+    it('should throw error when required variable is missing', () => {
+      delete process.env.SWITCH_ID;
+      expect(() => require('../../../src/constants/Constants'))
+        .to.throw('env-var: "SWITCH_ID" is a required variable');
+    });
+
+    it('should throw error for invalid port number', () => {
+      process.env.PORT = 'invalid';
+      expect(() => require('../../../src/constants/Constants'))
+        .to.throw('env-var: "PORT" should be a port number');
+    });
+
+    it('should throw error for invalid vault auth method', () => {
+      process.env.VAULT_AUTH_METHOD = 'INVALID';
+      expect(() => require('../../../src/constants/Constants'))
+        .to.throw('env-var: "VAULT_AUTH_METHOD" must be one of');
+    });
+  });
+
+  describe('file handling', () => {
+    it('should handle multiple file content requests', () => {
+      sandbox.stub(fs, 'existsSync').returns(true);
+      sandbox.stub(fs, 'readFileSync')
+        .onFirstCall().returns('file1')
+        .onSecondCall().returns('file2');
+
+      const content = constants.getFileContent('file1.txt');
+      const content2 = constants.getFileContent('file2.txt');
+
+      expect(content).to.equal('file1');
+      expect(content2).to.equal('file2');
+    });
+
+    it('should throw error when reading file fails', () => {
+      sandbox.stub(fs, 'existsSync').returns(true);
+      sandbox.stub(fs, 'readFileSync').throws(new Error('Read failed'));
+
+      expect(() => constants.getFileContent('test.txt'))
+        .to.throw('Read failed');
+    });
+  });
+
+  describe('CSR parameters', () => {
+    it('should throw error when CSR JSON is invalid', () => {
+      process.env.CLIENT_CSR_PARAMETERS = 'invalid-json';
+      sandbox.stub(fs, 'existsSync').returns(true);
+      sandbox.stub(fs, 'readFileSync').returns('invalid-json');
+
+      expect(() => require('../../../src/constants/Constants'))
+        .to.throw(SyntaxError);
+    });
+
+    it('should load valid CSR JSON parameters', () => {
+      const validJson = JSON.stringify({
+        commonName: 'test.com',
+        organization: 'Test Org'
       });
+      process.env.CLIENT_CSR_PARAMETERS = 'csr.json';
+      sandbox.stub(fs, 'existsSync').returns(true);
+      sandbox.stub(fs, 'readFileSync').returns(validJson);
 
-      const certManager = {
-        enabled: env.get('CERT_MANAGER_ENABLED').default('false').asBool(),
-      };
-
-      if (certManager.enabled) {
-        certManager.serverCertSecretName = env.get('CERT_MANAGER_SERVER_CERT_SECRET_NAME').asString();
-        certManager.serverCertSecretNamespace = env.get('CERT_MANAGER_SERVER_CERT_SECRET_NAMESPACE').asString();
-      }
-
-      expect(certManager).to.deep.equal({
-        enabled: false,
+      expect(constants.clientCsrParameters).to.deep.equal({
+        commonName: 'test.com',
+        organization: 'Test Org'
       });
+    });
+  });
+
+  describe('OAUTH configuration', () => {
+    it('should have correct default values', () => {
+      expect(constants.OAUTH.MTA_ROLE).to.equal('Application/MTA');
+      expect(constants.OAUTH.PTA_ROLE).to.equal('Application/PTA');
+      expect(constants.OAUTH.EVERYONE_ROLE).to.equal('Internal/everyone');
+      expect(constants.OAUTH.JWT_COOKIE_NAME).to.equal('MCM-API_ACCESS_TOKEN');
+    });
+
+    it('should override defaults with environment variables', () => {
+      process.env.MTA_ROLE = 'Custom/MTA';
+      process.env.PTA_ROLE = 'Custom/PTA';
+      process.env.OAUTH2_ISSUER = 'https://custom.auth.server';
+
+      expect(constants.OAUTH.MTA_ROLE).to.equal('Custom/MTA');
+      expect(constants.OAUTH.PTA_ROLE).to.equal('Custom/PTA');
+      expect(constants.OAUTH.OAUTH2_ISSUER).to.equal('https://custom.auth.server');
+    });
+  });
+
+  describe('TLS configuration', () => {
+    it('should handle extra TLS certificate configuration', () => {
+      process.env.EXTRA_CERTIFICATE_CHAIN_FILE_NAME = 'chain.pem';
+      process.env.EXTRA_ROOT_CERT_FILE_NAME = 'root.pem';
+
+      expect(constants.EXTRA_TLS.EXTRA_CERTIFICATE_CHAIN_FILE_NAME).to.equal('chain.pem');
+      expect(constants.EXTRA_TLS.EXTRA_ROOT_CERT_FILE_NAME).to.equal('root.pem');
+    });
+  });
+
+  describe('vault configuration validation', () => {
+    it('should validate key length is positive', () => {
+      process.env.PRIVATE_KEY_LENGTH = '-1';
+      expect(() => require('../../../src/constants/Constants'))
+        .to.throw('env-var: "PRIVATE_KEY_LENGTH" must be a positive integer');
+    });
+
+    it('should have correct default values for vault config', () => {
+      expect(constants.vault.endpoint).to.equal('http://127.0.0.1:8233');
+      expect(constants.vault.mounts.pki).to.equal('pki');
+      expect(constants.vault.signExpiryHours).to.equal('43800');
+      expect(constants.vault.keyLength).to.equal(4096);
+      expect(constants.vault.keyAlgorithm).to.equal('rsa');
+    });
+  });
+
+  describe('text file content handling', () => {
+    it('should trim whitespace from text file content', () => {
+      sandbox.stub(fs, 'existsSync').returns(true);
+      sandbox.stub(fs, 'readFileSync').returns('  content with spaces  \n');
+      
+      process.env.TEST_TEXT_FILE = 'test.txt';
+      const result = constants.getFileContent('test.txt').toString().trim();
+      
+      expect(result).to.equal('content with spaces');
+    });
+    
+    it('should handle multiple lines in text files', () => {
+      sandbox.stub(fs, 'existsSync').returns(true);
+      sandbox.stub(fs, 'readFileSync').returns('line1\nline2\n');
+      
+      const result = constants.getFileContent('test.txt').toString().trim();
+      expect(result).to.equal('line1\nline2');
+    });
+  });
+  
+  describe('switch configuration', () => {
+    it('should use default FQDN when not specified', () => {
+      delete process.env.SWITCH_FQDN;
+      expect(constants.switchFQDN).to.equal('switch.example.com');
+    });
+  
+    it('should use custom FQDN when specified', () => {
+      process.env.SWITCH_FQDN = 'custom.switch.com';
+      expect(constants.switchFQDN).to.equal('custom.switch.com');
+    });
+  });
+  
+  describe('vault intermediate PKI configuration', () => {
+    it('should have correct default intermediate PKI mount', () => {
+      delete process.env.VAULT_MOUNT_INTERMEDIATE_PKI;
+      expect(constants.vault.mounts.intermediatePki).to.equal('pki_int');
+    });
+  
+    it('should use custom intermediate PKI mount when specified', () => {
+      process.env.VAULT_MOUNT_INTERMEDIATE_PKI = 'custom_pki_int';
+      expect(constants.vault.mounts.intermediatePki).to.equal('custom_pki_int');
+    });
+  });
+  
+  describe('2FA configuration', () => {
+    it('should have correct default values', () => {
+      expect(constants.AUTH_2FA.AUTH_2FA_ENABLED).to.be.false;
+      expect(constants.AUTH_2FA.TOTP_ISSUER).to.equal('MCM');
+    });
+  
+    it('should use custom 2FA settings when provided', () => {
+      process.env.AUTH_2FA_ENABLED = 'true';
+      process.env.TOTP_ISSUER = 'CustomIssuer';
+      process.env.TOTP_LABEL = 'CustomLabel';
+      
+      expect(constants.AUTH_2FA.AUTH_2FA_ENABLED).to.be.true;
+      expect(constants.AUTH_2FA.TOTP_ISSUER).to.equal('CustomIssuer');
+      expect(constants.AUTH_2FA.TOTP_LABEL).to.equal('CustomLabel');
+    });
+  });
+  
+  describe('WSO2 service configuration', () => {
+    it('should handle WSO2 manager service settings', () => {
+      process.env.WSO2_MANAGER_SERVICE_URL = 'https://wso2.test';
+      process.env.WSO2_MANAGER_SERVICE_USER = 'admin';
+      process.env.WSO2_MANAGER_SERVICE_PASSWORD = 'password';
+      
+      expect(constants.AUTH_2FA.WSO2_MANAGER_SERVICE_URL).to.equal('https://wso2.test');
+      expect(constants.AUTH_2FA.WSO2_MANAGER_SERVICE_USER).to.equal('admin');
+      expect(constants.AUTH_2FA.WSO2_MANAGER_SERVICE_PASSWORD).to.equal('password');
+    });
+  });
+  
+  describe('database retry configuration', () => {
+    it('should have correct default retry values', () => {
+      delete process.env.DB_CONNECTION_RETRY_WAIT_MILLISECONDS;
+      
+      expect(constants.DATABASE.DB_CONNECTION_RETRY_WAIT_MILLISECONDS).to.equal(1000);
+      expect(constants.DATABASE.DB_RETRIES).to.equal(10);
+    });
+  
+    it('should use custom retry settings when provided', () => {
+      process.env.DB_CONNECTION_RETRY_WAIT_MILLISECONDS = '2000';
+      process.env.DB_RETRIES = '5';
+      
+      expect(constants.DATABASE.DB_CONNECTION_RETRY_WAIT_MILLISECONDS).to.equal(2000);
+      expect(constants.DATABASE.DB_RETRIES).to.equal(5);
     });
   });
 });

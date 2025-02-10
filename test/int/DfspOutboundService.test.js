@@ -245,3 +245,338 @@ describe('getDFSPOutboundEnrollments', () => {
     expect(result).to.deep.equal([]);
   });
 });
+
+describe('createCSRAndDFSPOutboundEnrollment', () => {
+  let ctx;
+  let validateDfspStub;
+  let createCSRStub;
+  let getCSRInfoStub;
+  let setDFSPOutboundEnrollmentStub;
+
+  beforeEach(() => {
+    ctx = {
+      pkiEngine: {
+        createCSR: sinon.stub(),
+        getCSRInfo: sinon.stub(),
+        setDFSPOutboundEnrollment: sinon.stub()
+      }
+    };
+    validateDfspStub = sinon.stub(PkiService, 'validateDfsp').resolves();
+    createCSRStub = ctx.pkiEngine.createCSR;
+    getCSRInfoStub = ctx.pkiEngine.getCSRInfo;
+    setDFSPOutboundEnrollmentStub = ctx.pkiEngine.setDFSPOutboundEnrollment;
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('should successfully create CSR and enrollment', async () => {
+    const mockCSR = 'mock-csr';
+    const mockPrivateKey = 'mock-private-key';
+    const mockCSRInfo = { subject: 'test' };
+    
+    createCSRStub.resolves({ csr: mockCSR, privateKey: mockPrivateKey });
+    getCSRInfoStub.returns(mockCSRInfo);
+    sinon.stub(DFSPModel, 'findIdByDfspId').resolves(1);
+
+    const result = await DfspOutboundService.createCSRAndDFSPOutboundEnrollment(ctx, 'testDfspId');
+
+    expect(result).to.have.property('id');
+    expect(result).to.have.property('csr', mockCSR);
+    expect(result).to.have.property('csrInfo', mockCSRInfo);
+    expect(result).to.have.property('state', 'CSR_LOADED');
+    expect(result).to.not.have.property('key');
+  });
+
+  it('should throw error when validation fails', async () => {
+    validateDfspStub.rejects(new Error('Validation failed'));
+
+    await expect(
+      DfspOutboundService.createCSRAndDFSPOutboundEnrollment(ctx, 'testDfspId')
+    ).to.be.rejectedWith('Validation failed');
+  });
+});
+
+describe('getDFSPOutboundEnrollment', () => {
+  let ctx;
+
+  beforeEach(() => {
+    ctx = {
+      pkiEngine: {
+        getDFSPOutboundEnrollment: sinon.stub()
+      }
+    };
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('should successfully retrieve enrollment', async () => {
+    const mockEnrollment = {
+      id: 'test-id',
+      state: 'CSR_LOADED',
+      key: 'private-key'
+    };
+
+    sinon.stub(PkiService, 'validateDfsp').resolves();
+    sinon.stub(DFSPModel, 'findIdByDfspId').resolves(1);
+    ctx.pkiEngine.getDFSPOutboundEnrollment.resolves(mockEnrollment);
+
+    const result = await DfspOutboundService.getDFSPOutboundEnrollment(ctx, 'testDfspId', 'test-id');
+
+    expect(result).to.not.have.property('key');
+    expect(result).to.have.property('id', 'test-id');
+    expect(result).to.have.property('state', 'CSR_LOADED');
+  });
+
+  it('should throw error for invalid enrollment ID', async () => {
+    sinon.stub(PkiService, 'validateDfsp').resolves();
+    sinon.stub(DFSPModel, 'findIdByDfspId').resolves(1);
+    ctx.pkiEngine.getDFSPOutboundEnrollment.rejects(new Error('Enrollment not found'));
+
+    await expect(
+      DfspOutboundService.getDFSPOutboundEnrollment(ctx, 'testDfspId', 'invalid-id')
+    ).to.be.rejectedWith('Enrollment not found');
+  });
+});
+
+describe('validateDFSPOutboundEnrollmentCertificate', () => {
+  let ctx;
+
+  beforeEach(() => {
+    ctx = {
+      pkiEngine: {
+        getDFSPOutboundEnrollment: sinon.stub(),
+        validateOutboundEnrollment: sinon.stub(),
+        setDFSPOutboundEnrollment: sinon.stub()
+      }
+    };
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('should successfully validate certificate', async () => {
+    const mockEnrollment = {
+      id: 'test-id',
+      csr: 'test-csr',
+      certificate: 'test-cert',
+      key: 'test-key'
+    };
+
+    const mockValidation = {
+      validations: [{ code: 'TEST', result: 'OK' }],
+      validationState: 'VALID'
+    };
+
+    sinon.stub(PkiService, 'validateDfsp').resolves();
+    sinon.stub(PkiService, 'getDFSPca').resolves('dfsp-ca');
+    sinon.stub(DFSPModel, 'findIdByDfspId').resolves(1);
+    ctx.pkiEngine.getDFSPOutboundEnrollment.resolves(mockEnrollment);
+    ctx.pkiEngine.validateOutboundEnrollment.returns(mockValidation);
+
+    const result = await DfspOutboundService.validateDFSPOutboundEnrollmentCertificate(
+      ctx,
+      'testDfspId',
+      'test-id'
+    );
+
+    expect(result).to.have.property('validationState', 'VALID');
+    expect(result.validations).to.deep.equal(mockValidation.validations);
+  });
+
+  it('should handle missing DFSP CA', async () => {
+    const mockEnrollment = {
+      id: 'test-id',
+      csr: 'test-csr',
+      certificate: 'test-cert',
+      key: 'test-key'
+    };
+
+    sinon.stub(PkiService, 'validateDfsp').resolves();
+    sinon.stub(PkiService, 'getDFSPca').resolves(null);
+    sinon.stub(DFSPModel, 'findIdByDfspId').resolves(1);
+    ctx.pkiEngine.getDFSPOutboundEnrollment.resolves(mockEnrollment);
+
+    const result = await DfspOutboundService.validateDFSPOutboundEnrollmentCertificate(
+      ctx,
+      'testDfspId',
+      'test-id'
+    );
+
+    expect(result).to.have.property('validationState');
+  });
+});
+
+describe('addDFSPOutboundEnrollmentCertificate', () => {
+  let ctx;
+  
+  beforeEach(() => {
+    ctx = {
+      pkiEngine: {
+        getCertInfo: sinon.stub(),
+        getDFSPOutboundEnrollment: sinon.stub(),
+        validateOutboundEnrollment: sinon.stub(),
+        setDFSPOutboundEnrollment: sinon.stub()
+      }
+    };
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('should successfully add and validate certificate', async () => {
+    const mockCertificate = 'test-certificate';
+    const mockCertInfo = { subject: 'test-subject' };
+    const mockEnrollment = {
+      id: 'test-id',
+      csr: 'test-csr',
+      key: 'test-key'
+    };
+    const mockValidation = {
+      validations: [{ code: 'TEST', result: 'OK' }],
+      validationState: 'VALID'
+    };
+
+    sinon.stub(PkiService, 'validateDfsp').resolves();
+    sinon.stub(PkiService, 'getDFSPca').resolves('dfsp-ca');
+    sinon.stub(DFSPModel, 'findIdByDfspId').resolves(1);
+
+    ctx.pkiEngine.getCertInfo.returns(mockCertInfo);
+    ctx.pkiEngine.getDFSPOutboundEnrollment.resolves(mockEnrollment);
+    ctx.pkiEngine.validateOutboundEnrollment.returns(mockValidation);
+
+    const result = await DfspOutboundService.addDFSPOutboundEnrollmentCertificate(
+      ctx,
+      'testDfspId',
+      'test-id',
+      { certificate: mockCertificate }
+    );
+
+    expect(result).to.have.property('certificate', mockCertificate);
+    expect(result).to.have.property('certInfo', mockCertInfo);
+    expect(result).to.have.property('state', 'CERT_SIGNED');
+    expect(result).to.have.property('validationState', 'VALID');
+    expect(result).to.not.have.property('key');
+  });
+
+  it('should throw ValidationError for invalid certificate content', async () => {
+    sinon.stub(PkiService, 'validateDfsp').resolves();
+    ctx.pkiEngine.getCertInfo.throws(new Error('Invalid certificate'));
+
+    await expect(
+      DfspOutboundService.addDFSPOutboundEnrollmentCertificate(
+        ctx,
+        'testDfspId',
+        'test-id',
+        { certificate: 'invalid-cert' }
+      )
+    ).to.be.rejectedWith(ValidationError, 'Could not parse the Certificate content');
+  });
+
+  it('should handle case when DFSP CA is not available', async () => {
+    const mockCertificate = 'test-certificate';
+    const mockCertInfo = { subject: 'test-subject' };
+    const mockEnrollment = {
+      id: 'test-id',
+      csr: 'test-csr',
+      key: 'test-key'
+    };
+    const mockValidation = {
+      validations: [{ code: 'TEST', result: 'NOT_AVAILABLE' }],
+      validationState: 'VALID'
+    };
+
+    sinon.stub(PkiService, 'validateDfsp').resolves();
+    sinon.stub(PkiService, 'getDFSPca').resolves(null);
+    sinon.stub(DFSPModel, 'findIdByDfspId').resolves(1);
+
+    ctx.pkiEngine.getCertInfo.returns(mockCertInfo);
+    ctx.pkiEngine.getDFSPOutboundEnrollment.resolves(mockEnrollment);
+    ctx.pkiEngine.validateOutboundEnrollment.returns(mockValidation);
+
+    const result = await DfspOutboundService.addDFSPOutboundEnrollmentCertificate(
+      ctx,
+      'testDfspId',
+      'test-id',
+      { certificate: mockCertificate }
+    );
+
+    expect(result.validationState).to.equal('VALID');
+    expect(result.state).to.equal('CERT_SIGNED');
+  });
+
+  it('should validate enrollment data integrity after certificate addition', async () => {
+    const mockCertificate = 'test-certificate';
+    const mockCertInfo = { subject: 'test-subject' };
+    const originalEnrollment = {
+      id: 'test-id',
+      csr: 'test-csr',
+      key: 'test-key',
+      someExistingProp: 'existing-value'
+    };
+    const mockValidation = {
+      validations: [{ code: 'TEST', result: 'OK' }],
+      validationState: 'VALID'
+    };
+
+    sinon.stub(PkiService, 'validateDfsp').resolves();
+    sinon.stub(PkiService, 'getDFSPca').resolves('dfsp-ca');
+    sinon.stub(DFSPModel, 'findIdByDfspId').resolves(1);
+
+    ctx.pkiEngine.getCertInfo.returns(mockCertInfo);
+    ctx.pkiEngine.getDFSPOutboundEnrollment.resolves(originalEnrollment);
+    ctx.pkiEngine.validateOutboundEnrollment.returns(mockValidation);
+
+    const result = await DfspOutboundService.addDFSPOutboundEnrollmentCertificate(
+      ctx,
+      'testDfspId',
+      'test-id',
+      { certificate: mockCertificate }
+    );
+
+    expect(result).to.include({
+      someExistingProp: 'existing-value',
+      certificate: mockCertificate,
+      state: 'CERT_SIGNED'
+    });
+    expect(result).to.not.have.property('key');
+  });
+
+  it('should handle validation failure cases', async () => {
+    const mockCertificate = 'test-certificate';
+    const mockCertInfo = { subject: 'test-subject' };
+    const mockEnrollment = {
+      id: 'test-id',
+      csr: 'test-csr',
+      key: 'test-key'
+    };
+    const mockValidation = {
+      validations: [{ code: 'TEST', result: 'INVALID' }],
+      validationState: 'INVALID'
+    };
+
+    sinon.stub(PkiService, 'validateDfsp').resolves();
+    sinon.stub(PkiService, 'getDFSPca').resolves('dfsp-ca');
+    sinon.stub(DFSPModel, 'findIdByDfspId').resolves(1);
+
+    ctx.pkiEngine.getCertInfo.returns(mockCertInfo);
+    ctx.pkiEngine.getDFSPOutboundEnrollment.resolves(mockEnrollment);
+    ctx.pkiEngine.validateOutboundEnrollment.returns(mockValidation);
+
+    const result = await DfspOutboundService.addDFSPOutboundEnrollmentCertificate(
+      ctx,
+      'testDfspId',
+      'test-id',
+      { certificate: mockCertificate }
+    );
+
+    expect(result.validationState).to.equal('INVALID');
+    expect(result.state).to.equal('CERT_SIGNED');
+    expect(result.validations[0].result).to.equal('INVALID');
+  });
+});
