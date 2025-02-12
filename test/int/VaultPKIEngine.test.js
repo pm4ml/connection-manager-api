@@ -23,6 +23,7 @@ const fs = require("fs");
 const path = require("path");
 const { assert } = require("chai");
 const { createContext, destroyContext } = require("./context");
+const ValidationCodes = require('../../src/pki_engine/ValidationCodes.js');
 
 describe("PKIEngine", () => {
   let ctx;
@@ -259,10 +260,8 @@ describe("PKIEngine", () => {
   
   describe("validateCertificateValidity", () => {
     it("should return NOT_AVAILABLE when no certificate provided", () => {
-      const result = ctx.pkiEngine.validateCertificateValidity(
-        null,
-        "TEST_CODE"
-      );
+      const result = ctx.pkiEngine.validateCertificateValidity(null, "TEST_CODE") || {};
+      console.log("Validation result:", result);
       assert.equal(result.state, ValidationCodes.VALID_STATES.NOT_AVAILABLE);
     });
 
