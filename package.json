@@ -40,7 +40,7 @@
     "test-with-coverage": "./docker compose up -d --wait vault-dev && nyc --reporter=text mocha --timeout 20000 --colors -exit ; docker compose down -v",
     "precoverage": "rm -rf .nyc_output coverage",
     "test:coverage": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.test nyc --clean mocha --require dotenv/config 'test/**/*.test.js' --timeout 20000",
-    "test:coverage-check": "npm run test:coverage && nyc check-coverage",
+    "test:coverage-check": "npm run backend:start && npm run test:coverage && nyc check-coverage",
     "start": "node src/index.js",
     "start:dev": "node -r dotenv/config src/index.js",
     "start-with-oauth-enabled": "source oauth.env && node src/index.js",
@@ -51,7 +51,7 @@
     "backend:stop": "docker compose down -v",
     "backend:restart": "npm run backend:stop && npm run backend:start",
     "test:integration": "./test/scripts/test-integration.sh",
-    "test:functional": "true"
+    "test:functional": "./scripts/run-functional-tests.sh"
   },
   "keywords": [
     "swagger"
