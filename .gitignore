@@ -119,6 +119,5 @@ localEnvs
 docker/vault/tmp/*
 **/secret-id
 **/role-id
-
-# Keep temp directory but ignore contents
-docker/vault/tmp/.gitkeep
+docker/vault/tmp/secret-id
+docker/vault/tmp/role-id
