@@ -302,7 +302,6 @@ describe('DfspNetworkConfigService', () => {
   });
 });
 
-//...........................................................
 describe('validateDirectionType Tests', () => {
   const dfspId = 'DFSP_TEST';
   const epId = 'EP_TEST';
@@ -360,10 +359,6 @@ describe('validateDirectionType Tests', () => {
     sinon.restore();
   });
 });
-
-
-//...........................................................
-
 
 describe('DfspNetworkConfigService creating endpoint items', () => {
   let dfspId = null;
@@ -835,5 +830,389 @@ describe('DfspNetworkConfigService creating endpoint items', () => {
     assert.notProperty(getDFSPIngressResult, 'direction');
     assert.beforeOrEqualDate(new Date(createDFSPIngressResult.createdAt), new Date());
     assert.beforeOrEqualDate(new Date(getDFSPIngressResult.createdAt), new Date());
+  });
+});
+
+describe('DfspNetworkConfigService Edge Cases and Validations', () => {
+  let ctx;
+  const dfspId = 'EDGE_TEST_DFSP';
+  const epId = 'EDGE_TEST_EP';
+
+  before(async () => {
+    ctx = await createContext();
+    await setupTestDB();
+  });
+
+  beforeEach(() => sinon.restore());
+
+  after(async () => {
+    await tearDownTestDB();
+    destroyContext(ctx);
+  });
+
+  describe('Input Validation', () => {
+    it('should validate IP address format strictly', async () => {
+      const invalidIPs = [
+        '256.1.2.3',
+        '1.2.3.256',
+        '1.2.3',
+        'a.b.c.d',
+        '192.168.1.1/33', // Invalid CIDR
+        '300.168.1.1/24'
+      ];
+
+      for (const ip of invalidIPs) {
+        try {
+          await DfspNetworkConfigService.createDFSPIngressIp(ctx, dfspId, {
+            value: { address: ip, ports: ['80'] }
+          });
+          assert.fail(`Should reject invalid IP: ${ip}`);
+        } catch (error) {
+          assert.instanceOf(error, ValidationError);
+        }
+      }
+    });
+
+    it('should validate port ranges comprehensively', async () => {
+      const invalidPorts = [
+        ['0'],
+        ['65536'],
+        ['-1'],
+        ['abc'],
+        ['22-21'], // Invalid range (start > end)
+        ['1-65537'],
+        ['22-'],
+        ['-80']
+      ];
+
+      for (const ports of invalidPorts) {
+        try {
+          await DfspNetworkConfigService.createDFSPIngressIp(ctx, dfspId, {
+            value: { address: '192.168.1.1', ports }
+          });
+          assert.fail(`Should reject invalid ports: ${ports}`);
+        } catch (error) {
+          assert.instanceOf(error, ValidationError);
+        }
+      }
+    });
+
+    it('should validate URL format strictly', async () => {
+      const invalidUrls = [
+        { value: { url: 'not-a-url' } },
+        { value: { url: 'ftp://invalid-scheme.com' } },
+        { value: { url: 'http:/missing-slash.com' } },
+        { value: { url: 'https://' } },
+        { value: { url: 'http:///' } }
+      ];
+
+      for (const urlBody of invalidUrls) {
+        try {
+          await DfspNetworkConfigService.createDFSPIngressUrl(ctx, dfspId, urlBody);
+          assert.fail(`Should reject invalid URL: ${urlBody.value.url}`);
+        } catch (error) {
+          assert.instanceOf(error, ValidationError);
+        }
+      }
+    });
+  });
+
+  describe('State Transitions and Updates', () => {
+    beforeEach(() => {
+      sinon.stub(PkiService, 'validateDfsp').resolves();
+      sinon.stub(DFSPEndpointItemModel, 'findObjectById').resolves({
+        id: epId,
+        state: 'NEW'
+      });
+    });
+
+    it('should handle endpoint state transitions correctly', async () => {
+      sinon.stub(DFSPEndpointItemModel, 'update').resolves({
+        id: epId,
+        state: 'CONFIRMED'
+      });
+
+      const result = await DfspNetworkConfigService.confirmEndpointItem(ctx, dfspId, epId);
+      
+      assert.equal(result.state, 'CONFIRMED');
+      assert.isTrue(DFSPEndpointItemModel.update.calledWith(dfspId, epId, { state: 'CONFIRMED' }));
+    });
+
+    it('should validate direction consistency during updates', async () => {
+      const body = { direction: 'INVALID' };
+      
+      try {
+        await DfspNetworkConfigService.updateDFSPIngressIpEndpoint(ctx, dfspId, epId, body);
+        assert.fail('Should reject invalid direction');
+      } catch (error) {
+        assert.instanceOf(error, ValidationError);
+        assert.equal(error.message, 'Bad direction value');
+      }
+    });
+  });
+
+  describe('Complex Endpoint Operations', () => {
+    const validEndpoint = {
+      value: {
+        address: '192.168.1.1',
+        ports: ['80', '443', '8000-8080']
+      },
+      direction: 'INGRESS',
+      type: 'IP'
+    };
+
+    beforeEach(() => {
+      sinon.stub(PkiService, 'validateDfsp').resolves();
+      sinon.stub(DFSPModel, 'findIdByDfspId').resolves(dfspId);
+    });
+
+    it('should handle complete endpoint lifecycle', async () => {
+      // Create endpoint
+      sinon.stub(DFSPEndpointItemModel, 'create').resolves(epId);
+      sinon.stub(DFSPEndpointItemModel, 'findObjectById').resolves({
+        id: epId,
+        ...validEndpoint
+      });
+
+      const created = await DfspNetworkConfigService.createDFSPIngressIp(ctx, dfspId, validEndpoint);
+      assert.equal(created.id, epId);
+
+      // Update endpoint
+      const updateStub = sinon.stub(DFSPEndpointItemModel, 'update').resolves({
+        id: epId,
+        ...validEndpoint,
+        value: { address: '192.168.1.2', ports: ['8080'] }
+      });
+
+      await DfspNetworkConfigService.updateDFSPIngressIpEndpoint(ctx, dfspId, epId, {
+        value: { address: '192.168.1.2', ports: ['8080'] }
+      });
+
+      assert.isTrue(updateStub.called);
+
+      // Delete endpoint
+      const deleteStub = sinon.stub(DFSPEndpointItemModel, 'delete').resolves();
+      await DfspNetworkConfigService.deleteDFSPIngressIpEndpoint(ctx, dfspId, epId);
+      assert.isTrue(deleteStub.called);
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should handle missing DFSP gracefully', async () => {
+      sinon.stub(PkiService, 'validateDfsp').throws(new ValidationError('Invalid DFSP'));
+
+      try {
+        await DfspNetworkConfigService.getDFSPEndpoints(ctx, 'nonexistent-dfsp');
+        assert.fail('Should throw ValidationError');
+      } catch (error) {
+        assert.instanceOf(error, ValidationError);
+      }
+    });
+
+    it('should handle missing endpoint gracefully', async () => {
+      sinon.stub(PkiService, 'validateDfsp').resolves();
+      sinon.stub(DFSPEndpointItemModel, 'findObjectById').throws(
+        new NotFoundError('Endpoint not found')
+      );
+
+      try {
+        await DfspNetworkConfigService.getDFSPEndpoint(ctx, dfspId, 'nonexistent-ep');
+        assert.fail('Should throw NotFoundError');
+      } catch (error) {
+        assert.instanceOf(error, NotFoundError);
+      }
+    });
+  });
+});
+
+describe('DfspNetworkConfigService Edge Cases and Validations', () => {
+  let ctx;
+  const dfspId = 'EDGE_TEST_DFSP';
+  const epId = 'EDGE_TEST_EP';
+
+  before(async () => {
+    ctx = await createContext();
+    await setupTestDB();
+  });
+
+  beforeEach(() => sinon.restore());
+
+  after(async () => {
+    await tearDownTestDB();
+    destroyContext(ctx);
+  });
+
+  describe('Input Validation', () => {
+    it('should validate IP address format strictly', async () => {
+      const invalidIPs = [
+        '256.1.2.3',
+        '1.2.3.256',
+        '1.2.3',
+        'a.b.c.d',
+        '192.168.1.1/33', // Invalid CIDR
+        '300.168.1.1/24'
+      ];
+
+      for (const ip of invalidIPs) {
+        try {
+          await DfspNetworkConfigService.createDFSPIngressIp(ctx, dfspId, {
+            value: { address: ip, ports: ['80'] }
+          });
+          assert.fail(`Should reject invalid IP: ${ip}`);
+        } catch (error) {
+          assert.instanceOf(error, ValidationError);
+        }
+      }
+    });
+
+    it('should validate port ranges comprehensively', async () => {
+      const invalidPorts = [
+        ['0'],
+        ['65536'],
+        ['-1'],
+        ['abc'],
+        ['22-21'], // Invalid range (start > end)
+        ['1-65537'],
+        ['22-'],
+        ['-80']
+      ];
+
+      for (const ports of invalidPorts) {
+        try {
+          await DfspNetworkConfigService.createDFSPIngressIp(ctx, dfspId, {
+            value: { address: '192.168.1.1', ports }
+          });
+          assert.fail(`Should reject invalid ports: ${ports}`);
+        } catch (error) {
+          assert.instanceOf(error, ValidationError);
+        }
+      }
+    });
+
+    it('should validate URL format strictly', async () => {
+      const invalidUrls = [
+        { value: { url: 'not-a-url' } },
+        { value: { url: 'ftp://invalid-scheme.com' } },
+        { value: { url: 'http:/missing-slash.com' } },
+        { value: { url: 'https://' } },
+        { value: { url: 'http:///' } }
+      ];
+
+      for (const urlBody of invalidUrls) {
+        try {
+          await DfspNetworkConfigService.createDFSPIngressUrl(ctx, dfspId, urlBody);
+          assert.fail(`Should reject invalid URL: ${urlBody.value.url}`);
+        } catch (error) {
+          assert.instanceOf(error, ValidationError);
+        }
+      }
+    });
+  });
+
+  describe('State Transitions and Updates', () => {
+    beforeEach(() => {
+      sinon.stub(PkiService, 'validateDfsp').resolves();
+      sinon.stub(DFSPEndpointItemModel, 'findObjectById').resolves({
+        id: epId,
+        state: 'NEW'
+      });
+    });
+
+    it('should handle endpoint state transitions correctly', async () => {
+      sinon.stub(DFSPEndpointItemModel, 'update').resolves({
+        id: epId,
+        state: 'CONFIRMED'
+      });
+
+      const result = await DfspNetworkConfigService.confirmEndpointItem(ctx, dfspId, epId);
+      
+      assert.equal(result.state, 'CONFIRMED');
+      assert.isTrue(DFSPEndpointItemModel.update.calledWith(dfspId, epId, { state: 'CONFIRMED' }));
+    });
+
+    it('should validate direction consistency during updates', async () => {
+      const body = { direction: 'INVALID' };
+      
+      try {
+        await DfspNetworkConfigService.updateDFSPIngressIpEndpoint(ctx, dfspId, epId, body);
+        assert.fail('Should reject invalid direction');
+      } catch (error) {
+        assert.instanceOf(error, ValidationError);
+        assert.equal(error.message, 'Bad direction value');
+      }
+    });
+  });
+
+  describe('Complex Endpoint Operations', () => {
+    const validEndpoint = {
+      value: {
+        address: '192.168.1.1',
+        ports: ['80', '443', '8000-8080']
+      },
+      direction: 'INGRESS',
+      type: 'IP'
+    };
+
+    beforeEach(() => {
+      sinon.stub(PkiService, 'validateDfsp').resolves();
+      sinon.stub(DFSPModel, 'findIdByDfspId').resolves(dfspId);
+    });
+
+    it('should handle complete endpoint lifecycle', async () => {
+      // Create endpoint
+      sinon.stub(DFSPEndpointItemModel, 'create').resolves(epId);
+      sinon.stub(DFSPEndpointItemModel, 'findObjectById').resolves({
+        id: epId,
+        ...validEndpoint
+      });
+
+      const created = await DfspNetworkConfigService.createDFSPIngressIp(ctx, dfspId, validEndpoint);
+      assert.equal(created.id, epId);
+
+      // Update endpoint
+      const updateStub = sinon.stub(DFSPEndpointItemModel, 'update').resolves({
+        id: epId,
+        ...validEndpoint,
+        value: { address: '192.168.1.2', ports: ['8080'] }
+      });
+
+      await DfspNetworkConfigService.updateDFSPIngressIpEndpoint(ctx, dfspId, epId, {
+        value: { address: '192.168.1.2', ports: ['8080'] }
+      });
+
+      assert.isTrue(updateStub.called);
+
+      // Delete endpoint
+      const deleteStub = sinon.stub(DFSPEndpointItemModel, 'delete').resolves();
+      await DfspNetworkConfigService.deleteDFSPIngressIpEndpoint(ctx, dfspId, epId);
+      assert.isTrue(deleteStub.called);
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should handle missing DFSP gracefully', async () => {
+      sinon.stub(PkiService, 'validateDfsp').throws(new ValidationError('Invalid DFSP'));
+
+      try {
+        await DfspNetworkConfigService.getDFSPEndpoints(ctx, 'nonexistent-dfsp');
+        assert.fail('Should throw ValidationError');
+      } catch (error) {
+        assert.instanceOf(error, ValidationError);
+      }
+    });
+
+    it('should handle missing endpoint gracefully', async () => {
+      sinon.stub(PkiService, 'validateDfsp').resolves();
+      sinon.stub(DFSPEndpointItemModel, 'findObjectById').throws(
+        new NotFoundError('Endpoint not found')
+      );
+
+      try {
+        await DfspNetworkConfigService.getDFSPEndpoint(ctx, dfspId, 'nonexistent-ep');
+        assert.fail('Should throw NotFoundError');
+      } catch (error) {
+        assert.instanceOf(error, NotFoundError);
+      }
+    });
   });
 });
