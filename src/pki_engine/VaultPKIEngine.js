@@ -461,9 +461,22 @@ class VaultPKIEngine extends PKIEngine {
    * @returns { csr: String, key:  String, PEM-encoded. Encrypted ( see encryptKey ) }
    */
   async createCSR (csrParameters) {
+    if (!csrParameters?.subject) {
+      throw new ValidationError('Invalid CAInitialInfo document: Missing subject');
+    }
+    this.validateCSR(csrParameters.subject);
     const keys = forge.pki.rsa.generateKeyPair(this.keyLength);
     const csr = forge.pki.createCertificationRequest();
     csr.publicKey = keys.publicKey;
+    if (csrParameters.extensions?.subjectAltName) {
+      const { dns, ips } = csrParameters.extensions.subjectAltName;
+      if (dns && !Array.isArray(dns)) {
+        throw new Error("Invalid SAN extensions: 'dns' must be an array");
+      }
+      if (ips && !Array.isArray(ips)) {
+        throw new Error("Invalid SAN extensions: 'ips' must be an array");
+      }
+    }
     if (csrParameters?.subject) {
       csr.setSubject(Object.entries(csrParameters.subject).map(([shortName, value]) => ({
         shortName,
@@ -1335,8 +1348,8 @@ class VaultPKIEngine extends PKIEngine {
   }
   
 
-  validateCSR (csr) {
-    const schema = Joi.object().description('CA initial parameters').keys({
+  validateCSR(csr) {
+    const schema = Joi.object().keys({
       CN: Joi.string().description('Common Name').required(),
       E: Joi.string().description('Email'),
       O: Joi.string().description('Organization').required(),
@@ -1345,12 +1358,12 @@ class VaultPKIEngine extends PKIEngine {
       ST: Joi.string().description('State'),
       L: Joi.string().description('Location'),
     });
+  
     const result = schema.validate(csr);
     if (result.error) {
-      console.warn(result.error.details);
-      throw new ValidationError('Invalid CAInitialInfo document', result.error.details);
+      throw new ValidationError('Invalid CAInitialInfo document: ' + result.error.message);
     }
-  }
+  }  
 }
 
 VaultPKIEngine.DNS_TYPE = 2;

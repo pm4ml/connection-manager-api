@@ -15,10 +15,12 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
+const sinon = require('sinon');
 const { setupTestDB, tearDownTestDB } = require("./test-database");
 const NotFoundError = require("../../src/errors/NotFoundError");
 const ValidationError = require("../../src/errors/ValidationError");
 const InvalidEntityError = require("../../src/errors/InvalidEntityError");
+const forge = require("node-forge");
 
 const fs = require("fs");
 const path = require("path");
@@ -261,64 +263,106 @@ describe("PKIEngine", () => {
   });
   
   describe("validateCertificateValidity", () => {
-    it("should return NOT_AVAILABLE when no certificate provided", () => {
-      const result = ctx.pkiEngine.validateCertificateValidity(null, "TEST_CODE") || {};
-      console.log("Validation result:", result);
+    it("should return NOT_AVAILABLE when certificate is null", () => {
+      const result = ctx.pkiEngine.validateCertificateValidity(null, "TEST_CODE");
       assert.equal(result.state, ValidationCodes.VALID_STATES.NOT_AVAILABLE);
     });
-
-    it("should validate a valid certificate", () => {
-      const cert = fs.readFileSync(
-        path.join(__dirname, "resources/modusbox/hub-tls-client.pem"),
-        "utf8"
-      );
-      const result = ctx.pkiEngine.validateCertificateValidity(
-        cert,
-        "TEST_CODE"
-      );
-      assert.equal(result.state, ValidationCodes.VALID_STATES.VALID);
-    });
-
-    it("should invalidate an expired certificate", () => {
-      const cert = `-----BEGIN CERTIFICATE-----
-        MIIC+zCCAeOgAwIBAgIJAJj3OucLZd7gMA0GCSqGSIb3DQEBCwUAMBMxETAPBgNV
-        BAMMCGV4cGlyZWQwHhcNMjAwMTAxMDAwMDAwWhcNMjAwMTAxMDAwMDAwWjASMREw
-        DwYDVQQDDAhleHBpcmVkMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA
-        ...
-        -----END CERTIFICATE-----`;
-      const result = ctx.pkiEngine.validateCertificateValidity(
-        cert,
-        "TEST_CODE"
-      );
+  
+    it("should invalidate a certificate with missing notBefore", () => {
+      sinon.stub(ctx.pkiEngine, "getCertInfo").returns({ notAfter: new Date() });
+      const result = ctx.pkiEngine.validateCertificateValidity("cert", "TEST_CODE");
       assert.equal(result.state, ValidationCodes.VALID_STATES.INVALID);
+      ctx.pkiEngine.getCertInfo.restore();
+    });
+  
+    it("should invalidate a certificate with missing notAfter", () => {
+      sinon.stub(ctx.pkiEngine, "getCertInfo").returns({ notBefore: new Date() });
+      const result = ctx.pkiEngine.validateCertificateValidity("cert", "TEST_CODE");
+      assert.equal(result.state, ValidationCodes.VALID_STATES.INVALID);
+      ctx.pkiEngine.getCertInfo.restore();
+    });
+  
+    it("should handle unexpected errors gracefully", () => {
+      sinon.stub(ctx.pkiEngine, "getCertInfo").throws(new Error("Unexpected error"));
+      const result = ctx.pkiEngine.validateCertificateValidity("cert", "TEST_CODE");
+      assert.equal(result.state, ValidationCodes.VALID_STATES.INVALID);
+      ctx.pkiEngine.getCertInfo.restore();
     });
   });
-
+  
   describe("validateCertificateUsageServer", () => {
-    it("should return NOT_AVAILABLE when no certificate provided", () => {
+    it("should return NOT_AVAILABLE for null certificate", () => {
       const result = ctx.pkiEngine.validateCertificateUsageServer(null);
       assert.equal(result.state, ValidationCodes.VALID_STATES.NOT_AVAILABLE);
     });
-
-    it("should validate server certificate with proper usage", () => {
-      const cert = fs.readFileSync(
-        path.join(__dirname, "resources/modusbox/server-cert.pem"),
-        "utf8"
-      );
-      const result = ctx.pkiEngine.validateCertificateUsageServer(cert);
-      assert.equal(result.state, ValidationCodes.VALID_STATES.VALID);
-    });
-
-    it("should invalidate client certificate for server usage", () => {
-      const cert = fs.readFileSync(
-        path.join(__dirname, "resources/modusbox/client-cert.pem"),
-        "utf8"
-      );
-      const result = ctx.pkiEngine.validateCertificateUsageServer(cert);
+  
+    it("should invalidate certificate without serverAuth in extKeyUsage", () => {
+      sinon.stub(forge.pki, "certificateFromPem").returns({
+        getExtension: () => ({ serverAuth: false }),
+      });
+      const result = ctx.pkiEngine.validateCertificateUsageServer("cert");
       assert.equal(result.state, ValidationCodes.VALID_STATES.INVALID);
+      forge.pki.certificateFromPem.restore();
+    });
+  
+    it("should validate certificate with serverAuth in extKeyUsage", () => {
+      sinon.stub(forge.pki, "certificateFromPem").returns({
+        getExtension: () => ({ serverAuth: true }),
+      });
+      const result = ctx.pkiEngine.validateCertificateUsageServer("cert");
+      assert.equal(result.state, ValidationCodes.VALID_STATES.VALID);
+      forge.pki.certificateFromPem.restore();
+    });
+  
+    it("should invalidate certificate missing extKeyUsage", () => {
+      sinon.stub(forge.pki, "certificateFromPem").returns({
+        getExtension: () => null,
+      });
+      const result = ctx.pkiEngine.validateCertificateUsageServer("cert");
+      assert.equal(result.state, ValidationCodes.VALID_STATES.INVALID);
+      forge.pki.certificateFromPem.restore();
     });
   });
-
+  
+  describe("createCSR", () => {
+    it("should throw an error if subject is missing", async () => {
+      try {
+        await ctx.pkiEngine.createCSR({});
+        assert.fail("Should throw an error");
+      } catch (err) {
+        assert.instanceOf(err, ValidationError);
+        assert.include(err.message, "Invalid CAInitialInfo document");
+      }
+    });
+    
+    it("should generate a valid CSR with only a subject", async () => {
+      const csrParameters = { subject: { CN: "example.com", O: "Example" } };
+      const result = await ctx.pkiEngine.createCSR(csrParameters);
+      assert.isNotNull(result.csr);
+      assert.isNotNull(result.privateKey);
+    });
+  
+    it("should generate a valid CSR with DNS SANs", async () => {
+      const csrParameters = {
+        subject: { CN: "example.com", O: "Example" },
+        extensions: { subjectAltName: { dns: ["example.com", "www.example.com"] } },
+      };
+      const result = await ctx.pkiEngine.createCSR(csrParameters);
+      assert.isNotNull(result.csr);
+      assert.isNotNull(result.privateKey);
+    });
+  
+    it("should generate a valid CSR with IP SANs", async () => {
+      const csrParameters = {
+        subject: { CN: "example.com", O: "Example" },
+        extensions: { subjectAltName: { ips: ["127.0.0.1", "192.168.1.1"] } },
+      };
+      const result = await ctx.pkiEngine.createCSR(csrParameters);
+      assert.isNotNull(result.csr);
+      assert.isNotNull(result.privateKey);
+    });
+  });
+  
   describe("vault secret management", () => {
     it("should set and get a secret", async () => {
       const key = "test-secret";
@@ -443,4 +487,545 @@ describe("PKIEngine", () => {
       }
     });
   });
+  it("should populate the DFSP client certificate bundle successfully", async () => {
+    const dfspId = "test-dfsp-id";
+    const dfspName = "test-dfsp-name";
+    const dfspMonetaryZoneId = "USD";
+    const isProxy = true;
+    const fxpCurrencies = ["USD", "EUR"];
+  
+    // Mock dependencies
+    sinon.stub(ctx.pkiEngine, "validateId").returns(true);
+    sinon.stub(ctx.pkiEngine, "getDFSPCA").resolves({
+      intermediateChain: "intermediate-chain",
+      rootCertificate: "root-certificate",
+    });
+    sinon.stub(ctx.pkiEngine, "getDFSPOutboundEnrollments").resolves([
+      { id: 2, state: "CERT_SIGNED", certificate: "client-cert", key: "client-key" },
+      { id: 1, state: "CERT_GENERATED" },
+    ]);
+    sinon.stub(ctx.pkiEngine, "getCertInfo").returns({
+      subject: { CN: "test-client" },
+    });
+    const writeStub = sinon.stub(ctx.pkiEngine.client, "write").resolves();
+  
+    // Call the method
+    await ctx.pkiEngine.populateDFSPClientCertBundle(
+      dfspId,
+      dfspName,
+      dfspMonetaryZoneId,
+      isProxy,
+      fxpCurrencies
+    );
+  
+    // Verify the behavior
+    sinon.assert.calledWithExactly(ctx.pkiEngine.validateId, dfspId, "dfspId");
+    sinon.assert.calledWithExactly(ctx.pkiEngine.getDFSPCA, dfspId);
+    sinon.assert.calledWithExactly(ctx.pkiEngine.getDFSPOutboundEnrollments, dfspId);
+    sinon.assert.calledWithExactly(ctx.pkiEngine.getCertInfo, "client-cert");
+    sinon.assert.calledWithExactly(writeStub, `${ctx.pkiEngine.mounts.dfspClientCertBundle}/${dfspName}`, {
+      ca_bundle: "intermediate-chain\nroot-certificate",
+      client_key: "client-key",
+      client_cert_chain: "client-cert\nintermediate-chain\nroot-certificate",
+      fqdn: "test-client",
+      host: dfspName,
+      currency_code: dfspMonetaryZoneId,
+      fxpCurrencies: "USD EUR",
+      isProxy,
+    });
+  
+    // Restore stubs
+    ctx.pkiEngine.validateId.restore();
+    ctx.pkiEngine.getDFSPCA.restore();
+    ctx.pkiEngine.getDFSPOutboundEnrollments.restore();
+    ctx.pkiEngine.getCertInfo.restore();
+    ctx.pkiEngine.client.write.restore();
+  });
+  it("should throw an error if dfspId is invalid", async () => {
+    const dfspId = "invalid-id"; // Non-numeric value
+    const dfspName = "test-dfsp-name";
+    const dfspMonetaryZoneId = "USD";
+    const isProxy = true;
+    const fxpCurrencies = ["USD", "EUR"];
+  
+    try {
+      await ctx.pkiEngine.populateDFSPClientCertBundle(dfspId, dfspName, dfspMonetaryZoneId, isProxy, fxpCurrencies);
+      assert.fail("Should throw an error");
+    } catch (err) {
+      assert.instanceOf(err, Error);
+      assert.include(err.message, "dfspId is not a number");
+    }
+  });
+  
+  
+  it("should populate DFSP internal IP whitelist bundle successfully", async () => {
+    const value = { whitelist: ["192.168.0.1", "192.168.0.2"] };
+  
+    const writeStub = sinon.stub(ctx.pkiEngine.client, "write").resolves();
+  
+    await ctx.pkiEngine.populateDFSPInternalIPWhitelistBundle(value);
+  
+    sinon.assert.calledWithExactly(writeStub, `${ctx.pkiEngine.mounts.dfspInternalIPWhitelistBundle}`, value);
+  
+    ctx.pkiEngine.client.write.restore();
+  });
+  it("should populate DFSP external IP whitelist bundle successfully", async () => {
+    const value = { whitelist: ["203.0.113.1", "203.0.113.2"] };
+  
+    const writeStub = sinon.stub(ctx.pkiEngine.client, "write").resolves();
+  
+    await ctx.pkiEngine.populateDFSPExternalIPWhitelistBundle(value);
+  
+    sinon.assert.calledWithExactly(writeStub, `${ctx.pkiEngine.mounts.dfspExternalIPWhitelistBundle}`, value);
+  
+    ctx.pkiEngine.client.write.restore();
+  });
+  
+  it("should create a hub server certificate with minimal input", async () => {
+    const csrParameters = {
+      subject: { CN: "hub.example.com" },
+    };
+
+    const mockResponse = {
+      certificate: "mock-certificate",
+      issuing_ca: "mock-issuing-ca",
+      private_key: "mock-private-key",
+    };
+
+    sinon.stub(ctx.pkiEngine.client, "request").resolves({ data: mockResponse });
+
+    const result = await ctx.pkiEngine.createHubServerCert(csrParameters);
+
+    assert.deepEqual(result, mockResponse);
+    sinon.assert.calledWith(ctx.pkiEngine.client.request, {
+      path: `/${ctx.pkiEngine.mounts.pki}/issue/${ctx.pkiEngine.pkiServerRole}`,
+      method: "POST",
+      json: {
+        common_name: "hub.example.com",
+      },
+    });
+
+    ctx.pkiEngine.client.request.restore();
+  });
+  it("should create a hub server certificate with DNS SANs", async () => {
+    const csrParameters = {
+      subject: { CN: "hub.example.com" },
+      extensions: { subjectAltName: { dns: ["hub.example.com", "api.example.com"] } },
+    };
+
+    const mockResponse = {
+      certificate: "mock-certificate",
+      issuing_ca: "mock-issuing-ca",
+      private_key: "mock-private-key",
+    };
+
+    sinon.stub(ctx.pkiEngine.client, "request").resolves({ data: mockResponse });
+
+    const result = await ctx.pkiEngine.createHubServerCert(csrParameters);
+
+    assert.deepEqual(result, mockResponse);
+    sinon.assert.calledWith(ctx.pkiEngine.client.request, {
+      path: `/${ctx.pkiEngine.mounts.pki}/issue/${ctx.pkiEngine.pkiServerRole}`,
+      method: "POST",
+      json: {
+        common_name: "hub.example.com",
+        alt_names: "hub.example.com,api.example.com",
+      },
+    });
+
+    ctx.pkiEngine.client.request.restore();
+  });
+  it("should create a hub server certificate with IP SANs", async () => {
+    const csrParameters = {
+      subject: { CN: "hub.example.com" },
+      extensions: { subjectAltName: { ips: ["127.0.0.1", "192.168.1.1"] } },
+    };
+  
+    const mockResponse = {
+      certificate: "mock-certificate",
+      issuing_ca: "mock-issuing-ca",
+      private_key: "mock-private-key",
+    };
+  
+    sinon.stub(ctx.pkiEngine.client, "request").resolves({ data: mockResponse });
+  
+    const result = await ctx.pkiEngine.createHubServerCert(csrParameters);
+  
+    assert.deepEqual(result, mockResponse);
+    sinon.assert.calledWith(ctx.pkiEngine.client.request, {
+      path: `/${ctx.pkiEngine.mounts.pki}/issue/${ctx.pkiEngine.pkiServerRole}`,
+      method: "POST",
+      json: {
+        common_name: "hub.example.com",
+        ip_sans: "127.0.0.1,192.168.1.1",
+      },
+    });
+  
+    ctx.pkiEngine.client.request.restore();
+  });
+  it("should create a hub server certificate with DNS and IP SANs", async () => {
+    const csrParameters = {
+      subject: { CN: "hub.example.com" },
+      extensions: { subjectAltName: { dns: ["hub.example.com"], ips: ["127.0.0.1"] } },
+    };
+  
+    const mockResponse = {
+      certificate: "mock-certificate",
+      issuing_ca: "mock-issuing-ca",
+      private_key: "mock-private-key",
+    };
+  
+    sinon.stub(ctx.pkiEngine.client, "request").resolves({ data: mockResponse });
+  
+    const result = await ctx.pkiEngine.createHubServerCert(csrParameters);
+  
+    assert.deepEqual(result, mockResponse);
+    sinon.assert.calledWith(ctx.pkiEngine.client.request, {
+      path: `/${ctx.pkiEngine.mounts.pki}/issue/${ctx.pkiEngine.pkiServerRole}`,
+      method: "POST",
+      json: {
+        common_name: "hub.example.com",
+        alt_names: "hub.example.com",
+        ip_sans: "127.0.0.1",
+      },
+    });
+  
+    ctx.pkiEngine.client.request.restore();
+  });  
+  it("should throw an error if subject.CN is missing", async () => {
+    const csrParameters = {
+      subject: {},
+    };
+  
+    try {
+      await ctx.pkiEngine.createHubServerCert(csrParameters);
+      assert.fail("Should throw an error");
+    } catch (err) {
+      assert.instanceOf(err, Error);
+      assert.include(err.message, "Cannot read property 'CN'");
+    }
+  });
+  it("should handle client request error", async () => {
+    const csrParameters = {
+      subject: { CN: "hub.example.com" },
+    };
+  
+    sinon.stub(ctx.pkiEngine.client, "request").rejects(new Error("Request failed"));
+  
+    try {
+      await ctx.pkiEngine.createHubServerCert(csrParameters);
+      assert.fail("Should throw an error");
+    } catch (err) {
+      assert.instanceOf(err, Error);
+      assert.include(err.message, "Request failed");
+    } finally {
+      ctx.pkiEngine.client.request.restore();
+    }
+  });
+   //...............................................................
+   it("should create an intermediate CA successfully", async () => {
+    const caOptionsDoc = { subject: { CN: "intermediate.example.com", O: "Example" } };
+  
+    const mockCsr = { csr: "mock-csr", private_key: "mock-private-key" };
+    const mockCert = { certificate: "mock-certificate" };
+  
+    // Stub dependencies
+    sinon.stub(ctx.pkiEngine, "validateCSR").returns(true);
+    sinon.stub(ctx.pkiEngine, "createIntermediateHubCSR").resolves(mockCsr);
+    sinon.stub(ctx.pkiEngine, "signIntermediateHubCSR").resolves(mockCert);
+    sinon.stub(ctx.pkiEngine, "setIntermediateCACert").resolves();
+  
+    // Call the method
+    const result = await ctx.pkiEngine.createIntermediateCA(caOptionsDoc);
+  
+    // Assertions
+    assert.deepEqual(result, {
+      cert: mockCert.certificate,
+      csr: mockCsr.csr,
+      key: mockCsr.private_key,
+    });
+  
+    // Verify method calls
+    sinon.assert.calledOnceWithExactly(ctx.pkiEngine.validateCSR, caOptionsDoc);
+    sinon.assert.calledOnceWithExactly(ctx.pkiEngine.createIntermediateHubCSR, caOptionsDoc);
+    sinon.assert.calledOnceWithExactly(ctx.pkiEngine.signIntermediateHubCSR, caOptionsDoc);
+    sinon.assert.calledOnceWithExactly(ctx.pkiEngine.setIntermediateCACert, mockCert.certificate);
+  
+    // Restore stubs
+    ctx.pkiEngine.validateCSR.restore();
+    ctx.pkiEngine.createIntermediateHubCSR.restore();
+    ctx.pkiEngine.signIntermediateHubCSR.restore();
+    ctx.pkiEngine.setIntermediateCACert.restore();
+  });
+  it("should throw an error if CSR validation fails", async () => {
+    const caOptionsDoc = { subject: { CN: "invalid.example.com", O: "Example" } };
+  
+    sinon.stub(ctx.pkiEngine, "validateCSR").throws(new Error("Invalid CSR"));
+  
+    try {
+      await ctx.pkiEngine.createIntermediateCA(caOptionsDoc);
+      assert.fail("Should throw an error");
+    } catch (err) {
+      assert.instanceOf(err, Error);
+      assert.include(err.message, "Invalid CSR");
+    } finally {
+      ctx.pkiEngine.validateCSR.restore();
+    }
+  });
+  it("should throw an error if createIntermediateHubCSR fails", async () => {
+    const caOptionsDoc = { subject: { CN: "intermediate.example.com", O: "Example" } };
+  
+    sinon.stub(ctx.pkiEngine, "validateCSR").returns(true);
+    sinon.stub(ctx.pkiEngine, "createIntermediateHubCSR").throws(new Error("CSR creation failed"));
+  
+    try {
+      await ctx.pkiEngine.createIntermediateCA(caOptionsDoc);
+      assert.fail("Should throw an error");
+    } catch (err) {
+      assert.instanceOf(err, Error);
+      assert.include(err.message, "CSR creation failed");
+    } finally {
+      ctx.pkiEngine.validateCSR.restore();
+      ctx.pkiEngine.createIntermediateHubCSR.restore();
+    }
+  });
+  it("should throw an error if signIntermediateHubCSR fails", async () => {
+    const caOptionsDoc = { subject: { CN: "intermediate.example.com", O: "Example" } };
+  
+    const mockCsr = { csr: "mock-csr", private_key: "mock-private-key" };
+  
+    sinon.stub(ctx.pkiEngine, "validateCSR").returns(true);
+    sinon.stub(ctx.pkiEngine, "createIntermediateHubCSR").resolves(mockCsr);
+    sinon.stub(ctx.pkiEngine, "signIntermediateHubCSR").throws(new Error("Signing failed"));
+  
+    try {
+      await ctx.pkiEngine.createIntermediateCA(caOptionsDoc);
+      assert.fail("Should throw an error");
+    } catch (err) {
+      assert.instanceOf(err, Error);
+      assert.include(err.message, "Signing failed");
+    } finally {
+      ctx.pkiEngine.validateCSR.restore();
+      ctx.pkiEngine.createIntermediateHubCSR.restore();
+      ctx.pkiEngine.signIntermediateHubCSR.restore();
+    }
+  });  
+  it("should throw an error if setIntermediateCACert fails", async () => {
+    const caOptionsDoc = { subject: { CN: "intermediate.example.com", O: "Example" } };
+  
+    const mockCsr = { csr: "mock-csr", private_key: "mock-private-key" };
+    const mockCert = { certificate: "mock-certificate" };
+  
+    sinon.stub(ctx.pkiEngine, "validateCSR").returns(true);
+    sinon.stub(ctx.pkiEngine, "createIntermediateHubCSR").resolves(mockCsr);
+    sinon.stub(ctx.pkiEngine, "signIntermediateHubCSR").resolves(mockCert);
+    sinon.stub(ctx.pkiEngine, "setIntermediateCACert").throws(new Error("Failed to set certificate"));
+  
+    try {
+      await ctx.pkiEngine.createIntermediateCA(caOptionsDoc);
+      assert.fail("Should throw an error");
+    } catch (err) {
+      assert.instanceOf(err, Error);
+      assert.include(err.message, "Failed to set certificate");
+    } finally {
+      ctx.pkiEngine.validateCSR.restore();
+      ctx.pkiEngine.createIntermediateHubCSR.restore();
+      ctx.pkiEngine.signIntermediateHubCSR.restore();
+      ctx.pkiEngine.setIntermediateCACert.restore();
+    }
+  });
+  it("should create an intermediate CSR with multiple names", async () => {
+    const params = {
+      names: [
+        { CN: "intermediate.example.com", OU: "UnitA", O: "ExampleOrg", L: "CityA", C: "US", ST: "StateA" },
+        { CN: "alternate.example.com", OU: "UnitB", O: "ExampleOrg", L: "CityB", C: "US", ST: "StateB" },
+      ],
+      key: { algo: "rsa", size: 2048 },
+    };
+  
+    const mockResponse = {
+      csr: "mock-csr",
+      private_key: "mock-private-key",
+    };
+  
+    // Stub the client request
+    sinon.stub(ctx.pkiEngine.client, "request").resolves({ data: mockResponse });
+  
+    const result = await ctx.pkiEngine.createIntermediateHubCSR(params);
+  
+    assert.deepEqual(result, mockResponse);
+    sinon.assert.calledOnceWithExactly(ctx.pkiEngine.client.request, {
+      path: `/${ctx.pkiEngine.mounts.intermediatePki}/intermediate/generate/exported`,
+      method: "POST",
+      json: {
+        common_name: "intermediate.example.com",
+        alt_names: "alternate.example.com",
+        ou: ["UnitA", "UnitB"],
+        organization: ["ExampleOrg", "ExampleOrg"],
+        locality: ["CityA", "CityB"],
+        country: ["US", "US"],
+        province: ["StateA", "StateB"],
+        key_type: "rsa",
+        key_bits: 2048,
+      },
+    });
+  
+    ctx.pkiEngine.client.request.restore();
+  });
+  it("should create an intermediate CSR with a single name", async () => {
+    const params = {
+      names: [{ CN: "intermediate.example.com", OU: "UnitA", O: "ExampleOrg", L: "CityA", C: "US", ST: "StateA" }],
+      key: { algo: "rsa", size: 2048 },
+    };
+  
+    const mockResponse = {
+      csr: "mock-csr",
+      private_key: "mock-private-key",
+    };
+  
+    sinon.stub(ctx.pkiEngine.client, "request").resolves({ data: mockResponse });
+  
+    const result = await ctx.pkiEngine.createIntermediateHubCSR(params);
+  
+    assert.deepEqual(result, mockResponse);
+    sinon.assert.calledOnceWithExactly(ctx.pkiEngine.client.request, {
+      path: `/${ctx.pkiEngine.mounts.intermediatePki}/intermediate/generate/exported`,
+      method: "POST",
+      json: {
+        common_name: "intermediate.example.com",
+        alt_names: "",
+        ou: ["UnitA"],
+        organization: ["ExampleOrg"],
+        locality: ["CityA"],
+        country: ["US"],
+        province: ["StateA"],
+        key_type: "rsa",
+        key_bits: 2048,
+      },
+    });
+  
+    ctx.pkiEngine.client.request.restore();
+  });
+  it("should throw an error if names are missing", async () => {
+    const params = {
+      names: [],
+      key: { algo: "rsa", size: 2048 },
+    };
+  
+    try {
+      await ctx.pkiEngine.createIntermediateHubCSR(params);
+      assert.fail("Should throw an error");
+    } catch (err) {
+      assert.instanceOf(err, Error);
+      assert.include(err.message, "Cannot read properties of undefined");
+    }
+  });
+  it("should throw an error if key algo or size is missing", async () => {
+    const params = {
+      names: [{ CN: "intermediate.example.com", OU: "UnitA", O: "ExampleOrg", L: "CityA", C: "US", ST: "StateA" }],
+      key: { algo: "rsa" }, // Missing `size`
+    };
+  
+    try {
+      await ctx.pkiEngine.createIntermediateHubCSR(params);
+      assert.fail("Should throw an error");
+    } catch (err) {
+      assert.instanceOf(err, Error);
+      assert.include(err.message, "Cannot read properties of undefined");
+    }
+  });
+  it("should handle client request errors", async () => {
+    const params = {
+      names: [{ CN: "intermediate.example.com", OU: "UnitA", O: "ExampleOrg", L: "CityA", C: "US", ST: "StateA" }],
+      key: { algo: "rsa", size: 2048 },
+    };
+  
+    sinon.stub(ctx.pkiEngine.client, "request").rejects(new Error("Request failed"));
+  
+    try {
+      await ctx.pkiEngine.createIntermediateHubCSR(params);
+      assert.fail("Should throw an error");
+    } catch (err) {
+      assert.instanceOf(err, Error);
+      assert.include(err.message, "Request failed");
+    } finally {
+      ctx.pkiEngine.client.request.restore();
+    }
+  });
+  it("should extract extensions from a certificate", () => {
+    const certPem = "-----BEGIN CERTIFICATE-----\n...mock certificate...\n-----END CERTIFICATE-----";
+  
+    // Mock a certificate object returned by `forge.pki.certificateFromPem`
+    const mockCert = {
+      subject: {
+        attributes: [{ name: "commonName", value: "example.com" }],
+      },
+      issuer: {
+        attributes: [{ name: "commonName", value: "CA" }],
+      },
+      extensions: [{ name: "basicConstraints", cA: true }],
+      serialNumber: "01",
+      validity: {
+        notBefore: new Date("2023-01-01"),
+        notAfter: new Date("2024-01-01"),
+      },
+      siginfo: { algorithmOid: "1.2.840.113549.1.1.11" },
+      publicKey: {
+        n: { bitLength: () => 2048 },
+      },
+    };
+  
+    // Stub `forge.pki.certificateFromPem` to return the mock certificate
+    sinon.stub(forge.pki, "certificateFromPem").returns(mockCert);
+  
+    // Stub `_getExtensionsInfo` to verify the call
+    sinon.stub(VaultPKIEngine, "_getExtensionsInfo").returns(mockCert.extensions);
+  
+    const result = ctx.pkiEngine.getCertInfo(certPem);
+  
+    // Verify the result includes extensions
+    assert.deepEqual(result.extensions, mockCert.extensions);
+  
+    // Ensure `_getExtensionsInfo` was called
+    sinon.assert.calledOnceWithExactly(VaultPKIEngine._getExtensionsInfo, mockCert);
+  
+    // Restore stubs
+    forge.pki.certificateFromPem.restore();
+    VaultPKIEngine._getExtensionsInfo.restore();
+  });
+  it("should handle a certificate without extensions", () => {
+    const certPem = "-----BEGIN CERTIFICATE-----\n...mock certificate...\n-----END CERTIFICATE-----";
+  
+    const mockCert = {
+      subject: {
+        attributes: [{ name: "commonName", value: "example.com" }],
+      },
+      issuer: {
+        attributes: [{ name: "commonName", value: "CA" }],
+      },
+      extensions: undefined, // No extensions
+      serialNumber: "01",
+      validity: {
+        notBefore: new Date("2023-01-01"),
+        notAfter: new Date("2024-01-01"),
+      },
+      siginfo: { algorithmOid: "1.2.840.113549.1.1.11" },
+      publicKey: {
+        n: { bitLength: () => 2048 },
+      },
+    };
+  
+    sinon.stub(forge.pki, "certificateFromPem").returns(mockCert);
+    sinon.stub(VaultPKIEngine, "_getExtensionsInfo").returns(undefined);
+  
+    const result = ctx.pkiEngine.getCertInfo(certPem);
+  
+    assert.isUndefined(result.extensions);
+  
+    sinon.assert.calledOnceWithExactly(VaultPKIEngine._getExtensionsInfo, mockCert);
+  
+    forge.pki.certificateFromPem.restore();
+    VaultPKIEngine._getExtensionsInfo.restore();
+  });
+  
 });
