@@ -27,8 +27,9 @@ const { StatusEnum } = require('../../src/service/DfspNetworkConfigService');
 const DFSPEndpointModel = require('../../src/models/DFSPEndpointModel');
 const DFSPModel = require('../../src/models/DFSPModel');
 const DFSPEndpointItemModel = require('../../src/models/DFSPEndpointItemModel');
+const { getDFSPIngressIpEndpoint } = require('../../src/service/DfspNetworkConfigService');  // Replace with actual service path
 
-const { validateDirectionType } = DfspNetworkConfigService;
+const { validateDirectionType } = require('../../src/service/DfspNetworkConfigService');
 
 describe('DfspNetworkConfigService Unit Tests', () => {
   let ctx;
@@ -997,6 +998,265 @@ describe('DfspNetworkConfigService Edge Cases and Validations', () => {
     });
   });
 
+//13/02/2025
+describe('getDFSPIngressIpEndpoint', () => {
+  let getDFSPEndpointStub;
+
+  const dfspId = 'dfsp123';
+  const epId = 'ep123';
+  
+  beforeEach(() => {
+
+    getDFSPEndpointStub = sinon.stub(DfspNetworkConfigService, 'getDFSPEndpoint').resolves({
+      direction: 'INGRESS',  
+      type: 'IP',  
+    });
+  });
+
+  afterEach(() => {
+    sinon.restore();  
+  });
+
+
+  it('should throw ValidationError if direction does not match', async () => {
+    getDFSPEndpointStub.resolves({ direction: 'EGRESS', type: 'IP' });
+
+    try {
+      await DfspNetworkConfigService.getDFSPIngressIpEndpoint(dfspId, epId);
+      assert.fail('Expected ValidationError to be thrown');
+    } catch (err) {
+      assert.instanceOf(err, ValidationError, 'Expected a ValidationError');
+      assert.include(err.message, 'Wrong direction', 'Error message should mention wrong direction');
+    }
+  });
+
+  it('should throw ValidationError if type does not match', async () => {
+    getDFSPEndpointStub.resolves({ direction: 'INGRESS', type: 'ADDRESS' });
+
+   
+    try {
+      await DfspNetworkConfigService.getDFSPIngressIpEndpoint(dfspId, epId);
+      assert.fail('Expected ValidationError to be thrown');
+    } catch (err) {
+      assert.instanceOf(err, ValidationError, 'Expected a ValidationError');
+      assert.include(err.message, 'Wrong type', 'Error message should mention wrong type');
+    }
+  });
+});
+
+describe('updateDFSPEgressIpEndpoint', () => {
+  let updateDFSPEndpointStub;
+  let getDFSPEndpointStub;
+
+  const dfspId = 'dfsp123';
+  const epId = 'ep123';
+  const body = { direction: 'EGRESS', type: 'IP' };
+
+  beforeEach(() => {
+    getDFSPEndpointStub = sinon.stub(DfspNetworkConfigService, 'getDFSPEndpoint').resolves({
+      direction: 'EGRESS',  
+      type: 'IP',  
+    });
+
+  
+    updateDFSPEndpointStub = sinon.stub(DfspNetworkConfigService, 'updateDFSPEndpoint').resolves({ success: true });
+  });
+
+  afterEach(() => {
+    sinon.restore(); 
+  });
+
+  it('should throw ValidationError if direction is not "EGRESS"', async () => {
+    body.direction = 'INGRESS';  
+  
+    try {
+      await DfspNetworkConfigService.updateDFSPEgressIpEndpoint(null, dfspId, epId, body);
+      assert.fail('Expected ValidationError to be thrown');
+    } catch (err) {
+      assert.instanceOf(err, ValidationError, 'Expected a ValidationError');
+      
+      assert.include(err.message, 'Bad direction value', 'Error message should mention bad direction');
+  
+      assert.isObject(err.payload.validationErrors, 'Validation errors should be in the payload');
+    }
+  });
+  
+
+  it('should throw ValidationError if type is not "IP"', async () => {
+    body.type = 'ADDRESS';  // Invalid type
+    
+    try {
+      await DfspNetworkConfigService.updateDFSPEgressIpEndpoint(null, dfspId, epId, body);
+      assert.fail('Expected ValidationError to be thrown');
+    } catch (err) {
+      assert.instanceOf(err, ValidationError, 'Expected a ValidationError');
+      assert.include(err.message, 'Bad type value', 'Error message should mention bad type');
+    }
+  });
+
+  it('should not throw error if direction is "EGRESS" and type is "IP"', async () => {
+    body.direction = 'EGRESS';  
+    body.type = 'IP'; 
+
+    const result = await DfspNetworkConfigService.updateDFSPEgressIpEndpoint(null, dfspId, epId, body);
+    
+    assert.isTrue(updateDFSPEndpointStub.calledOnceWith(dfspId, epId, body), 'updateDFSPEndpoint should be called with correct parameters');
+    assert.deepEqual(result, { success: true }, 'Returned result should match the mock data');
+  });
+
+  it('should throw ValidationError if direction is not "EGRESS"', async () => {
+    body.direction = 'INGRESS';  
+
+    try {
+      await DfspNetworkConfigService.updateDFSPEgressIpEndpoint(null, dfspId, epId, body);
+      assert.fail('Expected ValidationError to be thrown');
+    } catch (err) {
+      assert.instanceOf(err, ValidationError, 'Expected a ValidationError');
+      assert.include(err.message, 'Wrong direction', 'Error message should mention wrong direction');
+    }
+  });
+});
+
+describe('getDFSPIngressUrlEndpoint', () => {
+  let getDFSPEndpointStub;
+  const dfspId = 'dfsp123';
+  const epId = 'ep123';
+  const ctx = {}; 
+
+  beforeEach(() => {
+    getDFSPEndpointStub = sinon.stub(DfspNetworkConfigService, 'getDFSPEndpoint').resolves({
+      direction: 'INGRESS',  
+      type: 'URL',  
+      url: 'https://example.com', 
+    });
+  });
+
+  afterEach(() => {
+    sinon.restore(); 
+  });
+
+  it('should call validateDirectionType with correct arguments', async () => {
+    // Call the method under test
+    await DfspNetworkConfigService.getDFSPIngressUrlEndpoint(ctx, dfspId, epId);
+
+    assert.isTrue(
+      validateDirectionTypeStub.calledOnceWith('INGRESS', 'URL', epId, dfspId),
+      'validateDirectionType should be called with the correct parameters'
+    );
+  });
+
+
+  it('should return the correct endpoint from getDFSPEndpoint', async () => {
+    const result = await DfspNetworkConfigService.getDFSPIngressUrlEndpoint(ctx, dfspId, epId);
+
+    assert.isTrue(
+      getDFSPEndpointStub.calledOnce,
+      'getDFSPEndpoint should be called once'
+    );
+    
+    assert.isTrue(
+      getDFSPEndpointStub.calledWith(dfspId, epId),
+      `getDFSPEndpoint should be called with ${dfspId} and ${epId}`
+    );
+
+    assert.deepEqual(
+      result,
+      { direction: 'INGRESS', type: 'URL', url: 'https://example.com' },
+      'The returned endpoint should match the mock response from getDFSPEndpoint'
+    );
+  });
+  
+
+  it('should throw ValidationError if direction does not match', async () => {
+    getDFSPEndpointStub.resolves({ direction: 'EGRESS', type: 'URL' });
+
+    try {
+      await DfspNetworkConfigService.getDFSPIngressUrlEndpoint(ctx, dfspId, epId);
+      assert.fail('Expected ValidationError to be thrown');
+    } catch (err) {
+      assert.instanceOf(err, ValidationError, 'Expected a ValidationError');
+      assert.include(err.message, 'Wrong direction', 'Error message should mention wrong direction');
+    }
+  });
+
+  it('should throw ValidationError if type does not match', async () => {
+    getDFSPEndpointStub.resolves({ direction: 'INGRESS', type: 'ADDRESS' });
+
+    try {
+      await DfspNetworkConfigService.getDFSPIngressUrlEndpoint(ctx, dfspId, epId);
+      assert.fail('Expected ValidationError to be thrown');
+    } catch (err) {
+      assert.instanceOf(err, ValidationError, 'Expected a ValidationError');
+      assert.include(err.message, 'Wrong type', 'Error message should mention wrong type');
+    }
+  });
+});
+
+describe('updateDFSPIngressUrlEndpoint', () => {
+  let updateDFSPEndpointStub;
+  let validateDirectionTypeStub;
+  const dfspId = 'dfsp123';
+  const epId = 'ep123';
+  const ctx = {};  
+  beforeEach(() => {
+    updateDFSPEndpointStub = sinon.stub(DfspNetworkConfigService, 'updateDFSPEndpoint').resolves({}); // Mocking success response
+  });
+
+  afterEach(() => {
+    sinon.restore();  
+  });  
+
+  it('should set type to URL if not provided', async () => {
+    const body = {};  
+    const result = await DfspNetworkConfigService.updateDFSPIngressUrlEndpoint(ctx, dfspId, epId, body);
+
+    assert.equal(body.type, 'URL', 'Type should default to URL');
+    assert.isTrue(validateDirectionTypeStub.calledOnceWith('INGRESS', 'URL', epId, dfspId));
+    assert.isTrue(updateDFSPEndpointStub.calledOnceWith(dfspId, epId, body));
+  });
+
+  it('should throw a ValidationError if direction is invalid', async () => {
+    const body = { direction: 'INVALID' };
+
+    try {
+      await DfspNetworkConfigService.updateDFSPIngressUrlEndpoint(ctx, dfspId, epId, body);
+      assert.fail('Expected ValidationError not thrown');
+    } catch (error) {
+      assert.instanceOf(error, ValidationError, 'Expected error to be a ValidationError');
+      assert.equal(error.message, 'Bad direction value', 'Error message should match');
+    }
+  });
+
+  it('should throw a ValidationError if type is invalid', async () => {
+    const body = { type: 'INVALID' };
+
+    try {
+      await DfspNetworkConfigService.updateDFSPIngressUrlEndpoint(ctx, dfspId, epId, body);
+      assert.fail('Expected ValidationError not thrown');
+    } catch (error) {
+      assert.instanceOf(error, ValidationError, 'Expected error to be a ValidationError');
+      assert.equal(error.message, 'Bad type value', 'Error message should match');
+    }
+  });
+
+  it('should call validateDirectionType with correct arguments', async () => {
+    const body = {};  
+    await DfspNetworkConfigService.updateDFSPIngressUrlEndpoint(ctx, dfspId, epId, body);
+
+  
+    assert.isTrue(validateDirectionTypeStub.calledOnceWith('INGRESS', 'URL', epId, dfspId));
+  });
+
+  it('should call updateDFSPEndpoint with correct arguments', async () => {
+    const body = { direction: 'INGRESS', type: 'URL' };  
+
+    assert.isTrue(updateDFSPEndpointStub.calledOnceWith(dfspId, epId, body));
+  });
+});
+
+//.........................//
+
+
   describe('Error Handling', () => {
     it('should handle missing DFSP gracefully', async () => {
       sinon.stub(PkiService, 'validateDfsp').throws(new ValidationError('Invalid DFSP'));
@@ -1214,5 +1474,5 @@ describe('DfspNetworkConfigService Edge Cases and Validations', () => {
         assert.instanceOf(error, NotFoundError);
       }
     });
-  });
+  });  
 });
