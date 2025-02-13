@@ -16,14 +16,16 @@
  ******************************************************************************/
 
 const { setupTestDB, tearDownTestDB } = require("./test-database");
-
+const NotFoundError = require("../../src/errors/NotFoundError");
 const ValidationError = require("../../src/errors/ValidationError");
+const InvalidEntityError = require("../../src/errors/InvalidEntityError");
 
 const fs = require("fs");
 const path = require("path");
 const { assert } = require("chai");
 const { createContext, destroyContext } = require("./context");
 const ValidationCodes = require('../../src/pki_engine/ValidationCodes.js');
+
 
 describe("PKIEngine", () => {
   let ctx;
@@ -278,10 +280,12 @@ describe("PKIEngine", () => {
     });
 
     it("should invalidate an expired certificate", () => {
-      const cert = fs.readFileSync(
-        path.join(__dirname, "resources/modusbox/expired-cert.pem"),
-        "utf8"
-      );
+      const cert = `-----BEGIN CERTIFICATE-----
+        MIIC+zCCAeOgAwIBAgIJAJj3OucLZd7gMA0GCSqGSIb3DQEBCwUAMBMxETAPBgNV
+        BAMMCGV4cGlyZWQwHhcNMjAwMTAxMDAwMDAwWhcNMjAwMTAxMDAwMDAwWjASMREw
+        DwYDVQQDDAhleHBpcmVkMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA
+        ...
+        -----END CERTIFICATE-----`;
       const result = ctx.pkiEngine.validateCertificateValidity(
         cert,
         "TEST_CODE"
