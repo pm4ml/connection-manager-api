@@ -28,6 +28,7 @@ const { StatusEnum } = require('../../src/service/DfspNetworkConfigService');
 const DFSPEndpointModel = require('../../src/models/DFSPEndpointModel');
 const DFSPModel = require('../../src/models/DFSPModel');
 const DFSPEndpointItemModel = require('../../src/models/DFSPEndpointItemModel');
+validateModule = require('../../src/service/DfspNetworkConfigService');
 const { getDFSPIngressIpEndpoint } = require('../../src/service/DfspNetworkConfigService');  // Replace with actual service path
 
 const { validateDirectionType } = require('../../src/service/DfspNetworkConfigService');
@@ -1399,7 +1400,54 @@ describe('DfspNetworkConfigService', () => {
     expect(updateDFSPEndpointStub.calledOnceWith(dfspId, epId, body)).to.be.true;
   });
 });
+describe('deleteDFSPIngressIpEndpoint', () => {
+  let getDFSPEndpointStub;
+  let deleteDFSPEndpointStub;
 
+  const dfspId = 'dfsp123';
+  const epId = 'ep456';
+
+  beforeEach(() => {
+    // Stub getDFSPEndpoint, which validateDirectionType relies on
+    getDFSPEndpointStub = sinon.stub(DfspNetworkConfigService, 'getDFSPEndpoint').resolves({
+      direction: 'INGRESS',
+      type: 'IP',
+    });
+
+    // Stub deleteDFSPEndpoint
+    deleteDFSPEndpointStub = sinon.stub(DfspNetworkConfigService, 'deleteDFSPEndpoint').resolves();
+  });
+
+  afterEach(() => {
+    sinon.restore(); // Restore original methods
+  });
+
+  it('should validate direction and type before deleting the endpoint', async () => {
+    await DfspNetworkConfigService.deleteDFSPIngressIpEndpoint({}, dfspId, epId);
+
+    // Ensure getDFSPEndpoint was called correctly (which validateDirectionType depends on)
+    expect(getDFSPEndpointStub.calledOnceWith(dfspId, epId)).to.be.true;
+
+    // Ensure deleteDFSPEndpoint was called after validation
+    expect(deleteDFSPEndpointStub.calledOnceWith(dfspId, epId)).to.be.true;
+  });
+
+  it('should throw ValidationError if getDFSPEndpoint returns wrong direction/type', async () => {
+    getDFSPEndpointStub.resolves({
+      direction: 'EGRESS', // Incorrect direction
+      type: 'ADDRESS', // Incorrect type
+    });
+
+    try {
+      await DfspNetworkConfigService.deleteDFSPIngressIpEndpoint({}, dfspId, epId);
+    } catch (error) {
+      expect(error).to.be.instanceOf(ValidationError);
+      expect(error.message).to.include('Wrong direction'); // Validate error message
+    }
+    // Ensure deleteDFSPEndpoint was NOT called if validation fails
+    expect(deleteDFSPEndpointStub.notCalled).to.be.true;
+  });
+});
 //.........................//
 
 
