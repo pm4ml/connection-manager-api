@@ -1085,7 +1085,7 @@ describe('updateDFSPEgressIpEndpoint', () => {
   
 
   it('should throw ValidationError if type is not "IP"', async () => {
-    body.type = 'ADDRESS';  // Invalid type
+    body.type = 'ADDRESS'; 
     
     try {
       await DfspNetworkConfigService.updateDFSPEgressIpEndpoint(null, dfspId, epId, body);
@@ -1138,7 +1138,7 @@ describe('getDFSPIngressUrlEndpoint', () => {
   });
 
   it('should call validateDirectionType with correct arguments', async () => {
-    // Call the method under test
+    
     await DfspNetworkConfigService.getDFSPIngressUrlEndpoint(ctx, dfspId, epId);
 
     assert.isTrue(
@@ -1252,9 +1252,7 @@ describe('DfspNetworkConfigService', () => {
   beforeEach(() => {
     updateDFSPEndpointStub = sinon.stub(DfspNetworkConfigService, 'updateDFSPEndpoint').resolves();
 
-        // Define the function under test
-        someFunctionUnderTest = DfspNetworkConfigService.someFunctionUnderTest;
-    // Stub getDFSPEndpoint to return a mock endpoint response
+    someFunctionUnderTest = DfspNetworkConfigService.someFunctionUnderTest;
     getDFSPEndpointStub = sinon.stub(DfspNetworkConfigService, 'getDFSPEndpoint').resolves({
       direction: 'EGRESS',
       type: 'IP',
@@ -1266,7 +1264,6 @@ describe('DfspNetworkConfigService', () => {
   });
 
   afterEach(() => {
-    // Restore the original functions after each test
     sinon.restore();
   });
 
@@ -1275,14 +1272,10 @@ describe('DfspNetworkConfigService', () => {
     const dfspId = 'dfspId';
     const epId = 'epId';
 
-    // Call the function
     const result = await DfspNetworkConfigService.getDFSPEgressIpEndpoint(ctx, dfspId, epId);
 
-    // Ensure validateDirectionType is called correctly
     assert.isTrue(validateDirectionTypeStub.calledOnceWith('EGRESS', 'IP', epId, dfspId));
-    // Ensure getDFSPEndpoint is called correctly
     assert.isTrue(getDFSPEndpointStub.calledOnceWith(dfspId, epId));
-    // Ensure the result is correct
     assert.deepEqual(result, {
       direction: 'EGRESS',
       type: 'IP',
@@ -1294,7 +1287,6 @@ describe('DfspNetworkConfigService', () => {
     const dfspId = 'dfspId';
     const epId = 'epId';
 
-    // Stub getDFSPEndpoint to throw an error
     getDFSPEndpointStub.rejects(new Error('Endpoint not found'));
 
     try {
@@ -1311,11 +1303,8 @@ describe('DfspNetworkConfigService', () => {
     const dfspId = 'dfspId';
     const epId = 'epId';
 
-    // Call the function
     const result = await DfspNetworkConfigService.deleteDFSPEgressIpEndpoint(ctx, dfspId, epId);
-    // Ensure deleteDFSPEndpoint is called correctly
     assert.isTrue(deleteDFSPEndpointStub.calledOnceWith(dfspId, epId));
-    // Ensure the result is correct
     assert.deepEqual(result, { success: true });
   });
 
@@ -1324,7 +1313,6 @@ describe('DfspNetworkConfigService', () => {
     const dfspId = 'dfspId';
     const epId = 'epId';
 
-    // Stub deleteDFSPEndpoint to throw an error
     deleteDFSPEndpointStub.rejects(new Error('Endpoint not found'));
 
     try {
@@ -1352,7 +1340,6 @@ describe('DfspNetworkConfigService', () => {
 
     try {
       await someFunctionUnderTest(body);
-      // If no error is thrown, the test passes
     } catch (error) {
       assert.fail('Unexpected error was thrown');
     }
@@ -1371,19 +1358,17 @@ describe('DfspNetworkConfigService', () => {
 
   //
   it('should set type to "IP" if not provided', async () => {
-    const body = {};  // type is not provided
+    const body = {}; 
     const result = await DfspNetworkConfigService.updateDFSPEgressIpEndpoint(ctx, dfspId, epId, body);
 
-    // Assert the type is set to "IP" by default
     expect(body.type).to.equal('IP');
     expect(updateDFSPEndpointStub.calledOnceWith(dfspId, epId, body)).to.be.true;
   });
 
   it('should throw ValidationError if type is not "IP"', async () => {
-    const body = { type: 'INVALID' };  // type is provided but is not "IP"
+    const body = { type: 'INVALID' }; 
     try {
       await DfspNetworkConfigService.updateDFSPEgressIpEndpoint(ctx, dfspId, epId, body);
-      // If no error is thrown, fail the test
       expect.fail('Expected ValidationError to be thrown');
     } catch (error) {
       expect(error).to.be.instanceOf(ValidationError);
@@ -1392,10 +1377,9 @@ describe('DfspNetworkConfigService', () => {
   });
  
   it('should not throw error if type is "IP"', async () => {
-    const body = { type: 'IP' };  // type is already "IP"
+    const body = { type: 'IP' };  
     const result = await DfspNetworkConfigService.updateDFSPEgressIpEndpoint(ctx, dfspId, epId, body);
 
-    // Assert that no error is thrown, and the body remains unchanged
     expect(body.type).to.equal('IP');
     expect(updateDFSPEndpointStub.calledOnceWith(dfspId, epId, body)).to.be.true;
   });
@@ -1408,43 +1392,39 @@ describe('deleteDFSPIngressIpEndpoint', () => {
   const epId = 'ep456';
 
   beforeEach(() => {
-    // Stub getDFSPEndpoint, which validateDirectionType relies on
+    
     getDFSPEndpointStub = sinon.stub(DfspNetworkConfigService, 'getDFSPEndpoint').resolves({
       direction: 'INGRESS',
       type: 'IP',
     });
 
-    // Stub deleteDFSPEndpoint
     deleteDFSPEndpointStub = sinon.stub(DfspNetworkConfigService, 'deleteDFSPEndpoint').resolves();
   });
 
   afterEach(() => {
-    sinon.restore(); // Restore original methods
+    sinon.restore(); 
   });
 
   it('should validate direction and type before deleting the endpoint', async () => {
     await DfspNetworkConfigService.deleteDFSPIngressIpEndpoint({}, dfspId, epId);
 
-    // Ensure getDFSPEndpoint was called correctly (which validateDirectionType depends on)
     expect(getDFSPEndpointStub.calledOnceWith(dfspId, epId)).to.be.true;
 
-    // Ensure deleteDFSPEndpoint was called after validation
     expect(deleteDFSPEndpointStub.calledOnceWith(dfspId, epId)).to.be.true;
   });
 
   it('should throw ValidationError if getDFSPEndpoint returns wrong direction/type', async () => {
     getDFSPEndpointStub.resolves({
-      direction: 'EGRESS', // Incorrect direction
-      type: 'ADDRESS', // Incorrect type
+      direction: 'EGRESS', 
+      type: 'ADDRESS', 
     });
 
     try {
       await DfspNetworkConfigService.deleteDFSPIngressIpEndpoint({}, dfspId, epId);
     } catch (error) {
       expect(error).to.be.instanceOf(ValidationError);
-      expect(error.message).to.include('Wrong direction'); // Validate error message
+      expect(error.message).to.include('Wrong direction'); 
     }
-    // Ensure deleteDFSPEndpoint was NOT called if validation fails
     expect(deleteDFSPEndpointStub.notCalled).to.be.true;
   });
 });
