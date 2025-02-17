@@ -1,0 +1,11 @@
+{
+  "timeout": 20000,
+  "colors": true,
+  "exit": true,
+  "recursive": true,
+  "reporter": "spec",
+  "require": ["esm"],
+  "experimental-specifier-resolution": "node",
+  "extension": ["js"],
+  "spec": ["test/**/*.test.js"]
+}
