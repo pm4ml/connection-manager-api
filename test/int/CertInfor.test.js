@@ -3,7 +3,6 @@ const CertInfo = require('../../src/pki_engine/CertInfo');
 
 // FILE: src/pki_engine/CertInfo.test.js
 
-
 describe('CertInfo', () => {
   const CFSL_CERT_INFO = {
     subject: {
