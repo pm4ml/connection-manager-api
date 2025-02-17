@@ -1,0 +1,50 @@
+description: >
+  This job executes the integration tests for the project.
+executor: machine
+environment:
+  MAIN_BRANCH_NAME: main
+parameters:
+  yarn_lock:
+    type: string
+    default: ''
+steps:
+  - machine_dependencies
+  - checkout
+  - configure_nvm
+  - display_versions
+  # - restore_cache_command:
+  #     yarn_lock: << parameters.yarn_lock >>
+  - attach_workspace:
+      at: /tmp
+  - run:
+      name: Create dir for test results
+      command: mkdir -p ./test/results
+  - run:
+      name: Execute integration tests
+      command: |
+        # Set Node version to default (Note: this is needed on Ubuntu)
+        nvm use default
+
+        echo "Running integration tests...."
+        npm ci
+        npm run test:coverage
+      environment:
+        PORT: 3001
+        DATABASE_HOST: localhost
+        DATABASE_PORT: 3306
+        DATABASE_USER: mcm
+        DATABASE_PASSWORD: mcm
+        DATABASE_SCHEMA: mcm
+        VAULT_ENDPOINT: http://localhost:8233
+        VAULT_AUTH_METHOD: TOKEN
+        VAULT_TOKEN: dev-token
+        VAULT_ROLE_ID_FILE: ./docker/vault/tmp/role-id
+        VAULT_ROLE_SECRET_ID_FILE: ./docker/vault/tmp/secret-id
+        VAULT_PKI_CLIENT_ROLE: example.com
+        VAULT_PKI_SERVER_ROLE: example.com
+        SWITCH_ID: switch
+  - store_artifacts:
+      path: ./test/results
+      destination: test
+  - store_test_results:
+      path: ./test/results
