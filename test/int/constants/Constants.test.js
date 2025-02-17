@@ -1,9 +1,9 @@
 const chai = require('chai');
+const { expect } = chai;
+
 const sinon = require('sinon');
 const fs = require('fs');
 const constants = require('../../../src/constants/Constants');
-
-const { expect } = chai;
 
 describe('Constants', () => {
   let sandbox;

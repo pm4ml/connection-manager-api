@@ -1,4 +1,5 @@
-const { expect } = require('chai');
+const chai = require('chai');
+const { expect } = chai;
 const CertInfo = require('../../src/pki_engine/CertInfo');
 
 // FILE: src/pki_engine/CertInfo.test.js

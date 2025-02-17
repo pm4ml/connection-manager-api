@@ -4,6 +4,13 @@
   "description": "ModusBox Connection Manager API",
   "license": "Apache-2.0",
   "author": "ModusBox",
+  "mocha": {
+    "require": [
+      "chai"
+    ],
+    "timeout": 20000,
+    "exit": true
+  },
   "contributors": [
     "@Yevhen Kyriukha <yevhen.kyriukha@modusbox.com>",
     "Miguel de Barros <miguel.debarros@modusbox.com>",
@@ -90,7 +97,7 @@
     "@commitlint/cli": "^19.7.1",
     "@commitlint/config-conventional": "^19.7.1",
     "audit-ci": "^7.1.0",
-    "chai": "^5.1.2",
+    "chai": "^4.3.10",
     "chai-as-promised": "^8.0.1",
     "chai-datetime": "^1.8.1",
     "eslint": "^8.57.0",
