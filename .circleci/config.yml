@@ -2,6 +2,15 @@ version: 2.1
 setup: true
 orbs:
   build: mojaloop/build@1.0.46
+workflows:
+  setup:
+    jobs:
+      - build/workflow:
+          filters:
+            tags:
+              only: /v\d+(\.\d+){2}(-[a-zA-Z-][0-9a-zA-Z-]*\.\d+)?/
+          # optionally supply the base image for the image scan
+          base_image: node:20-buster
 
 jobs:
   test_coverage:
@@ -49,15 +58,4 @@ jobs:
           destination: test
       - store_test_results:
           path: ./test/results
-
-workflows:
-  setup:
-    jobs:
-      - build/workflow:
-          filters:
-            tags:
-              only: /v\d+(\.\d+){2}(-[a-zA-Z-][0-9a-zA-Z-]*\.\d+)?/
-          base_image: node:20-buster
-      - test_coverage:
-          requires:
-            - build/workflow
+          
