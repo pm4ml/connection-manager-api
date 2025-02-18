@@ -3,6 +3,7 @@ description: >
 executor: machine
 environment:
   MAIN_BRANCH_NAME: main
+  DEVELOP_BRANCH_NAME: fix/adoption
 parameters:
   yarn_lock:
     type: string
@@ -12,8 +13,6 @@ steps:
   - checkout
   - configure_nvm
   - display_versions
-  # - restore_cache_command:
-  #     yarn_lock: << parameters.yarn_lock >>
   - attach_workspace:
       at: /tmp
   - run:
@@ -25,7 +24,8 @@ steps:
         # Set Node version to default (Note: this is needed on Ubuntu)
         nvm use default
 
-        echo "Running integration tests...."
+        echo "Running integration tests from ${DEVELOP_BRANCH_NAME} branch..."
+        git checkout ${DEVELOP_BRANCH_NAME}
         npm ci
         npm run test:coverage
       environment:
