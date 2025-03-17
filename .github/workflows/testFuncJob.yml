@@ -49,7 +49,7 @@ jobs:
           tags: ${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
           outputs: type=docker,dest=/tmp/${{env.IMAGE_NAME}}.tar
       - name: Upload artifact
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v4
         with:
           name: ${{env.IMAGE_NAME}}-${{env.IMAGE_TAG}}
           path: /tmp/${{env.IMAGE_NAME}}.tar
@@ -109,7 +109,7 @@ jobs:
         run: npm test
 
       - name: Upload Test Results to GitHub
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v4
         with:
           name: junit.xml
           path: ${{env.TEST_FUNC_WORK_DIRECTORY}}/junit.xml
@@ -125,7 +125,7 @@ jobs:
         run: tar cvzf /tmp/logs.tgz /tmp/logs
       - name: Upload logs to GitHub
         if: failure()
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v4
         with:
           name: logs.tgz
           path: /tmp/logs.tgz
