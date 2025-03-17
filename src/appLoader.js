@@ -70,6 +70,7 @@ exports.connect = async () => {
       ...Constants.certManager,
       logger,
     });
+    await certManager.initK8s();
   }
 
   let rootCA;
