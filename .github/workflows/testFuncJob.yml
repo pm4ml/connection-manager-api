@@ -49,7 +49,7 @@ jobs:
           tags: ${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
           outputs: type=docker,dest=/tmp/${{env.IMAGE_NAME}}.tar
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@master
         with:
           name: ${{env.IMAGE_NAME}}-${{env.IMAGE_TAG}}
           path: /tmp/${{env.IMAGE_NAME}}.tar
