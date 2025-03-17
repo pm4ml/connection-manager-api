@@ -13,7 +13,8 @@
     "GHSA-wf5p-g6vw-rhxx", // https://github.com/advisories/GHSA-wf5p-g6vw-rhxx
     "GHSA-jchw-25xp-jwwc", // https://github.com/advisories/GHSA-jchw-25xp-jwwc
     "GHSA-78xj-cgh5-2h22", // https://github.com/advisories/GHSA-78xj-cgh5-2h22
-    "GHSA-8hc4-vh64-cxmj"  // https://github.com/advisories/GHSA-8hc4-vh64-cxmj
+    "GHSA-8hc4-vh64-cxmj",  // https://github.com/advisories/GHSA-8hc4-vh64-cxmj
+    "GHSA-qwcr-r2fm-qrc7"
 
   ]
 }
