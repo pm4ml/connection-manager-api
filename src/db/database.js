@@ -17,6 +17,7 @@
 
 const Constants = require('../constants/Constants');
 const retry = require('async-retry');
+const exitHook = require('async-exit-hook');
 
 const knexOptions = {
   client: 'mysql2',
@@ -45,6 +46,10 @@ exports.waitForConnection = async () => {
   await retry(async (_, attempt) => {
     console.log(`Attempting database connection. Attempt ${attempt} of ${Constants.DATABASE.DB_RETRIES + 1}`);
     await exports.knex.raw('SELECT 1');
+    exitHook(callback => {
+      exports.knex.destroy().finally(callback);
+    });
+    
     console.log('Database connection attempt successful');
   }, {
     retries: Constants.DATABASE.DB_RETRIES,

@@ -13,27 +13,27 @@ on:
 
 jobs:
   test_lint:
-    uses: infitx-org/github-actions-node/.github/workflows/testLintJob.yml@v0.0.4
+    uses: infitx-org/github-actions-node/.github/workflows/testLintJob.yml@v0.0.5
 
   test_dependencies:
-    uses: infitx-org/github-actions-node/.github/workflows/testDependencyJob.yml@v0.0.4
+    uses: infitx-org/github-actions-node/.github/workflows/testDependencyJob.yml@v0.0.5
 
   test_audit:
-    uses: infitx-org/github-actions-node/.github/workflows/testAuditJob.yml@v0.0.4
+    uses: infitx-org/github-actions-node/.github/workflows/testAuditJob.yml@v0.0.5
 
   test_license:
-    uses: infitx-org/github-actions-node/.github/workflows/testLicenseJob.yml@v0.0.4
+    uses: infitx-org/github-actions-node/.github/workflows/testLicenseJob.yml@v0.0.5
 
   # TODO: Enable when there are unit tests
   #   test_unit:
-  #     uses: infitx-org/github-actions-node/.github/workflows/testUnitJob.yml@v0.0.4
+  #     uses: infitx-org/github-actions-node/.github/workflows/testUnitJob.yml@v0.0.5
 
   # TODO: Enable when there is coveragte for unit tests
   #   test_coverage:
-  #     uses: infitx-org/github-actions-node/.github/workflows/testCoverageJob.yml@v0.0.4
+  #     uses: infitx-org/github-actions-node/.github/workflows/testCoverageJob.yml@v0.0.5
 
   test_int:
-    uses: infitx-org/github-actions-node/.github/workflows/testIntJob.yml@v0.0.4
+    uses: infitx-org/github-actions-node/.github/workflows/testIntJob.yml@v0.0.5
 
   test_func:
     uses: ./.github/workflows/testFuncJob.yml
