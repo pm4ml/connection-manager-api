@@ -71,6 +71,8 @@ const findAllByField = async (columnName, value) => {
   }
 };
 
+exports.findByField = findByField;
+
 exports.create = async (values) => {
   return knex.table(DFSP_TABLE).insert(values);
 };

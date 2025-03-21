@@ -17,13 +17,16 @@
 
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 const HubCAService = require('../../src/service/HubCAService');
-// const { assert } = require('chai');
-// const ValidationError = require('../../src/errors/ValidationError');
+const { assert } = require('chai');
+const ValidationError = require('../../src/errors/ValidationError');
+const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
 // const PkiService = require('../../src/service/PkiService');
 // const fs = require('fs');
 // const path = require('path');
 const { pki } = require('node-forge');
 const { createContext, destroyContext } = require('./context');
+const sinon = require('sinon');
+const PkiService = require('../../src/service/PkiService');
 
 /**
  * Leaving these here as they look useful
