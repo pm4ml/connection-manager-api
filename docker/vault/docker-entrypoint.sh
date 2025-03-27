@@ -110,6 +110,18 @@ sleep 3
 
 export VAULT_TOKEN=$VAULT_DEV_ROOT_TOKEN_ID
 
+# Run the vault status command and capture the output
+output=$(vault status 2>/dev/null)
+
+# Use grep with a regex to check if 'Initialized' is followed by 'true'
+#if echo "$output" | grep -qE '^Initialized\s+true$'; then
+#    echo "Vault is already initialized."
+#    touch /tmp/service_started
+#
+#    tail -f /dev/null
+#    exit 0
+#fi
+
 vault auth enable approle
 vault write auth/approle/role/my-role secret_id_ttl=1000m token_ttl=1000m token_max_ttl=1000m
 vault read -field role_id auth/approle/role/my-role/role-id > /vault/tmp/role-id
