@@ -8,9 +8,11 @@
  *       Yevhen Kyriukha <yevhen.kyriukha@modusbox.com>                   *
  ************************************************************************* */
 
-const k8s = require('@kubernetes/client-node');
-
 class CertManager {
+  k8s;
+  kc;
+  k8sApi;
+  
   constructor (config) {
     this.logger = config.logger;
     this.serverCertSecretName = config.serverCertSecretName;
@@ -20,10 +22,15 @@ class CertManager {
       throw new Error('Missing one of the props: logger, serverCertSecretName, serverCertSecretNamespace');
     }
 
+
+  }
+
+  async initK8s () {
+    this.k8s = await import('@kubernetes/client-node');
     this.kc = new k8s.KubeConfig();
     this.kc.loadFromDefault();
 
-    this.k8sApi = this.kc.makeApiClient(k8s.CoreV1Api);
+    this.k8sApi = this.kc.makeApiClient(this.k8s.CoreV1Api);
   }
 
   async renewServerCert () {
@@ -37,7 +44,7 @@ class CertManager {
       }
     ];
     const options = {
-      headers: { 'Content-type': k8s.PatchUtils.PATCH_FORMAT_JSON_PATCH },
+      headers: { 'Content-type': this.k8s.PatchUtils.PATCH_FORMAT_JSON_PATCH },
     };
 
     return this.k8sApi.patchNamespacedSecret(this.serverCertSecretName, this.serverCertSecretNamespace, patch, undefined, undefined, undefined, undefined, options)
