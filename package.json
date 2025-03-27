@@ -64,7 +64,7 @@
     "jsonwebtoken": "^9.0.2",
     "knex": "^3.1.0",
     "moment": "^2.30.1",
-    "mysql2": "^3.13.0",
+    "mysql2": "^3.14.0",
     "node-forge": "^1.3.1",
     "node-vault": "^0.10.2",
     "oas3-tools": "^2.2.3",
@@ -90,13 +90,13 @@
     "jshint": "^2.13.6",
     "mocha": "^11.1.0",
     "npm-audit-resolver": "3.0.0-RC.0",
-    "npm-check-updates": "^17.1.15",
+    "npm-check-updates": "^17.1.16",
     "nyc": "^17.1.0",
-    "sinon": "^19.0.2",
+    "sinon": "^20.0.0",
     "snazzy": "^9.0.0",
     "standard-version": "^9.5.0",
     "standardx": "^7.0.0",
-    "supertest": "^7.0.0"
+    "supertest": "^7.1.0"
   },
   "standardx": {
     "semistandard": true

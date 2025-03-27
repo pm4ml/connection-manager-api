@@ -19,6 +19,7 @@
 const PkiService = require('./PkiService');
 const ValidationCodes = require('../pki_engine/ValidationCodes');
 const ValidationError = require('../errors/ValidationError');
+const constants = require('../constants/Constants');
 
 const formatBody = (body, pkiEngine) => {
   return {
@@ -32,6 +33,11 @@ const formatBody = (body, pkiEngine) => {
 
 exports.createInternalHubCA = async (ctx, body, ttl) => {
   const { pkiEngine, certManager } = ctx;
+
+  if (!ttl) {
+    // ttl is falsy, we assume this means it was not provided. use env var or default.
+    ttl = constants.vault.internalCaTtl;
+  }
 
   const { cert } = await pkiEngine.createCA(body, ttl);
   const certInfo = pkiEngine.getCertInfo(cert);
