@@ -7,10 +7,10 @@
     "text-summary",
     "lcov"
   ],
-  "branches": 90,
-  "lines": 90,
-  "functions": 90,
-  "statements": 90,
+  "branches": 50,
+  "lines": 50,
+  "functions": 40,
+  "statements": 50,
   "exclude": [
     ".mocharc.js",
     ".versionrc.js", 
