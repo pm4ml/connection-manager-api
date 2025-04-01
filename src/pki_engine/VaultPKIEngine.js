@@ -20,6 +20,7 @@ const NotFoundError = require('../errors/NotFoundError');
 const tls = require('tls');
 const Joi = require('joi');
 const ValidationError = require('../errors/ValidationError');
+const util = require('util');
 
 // TODO: find and link document containing rules on allowable paths
 const vaultPaths = {

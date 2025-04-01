@@ -1,41 +1,94 @@
-version: "3.7"
-
 services:
   connection-manager-db:
-    # Using mariadb because mysql doesn't show any helpful error when docker disk is full as per https://github.com/docker-library/mysql/issues/69
-    image: mariadb
-    hostname: connection-manager-db
+    image: mysql/mysql-server
     ports:
-      - 3306:3306
+      - "3306:3306"
+    volumes:
+      - ./docker/sql-init/:/docker-entrypoint-initdb.d/
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=mcm
       - MYSQL_USER=mcm
       - MYSQL_PASSWORD=mcm
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
+      start_period: 40s
+      interval: 30s
+
+  vault-dev:
+    image: vault:1.2.1
     restart: always
-    command: mysqld --lower_case_table_names=1 --skip-ssl --character_set_server=utf8mb4 --explicit_defaults_for_timestamp
-  connection-manager-api:
-    build:
-      context: ../
-      dockerfile: Dockerfile
-    image: connection-manager-api
-    hostname: connection-manager-api
     environment:
-      - DATABASE_HOST=connection-manager-db
-      - DATABASE_PORT=3306
-      - DATABASE_USER=mcm
-      - DATABASE_PASSWORD=mcm
-      - DATABASE_SCHEMA=mcm
-      - MYSQL_ROOT_PASSWORD=modus123
-      - PORT=3001
-      - P12_PASS_PHRASE='SOME_S3C4R3_P@SS'
-    tty: true
-    stdin_open: true  
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8233
+      VAULT_ADDR: http://127.0.0.1:8233
+      VAULT_DEV_ROOT_TOKEN_ID: "myroot"
+      VAULT_LOCAL_CONFIG: '{"backend": {"file": {"path": "/vault/file"}}, "default_lease_ttl": "168h", "max_lease_ttl": "720h"}'
     ports:
-     - "3001:3001"
-    restart: always
-    depends_on:
-      - connection-manager-db
+      - "8233:8233"
+    volumes:
+      - ./vault/tmp:/vault/tmp
+      - ./vault/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
+    cap_add:
+      - IPC_LOCK
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /tmp/service_started"]
+      timeout: 1s
+      retries: 20
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:12.0.4
+    environment:
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=admin
+      - KEYCLOAK_FRONTEND_URL=http://localhost:8080/auth
+      - KEYCLOAK_IMPORT=/tmp/mcm-realm.json
+      - DB_VENDOR=h2
+    volumes:
+      - ./mcm-realm.json:/tmp/mcm-realm.json
+    ports:
+      - "8080:8080"
+
+#  connection-manager-api:
+#    build:
+#      context: ../
+#      dockerfile: Dockerfile
+#    image: connection-manager-api
+#    environment:
+#      - DATABASE_HOST=connection-manager-db
+#      - DATABASE_PORT=3306
+#      - DATABASE_USER=mcm
+#      - DATABASE_PASSWORD=mcm
+#      - DATABASE_SCHEMA=mcm
+#      - MYSQL_ROOT_PASSWORD=modus123
+#      - PORT=3001
+#      - P12_PASS_PHRASE='SOME_S3C4R3_P@SS'
+#      - SWITCH_ID=switch
+#      - VAULT_ENDPOINT=http://vault-dev:8233
+#      - VAULT_AUTH_METHOD=APP_ROLE
+#      - VAULT_ROLE_ID_FILE=/vault/tmp/role-id
+#      - VAULT_ROLE_SECRET_ID_FILE=/vault/tmp/secret-id
+#      - VAULT_PKI_CLIENT_ROLE=example.com
+#      - VAULT_PKI_SERVER_ROLE=example.com
+#      - AUTH_ENABLED=false
+#      - AUTH_2FA_ENABLED=false
+#    volumes:
+#      - ./vault/tmp:/vault/tmp
+#    tty: true
+#    stdin_open: true
+#    ports:
+#     - "3001:3001"
+#    restart: always
+#    depends_on:
+#      connection-manager-db:
+#        condition: service_started
+#      vault-dev:
+#        condition: service_healthy
+#      keycloak:
+#        condition: service_started
+
+
   connection-manager-ui:
     # This builds the image from a locally cloned repo
     build:
@@ -51,5 +104,5 @@ services:
     tty: true
     stdin_open: true  
     ports:
-     - "80:8080"
+     - "8081:8080"
     restart: always

@@ -160,6 +160,7 @@ module.exports = {
     signExpiryHours: env.get('VAULT_SIGN_EXPIRY_HOURS').default('43800').asString(),
     keyLength: env.get('PRIVATE_KEY_LENGTH').default(4096).asIntPositive(),
     keyAlgorithm: env.get('PRIVATE_KEY_ALGORITHM').default('rsa').asString(),
+    internalCaTtl: env.get('INTERNAL_CA_TTL').default('8760h').asString(),
   },
   certManager,
 
