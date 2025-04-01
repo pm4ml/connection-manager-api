@@ -121,3 +121,5 @@ docker/vault/tmp/*
 **/role-id
 docker/vault/tmp/secret-id
 docker/vault/tmp/role-id
+
+audit/results/
