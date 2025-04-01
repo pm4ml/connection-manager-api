@@ -3,20 +3,24 @@
   "low": true,
   "moderate": true,
   "high": true,
-  "critical": false,
+  "critical": true,
   "allowlist": [
     // Existing allowlisted items
     "GHSA-wm7h-9275-46v2",
     "GHSA-hrpp-h998-j3pp",
-    "GHSA-p8p7-x288-28g6", 
+    "GHSA-p8p7-x288-28g6",
     "GHSA-72xf-g2v4-qvf3",
     "GHSA-67hx-6x53-jw92",
     "GHSA-wf5p-g6vw-rhxx",
     "GHSA-jchw-25xp-jwwc",
     "GHSA-78xj-cgh5-2h22",
     "GHSA-8hc4-vh64-cxmj",
-    
+
     // Adding body-parser vulnerability
-    "GHSA-qwcr-r2fm-qrc7" // body-parser DOS vulnerability - no fix available yet
+    "GHSA-qwcr-r2fm-qrc7", // body-parser DOS vulnerability - no fix available yet
+
+    // Adding additional vulnerabilities from audit report
+    "GHSA-pppg-cpfq-h7wr", // JSONPath Plus Remote Code Execution (RCE) Vulnerability
+    "GHSA-hw8r-x6gr-5gjp"  // JSONPath Plus allows Remote Code Execution
   ]
 }
