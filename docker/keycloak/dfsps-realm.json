@@ -1,0 +1,86 @@
+{
+  "realm": "dfsps",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "connection-manager-client",
+      "secret": "${DFSP_ADMIN_CLIENT_SECRET}",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "redirectUris": [],
+      "webOrigins": [],
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "implicitFlowEnabled": false,
+      "attributes": {
+        "access.token.lifespan": "43200"
+      }
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "dfsp-admin",
+        "description": "Administrator role for DFSP users",
+        "composite": true,
+        "composites": {
+          "client": {
+            "realm-management": [
+              "manage-users",
+              "view-users",
+              "manage-clients",
+              "view-clients"
+            ]
+          }
+        }
+      },
+      {
+        "name": "hub-admin",
+        "description": "Administrator role for hub operations"
+      }
+    ]
+  },
+  "clientScopes": [],
+  "users": [
+    {
+      "username": "service-account-connection-manager-client",
+      "emailVerified": false,
+      "enabled": true,
+      "totp": false,
+      "serviceAccountClientId": "connection-manager-client",
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-dfsps",
+        "dfsp-admin"
+      ],
+      "clientRoles": {},
+      "notBefore": 0,
+      "groups": []
+    }
+  ],
+  "groups": [
+    {
+      "name": "Application",
+      "subGroups": [
+        {
+          "name": "DFSP"
+        }
+      ]
+    }
+  ],
+  "clientScopeMappings": {
+    "connection-manager-client": [
+      {
+        "client": "realm-management",
+        "roles": [
+          "dfsp-admin"
+        ]
+      }
+    ]
+  }
+} 

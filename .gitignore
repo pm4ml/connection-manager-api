@@ -114,3 +114,5 @@ localEnvs
 # tests
 **/junit.xml
 .token
+
+/docker/vault/tmp

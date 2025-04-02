@@ -120,6 +120,14 @@ Variables:
 | **CFSSL**
 |CFSSL_VERSION|Expected CFSSL version to use. Should be updated to keep in sync with the cfssl development|1.3.4
 |CFSSL_COMMAND_PATH|cfssl command; it should be just cfssl if it's in the PATH or the full path|cfssl
+| **Keycloak Integration**
+|KEYCLOAK_ENABLED|Enable Keycloak integration for DFSP account creation|false
+|KEYCLOAK_BASE_URL|Base URL of the Keycloak server|http://localhost:8080
+|KEYCLOAK_DISCOVERY_URL|OpenID Connect discovery URL for Keycloak|http://localhost:8080/realms/dfsps/.well-known/openid-configuration
+|KEYCLOAK_ADMIN_CLIENT_ID|Client ID for Keycloak admin operations|connection-manager-client
+|KEYCLOAK_ADMIN_CLIENT_SECRET|Client secret for Keycloak admin operations|
+|KEYCLOAK_DFSPS_REALM|Keycloak realm for DFSP accounts|dfsps
+|KEYCLOAK_AUTO_CREATE_ACCOUNTS|Automatically create Keycloak accounts when DFSPs are created|true
 
 ## Testing
 
@@ -129,7 +137,7 @@ Variables:
 - Smoke testing ( `zsh` script ): run the [cmd-line-tester.sh](./scripts/cmd-line-tester.sh) script from a tmp directory
 - swagger: see "running the server" below
 
-### Functioanl Tests
+### Functional Tests
 
 Refer to [README](./test/functional-tests/README.md).
 

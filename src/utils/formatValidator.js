@@ -72,3 +72,15 @@ exports.validatePorts = (ports) => {
   });
   return true;
 };
+
+/**
+ * Validates that a DFSP ID meets Keycloak username requirements
+ * @param {string} dfspId - The DFSP ID to validate
+ * @throws {ValidationError} If the DFSP ID doesn't meet Keycloak requirements
+ */
+exports.validateDfspIdForKeycloak = (dfspId) => {
+  if (!dfspId || dfspId.length < 3 || dfspId.length > 255) {
+    throw new ValidationError(`DFSP ID must be between 3 and 255 characters for Keycloak compatibility`);
+  }
+  return true;
+};
