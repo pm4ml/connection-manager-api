@@ -462,9 +462,14 @@ class VaultPKIEngine extends PKIEngine {
    * @returns { csr: String, key:  String, PEM-encoded. Encrypted ( see encryptKey ) }
    */
   async createCSR (csrParameters) {
+    if (!csrParameters?.subject) {
+      throw new ValidationError('Invalid CAInitialInfo document: Missing subject');
+    }
+    this.validateCSR(csrParameters.subject);
     const keys = forge.pki.rsa.generateKeyPair(this.keyLength);
     const csr = forge.pki.createCertificationRequest();
     csr.publicKey = keys.publicKey;
+    
     if (csrParameters?.subject) {
       csr.setSubject(Object.entries(csrParameters.subject).map(([shortName, value]) => ({
         shortName,
@@ -479,8 +484,8 @@ class VaultPKIEngine extends PKIEngine {
           name: 'subjectAltName',
           altNames: [
             ...dns ? dns.map(value => ({ type: VaultPKIEngine.DNS_TYPE, value })) : [],
-            ...ips ? ips.map(value => ({ type: VaultPKIEngine.IP_TYPE, value })) : []
-          ]
+            ...ips ? ips.map(ip => ({ type: VaultPKIEngine.IP_TYPE, ip })) : []
+          ]          
         }]
       }]);
     }
@@ -588,58 +593,39 @@ class VaultPKIEngine extends PKIEngine {
    */
   validateCertificateValidity (serverCert, code) {
     if (!serverCert) {
-      return new Validation(code, false, ValidationCodes.VALID_STATES.NOT_AVAILABLE,
-        'No certificate');
+      const validation = new Validation(
+        code,
+        false,
+        ValidationCodes.VALID_STATES.NOT_AVAILABLE,
+        'No certificate'
+      );
+      validation.state = ValidationCodes.VALID_STATES.NOT_AVAILABLE;
+      return validation;
     }
 
     try {
       const certInfo = this.getCertInfo(serverCert);
       const notAfterDate = moment(certInfo.notAfter);
-      if (!notAfterDate || !notAfterDate.isValid()) {
-        throw new Error('Invalid notAfterDate');
-      }
       const notBeforeDate = moment(certInfo.notBefore);
-      if (!notBeforeDate || !notBeforeDate.isValid()) {
-        throw new Error('Invalid notBeforeDate');
-      }
-      const valid = moment().isBetween(notBeforeDate, notAfterDate);
+  
       const validation = new Validation(code, true);
-      if (valid) {
-        validation.result = ValidationCodes.VALID_STATES.VALID;
-
-        validation.messageTemplate = 'Certificate is valid for ${data.currentDate}';
-        validation.data = {
-          currentDate: {
-            type: 'DATE',
-            value: Date.now()
-          }
-        };
-        validation.message = `Certificate is valid for ${moment(validation.data.currentDate.value).format()}`;
+      validation.state = ValidationCodes.VALID_STATES.INVALID; // Default state
+  
+      if (moment().isBetween(notBeforeDate, notAfterDate)) {
+        validation.state = ValidationCodes.VALID_STATES.VALID; // Valid certificate
       } else {
-        validation.result = ValidationCodes.VALID_STATES.INVALID;
-
-        validation.messageTemplate = 'Certificate is not valid for ${data.currentDate}. It is not valid before ${data.notBeforeDate} and after ${data.notAfterDate}';
-        validation.data = {
-          currentDate: {
-            type: 'DATE',
-            value: Date.now()
-          },
-          notAfterDate: {
-            type: 'DATE',
-            value: notAfterDate
-          },
-          notBeforeDate: {
-            type: 'DATE',
-            value: notBeforeDate
-          }
-        };
-        validation.message = `Certificate is not valid for ${moment(validation.data.currentDate.value).format()}. It is not valid before ${moment(validation.data.notBeforeDate).format()} and after ${moment(validation.data.notAfterDate.value).format()}`;
+        validation.message = `Certificate is not valid for the current date.`;
       }
+  
       return validation;
     } catch (error) {
-      console.error(error);
-      const validation = new Validation(code, true, ValidationCodes.VALID_STATES.INVALID, 'Error ocurred while processing the certificate');
-      validation.result = JSON.stringify(error);
+      const validation = new Validation(
+        code,
+        false,
+        ValidationCodes.VALID_STATES.INVALID,
+        'Error processing the certificate'
+      );
+      validation.state = ValidationCodes.VALID_STATES.INVALID; // Explicitly set state
       return validation;
     }
   }
@@ -651,19 +637,37 @@ class VaultPKIEngine extends PKIEngine {
    */
   validateCertificateUsageServer (serverCert) {
     if (!serverCert) {
-      return new Validation(ValidationCodes.VALIDATION_CODES.CERTIFICATE_USAGE_SERVER.code, false, ValidationCodes.VALID_STATES.NOT_AVAILABLE,
-        'No certificate');
+      const validation = new Validation(
+        ValidationCodes.VALIDATION_CODES.CERTIFICATE_USAGE_SERVER.code,
+        false,
+        ValidationCodes.VALID_STATES.NOT_AVAILABLE,
+        'No certificate'
+      );
+      validation.state = ValidationCodes.VALID_STATES.NOT_AVAILABLE; // Explicitly set state
+      return validation;
     }
-
+  
     const cert = forge.pki.certificateFromPem(serverCert);
     const extKeyUsage = cert.getExtension('extKeyUsage');
     if (!extKeyUsage || !extKeyUsage.serverAuth) {
-      return new Validation(ValidationCodes.VALIDATION_CODES.CERTIFICATE_USAGE_SERVER.code, true, ValidationCodes.VALID_STATES.INVALID,
-        'Certificate doesn\'t have the "TLS WWW server authentication" key usage extension');
+      const validation = new Validation(
+        ValidationCodes.VALIDATION_CODES.CERTIFICATE_USAGE_SERVER.code,
+        true,
+        ValidationCodes.VALID_STATES.INVALID,
+        'Certificate doesn\'t have the "TLS WWW server authentication" key usage extension'
+      );
+      validation.state = ValidationCodes.VALID_STATES.INVALID; // Explicitly set state
+      return validation;
     }
-
-    return new Validation(ValidationCodes.VALIDATION_CODES.CERTIFICATE_USAGE_SERVER.code, true, ValidationCodes.VALID_STATES.VALID,
-      'Certificate has the "TLS WWW server authentication" key usage extension');
+  
+    const validation = new Validation(
+      ValidationCodes.VALIDATION_CODES.CERTIFICATE_USAGE_SERVER.code,
+      true,
+      ValidationCodes.VALID_STATES.VALID,
+      'Certificate has the "TLS WWW server authentication" key usage extension'
+    );
+    validation.state = ValidationCodes.VALID_STATES.VALID; // Explicitly set state
+    return validation;
   }
 
   splitCertificateChain (chain) {
@@ -1287,20 +1291,25 @@ class VaultPKIEngine extends PKIEngine {
    * @param {String} csrPem PEM-encoded CSR
    * @returns {CSRInfo} The CSR Info
    */
-  getCSRInfo (csrPem) {
+  getCSRInfo(csrPem) {
     if (!csrPem) {
       throw new InvalidEntityError('Empty or null CSR');
     }
-
-    const csr = forge.pki.certificationRequestFromPem(csrPem);
-
-    return {
-      subject: VaultPKIEngine._getSubjectInfo(csr.subject),
-      extensions: VaultPKIEngine._getExtensionsInfo(csr.getAttribute({ name: 'extensionRequest' })),
-      signatureAlgorithm: forge.pki.oids[csr.siginfo.algorithmOid],
-      publicKeyLength: csr.publicKey.n.bitLength(),
-    };
+  
+    try {
+      const csr = forge.pki.certificationRequestFromPem(csrPem);
+  
+      return {
+        subject: VaultPKIEngine._getSubjectInfo(csr.subject),
+        extensions: VaultPKIEngine._getExtensionsInfo(csr.getAttribute({ name: 'extensionRequest' })),
+        signatureAlgorithm: forge.pki.oids[csr.siginfo.algorithmOid],
+        publicKeyLength: csr.publicKey.n.bitLength(),
+      };
+    } catch (err) {
+      throw new InvalidEntityError('Invalid CSR: ' + err.message); // Wrap the error
+    }
   }
+  
 
   /**
    * Returns an object with the Certificate contents and info
@@ -1308,27 +1317,32 @@ class VaultPKIEngine extends PKIEngine {
    * @param {String} certPem PEM-encoded Certificate
    * @returns {CertInfo} The Certificate Info
    */
-  getCertInfo (certPem) {
+  getCertInfo(certPem) {
     if (!certPem) {
       throw new InvalidEntityError('Empty or null cert');
     }
-
-    const cert = forge.pki.certificateFromPem(certPem);
-
-    return {
-      subject: VaultPKIEngine._getSubjectInfo(cert.subject),
-      issuer: VaultPKIEngine._getSubjectInfo(cert.issuer),
-      extensions: VaultPKIEngine._getExtensionsInfo(cert),
-      serialNumber: cert.serialNumber,
-      notBefore: cert.validity.notBefore,
-      notAfter: cert.validity.notAfter,
-      signatureAlgorithm: forge.pki.oids[cert.siginfo.algorithmOid],
-      publicKeyLength: cert.publicKey.n.bitLength(),
-    };
+  
+    try {
+      const cert = forge.pki.certificateFromPem(certPem);
+  
+      return {
+        subject: VaultPKIEngine._getSubjectInfo(cert.subject),
+        issuer: VaultPKIEngine._getSubjectInfo(cert.issuer),
+        extensions: VaultPKIEngine._getExtensionsInfo(cert),
+        serialNumber: cert.serialNumber,
+        notBefore: cert.validity.notBefore,
+        notAfter: cert.validity.notAfter,
+        signatureAlgorithm: forge.pki.oids[cert.siginfo.algorithmOid],
+        publicKeyLength: cert.publicKey.n.bitLength(),
+      };
+    } catch (err) {
+      throw new InvalidEntityError('Invalid certificate: ' + err.message); // Wrap the error
+    }
   }
+  
 
-  validateCSR (csr) {
-    const schema = Joi.object().description('CA initial parameters').keys({
+  validateCSR(csr) {
+    const schema = Joi.object().keys({
       CN: Joi.string().description('Common Name').required(),
       E: Joi.string().description('Email'),
       O: Joi.string().description('Organization').required(),
@@ -1337,12 +1351,12 @@ class VaultPKIEngine extends PKIEngine {
       ST: Joi.string().description('State'),
       L: Joi.string().description('Location'),
     });
+  
     const result = schema.validate(csr);
     if (result.error) {
-      console.warn(result.error.details);
-      throw new ValidationError('Invalid CAInitialInfo document', result.error.details);
+      throw new ValidationError('Invalid CAInitialInfo document: ' + result.error.message);
     }
-  }
+  }  
 }
 
 VaultPKIEngine.DNS_TYPE = 2;

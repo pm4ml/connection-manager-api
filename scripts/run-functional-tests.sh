@@ -14,7 +14,7 @@
 
   # from exports
   readonly GIT_URL=${GIT_URL:-"https://github.com/modusbox/connection-manager-api.git"}
-  readonly GIT_TAG=${GIT_TAG:-"v13.1.0"}
+  readonly GIT_TAG=${GIT_TAG:-"v2.4.0"}
   readonly TARGET_DIR=${TARGET_DIR:-"/tmp/tests"}
   IFS=$'\t\n'   # Split on newlines and tabs (but not on spaces)
 # }}}

@@ -164,14 +164,15 @@ class PKIEngine {
     return { validations, validationState };
   }
 
-  verifyCertificateChainPublicKeyMatchPrivateKey (certificateChain, key, code) {
+  verifyCertificateChainPublicKeyMatchPrivateKey(certificateChain, key, code) {
     if (this.splitCertificateChain(certificateChain)
       .map(cert => this.verifyCertificatePublicKeyMatchPrivateKey(cert, key, code))
       .some(({ result }) => result === ValidationCodes.VALID_STATES.VALID)) {
       return new Validation(code, true, ValidationCodes.VALID_STATES.VALID);
     }
-    return new Validation(code, true, ValidationCodes.VALID_STATES.INVALID);
+    return new Validation(code, true, ValidationCodes.VALID_STATES.INVALID, 'No certificate matches the private key');
   }
+  
 
   /**
    * Performs a set of validations on the CACert.
@@ -182,7 +183,11 @@ class PKIEngine {
    * @param {String} key PEM-encoded CA private key
    * @returns { validations, validationState } validations list and validationState, where validationState = VALID if all the validations are VALID or NOT_AVAIABLE; INVALID otherwise
    */
-  performCAValidations (validationCodes, intermediateChain, rootCertificate, key) {
+  performCAValidations(validationCodes, intermediateChain, rootCertificate, key) {
+    if (!Array.isArray(validationCodes)) {
+      validationCodes = [];
+    }
+
     const validations = [];
     for (const validationCode of validationCodes) {
       switch (validationCode) {
@@ -207,7 +212,6 @@ class PKIEngine {
     const validationState = valid ? ValidationCodes.VALID_STATES.VALID : ValidationCodes.VALID_STATES.INVALID;
     return { validations, validationState };
   }
-
   /**
    * Validates ValidationCodes.VALIDATION_CODES.CERTIFICATE_VALIDITY
    *
@@ -463,13 +467,21 @@ class PKIEngine {
   verifyCertificateCSRSameSubject (code, enrollment) {
   }
 
-  /**
+   /**
    *
    * @param {String} code validation code
    * @param {Object} enrollment
    */
-  verifyCertificateCSRSameCN (code, enrollment) {
-
+   verifyCertificateCSRSameCN(code, enrollment) {
+    const { csrInfo, certInfo } = enrollment;
+    for (const p in certInfo.subject) {
+      if (certInfo.subject.hasOwnProperty(p)) {
+        if (csrInfo.subject[p] !== certInfo.subject[p]) {
+          return { valid: false, reason: `csr subject ${p}: ${csrInfo.subject[p]} is not equals cert subject ${p}: ${certInfo.subject[p]}` };
+        }
+      }
+    }
+    return { valid: true };
   }
 
   /**

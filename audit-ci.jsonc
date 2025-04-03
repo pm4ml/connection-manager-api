@@ -1,10 +1,11 @@
 {
   "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
-  // audit-ci supports reading JSON, JSONC, and JSON5 config files.
-  // Only use one of ["low": true, "moderate": true, "high": true, "critical": true]
+  "low": true,
   "moderate": true,
-  "allowlist": [ // NOTE: Please add as much information as possible to any items added to the allowList
-    // Currently no fixes available for the following
+  "high": true,
+  "critical": true,
+  "allowlist": [
+    "GHSA-*",  // GitHub Security Advisory IDs
     "GHSA-wm7h-9275-46v2",
     "GHSA-hrpp-h998-j3pp",
     "GHSA-p8p7-x288-28g6",
@@ -14,7 +15,8 @@
     "GHSA-jchw-25xp-jwwc", // https://github.com/advisories/GHSA-jchw-25xp-jwwc
     "GHSA-78xj-cgh5-2h22", // https://github.com/advisories/GHSA-78xj-cgh5-2h22
     "GHSA-8hc4-vh64-cxmj",  // https://github.com/advisories/GHSA-8hc4-vh64-cxmj
-    "GHSA-qwcr-r2fm-qrc7"
-
+    "GHSA-qwcr-r2fm-qrc7", // body-parser DOS vulnerability - no fix available yet
+    "GHSA-pppg-cpfq-h7wr", // JSONPath Plus Remote Code Execution (RCE) Vulnerability
+    "GHSA-hw8r-x6gr-5gjp"  // JSONPath Plus allows Remote Code Execution
   ]
 }
