@@ -1,0 +1,26 @@
+{
+  "check-coverage": true,
+  "per-file": true,
+  "reporter": [
+    "html",
+    "text",
+    "text-summary",
+    "lcov"
+  ],
+  "branches": 0,
+  "lines": 0,
+  "functions": 0,
+  "statements": 0,
+  "exclude": [
+    ".mocharc.js",
+    ".versionrc.js", 
+    "commitlint.config.js",
+    "eslint.config.js",
+    "knexfile.js",
+    "test/**",
+    "coverage/**",
+    "dist/**",
+    "src/constants/Constants.js",
+    "src/utils/tlsUtils.js"
+  ]
+}

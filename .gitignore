@@ -115,4 +115,11 @@ localEnvs
 **/junit.xml
 .token
 
-/docker/vault/tmp
+# Vault secrets
+docker/vault/tmp/*
+**/secret-id
+**/role-id
+docker/vault/tmp/secret-id
+docker/vault/tmp/role-id
+
+audit/results/

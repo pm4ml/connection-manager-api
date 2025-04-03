@@ -108,6 +108,85 @@ it('should take this as a valid token ( unless it expires )', async () => {
   assert.isTrue(callbackCalled, 'It should have been validated or TokenExpiredError');
 });
 
+
+it('should fail with empty token string', async () => {
+  let callbackCalled = false;
+  const token = '';
+  const strategy = createJwtStrategy(tokenPropertyExtractor); 
+  strategy.fail = (err) => {
+    assert.deepEqual(err.name, 'JsonWebTokenError');
+    assert.deepEqual(err.message, 'jwt must be provided');
+    callbackCalled = true;
+  };
+  const req = {};
+  req.token = token;
+  strategy.authenticate(req, { session: false });
+  assert.isTrue(callbackCalled, 'Should fail with jwt must be provided');
+});
+
+it('should fail with malformed token missing parts', async () => {
+  let callbackCalled = false;
+  const token = 'header.payload'; // Missing signature part
+  const strategy = createJwtStrategy(tokenPropertyExtractor);
+  strategy.fail = (err) => {
+    assert.deepEqual(err.name, 'JsonWebTokenError');
+    assert.deepEqual(err.message, 'jwt malformed'); 
+    callbackCalled = true;
+  };
+  const req = {};
+  req.token = token;
+  strategy.authenticate(req, { session: false });
+  assert.isTrue(callbackCalled, 'Should fail with jwt malformed error');
+});
+
+it('should fail with invalid algorithm in token header', async () => {
+  let callbackCalled = false;
+  const token = 'eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiaWF0IjoxNTE2MjM5MDIyfQ.WuZ5hBzuZG-DY0NIckxzqYzI3Vy4m9GeclsHV9_BJyY';
+  const strategy = createJwtStrategy(tokenPropertyExtractor);
+  strategy.fail = (err) => {
+    assert.deepEqual(err.name, 'JsonWebTokenError');
+    assert.deepEqual(err.message, 'invalid algorithm');
+    callbackCalled = true;
+  };
+  const req = {};
+  req.token = token;
+  strategy.authenticate(req, { session: false });
+  assert.isTrue(callbackCalled, 'Should fail with invalid algorithm error');
+});
+
+it('should fail when required claims are missing', async () => {
+  let callbackCalled = false;
+  // Token missing 'sub' claim
+  const token = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ0ZXN0IiwiaXNzIjoidGVzdCIsImlhdCI6MTUxNjIzOTAyMn0.signature';
+  const strategy = createJwtStrategy(tokenPropertyExtractor);
+  strategy.fail = (err) => {
+    assert.deepEqual(err.name, 'JsonWebTokenError');
+    callbackCalled = true;
+  };
+  const req = {};
+  req.token = token;
+  strategy.authenticate(req, { session: false });
+  assert.isTrue(callbackCalled, 'Should fail when required claims missing');
+});
+
+it('should fail with token issued in future (invalid nbf claim)', async () => {
+  let callbackCalled = false;
+  // Token with future nbf (not before) claim
+  const futureDate = Math.floor(Date.now() / 1000) + 3600; // 1 hour in future
+  const token = `eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwibmJmIjoke futureDate},ImlzcyI6InRlc3QiLCJpYXQiOjE1MTYyMzkwMjJ9.signature`;
+  
+  const strategy = createJwtStrategy(tokenPropertyExtractor);
+  strategy.fail = (err) => {
+    assert.deepEqual(err.name, 'NotBeforeError');
+    assert.deepEqual(err.message, 'jwt not active');
+    callbackCalled = true;
+  };
+  const req = {};
+  req.token = token;
+  strategy.authenticate(req, { session: false });
+  assert.isTrue(callbackCalled, 'Should fail with token not yet active error');
+});
+
 function tokenPropertyExtractor (req) {
   return req.token;
 }
