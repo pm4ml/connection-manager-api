@@ -20,10 +20,44 @@ const DFSPModel = require('../models/DFSPModel');
 const InternalError = require('../errors/InternalError');
 const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
+const formatValidator = require('../utils/formatValidator');
 
 const ValidationCodes = require('../pki_engine/ValidationCodes');
 const Constants = require('../constants/Constants');
 const { createCSRAndDFSPOutboundEnrollment } = require('./DfspOutboundService');
+const keycloakService = require('./KeycloakService');
+
+/**
+ * Creates Keycloak account for a DFSP if auto-creation is enabled
+ * @param {string} dfspId - The DFSP ID
+ * @returns {Promise<void>}
+ */
+async function createKeycloakAccountForDfsp(dfspId) {
+  if (!Constants.KEYCLOAK.ENABLED || !Constants.KEYCLOAK.AUTO_CREATE_ACCOUNTS) {
+    return;
+  }
+
+  let createdUser = null;
+  let createdClient = null;
+  
+  try {
+    createdUser = await keycloakService.createDfspUser(dfspId);
+    console.log(`Created Keycloak user for DFSP ${dfspId}`);
+    
+    createdClient = await keycloakService.createDfspClient(dfspId);
+    console.log(`Created Keycloak client for DFSP ${dfspId}`);
+  } catch (keycloakError) {
+    if (createdUser) {
+      await keycloakService.deleteDfspUser(dfspId, createdUser.userId);
+    }
+    if (createdClient) {
+      await keycloakService.deleteDfspClient(dfspId);
+    } 
+
+    console.error(`Failed to complete Keycloak setup for DFSP ${dfspId}:`, keycloakError);
+    throw keycloakError;
+  }
+}
 
 /**
  * Creates an entry to store DFSP related info
@@ -36,6 +70,11 @@ exports.createDFSP = async (ctx, body) => {
   const regex = / /gi;
   const dfspIdNoSpaces = body.dfspId ? body.dfspId.replace(regex, '-') : null;
 
+  // Validate dfspId for Keycloak requirements if Keycloak is enabled
+  if (Constants.KEYCLOAK.ENABLED && Constants.KEYCLOAK.AUTO_CREATE_ACCOUNTS) {
+    formatValidator.validateDfspIdForKeycloak(body.dfspId);
+  }
+
   const values = {
     dfsp_id: body.dfspId,
     name: body.name,
@@ -45,6 +84,7 @@ exports.createDFSP = async (ctx, body) => {
   };
 
   try {
+    await createKeycloakAccountForDfsp(body.dfspId);
     await DFSPModel.create(values);
     await DFSPModel.createFxpSupportedCurrencies(body.dfspId, body.fxpCurrencies);
     return { id: body.dfspId };
@@ -125,6 +165,39 @@ exports.splitChainIntermediateCertificateInfo = (intermediateChain, pkiEngine) =
 };
 
 /**
+ * Delete Keycloak account for a DFSP
+ * 
+ * @param {string} dfspId - The DFSP ID to delete account for
+ * @returns {Promise<void>}
+ */
+async function deleteKeycloakAccountForDfsp(dfspId) {
+  if (!Constants.KEYCLOAK.ENABLED) {
+    return;
+  }
+  
+  const cleanupPromises = [];
+  
+  // Try to delete the client
+  cleanupPromises.push(
+    keycloakService.deleteDfspClient(dfspId)
+      .catch(error => {
+        console.error(`Failed to delete Keycloak client for DFSP ${dfspId}:`, error);
+      })
+  );
+  
+  // Try to delete the user
+  cleanupPromises.push(
+    keycloakService.deleteDfspUser(dfspId)
+      .catch(error => {
+        console.error(`Failed to delete Keycloak user for DFSP ${dfspId}:`, error);
+      })
+  );
+  
+  // Wait for all cleanup operations to complete
+  await Promise.all(cleanupPromises);
+}
+
+/**
  * Delete a DFSP by its id
  *
  * dfspId String ID of dfsp
@@ -135,6 +208,9 @@ exports.deleteDFSP = async (ctx, dfspId) => {
   const { pkiEngine } = ctx;
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   await pkiEngine.deleteAllDFSPData(dbDfspId);
+  
+  await deleteKeycloakAccountForDfsp(dfspId);
+  
   return DFSPModel.delete(dfspId);
 };
 

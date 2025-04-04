@@ -112,6 +112,16 @@ module.exports = {
       .asString(),
   },
 
+  KEYCLOAK: {
+    ENABLED: env.get('KEYCLOAK_ENABLED').default('false').asBool(),
+    BASE_URL: env.get('KEYCLOAK_BASE_URL').default('http://localhost:8080').asString(),
+    DISCOVERY_URL: env.get('KEYCLOAK_DISCOVERY_URL').default('http://localhost:8080/realms/dfsps/.well-known/openid-configuration').asString(),
+    ADMIN_CLIENT_ID: env.get('KEYCLOAK_ADMIN_CLIENT_ID').default('connection-manager-client').asString(),
+    ADMIN_CLIENT_SECRET: env.get('KEYCLOAK_ADMIN_CLIENT_SECRET').asString(),
+    DFSPS_REALM: env.get('KEYCLOAK_DFSPS_REALM').default('dfsps').asString(),
+    AUTO_CREATE_ACCOUNTS: env.get('KEYCLOAK_AUTO_CREATE_ACCOUNTS').default('true').asBool(),
+  },
+
   EXTRA_TLS: {
     EXTRA_CERTIFICATE_CHAIN_FILE_NAME: env.get('EXTRA_CERTIFICATE_CHAIN_FILE_NAME').asString(),
     EXTRA_ROOT_CERT_FILE_NAME: env.get('EXTRA_ROOT_CERT_FILE_NAME').asString(),
