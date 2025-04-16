@@ -53,7 +53,10 @@ services:
   keycloak:
     image: keycloak/keycloak:26.1
     entrypoint: /tmp/docker-entrypoint.sh
-    env_file: "./keycloak/keycloak.env"
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+      - DFSP_ADMIN_CLIENT_SECRET=${DFSP_ADMIN_CLIENT_SECRET}
     volumes:
       - ./keycloak/dfsps-realm.json:/tmp/dfsps-realm-template.json
       - ./keycloak/docker-entrypoint.sh:/tmp/docker-entrypoint.sh
