@@ -2787,6 +2787,9 @@ components:
         securityGroup:
           type: string
           description: OAuth role/group owner
+        email:
+          type: string
+          description: DFSP operator email address for sending invitation
       example:
         dfspId: DFSP1
         name: DFSP 1

@@ -40,12 +40,58 @@ const getIssuerClient = async () => {
 };
 
 /**
+ * Sends an action email to a Keycloak user (like password reset)
+ * 
+ * @param {string} userId - The Keycloak user ID
+ * @param {string} email - User's email address
+ * @param {string[]} actions - Required actions to trigger (e.g., ['UPDATE_PASSWORD'])
+ * @return {boolean} Success indicator
+ */
+const sendUserActionEmail = async (userId, email, actions) => {
+  try {
+    // Get an access token for Keycloak Admin API
+    const client = await getIssuerClient();
+    const tokenSet = await client.grant({
+      grant_type: 'client_credentials',
+      scope: 'openid'
+    });
+    
+    const accessToken = tokenSet.access_token;
+    const baseUrl = Constants.KEYCLOAK.BASE_URL;
+    const realm = Constants.KEYCLOAK.DFSPS_REALM;
+    
+    // Trigger the "execute-actions-email" endpoint which sends an email to the user
+    const actionEmailResponse = await fetch(`${baseUrl}/admin/realms/${realm}/users/${userId}/execute-actions-email`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      },
+      body: JSON.stringify(actions)
+    });
+    
+    if (!actionEmailResponse.ok) {
+      const error = await actionEmailResponse.text();
+      console.warn(`Failed to send action email to user: ${error}`);
+      return false;
+    }
+    
+    console.log(`Sent action email to user at ${email}`);
+    return true;
+  } catch (error) {
+    console.warn(`Error sending action email: ${error.message}`);
+    return false;
+  }
+};
+
+/**
  * Creates a user in Keycloak when a DFSP is created in MCM
  * 
  * @param {string} dfspId - The DFSP ID
+ * @param {string} [email] - Optional DFSP admin/operator email
  * @return {Object} The created user information
  */
-exports.createDfspUser = async (dfspId) => { 
+exports.createDfspUser = async (dfspId, email) => { 
   try {
     // Validate dfspId length for Keycloak username requirements (3-255 characters)
     formatValidator.validateDfspIdForKeycloak(dfspId);
@@ -72,6 +118,25 @@ exports.createDfspUser = async (dfspId) => {
       }
     };
     
+    // Add email only if provided
+    if (email) {
+      userToCreate.email = email;
+      // Add required actions to force password reset on first login
+      // This will trigger an invitation email to the user
+      userToCreate.requiredActions = ['UPDATE_PASSWORD'];
+    }
+    
+    // If 2FA is enabled globally, add the required action for TOTP setup
+    if (Constants.AUTH_2FA.AUTH_2FA_ENABLED) {
+      if (!userToCreate.requiredActions) {
+        userToCreate.requiredActions = [];
+      }
+      // Add the CONFIGURE_TOTP action which forces user to set up 2FA
+      if (!userToCreate.requiredActions.includes('CONFIGURE_TOTP')) {
+        userToCreate.requiredActions.push('CONFIGURE_TOTP');
+      }
+    }
+    
     // Create the user via Keycloak Admin REST API
     const userCreateResponse = await fetch(`${baseUrl}/admin/realms/${realm}/users`, {
       method: 'POST',
@@ -91,12 +156,30 @@ exports.createDfspUser = async (dfspId) => {
     const locationHeader = userCreateResponse.headers.get('Location');
     const userId = locationHeader.substring(locationHeader.lastIndexOf('/') + 1);
     
+    // If email is provided, send an invitation email for password reset
+    if (email) {
+      const emailSent = await sendUserActionEmail(userId, email, ['UPDATE_PASSWORD']);
+      if (!emailSent) {
+        console.log(`Failed to send invitation email to ${email}, rolling back user creation`);
+        // Delete the user we just created since email sending failed
+        await exports.deleteDfspUser(dfspId, userId);
+        throw new InternalError(`User creation failed: Unable to send invitation email to ${email}`);
+      }
+    }
+    
     console.log(`Created Keycloak user for DFSP ${dfspId} with ID ${userId}`);
 
-    return {
+    const result = {
       userId: userId,
-      dfspId: dfspId,
+      dfspId: dfspId
     };
+    
+    // Include email in result only if provided
+    if (email) {
+      result.email = email;
+    }
+    
+    return result;
   } catch (error) {
     console.error('Error creating Keycloak user for DFSP:', error);
     throw new InternalError(`Failed to create Keycloak user for DFSP ${dfspId}: ${error.message}`);

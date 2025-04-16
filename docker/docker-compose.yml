@@ -11,7 +11,7 @@ services:
       - MYSQL_USER=mcm
       - MYSQL_PASSWORD=mcm
     healthcheck:
-      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      test: mysqladmin ping -h localhost
       timeout: 20s
       retries: 10
       start_period: 40s
@@ -33,22 +33,41 @@ services:
     cap_add:
       - IPC_LOCK
     healthcheck:
-      test: ["CMD-SHELL", "test -f /tmp/service_started"]
+      test: test -f /tmp/service_started
       timeout: 1s
       retries: 20
+
+  # MailHog for email testing
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    healthcheck:
+      test: wget --spider --quiet http://localhost:8025
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
 
   keycloak:
     image: keycloak/keycloak:26.1
     entrypoint: /tmp/docker-entrypoint.sh
-    environment:
-      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
-      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
-      - DFSP_ADMIN_CLIENT_SECRET=${DFSP_ADMIN_CLIENT_SECRET}
+    env_file: "./keycloak/keycloak.env"
     volumes:
       - ./keycloak/dfsps-realm.json:/tmp/dfsps-realm-template.json
       - ./keycloak/docker-entrypoint.sh:/tmp/docker-entrypoint.sh
     ports:
       - "8080:8080"
+    depends_on:
+      mailhog:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail http://localhost:8080/health/ready
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
 #  connection-manager-api:
 #    build:
@@ -82,11 +101,11 @@ services:
 #    restart: always
 #    depends_on:
 #      connection-manager-db:
-#        condition: service_started
+#        condition: service_healthy
 #      vault-dev:
 #        condition: service_healthy
 #      keycloak:
-#        condition: service_started
+#        condition: service_healthy
 
 
   connection-manager-ui:
@@ -106,3 +125,7 @@ services:
     ports:
      - "8081:8080"
     restart: always
+    # Uncomment when the API service is active
+    #depends_on:
+    #  connection-manager-api:
+    #    condition: service_started
