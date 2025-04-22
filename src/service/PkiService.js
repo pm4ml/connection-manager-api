@@ -28,25 +28,30 @@ const { createCSRAndDFSPOutboundEnrollment } = require('./DfspOutboundService');
 const keycloakService = require('./KeycloakService');
 
 /**
- * Creates Keycloak account for a DFSP if auto-creation is enabled
- * @param {string} dfspId - The DFSP ID
+ * Create Keycloak accounts for a DFSP
+ * 
+ * @param {string} dfspId - The DFSP ID to create account for
+ * @param {string} [email] - Optional email for the DFSP operator
  * @returns {Promise<void>}
  */
-async function createKeycloakAccountForDfsp(dfspId) {
+async function createKeycloakAccountForDfsp(dfspId, email) {
   if (!Constants.KEYCLOAK.ENABLED || !Constants.KEYCLOAK.AUTO_CREATE_ACCOUNTS) {
     return;
   }
-
+  
   let createdUser = null;
   let createdClient = null;
   
   try {
-    createdUser = await keycloakService.createDfspUser(dfspId);
-    console.log(`Created Keycloak user for DFSP ${dfspId}`);
+    // Create a Keycloak user for the DFSP
+    createdUser = await keycloakService.createDfspUser(dfspId, email);
     
+    // Create a Keycloak client for the DFSP
     createdClient = await keycloakService.createDfspClient(dfspId);
-    console.log(`Created Keycloak client for DFSP ${dfspId}`);
+    
+    console.log(`Successfully created Keycloak accounts for DFSP ${dfspId}`);
   } catch (keycloakError) {
+    // Clean up any partially created resources
     if (createdUser) {
       await keycloakService.deleteDfspUser(dfspId, createdUser.userId);
     }
@@ -84,7 +89,7 @@ exports.createDFSP = async (ctx, body) => {
   };
 
   try {
-    await createKeycloakAccountForDfsp(body.dfspId);
+    await createKeycloakAccountForDfsp(body.dfspId, body.email);
     await DFSPModel.create(values);
     await DFSPModel.createFxpSupportedCurrencies(body.dfspId, body.fxpCurrencies);
     return { id: body.dfspId };
