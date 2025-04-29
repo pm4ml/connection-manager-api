@@ -91,29 +91,6 @@ class MetricsServer {
     await server.register([this.metrics.plugin]); // think if we need it here?
     return server;
   }
-
-
 }
 
 module.exports = MetricsServer;
-
-
-
-
-// const http = require('node:http');
-//
-// const server = http.createServer((req, res) => {
-//   if (req.method === 'GET' && req.url === '/metrics') {
-//     const metrics = 'uptime_seconds 12345\nrequests_total 678';
-//     res.writeHead(200, { 'Content-Type': 'text/plain' });
-//     res.end(metrics);
-//   } else {
-//     res.writeHead(404, { 'Content-Type': 'text/plain' });
-//     res.end('Not Found');
-//   }
-// });
-//
-// const PORT = 3000;
-// server.listen(PORT, () => {
-//   console.log(`Server is listening on http://localhost:${PORT}`);
-// });
