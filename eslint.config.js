@@ -11,7 +11,6 @@ module.exports = [
           functions: "never"
         }
       ],
-      "indent": ["error", 2],
       "no-extra-semi": "off",
       semi: ["error", "always"]
     }
