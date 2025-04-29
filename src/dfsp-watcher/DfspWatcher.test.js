@@ -26,8 +26,6 @@
  ******/
 
 process.env.PING_PONG_SERVER_URL = 'ping-pong.url';
-process.env.LOG_LEVEL = 'debug';
-process.env.VAULT_AUTH_METHOD = 'APP_ROLE'; // for some reason, the test failed on CircleCI without it
 
 const axios = require('axios');
 const AxiosMockAdapter = require('axios-mock-adapter');

@@ -58,7 +58,7 @@ dist/
 .yarn-integrity
 
 # dotenv environment variables file
-.env
+.env111
 
 # next.js build output
 .next
