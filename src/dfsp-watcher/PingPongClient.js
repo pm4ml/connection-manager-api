@@ -86,7 +86,7 @@ class PingPongClient {
     return data;
   }
 
-  /** @returns {Promise<PingPongResponse>} */
+  /** @returns {PingPongResponse} */
   async #formatPingResponse(data) {
     if (!data) return {
       pingStatus: PingStatus.NOT_REACHABLE,
