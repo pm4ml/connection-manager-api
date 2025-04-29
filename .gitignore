@@ -86,10 +86,9 @@ docs/
 # entries at root level
 tmpdir
 private
-tmpdir
 **/cfssl-bins/**
 **/node_modules/**
-.DS_Store
+
 localEnvs
 
 # VScode
@@ -108,12 +107,5 @@ localEnvs
 # tests
 **/junit.xml
 .token
-
-# Vault secrets
-docker/vault/tmp/*
-**/secret-id
-**/role-id
-docker/vault/tmp/secret-id
-docker/vault/tmp/role-id
 
 audit/results/
