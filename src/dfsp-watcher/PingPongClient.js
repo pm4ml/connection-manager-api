@@ -66,6 +66,7 @@ class PingPongClient {
       const headers = await this.#createHeaders(destination);
       data = await this.#sendHttpPost({ url, body, headers });
     } catch (err) {
+      data = null;
       log.error(`error in sendPingRequest: `, err);
     }
 
