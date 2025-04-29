@@ -58,7 +58,7 @@ dist/
 .yarn-integrity
 
 # dotenv environment variables file
-.env111
+.env
 
 # next.js build output
 .next
@@ -75,9 +75,6 @@ docs/
 
 # OS files
 .DS_Store
-
-# Env files
-**/*.env
 
 # IGNORE files
 **/*IGNORE*
@@ -101,9 +98,6 @@ localEnvs
 
 # ignore all log files
 **/*.log
-
-# ignore .env files
-**/*.env
 
 # ignore vault install from run-vault.sh
 .vault
