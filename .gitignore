@@ -76,9 +76,6 @@ docs/
 # OS files
 .DS_Store
 
-# Env files
-**/*.env
-
 # IGNORE files
 **/*IGNORE*
 
@@ -89,10 +86,9 @@ docs/
 # entries at root level
 tmpdir
 private
-tmpdir
 **/cfssl-bins/**
 **/node_modules/**
-.DS_Store
+
 localEnvs
 
 # VScode
@@ -101,9 +97,6 @@ localEnvs
 
 # ignore all log files
 **/*.log
-
-# ignore .env files
-**/*.env
 
 # ignore vault install from run-vault.sh
 .vault
@@ -114,12 +107,5 @@ localEnvs
 # tests
 **/junit.xml
 .token
-
-# Vault secrets
-docker/vault/tmp/*
-**/secret-id
-**/role-id
-docker/vault/tmp/secret-id
-docker/vault/tmp/role-id
 
 audit/results/

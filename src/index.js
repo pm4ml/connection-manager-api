@@ -17,11 +17,11 @@
 
 const nodeHttp = require('http');
 const Constants = require('./constants/Constants');
-const serverPort = Constants.SERVER.PORT;
 const appLoader = require('./appLoader');
-const {
-  createDFSP: defaultCreateDFSP,
-} = require('./service/PkiService');
+const { createDFSP: defaultCreateDFSP } = require('./service/PkiService');
+const { createDfspWatcher } = require('./dfsp-watcher');
+
+const serverPort = Constants.SERVER.PORT;
 
 const run = async ({
   connect = appLoader.connect,
@@ -42,6 +42,9 @@ const run = async ({
     console.log('Connection-Manager API server is listening on port %d...', serverPort);
     console.log('Swagger-ui is available on http://localhost:%d/docs', serverPort);
   });
+
+  const watcher = createDfspWatcher();
+  await watcher.start();
 };
 
 // This structure enables us to mock and test

@@ -42,12 +42,10 @@ exports.getDfspsByMonetaryZones = async (monetaryZoneId) => {
 };
 
 exports.getFxpSupportedCurrencies = async (dfspId) => {
-  return (await
-    knex
-      .table('fxp_supported_currencies')
-      .join(DFSP_TABLE, 'fxp_supported_currencies.dfspId', 'dfsps.id')
-      .where(DFSP_TABLE + '.dfsp_id', dfspId)
-      .select('fxp_supported_currencies.monetaryZoneId')
+  return (await knex.table('fxp_supported_currencies')
+    .join(DFSP_TABLE, 'fxp_supported_currencies.dfspId', 'dfsps.id')
+    .where(DFSP_TABLE + '.dfsp_id', dfspId)
+    .select('fxp_supported_currencies.monetaryZoneId')
   ).map((row) => row.monetaryZoneId);
 };
 
@@ -72,6 +70,13 @@ const findAllByField = async (columnName, value) => {
 };
 
 exports.findByField = findByField;
+
+exports.findWatchedDfspIds = async () => {
+  const rows = await knex.table(DFSP_TABLE)
+    .select('dfsp_id')
+    .where('watch', true);
+  return rows.map((row) => row.dfsp_id);
+};
 
 exports.create = async (values) => {
   return knex.table(DFSP_TABLE).insert(values);
@@ -104,6 +109,13 @@ exports.update = async (dfspId, newDfsp) => {
   } else {
     throw new InternalError('E_TOO_MANY_ROWS');
   }
+};
+
+exports.updatePingStatus = async (dfspId, pingStatus) => {
+  const result = await knex.table(DFSP_TABLE)
+    .where({ dfsp_id: dfspId })
+    .update({ pingStatus });
+  return result > 0;
 };
 
 const rowToObject = (dfsp) => {

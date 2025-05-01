@@ -14,9 +14,10 @@
     "GHSA-wf5p-g6vw-rhxx", // https://github.com/advisories/GHSA-wf5p-g6vw-rhxx
     "GHSA-jchw-25xp-jwwc", // https://github.com/advisories/GHSA-jchw-25xp-jwwc
     "GHSA-78xj-cgh5-2h22", // https://github.com/advisories/GHSA-78xj-cgh5-2h22
-    "GHSA-8hc4-vh64-cxmj",  // https://github.com/advisories/GHSA-8hc4-vh64-cxmj
+    "GHSA-8hc4-vh64-cxmj", // https://github.com/advisories/GHSA-8hc4-vh64-cxmj
     "GHSA-qwcr-r2fm-qrc7", // body-parser DOS vulnerability - no fix available yet
     "GHSA-pppg-cpfq-h7wr", // JSONPath Plus Remote Code Execution (RCE) Vulnerability
-    "GHSA-hw8r-x6gr-5gjp"  // JSONPath Plus allows Remote Code Execution
+    "GHSA-hw8r-x6gr-5gjp", // JSONPath Plus allows Remote Code Execution
+    "GHSA-75v8-2h7p-7m2m" // https://github.com/advisories/GHSA-75v8-2h7p-7m2m
   ]
 }
