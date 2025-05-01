@@ -17,6 +17,7 @@
 
 'use strict';
 const { validateIPAddressInput, validatePorts, validateURLInput } = require('../utils/formatValidator');
+const { logger } = require('../log/logger');
 const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
 const PkiService = require('./PkiService');
@@ -43,11 +44,11 @@ exports.DirectionEnum = DirectionEnum;
 const transformEndpointModeltoApiRes = (endpointMode) => {
   const { // lets filter out endpointMode properties
     id,
-     
+
     dfsp_id,
-     
+
     created_by,
-     
+
     created_at,
     state,
     direction, // we are going to ignore this!
@@ -56,12 +57,12 @@ const transformEndpointModeltoApiRes = (endpointMode) => {
 
   return { // map endpointMode properties to API specification
     id,
-     
+
     dfspId: dfsp_id,
     state,
-     
+
     createdBy: created_by,
-     
+
     createdAt: created_at,
     ...config
   };
@@ -490,4 +491,12 @@ exports.updateDFSPIngressUrlEndpoint = async (ctx, dfspId, epId, body) => {
 exports.deleteDFSPIngressUrlEndpoint = async (ctx, dfspId, epId) => {
   await validateDirectionType('INGRESS', 'URL', epId, dfspId);
   return exports.deleteDFSPEndpoint(dfspId, epId);
+};
+
+exports.uploadDfspStatesStatus = async (ctx, dfspId, body) => {
+  // todo: add body validation
+  // await PkiService.validateDfsp(ctx, dfspId);
+  // await DFSPModel.update(dfspId, { status });
+  logger.info(`uploadDfspStatesStatus not implemented!!!!`, { dfspId, body });
+  return { success: true };
 };
