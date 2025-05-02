@@ -494,10 +494,8 @@ exports.deleteDFSPIngressUrlEndpoint = async (ctx, dfspId, epId) => {
 };
 
 exports.uploadDfspStatesStatus = async (ctx, dfspId, body) => {
-  const code = await DFSPModel.findDfspStatesStatus(dfspId);
-
-  // const upsertResult = await DFSPModel.upsertStatesStatus(dfspId, body);
-  // const code = upsertResult[0]?.affectedRows || 0; // 1 - insert, 2 - update
-  // logger.info(`uploadDfspStatesStatus is done:`, { code, dfspId });
+  const upsertResult = await DFSPModel.upsertStatesStatus(dfspId, body);
+  const code = upsertResult[0]?.affectedRows || 0; // 1 - insert, 2 - update
+  logger.info(`uploadDfspStatesStatus is done:`, { code, dfspId });
   return { code };
 };
