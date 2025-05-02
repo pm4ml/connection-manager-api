@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.8.0](https://github.com/modusbox/connection-manager-api/compare/v2.4.2...v2.8.0) (2025-05-02)
+
+
+### Features
+
+* **csi-1413:** added DfspWatcher ([#97](https://github.com/modusbox/connection-manager-api/issues/97)) ([4d55cf3](https://github.com/modusbox/connection-manager-api/commit/4d55cf3923772ad56dedfcf3269ef034ddca7038))
+* implement 2FA with Keycloak and DFSP user invitation emails ([0fb4250](https://github.com/modusbox/connection-manager-api/commit/0fb4250b0ecfeb6227b56f965e910f6db1ff49c3))
+* integrate IME-519 adoption features ([#94](https://github.com/modusbox/connection-manager-api/issues/94)) ([3e83010](https://github.com/modusbox/connection-manager-api/commit/3e830101ca8329554a94ac3e6f77fe19282b5337))
+* integrate keycloak for DFSP lifecycle ([d3913f8](https://github.com/modusbox/connection-manager-api/commit/d3913f815f0d4a216f109345f030703a35d7baa0))
+
+
+### Bug Fixes
+
+* envs ([00e5c57](https://github.com/modusbox/connection-manager-api/commit/00e5c57e5302d81b12b80556e69e9f643a2670da))
+
+
+### Chore
+
+* bump package-lock.json ([090639e](https://github.com/modusbox/connection-manager-api/commit/090639eef85b6f3f0546cb54aede7cdaa8f884b4))
+* bump to unblock ci ([#99](https://github.com/modusbox/connection-manager-api/issues/99)) ([00f3e28](https://github.com/modusbox/connection-manager-api/commit/00f3e28c1fb58765abd1cc6f58865ad845fa784d))
+* cleanup ([acd4f15](https://github.com/modusbox/connection-manager-api/commit/acd4f155334e57060c272396fc4ad936d9442b50))
+* version bump ([5e6e383](https://github.com/modusbox/connection-manager-api/commit/5e6e3839f70648a34b4d946af5b37d305b5a5abf))
+
 ## [2.7.0](https://github.com/modusbox/connection-manager-api/compare/v2.4.2...v2.7.0) (2025-05-02)
 
 
