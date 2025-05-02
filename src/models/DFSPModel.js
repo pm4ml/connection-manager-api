@@ -16,9 +16,12 @@
  ******************************************************************************/
 
 const { knex } = require('../db/database');
+const { logger } = require('../log/logger');
 const NotFoundError = require('../errors/NotFoundError');
 const InternalError = require('../errors/InternalError');
 const DFSP_TABLE = 'dfsps';
+
+const log = logger.child({ component: 'DFSPModel' });
 
 exports.findAll = () => {
   return knex.table(DFSP_TABLE).select();
@@ -78,6 +81,14 @@ exports.findWatchedDfspIds = async () => {
   return rows.map((row) => row.dfsp_id);
 };
 
+exports.findDfspStatesStatus = async (dfspId) => {
+  const [row] = await knex.table('dfsp_states_status')
+    .where({ dfspId });
+  return !row ? null : Object.fromEntries( // filter out empty values and ids
+    Object.entries(row).filter(([_, value]) => value && typeof value === 'object')
+  );
+};
+
 exports.create = async (values) => {
   return knex.table(DFSP_TABLE).insert(values);
 };
@@ -115,7 +126,15 @@ exports.updatePingStatus = async (dfspId, pingStatus) => {
   const result = await knex.table(DFSP_TABLE)
     .where({ dfsp_id: dfspId })
     .update({ pingStatus });
+  log.debug(`updatePingStatus is done: `, { dfspId, pingStatus, result });
   return result > 0;
+};
+
+exports.upsertStatesStatus = async (dfspId, statesJson) => {
+  const result = await knex.table('dfsp_states_status')
+    .upsert({ dfspId, ...statesJson });
+  log.debug(`upsertStatesStatus is done: `, { dfspId, statesJson, result });
+  return result;
 };
 
 const rowToObject = (dfsp) => {

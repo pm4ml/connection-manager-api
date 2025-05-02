@@ -3612,7 +3612,7 @@ components:
         progressMonitor:
           $ref: "#/components/schemas/DfspStateStatus"
     DfspStateStatus:
-      title: State
+      title: State status
       type: object
       properties:
         status:
@@ -3633,6 +3633,9 @@ components:
           type: string
           format: date-time
           description: The date and time when the state was last updated.
+      required:
+        - status
+        - lastUpdated
   securitySchemes:
     OAuth2:
       type: oauth2

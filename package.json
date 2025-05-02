@@ -1,6 +1,6 @@
 {
   "name": "connection-manager-api",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "description": "ModusBox Connection Manager API",
   "license": "Apache-2.0",
   "author": "ModusBox",
@@ -107,7 +107,7 @@
     "eslint-plugin-promise": "^6.4.0",
     "husky": "^9.1.7",
     "jest": "29.7.0",
-    "mocha": "^11.1.0",
+    "mocha": "^11.2.2",
     "npm-audit-resolver": "3.0.0-RC.0",
     "npm-check-updates": "^18.0.1",
     "nyc": "^17.1.0",

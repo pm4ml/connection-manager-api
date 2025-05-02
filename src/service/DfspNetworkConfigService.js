@@ -494,9 +494,10 @@ exports.deleteDFSPIngressUrlEndpoint = async (ctx, dfspId, epId) => {
 };
 
 exports.uploadDfspStatesStatus = async (ctx, dfspId, body) => {
-  // todo: add body validation
-  // await PkiService.validateDfsp(ctx, dfspId);
-  // await DFSPModel.update(dfspId, { status });
-  logger.info(`uploadDfspStatesStatus not implemented!!!!`, { dfspId, body });
-  return { success: true };
+  const code = await DFSPModel.findDfspStatesStatus(dfspId);
+
+  // const upsertResult = await DFSPModel.upsertStatesStatus(dfspId, body);
+  // const code = upsertResult[0]?.affectedRows || 0; // 1 - insert, 2 - update
+  // logger.info(`uploadDfspStatesStatus is done:`, { code, dfspId });
+  return { code };
 };
