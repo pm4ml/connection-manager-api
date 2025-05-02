@@ -25,6 +25,8 @@ const DFSPModel = require('../models/DFSPModel');
 const DFSPEndpointItemModel = require('../models/DFSPEndpointItemModel');
 const DFSPEndpointModel = require('../models/DFSPEndpointModel');
 
+const log = logger.child({ component: 'DfspNetworkConfigService' });
+
 const StatusEnum = Object.freeze({ NOT_STARTED: 'NOT_STARTED', IN_PROGRESS: 'IN_PROGRESS', COMPLETED: 'COMPLETED' });
 const PhaseEnum = Object.freeze({ BUSINESS_SETUP: 'BUSINESS_SETUP', TECNICAL_SETUP: 'TECNICAL_SETUP' });
 const StepEnum = Object.freeze({ ID_GENERATION: 'ID_GENERATION', ENDPOINTS: 'ENDPOINTS', CSR_EXCHANGE: 'CSR_EXCHANGE', CERTIFICATE_AUTHORITY: 'CERTIFICATE_AUTHORITY', SERVER_CERTIFICATES_EXCHANGE: 'SERVER_CERTIFICATES_EXCHANGE', JWS_CERTIFICATES: 'JWS_CERTIFICATES' });
@@ -496,6 +498,6 @@ exports.deleteDFSPIngressUrlEndpoint = async (ctx, dfspId, epId) => {
 exports.uploadDfspStatesStatus = async (ctx, dfspId, body) => {
   const upsertResult = await DFSPModel.upsertStatesStatus(dfspId, body);
   const code = upsertResult[0]?.affectedRows || 0; // 1 - insert, 2 - update
-  logger.info(`uploadDfspStatesStatus is done:`, { code, dfspId });
+  log.info(`uploadDfspStatesStatus is done:`, { code, dfspId });
   return { code };
 };
