@@ -1,4 +1,4 @@
-FROM node:20-buster
+FROM node:18.20.3-alpine3.19
 
 # APP
 WORKDIR /usr/src/app
