@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.8.1](https://github.com/modusbox/connection-manager-api/compare/v2.8.0...v2.8.1) (2025-05-03)
+
+
+### Chore
+
+* update docker file ([#100](https://github.com/modusbox/connection-manager-api/issues/100)) ([244073d](https://github.com/modusbox/connection-manager-api/commit/244073d85b2e8ed10c4c55f3d8435ae63b5d6a38))
+
 ## [2.8.0](https://github.com/modusbox/connection-manager-api/compare/v2.4.2...v2.8.0) (2025-05-02)
 
 
