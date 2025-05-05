@@ -47,7 +47,6 @@ RUN adduser -D app-user
 USER app-user
 
 COPY --chown=app-user --from=builder /opt/app .
-
 COPY src /opt/app/src
 
 EXPOSE 3001
