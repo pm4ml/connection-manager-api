@@ -56,6 +56,9 @@
   "keywords": [
     "swagger"
   ],
+  "overrides": {
+    "cookie": "1.0.2"
+  },
   "dependencies": {
     "@hapi/hapi": "21.4.0",
     "@kubernetes/client-node": "^1.1.2",
