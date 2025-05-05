@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.8.3](https://github.com/modusbox/connection-manager-api/compare/v2.8.2...v2.8.3) (2025-05-05)
+
+
+### Chore
+
+* try to fix vulnerabilities ([#102](https://github.com/modusbox/connection-manager-api/issues/102)) ([b2f3228](https://github.com/modusbox/connection-manager-api/commit/b2f3228cda8e940b49d27bd058f8b54d81f459ab))
+
 ### [2.8.2](https://github.com/modusbox/connection-manager-api/compare/v2.8.1...v2.8.2) (2025-05-05)
 
 
