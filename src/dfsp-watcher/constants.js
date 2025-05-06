@@ -25,7 +25,7 @@
  --------------
  ******/
 
-const CONTEXT = 'DFSP_WATCH';
+const CONTEXT = 'MCM';
 
 const PingStatus = Object.freeze({
   SUCCESS: 'SUCCESS',
