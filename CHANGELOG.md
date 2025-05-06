@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.8.4](https://github.com/modusbox/connection-manager-api/compare/v2.8.3...v2.8.4) (2025-05-06)
+
+
+### Chore
+
+* remove image scan override ([#103](https://github.com/modusbox/connection-manager-api/issues/103)) ([d7004fa](https://github.com/modusbox/connection-manager-api/commit/d7004fae63743fea23f80767c143ac390106eed7))
+
 ### [2.8.3](https://github.com/modusbox/connection-manager-api/compare/v2.8.2...v2.8.3) (2025-05-05)
 
 
