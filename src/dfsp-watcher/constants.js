@@ -30,6 +30,15 @@ const CONTEXT = 'MCM';
 const PingStatus = Object.freeze({
   SUCCESS: 'SUCCESS',
   NOT_REACHABLE: 'NOT_REACHABLE',
+  JWS_FAILED: 'JWS_FAILED',
+  TIMED_OUT: 'TIMED_OUT',
+});
+
+const PingStatusToError = Object.freeze({
+  [PingStatus.NOT_REACHABLE]: 'network',
+  [PingStatus.JWS_FAILED]: 'jws',
+  [PingStatus.TIMED_OUT]: 'timeout',
+  // todo: think, how to detect mTLS error
 });
 
 const PingStep = Object.freeze({
@@ -42,6 +51,7 @@ const DEFAULT_HTTP_TIMEOUT_MS = 40_000; // todo: make configurable
 module.exports = {
   CONTEXT,
   PingStatus,
+  PingStatusToError,
   PingStep,
   DEFAULT_HTTP_TIMEOUT_MS,
 };
