@@ -61,7 +61,7 @@
   },
   "dependencies": {
     "@hapi/hapi": "21.4.0",
-    "@kubernetes/client-node": "^1.1.2",
+    "@kubernetes/client-node": "^1.2.0",
     "@mojaloop/central-services-logger": "11.8.1",
     "@mojaloop/central-services-metrics": "12.5.0",
     "async-exit-hook": "^2.0.1",
