@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.9.2](https://github.com/pm4ml/connection-manager-api/compare/v2.9.1...v2.9.2) (2025-05-08)
+
+
+### Chore
+
+* added possibility to disable dfsp-watcher ([08d6166](https://github.com/pm4ml/connection-manager-api/commit/08d6166f4b55080c526b78019da618b8872c135a))
+
 ### [2.9.1](https://github.com/pm4ml/connection-manager-api/compare/v2.9.0...v2.9.1) (2025-05-08)
 
 
