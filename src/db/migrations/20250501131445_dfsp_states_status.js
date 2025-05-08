@@ -25,33 +25,42 @@
  --------------
  ******/
 
-const CONTEXT = 'MCM';
+const TABLE = 'dfsp_states_status';
 
-const PingStatus = Object.freeze({
-  SUCCESS: 'SUCCESS',
-  NOT_REACHABLE: 'NOT_REACHABLE',
-  JWS_FAILED: 'JWS_FAILED',
-  TIMED_OUT: 'TIMED_OUT',
-});
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+exports.up = function(knex) {
+  return knex.schema.createTable(TABLE, (table) => {
+    table.increments('id').primary();
+    table.integer('dfspId').unsigned().notNullable();
+    [
+      'fetchingHubCA',
+      'creatingDFSPCA',
+      'creatingDfspClientCert',
+      'creatingDfspServerCert',
+      'creatingHubClientCert',
+      'creatingJWS',
+      'pullingPeerJWS',
+      'uploadingPeerJWS',
+      'endpointConfig',
+      'connectorConfig',
+      'progressMonitor'
+    ].forEach(field => { table.json(field); });
+    table.unique(['dfspId']);
+    table.foreign('dfspId', 'FK_STATUS_DFSP_ID')
+      .references('dfsps.id')
+      .onDelete('CASCADE')
+      .onUpdate('NO ACTION');
+  });
+};
 
-const PingStatusToError = Object.freeze({
-  [PingStatus.NOT_REACHABLE]: 'network',
-  [PingStatus.JWS_FAILED]: 'jws',
-  [PingStatus.TIMED_OUT]: 'timeout',
-  // todo: think, how to detect mTLS error
-});
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+exports.down = function(knex) {
+  return knex.schema.dropTableIfExists(TABLE);
 
-const PingStep = Object.freeze({
-  SEND: 'SEND', // no request sent to PingPong server (e.g., network issue)
-  RECEIVE: 'RECEIVE', // response received from PingPong server
-});
-
-const DEFAULT_HTTP_TIMEOUT_MS = 40_000; // todo: make configurable
-
-module.exports = {
-  CONTEXT,
-  PingStatus,
-  PingStatusToError,
-  PingStep,
-  DEFAULT_HTTP_TIMEOUT_MS,
 };

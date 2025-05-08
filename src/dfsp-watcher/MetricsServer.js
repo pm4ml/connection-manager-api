@@ -66,17 +66,21 @@ class MetricsServer {
   }
 
   incrementErrorCounter(dfsp, code, step) {
+    const log = this.log.child({ dfsp });
     try {
       const errorCounter = this.metrics.getCounter('errorCount');
-      errorCounter.inc({
+      const errDetails = {
         system: dfsp,
         code,
         context: CONTEXT,
-        operation: 'ping',
-        step
-      });
+        component: 'dfsp-watcher',
+        operation: `ping-${dfsp}`,
+        step // or add here dfsp?
+      };
+      errorCounter.inc(errDetails);
+      log.info('incrementErrorCounter is called:', { errDetails });
     } catch (error) {
-      this.log.error('error in incrementErrorCounter: ', error);
+      log.error('error in incrementErrorCounter: ', error);
     }
   }
 

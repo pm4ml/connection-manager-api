@@ -17,12 +17,15 @@
 
 'use strict';
 const { validateIPAddressInput, validatePorts, validateURLInput } = require('../utils/formatValidator');
+const { logger } = require('../log/logger');
 const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
 const PkiService = require('./PkiService');
 const DFSPModel = require('../models/DFSPModel');
 const DFSPEndpointItemModel = require('../models/DFSPEndpointItemModel');
 const DFSPEndpointModel = require('../models/DFSPEndpointModel');
+
+const log = logger.child({ component: 'DfspNetworkConfigService' });
 
 const StatusEnum = Object.freeze({ NOT_STARTED: 'NOT_STARTED', IN_PROGRESS: 'IN_PROGRESS', COMPLETED: 'COMPLETED' });
 const PhaseEnum = Object.freeze({ BUSINESS_SETUP: 'BUSINESS_SETUP', TECNICAL_SETUP: 'TECNICAL_SETUP' });
@@ -43,11 +46,11 @@ exports.DirectionEnum = DirectionEnum;
 const transformEndpointModeltoApiRes = (endpointMode) => {
   const { // lets filter out endpointMode properties
     id,
-     
+
     dfsp_id,
-     
+
     created_by,
-     
+
     created_at,
     state,
     direction, // we are going to ignore this!
@@ -56,12 +59,12 @@ const transformEndpointModeltoApiRes = (endpointMode) => {
 
   return { // map endpointMode properties to API specification
     id,
-     
+
     dfspId: dfsp_id,
     state,
-     
+
     createdBy: created_by,
-     
+
     createdAt: created_at,
     ...config
   };
@@ -490,4 +493,11 @@ exports.updateDFSPIngressUrlEndpoint = async (ctx, dfspId, epId, body) => {
 exports.deleteDFSPIngressUrlEndpoint = async (ctx, dfspId, epId) => {
   await validateDirectionType('INGRESS', 'URL', epId, dfspId);
   return exports.deleteDFSPEndpoint(dfspId, epId);
+};
+
+exports.uploadDfspStatesStatus = async (ctx, dfspId, body) => {
+  const upsertResult = await DFSPModel.upsertStatesStatus(dfspId, body);
+  const code = upsertResult[0]?.affectedRows || 0; // 1 - insert, 2 - update
+  log.info(`uploadDfspStatesStatus is done:`, { code, dfspId });
+  return { code };
 };

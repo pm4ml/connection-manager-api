@@ -91,7 +91,7 @@ class PingPongClient {
     if (!data) return {
       pingStatus: PingStatus.NOT_REACHABLE,
       errorInformation: { errorCode: '1001' }
-      // todo: think which errorCode to use in case of error on sending http request
+      // think, which errorCode to use in case of error on sending http request
     };
 
     const { pingStatus, fspPutResponse } = data;

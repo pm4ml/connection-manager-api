@@ -2415,6 +2415,34 @@ paths:
       - OAuth2:
         - everyone
       x-swagger-router-controller: DfspNetworkConfig
+  /dfsps/{dfspId}/states:
+    post:
+      tags:
+        - states
+      summary: Upload status of DFSP states
+      description: Upload status of DFSP states
+      operationId: uploadDfspStatesStatus
+      parameters:
+        - name: dfspId
+          in: path
+          description: DFSP id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DfspStatesStatusPayload'
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+      x-swagger-router-controller: DfspNetworkConfig
   /monetaryzones:
     get:
       tags:
@@ -3558,6 +3586,56 @@ components:
       example:
         monetaryZoneId: EUR
         name: Euro
+    DfspStatesStatusPayload:
+      type: object
+      properties:
+        fetchingHubCA:
+          $ref: "#/components/schemas/DfspStateStatus"
+        creatingDFSPCA:
+          $ref: "#/components/schemas/DfspStateStatus"
+        creatingDfspServerCert:
+          $ref: "#/components/schemas/DfspStateStatus"
+        creatingDfspClientCert:
+          $ref: "#/components/schemas/DfspStateStatus"
+        creatingHubClientCert:
+          $ref: "#/components/schemas/DfspStateStatus"
+        creatingJWS:
+          $ref: "#/components/schemas/DfspStateStatus"
+        pullingPeerJWS:
+          $ref: "#/components/schemas/DfspStateStatus"
+        uploadingPeerJWS:
+          $ref: "#/components/schemas/DfspStateStatus"
+        endpointConfig:
+          $ref: "#/components/schemas/DfspStateStatus"
+        connectorConfig:
+          $ref: "#/components/schemas/DfspStateStatus"
+        progressMonitor:
+          $ref: "#/components/schemas/DfspStateStatus"
+    DfspStateStatus:
+      title: State status
+      type: object
+      properties:
+        status:
+          type: string
+          description: Indicates the current status of the state.
+          enum:
+            - pending
+            - inProgress
+            - completed
+            - inError
+        stateDescription:
+          type: string
+          description: Describes the current state.
+        errorDescription:
+          type: string
+          description: Provides details in case of an error.
+        lastUpdated:
+          type: string
+          format: date-time
+          description: The date and time when the state was last updated.
+      required:
+        - status
+        - lastUpdated
   securitySchemes:
     OAuth2:
       type: oauth2

@@ -1,6 +1,6 @@
 {
-  "name": "connection-manager-api",
-  "version": "2.8.4",
+  "name": "@pm4ml/connection-manager-api",
+  "version": "2.9.0-watch.5",
   "description": "ModusBox Connection Manager API",
   "license": "Apache-2.0",
   "author": "ModusBox",
@@ -9,10 +9,6 @@
     "Miguel de Barros <miguel.debarros@modusbox.com>",
     "Juan Correa <juan.correa@modusbox.com>"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/modusbox/connection-manager-api"
-  },
   "main": "src/index.js",
   "files": [
     "README.md",
@@ -61,7 +57,7 @@
   },
   "dependencies": {
     "@hapi/hapi": "21.4.0",
-    "@kubernetes/client-node": "^1.1.2",
+    "@kubernetes/client-node": "^1.2.0",
     "@mojaloop/central-services-logger": "11.8.1",
     "@mojaloop/central-services-metrics": "12.5.0",
     "async-exit-hook": "^2.0.1",
@@ -97,8 +93,8 @@
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.8.0",
-    "@commitlint/config-conventional": "^19.8.0",
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@types/jest": "29.5.14",
     "axios-mock-adapter": "2.1.0",
     "chai": "^4.4.1",
@@ -124,8 +120,5 @@
   },
   "standardx": {
     "semistandard": true
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/modusbox"
   }
 }
