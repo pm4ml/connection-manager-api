@@ -27,7 +27,7 @@ class CertManager {
 
   async initK8s () {
     this.k8s = await import('@kubernetes/client-node');
-    this.kc = new k8s.KubeConfig();
+    this.kc = new this.k8s.KubeConfig();
     this.kc.loadFromDefault();
 
     this.k8sApi = this.kc.makeApiClient(this.k8s.CoreV1Api);
