@@ -43,8 +43,10 @@ const run = async ({
     console.log('Swagger-ui is available on http://localhost:%d/docs', serverPort);
   });
 
-  const watcher = createDfspWatcher();
-  await watcher.start();
+  if (Constants.dfspWatcherEnabled) {
+    const watcher = createDfspWatcher();
+    await watcher.start();
+  }
 };
 
 // This structure enables us to mock and test
