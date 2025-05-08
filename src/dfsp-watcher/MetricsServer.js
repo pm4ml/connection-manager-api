@@ -73,7 +73,6 @@ class MetricsServer {
         system: dfsp,
         code,
         context: CONTEXT,
-        component: 'dfsp-watcher',
         operation: `ping-${dfsp}`,
         step // or add here dfsp?
       };
