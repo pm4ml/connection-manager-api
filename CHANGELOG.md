@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.9.3](https://github.com/pm4ml/connection-manager-api/compare/v2.9.2...v2.9.3) (2025-05-08)
+
+
+### Chore
+
+* removed label "component" from errorCounter ([97ae9ac](https://github.com/pm4ml/connection-manager-api/commit/97ae9ace761f1f4dce97c0ca89dba3aa5cca6c30))
+
 ### [2.9.2](https://github.com/pm4ml/connection-manager-api/compare/v2.9.1...v2.9.2) (2025-05-08)
 
 
