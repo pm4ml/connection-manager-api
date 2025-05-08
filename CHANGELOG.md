@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.9.0](https://github.com/pm4ml/connection-manager-api/compare/v2.8.4...v2.9.0) (2025-05-08)
+
+
+### Features
+
+* **csi-1443:** added POST /states endpoint ([#104](https://github.com/pm4ml/connection-manager-api/issues/104)) ([6aecbce](https://github.com/pm4ml/connection-manager-api/commit/6aecbced01d715773c48196df170c93bbf3549fa))
+
 ### [2.8.4](https://github.com/modusbox/connection-manager-api/compare/v2.8.3...v2.8.4) (2025-05-06)
 
 
