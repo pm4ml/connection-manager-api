@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.9.4](https://github.com/pm4ml/connection-manager-api/compare/v2.9.3...v2.9.4) (2025-05-08)
+
+
+### Chore
+
+* added migrate:rollback script ([2d8829f](https://github.com/pm4ml/connection-manager-api/commit/2d8829f8de5113f9e65bc6677cb53b251df6584e))
+
 ### [2.9.3](https://github.com/pm4ml/connection-manager-api/compare/v2.9.2...v2.9.3) (2025-05-08)
 
 
