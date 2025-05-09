@@ -109,3 +109,6 @@ localEnvs
 .token
 
 audit/results/
+
+# Vault secrets
+/docker/vault/tmp/
