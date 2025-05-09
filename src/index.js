@@ -19,7 +19,6 @@ const nodeHttp = require('http');
 const Constants = require('./constants/Constants');
 const appLoader = require('./appLoader');
 const { createDFSP: defaultCreateDFSP } = require('./service/PkiService');
-const { createDfspWatcher } = require('./dfsp-watcher');
 
 const serverPort = Constants.SERVER.PORT;
 
@@ -44,6 +43,7 @@ const run = async ({
   });
 
   if (Constants.dfspWatcherEnabled) {
+    const { createDfspWatcher } = require('./dfsp-watcher');
     const watcher = createDfspWatcher();
     await watcher.start();
   }

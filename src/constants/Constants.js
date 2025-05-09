@@ -186,5 +186,5 @@ module.exports = {
   serverCsrParameters: env.get('SERVER_CSR_PARAMETERS').asJsonConfig(),
   caCsrParameters: env.get('CA_CSR_PARAMETERS').asJsonConfig(),
 
-  dfspWatcherEnabled: env.get('DFSP_WATCHER_ENABLED').default('true').asBool(),
+  dfspWatcherEnabled: env.get('DFSP_WATCHER_ENABLED').default('false').asBool(),
 };
