@@ -46,7 +46,7 @@
     "migrate-and-seed": "npm -s run migrate && npm -s run seed",
     "migrate:rollback": "npm run knex-cli  migrate:rollback",
     "migrate:new": "npm run knex-cli  migrate:make",
-    "knex-cli": "NODE_OPTIONS='-r dotenv/config' npx knex --debug --knexfile src/knexfile.js ",
+    "knex-cli": "NODE_OPTIONS='-r dotenv/config' npx knex --knexfile src/knexfile.js ",
     "backend:start": "docker compose up -d --wait && npm run migrate-and-seed",
     "backend:stop": "docker compose down -v",
     "backend:restart": "npm run backend:stop && npm run backend:start"
