@@ -82,6 +82,8 @@ module.exports = {
     PORT: env.get('PORT').default('3001').asPortNumber(),
   },
 
+  CLIENT_URL: env.get('CLIENT_URL').default('http://localhost:8081/').asString(),
+
   OAUTH: {
     AUTH_ENABLED: env.get('AUTH_ENABLED').default('false').asBool(),
     APP_OAUTH_CLIENT_KEY: env.get('APP_OAUTH_CLIENT_KEY').asString(), // Configured in WSO2 IM Service Provider
@@ -120,6 +122,27 @@ module.exports = {
     ADMIN_CLIENT_SECRET: env.get('KEYCLOAK_ADMIN_CLIENT_SECRET').asString(),
     DFSPS_REALM: env.get('KEYCLOAK_DFSPS_REALM').default('dfsps').asString(),
     AUTO_CREATE_ACCOUNTS: env.get('KEYCLOAK_AUTO_CREATE_ACCOUNTS').default('true').asBool(),
+  },
+
+  OPENID: {
+    ENABLED: env.get('OPENID_ENABLED').default('false').asBool(),
+    ALLOW_INSECURE: env.get('OPENID_ALLOW_INSECURE').default('false').asBool(),
+    DISCOVERY_URL: env.get('OPENID_DISCOVERY_URL').asString(),
+    CLIENT_ID: env.get('OPENID_CLIENT_ID').asString(),
+    CLIENT_SECRET: env.get('OPENID_CLIENT_SECRET').asString(),
+    CALLBACK: env.get('LOGIN_CALLBACK').default('http://localhost:3001/api/auth/callback').asString(),
+    JWT_COOKIE_NAME: env.get('OPENID_JWT_COOKIE_NAME').default('MCM-API_ACCESS_TOKEN').asString(),
+    GROUPS: {
+      APPLICATION: env.get('OPENID_APPLICATION_GROUP').default('Application').asString(),
+      EVERYONE: env.get('OPENID_EVERYONE_GROUP').default('everyone').asString(),
+      MTA: env.get('OPENID_MTA_GROUP').default('MTA').asString(),
+      PTA: env.get('OPENID_PTA_GROUP').default('PTA').asString(),
+      DFSP: env.get('OPENID_DFSP_GROUP').default('DFSP').asString()
+    }
+  },
+
+  SESSION_STORE: {
+    SECRET: env.get('SESSION_STORE_SECRET').default('connection_manager_session_secret').asString(),
   },
 
   EXTRA_TLS: {

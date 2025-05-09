@@ -1,3 +1,10 @@
+configs:
+  realm-template:
+    file: ./keycloak/dfsps-realm.json
+
+volumes:
+  keycloak-import: {}
+
 services:
   connection-manager-db:
     image: mysql/mysql-server
@@ -50,21 +57,39 @@ services:
       retries: 3
       start_period: 5s
 
+  prepare-keycloak-realm:
+    image: steinbrueckri/envsubst
+    working_dir: /work
+    configs:
+      - source: realm-template
+        target: /template/dfsps-realm.json.template
+        mode: 0444
+    volumes:
+      - keycloak-import:/work            # writeable volume shared with Keycloak
+    env_file:
+      - ./keycloak/dfsp-realm.env
+    entrypoint: |
+      sh -c '
+        echo "Rendering realm import ..."
+        envsubst < /template/dfsps-realm.json.template > /work/dfsps-realm.json
+      '
+    restart: "no"
+
   keycloak:
     image: keycloak/keycloak:26.1
-    entrypoint: /tmp/docker-entrypoint.sh
+    command: start-dev --import-realm
     environment:
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
-      - DFSP_ADMIN_CLIENT_SECRET=${DFSP_ADMIN_CLIENT_SECRET}
     volumes:
-      - ./keycloak/dfsps-realm.json:/tmp/dfsps-realm-template.json
-      - ./keycloak/docker-entrypoint.sh:/tmp/docker-entrypoint.sh
+      - keycloak-import:/opt/keycloak/data/import
     ports:
       - "8080:8080"
     depends_on:
       mailhog:
         condition: service_healthy
+      prepare-keycloak-realm:
+        condition: service_completed_successfully
     healthcheck:
       test: curl --fail http://localhost:8080/health/ready
       interval: 30s
@@ -117,14 +142,18 @@ services:
       context: ../../connection-manager-ui
       dockerfile: Dockerfile
       args:
-        - AUTH_ENABLED=FALSE
+        - AUTH_ENABLED=TRUE
         - REACT_APP_COMMIT=${REACT_APP_COMMIT:-unknown}
         - REACT_APP_VERSION=${REACT_APP_VERSION:-unknown}
     hostname: connection-manager-ui
     environment:
+      - AUTH_ENABLED=TRUE
       - API_BASE_URL=http://localhost:3001
+      - LOGIN_URL=http://localhost:3001/api/auth/login
+      - LOGOUT_URL=http://localhost:3001/api/auth/logout
+      - CHECK_SESSION_URL=http://localhost:3001/api/auth/profile
     tty: true
-    stdin_open: true  
+    stdin_open: true
     ports:
      - "8081:8080"
     restart: always
