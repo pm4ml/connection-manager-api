@@ -2,6 +2,114 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.9.4](https://github.com/pm4ml/connection-manager-api/compare/v2.9.3...v2.9.4) (2025-05-08)
+
+
+### Chore
+
+* added migrate:rollback script ([2d8829f](https://github.com/pm4ml/connection-manager-api/commit/2d8829f8de5113f9e65bc6677cb53b251df6584e))
+
+### [2.9.3](https://github.com/pm4ml/connection-manager-api/compare/v2.9.2...v2.9.3) (2025-05-08)
+
+
+### Chore
+
+* removed label "component" from errorCounter ([97ae9ac](https://github.com/pm4ml/connection-manager-api/commit/97ae9ace761f1f4dce97c0ca89dba3aa5cca6c30))
+
+### [2.9.2](https://github.com/pm4ml/connection-manager-api/compare/v2.9.1...v2.9.2) (2025-05-08)
+
+
+### Chore
+
+* added possibility to disable dfsp-watcher ([08d6166](https://github.com/pm4ml/connection-manager-api/commit/08d6166f4b55080c526b78019da618b8872c135a))
+
+### [2.9.1](https://github.com/pm4ml/connection-manager-api/compare/v2.9.0...v2.9.1) (2025-05-08)
+
+
+### Bug Fixes
+
+* k8s is not defined error ([5e2a2e3](https://github.com/pm4ml/connection-manager-api/commit/5e2a2e32b9861aed728c8090503041b22585ae19))
+
+## [2.9.0](https://github.com/pm4ml/connection-manager-api/compare/v2.8.4...v2.9.0) (2025-05-08)
+
+
+### Features
+
+* **csi-1443:** added POST /states endpoint ([#104](https://github.com/pm4ml/connection-manager-api/issues/104)) ([6aecbce](https://github.com/pm4ml/connection-manager-api/commit/6aecbced01d715773c48196df170c93bbf3549fa))
+
+### [2.8.4](https://github.com/modusbox/connection-manager-api/compare/v2.8.3...v2.8.4) (2025-05-06)
+
+
+### Chore
+
+* remove image scan override ([#103](https://github.com/modusbox/connection-manager-api/issues/103)) ([d7004fa](https://github.com/modusbox/connection-manager-api/commit/d7004fae63743fea23f80767c143ac390106eed7))
+
+### [2.8.3](https://github.com/modusbox/connection-manager-api/compare/v2.8.2...v2.8.3) (2025-05-05)
+
+
+### Chore
+
+* try to fix vulnerabilities ([#102](https://github.com/modusbox/connection-manager-api/issues/102)) ([b2f3228](https://github.com/modusbox/connection-manager-api/commit/b2f3228cda8e940b49d27bd058f8b54d81f459ab))
+
+### [2.8.2](https://github.com/modusbox/connection-manager-api/compare/v2.8.1...v2.8.2) (2025-05-05)
+
+
+### Chore
+
+* remove test folder ([#101](https://github.com/modusbox/connection-manager-api/issues/101)) ([90dea1e](https://github.com/modusbox/connection-manager-api/commit/90dea1e92ea6f77bc067015ceddad943459a8e40))
+
+### [2.8.1](https://github.com/modusbox/connection-manager-api/compare/v2.8.0...v2.8.1) (2025-05-03)
+
+
+### Chore
+
+* update docker file ([#100](https://github.com/modusbox/connection-manager-api/issues/100)) ([244073d](https://github.com/modusbox/connection-manager-api/commit/244073d85b2e8ed10c4c55f3d8435ae63b5d6a38))
+
+## [2.8.0](https://github.com/modusbox/connection-manager-api/compare/v2.4.2...v2.8.0) (2025-05-02)
+
+
+### Features
+
+* **csi-1413:** added DfspWatcher ([#97](https://github.com/modusbox/connection-manager-api/issues/97)) ([4d55cf3](https://github.com/modusbox/connection-manager-api/commit/4d55cf3923772ad56dedfcf3269ef034ddca7038))
+* implement 2FA with Keycloak and DFSP user invitation emails ([0fb4250](https://github.com/modusbox/connection-manager-api/commit/0fb4250b0ecfeb6227b56f965e910f6db1ff49c3))
+* integrate IME-519 adoption features ([#94](https://github.com/modusbox/connection-manager-api/issues/94)) ([3e83010](https://github.com/modusbox/connection-manager-api/commit/3e830101ca8329554a94ac3e6f77fe19282b5337))
+* integrate keycloak for DFSP lifecycle ([d3913f8](https://github.com/modusbox/connection-manager-api/commit/d3913f815f0d4a216f109345f030703a35d7baa0))
+
+
+### Bug Fixes
+
+* envs ([00e5c57](https://github.com/modusbox/connection-manager-api/commit/00e5c57e5302d81b12b80556e69e9f643a2670da))
+
+
+### Chore
+
+* bump package-lock.json ([090639e](https://github.com/modusbox/connection-manager-api/commit/090639eef85b6f3f0546cb54aede7cdaa8f884b4))
+* bump to unblock ci ([#99](https://github.com/modusbox/connection-manager-api/issues/99)) ([00f3e28](https://github.com/modusbox/connection-manager-api/commit/00f3e28c1fb58765abd1cc6f58865ad845fa784d))
+* cleanup ([acd4f15](https://github.com/modusbox/connection-manager-api/commit/acd4f155334e57060c272396fc4ad936d9442b50))
+* version bump ([5e6e383](https://github.com/modusbox/connection-manager-api/commit/5e6e3839f70648a34b4d946af5b37d305b5a5abf))
+
+## [2.7.0](https://github.com/modusbox/connection-manager-api/compare/v2.4.2...v2.7.0) (2025-05-02)
+
+
+### Features
+
+* **csi-1413:** added DfspWatcher ([#97](https://github.com/modusbox/connection-manager-api/issues/97)) ([4d55cf3](https://github.com/modusbox/connection-manager-api/commit/4d55cf3923772ad56dedfcf3269ef034ddca7038))
+* implement 2FA with Keycloak and DFSP user invitation emails ([0fb4250](https://github.com/modusbox/connection-manager-api/commit/0fb4250b0ecfeb6227b56f965e910f6db1ff49c3))
+* integrate IME-519 adoption features ([#94](https://github.com/modusbox/connection-manager-api/issues/94)) ([3e83010](https://github.com/modusbox/connection-manager-api/commit/3e830101ca8329554a94ac3e6f77fe19282b5337))
+* integrate keycloak for DFSP lifecycle ([d3913f8](https://github.com/modusbox/connection-manager-api/commit/d3913f815f0d4a216f109345f030703a35d7baa0))
+
+
+### Bug Fixes
+
+* envs ([00e5c57](https://github.com/modusbox/connection-manager-api/commit/00e5c57e5302d81b12b80556e69e9f643a2670da))
+
+
+### Chore
+
+* bump package-lock.json ([090639e](https://github.com/modusbox/connection-manager-api/commit/090639eef85b6f3f0546cb54aede7cdaa8f884b4))
+* cleanup ([acd4f15](https://github.com/modusbox/connection-manager-api/commit/acd4f155334e57060c272396fc4ad936d9442b50))
+* version bump ([5e6e383](https://github.com/modusbox/connection-manager-api/commit/5e6e3839f70648a34b4d946af5b37d305b5a5abf))
+
 ### [2.3.1](https://github.com/modusbox/connection-manager-api/compare/v2.3.0...v2.3.1) (2024-08-15)
 
 ## [2.3.0](https://github.com/modusbox/connection-manager-api/compare/v2.1.2...v2.3.0) (2024-08-15)

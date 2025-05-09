@@ -289,3 +289,17 @@ exports.deleteDFSPIngressUrlEndpoint = (req, res, next, dfspId, epId) => {
       utils.writeJson(res, response, response.status);
     });
 };
+
+// When use such approach: uploadDfspStatesStatus = (req, res, next, body, dfspId),
+// and send body as {}, it defines body as routeParam, and dfspId is undefined
+exports.uploadDfspStatesStatus = (req, res) => {
+  const { body } = req;
+  const { dfspId } = req.openapi.pathParams;
+  DfspNetworkConfig.uploadDfspStatesStatus(req.context, dfspId, body)
+    .then(response => {
+      utils.writeJson(res, response);
+    })
+    .catch(response => {
+      utils.writeJson(res, response, response.status);
+    });
+};

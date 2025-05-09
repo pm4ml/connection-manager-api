@@ -1,0 +1,36 @@
+ignore:
+  # Ignore cross-spawn vulnerabilities by CVE ID due to false positive
+  # as grype looks at package-lock.json where it shows versions with
+  # vulnerabilities, npm ls shows only 7.0.6 verion is used
+  - vulnerability: "GHSA-3xgq-45jj-v275"
+    package:
+      name: "cross-spawn"
+  - vulnerability: GHSA-2jcg-qqmg-46q6
+    package:
+      name: monorepo-symlink-test
+  - vulnerability: GHSA-qwcr-r2fm-qrc7
+    package:
+      name: body-parser
+  - vulnerability: GHSA-wm7h-9275-46v2
+    package:
+      name: dicer
+  - vulnerability: GHSA-hrpp-h998-j3pp
+    package:
+      name: qs
+  - vulnerability: GHSA-p8p7-x288-28g6
+    package:
+      name: request
+  - vulnerability: GHSA-72xf-g2v4-qvf3
+    package:
+      name: tough-cookie
+
+# Set output format defaults
+output:
+  - "table"
+  - "json"
+
+# Modify your CircleCI job to check critical count
+search:
+  scope: "squashed"
+quiet: false
+check-for-app-update: false

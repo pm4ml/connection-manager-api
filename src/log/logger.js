@@ -19,8 +19,9 @@
 
 const winston = require('winston');
 const expressWinston = require('express-winston');
+const { loggerFactory } = require('@mojaloop/central-services-logger/src/contextLogger');
 
-exports.createWinstonLogger = () => {
+const createWinstonLogger = () => {
   return expressWinston.logger({
     transports: [
       new winston.transports.Console()
@@ -36,3 +37,11 @@ exports.createWinstonLogger = () => {
     ignoreRoute: function (req, res) { return false; }
   });
 };
+
+const logger = loggerFactory('MCM_API');
+
+module.exports = {
+  createWinstonLogger,
+  logger
+};
+
