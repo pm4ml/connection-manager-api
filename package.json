@@ -118,7 +118,8 @@
     "standard-version": "^9.5.0",
     "standardx": "^7.0.0",
     "supertest": "^7.1.1",
-    "tap-xunit": "^2.4.1"
+    "tap-xunit": "^2.4.1",
+    "tmp": "^0.2.3"
   },
   "standardx": {
     "semistandard": true

@@ -27,13 +27,20 @@ function getFileContent (path) {
 }
 
 if (process.env.TEST) {
+  const tmp = require('tmp');
+  const { randomUUID } = require('node:crypto');
+  const createTemp = (content) => {
+    const tempFile = tmp.fileSync({ discardDescriptor: true, keep: false });
+    fs.writeFileSync(tempFile.name, content);
+    return tempFile.name;
+  };
   process.env = {
     ...process.env,
     AUTH_ENABLED: 'false',
     AUTH_2FA_ENABLED: 'false',
     VAULT_AUTH_METHOD: 'APP_ROLE',
-    VAULT_ROLE_ID_FILE: 'docker/vault/tmp/role-id',
-    VAULT_ROLE_SECRET_ID_FILE: 'docker/vault/tmp/secret-id',
+    VAULT_ROLE_ID_FILE: createTemp(randomUUID()),
+    VAULT_ROLE_SECRET_ID_FILE: createTemp(randomUUID()),
     VAULT_PKI_CLIENT_ROLE: 'example.com',
     VAULT_PKI_SERVER_ROLE: 'example.com'
   };
