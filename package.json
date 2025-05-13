@@ -1,6 +1,6 @@
 {
   "name": "@pm4ml/connection-manager-api",
-  "version": "2.9.4",
+  "version": "2.9.5",
   "description": "ModusBox Connection Manager API",
   "license": "Apache-2.0",
   "author": "ModusBox",
@@ -46,7 +46,7 @@
     "migrate-and-seed": "npm -s run migrate && npm -s run seed",
     "migrate:rollback": "npm run knex-cli  migrate:rollback",
     "migrate:new": "npm run knex-cli  migrate:make",
-    "knex-cli": "NODE_OPTIONS='-r dotenv/config' npx knex --debug --knexfile src/knexfile.js ",
+    "knex-cli": "NODE_OPTIONS='-r dotenv/config' npx knex --knexfile src/knexfile.js ",
     "backend:start": "docker compose up -d --wait && npm run migrate-and-seed",
     "backend:stop": "docker compose down -v",
     "backend:restart": "npm run backend:stop && npm run backend:start"
@@ -117,8 +117,9 @@
     "source-map-support": "^0.5.21",
     "standard-version": "^9.5.0",
     "standardx": "^7.0.0",
-    "supertest": "^7.1.0",
-    "tap-xunit": "^2.4.1"
+    "supertest": "^7.1.1",
+    "tap-xunit": "^2.4.1",
+    "tmp": "^0.2.3"
   },
   "standardx": {
     "semistandard": true
