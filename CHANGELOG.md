@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.9.6](https://github.com/pm4ml/connection-manager-api/compare/v2.9.4...v2.9.6) (2025-05-13)
+
+
+### Bug Fixes
+
+* debug ([edebde7](https://github.com/pm4ml/connection-manager-api/commit/edebde7690e7cf91aa6c60f3977efaf32c4ab635))
+* disable dfsp watcher by default ([3c86c5d](https://github.com/pm4ml/connection-manager-api/commit/3c86c5dd7721095a198c8ddd374cdffaf57d08ab))
+* gitignore ([e418f59](https://github.com/pm4ml/connection-manager-api/commit/e418f596f8fd839ece19fcd156042d958fd6dc8b))
+* node ver ([27abc69](https://github.com/pm4ml/connection-manager-api/commit/27abc699f050eb00beeb465e1555bae68b3ca65b))
+* package-lock ([7bff099](https://github.com/pm4ml/connection-manager-api/commit/7bff09986b3550e96ae8d1033254ca24603df47f))
+* tests ([1e36352](https://github.com/pm4ml/connection-manager-api/commit/1e363528a96482edc35290b43bbc7598733f709e))
+
+
+### Chore
+
+* bump ver ([c2fc88e](https://github.com/pm4ml/connection-manager-api/commit/c2fc88e043e5b8ae481302f1c37d102f938bf2fa))
+* cleanup ([f31ccab](https://github.com/pm4ml/connection-manager-api/commit/f31ccab69503ac823eedefc32be478d1ee076e95))
+
 ### [2.9.4](https://github.com/pm4ml/connection-manager-api/compare/v2.9.3...v2.9.4) (2025-05-08)
 
 
