@@ -462,10 +462,10 @@ class VaultPKIEngine extends PKIEngine {
    * @returns { csr: String, key:  String, PEM-encoded. Encrypted ( see encryptKey ) }
    */
   async createCSR (csrParameters) {
-    if (!csrParameters?.subject) {
-      throw new ValidationError('Invalid CAInitialInfo document: Missing subject');
-    }
-    this.validateCSR(csrParameters.subject);
+    // if (!csrParameters?.subject) {
+    //   throw new ValidationError('Invalid CAInitialInfo document: Missing subject');
+    // }
+    // this.validateCSR(csrParameters.subject);
     const keys = forge.pki.rsa.generateKeyPair(this.keyLength);
     const csr = forge.pki.createCertificationRequest();
     csr.publicKey = keys.publicKey;

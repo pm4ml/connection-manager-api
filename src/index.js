@@ -48,6 +48,7 @@ const run = async ({
   await metricsServer.start();
 
   if (Constants.dfspWatcherEnabled) {
+    const { createDfspWatcher } = require('./dfsp-watcher');
     const watcher = createDfspWatcher();
     await watcher.start();
   }
