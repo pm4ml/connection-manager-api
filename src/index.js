@@ -20,7 +20,6 @@ const Constants = require('./constants/Constants');
 const appLoader = require('./appLoader');
 const { createDFSP: defaultCreateDFSP } = require('./service/PkiService');
 const { createMetricsServer } = require('./mertics-server');
-const { createDfspWatcher } = require('./dfsp-watcher');
 
 const serverPort = Constants.SERVER.PORT;
 
