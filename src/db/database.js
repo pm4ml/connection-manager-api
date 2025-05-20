@@ -16,9 +16,9 @@
  ******************************************************************************/
 
 const metrics = require('@mojaloop/central-services-metrics');
+const { KnexWrapper} = require('@mojaloop/central-services-shared').Util.mysql;
 const { logger } = require('../log/logger');
 const Constants = require('../constants/Constants');
-const KnexWrapper = require('./KnexWrapper');
 
 const knexOptions = {
   client: 'mysql2',

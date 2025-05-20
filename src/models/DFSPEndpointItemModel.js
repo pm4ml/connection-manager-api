@@ -91,7 +91,7 @@ exports.findAllEnvState = async (state) => {
   const rawObjects = await runQuery(() => dbTable
     .join('dfsps', `${ENDPOINT_ITEMS_TABLE}.dfsp_id`, '=', 'dfsps.id')
     .where(`${ENDPOINT_ITEMS_TABLE}.state`, state)
-    .select(`${ENDPOINT_ITEMS_TABLE}.*`));
+    .select(`${ENDPOINT_ITEMS_TABLE}.*`), 'findEndpointItemsJoinDfspsByState');
   const endpoints = Promise.all(rawObjects.map(async row => rowToObject(row)));
   return endpoints;
 };
@@ -104,7 +104,7 @@ exports.findAllDfspState = async (dfspId, state) => {
   const rawObjects = await runQuery(() => dbTable
     .where(`${ENDPOINT_ITEMS_TABLE}.dfsp_id`, id)
     .where(`${ENDPOINT_ITEMS_TABLE}.state`, state)
-    .select(`${ENDPOINT_ITEMS_TABLE}.*`));
+    .select(`${ENDPOINT_ITEMS_TABLE}.*`), 'findEndpointItemsByDfspIdAndState');
   const endpoints = Promise.all(rawObjects.map(async row => rowToObject(row)));
   return endpoints;
 };
@@ -118,7 +118,7 @@ exports.findObjectByDirectionType = async (direction, type, dfspId) => {
     .where(`${ENDPOINT_ITEMS_TABLE}.dfsp_id`, id)
     .where(`${ENDPOINT_ITEMS_TABLE}.direction`, direction)
     .where(`${ENDPOINT_ITEMS_TABLE}.type`, type)
-    .select(`${ENDPOINT_ITEMS_TABLE}.*`));
+    .select(`${ENDPOINT_ITEMS_TABLE}.*`), 'findEndpointItemsByDfspIdDirectionAndType');
   const endpoints = Promise.all(rawObjects.map(async row => rowToObject(row)));
   return endpoints;
 };
@@ -131,7 +131,7 @@ exports.findConfirmedByDirectionType = async (direction, type) => {
     .where(`${ENDPOINT_ITEMS_TABLE}.direction`, direction)
     .where(`${ENDPOINT_ITEMS_TABLE}.type`, type)
     .where(`${ENDPOINT_ITEMS_TABLE}.state`, 'CONFIRMED')
-    .select(`${ENDPOINT_ITEMS_TABLE}.*`));
+    .select(`${ENDPOINT_ITEMS_TABLE}.*`), 'findEndpointItemsByDirectionStateTypeAndState');
   return Promise.all(rawObjects.map(row => rowToObject(row)));
 };
 
