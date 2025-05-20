@@ -26,7 +26,6 @@
  ******/
 
 const Hapi = require('@hapi/hapi');
-const { CONTEXT } = require('./constants');
 
 /**
  * @typedef {Object} MetricsServerDeps
@@ -44,6 +43,7 @@ const { CONTEXT } = require('./constants');
 
 class MetricsServer {
   #server;
+  #isStarted = false;
 
   /** @param {MetricsServerDeps} deps */
   constructor(deps) {
@@ -52,35 +52,25 @@ class MetricsServer {
     this.metrics = deps.metrics;
   }
 
+  get isStarted () { return this.#isStarted; }
+
   async start () {
+    if (this.isStarted) {
+      this.log.info(`MetricsServer has been already started`);
+      return;
+    }
     const { port } = this.config;
     this.#setupMetrics();
     this.#server = await this.#createServer(port);
     await this.#server.start();
+    this.#isStarted = true;
     this.log.info(`MetricsServer is started...`, { port });
   }
 
   async stop () {
     this.#server.stop();
+    this.#isStarted = false;
     this.log.info(`MetricsServer is stopped`);
-  }
-
-  incrementErrorCounter(dfsp, code, step) {
-    const log = this.log.child({ dfsp });
-    try {
-      const errorCounter = this.metrics.getCounter('errorCount');
-      const errDetails = {
-        system: dfsp,
-        code,
-        context: CONTEXT,
-        operation: `ping-${dfsp}`,
-        step // or add here dfsp?
-      };
-      errorCounter.inc(errDetails);
-      log.info('incrementErrorCounter is called:', { errDetails });
-    } catch (error) {
-      log.error('error in incrementErrorCounter: ', error);
-    }
   }
 
   #setupMetrics () {

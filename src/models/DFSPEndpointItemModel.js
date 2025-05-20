@@ -16,17 +16,22 @@
  ******************************************************************************/
 
 'use strict';
-const { knex } = require('../db/database');
-const DFSPModel = require('./DFSPModel');
+const db = require('../db/database');
 const NotFoundError = require('../errors/NotFoundError');
 const InternalError = require('../errors/InternalError');
+const DFSPModel = require('./DFSPModel'); // todo: think, how to avoid such deps!
+
 const ENDPOINT_ITEMS_TABLE = 'dfsp_endpoint_items';
 
+const dbTable = db.knex.table(ENDPOINT_ITEMS_TABLE);
+const runQuery = async (queryFn, operation) => db.executeWithErrorCount(queryFn, operation);
+
+// todo: use BaseCrudModel
 exports.findById = async (id) => {
   if (Array.isArray(id) && id.length === 1) {
     id = id[0];
   }
-  const rows = await knex.table(ENDPOINT_ITEMS_TABLE).where('id', id).select();
+  const rows = await runQuery(() => dbTable.where('id', id).select());
   if (rows.length === 0) {
     throw new NotFoundError('Item with id: ' + id);
   } else if (rows.length === 1) {
@@ -58,9 +63,7 @@ exports.findObjectById = async (id) => {
 
 exports.findObjectAll = async (dfspId) => {
   const id = await DFSPModel.findIdByDfspId(dfspId);
-  const rawObjects = await knex.table(ENDPOINT_ITEMS_TABLE)
-    .where('dfsp_id', id)
-    .select();
+  const rawObjects = await runQuery(() => dbTable.where('dfsp_id', id).select());
   const endpoints = Promise.all(rawObjects.map(async row => rowToObject(row)));
   return endpoints;
 };
@@ -74,21 +77,21 @@ exports.create = async (values) => {
     dfsp_id: id,
     direction: values.direction,
   };
-  return knex.table(ENDPOINT_ITEMS_TABLE).insert(record);
+  return runQuery(() => dbTable.insert(record));
 };
 
 exports.delete = async (id) => {
-  return knex.table(ENDPOINT_ITEMS_TABLE).where({ id }).del();
+  return runQuery(() => dbTable.where({ id }).del());
 };
 
 /**
  * Returns a list of all Environment items with a specific state
  */
 exports.findAllEnvState = async (state) => {
-  const rawObjects = await knex.table(ENDPOINT_ITEMS_TABLE)
+  const rawObjects = await runQuery(() => dbTable
     .join('dfsps', `${ENDPOINT_ITEMS_TABLE}.dfsp_id`, '=', 'dfsps.id')
     .where(`${ENDPOINT_ITEMS_TABLE}.state`, state)
-    .select(`${ENDPOINT_ITEMS_TABLE}.*`);
+    .select(`${ENDPOINT_ITEMS_TABLE}.*`));
   const endpoints = Promise.all(rawObjects.map(async row => rowToObject(row)));
   return endpoints;
 };
@@ -98,10 +101,10 @@ exports.findAllEnvState = async (state) => {
  */
 exports.findAllDfspState = async (dfspId, state) => {
   const id = await DFSPModel.findIdByDfspId(dfspId);
-  const rawObjects = await knex.table(ENDPOINT_ITEMS_TABLE)
+  const rawObjects = await runQuery(() => dbTable
     .where(`${ENDPOINT_ITEMS_TABLE}.dfsp_id`, id)
     .where(`${ENDPOINT_ITEMS_TABLE}.state`, state)
-    .select(`${ENDPOINT_ITEMS_TABLE}.*`);
+    .select(`${ENDPOINT_ITEMS_TABLE}.*`));
   const endpoints = Promise.all(rawObjects.map(async row => rowToObject(row)));
   return endpoints;
 };
@@ -111,11 +114,11 @@ exports.findAllDfspState = async (dfspId, state) => {
  */
 exports.findObjectByDirectionType = async (direction, type, dfspId) => {
   const id = await DFSPModel.findIdByDfspId(dfspId);
-  const rawObjects = await knex.table(ENDPOINT_ITEMS_TABLE)
+  const rawObjects = await runQuery(() => dbTable
     .where(`${ENDPOINT_ITEMS_TABLE}.dfsp_id`, id)
     .where(`${ENDPOINT_ITEMS_TABLE}.direction`, direction)
     .where(`${ENDPOINT_ITEMS_TABLE}.type`, type)
-    .select(`${ENDPOINT_ITEMS_TABLE}.*`);
+    .select(`${ENDPOINT_ITEMS_TABLE}.*`));
   const endpoints = Promise.all(rawObjects.map(async row => rowToObject(row)));
   return endpoints;
 };
@@ -124,17 +127,17 @@ exports.findObjectByDirectionType = async (direction, type, dfspId) => {
  * Gets a set of endpoints, parse the JSON in value, returning an Array of Objects
  */
 exports.findConfirmedByDirectionType = async (direction, type) => {
-  const rawObjects = await knex.table(ENDPOINT_ITEMS_TABLE)
+  const rawObjects = await runQuery(() => dbTable
     .where(`${ENDPOINT_ITEMS_TABLE}.direction`, direction)
     .where(`${ENDPOINT_ITEMS_TABLE}.type`, type)
     .where(`${ENDPOINT_ITEMS_TABLE}.state`, 'CONFIRMED')
-    .select(`${ENDPOINT_ITEMS_TABLE}.*`);
+    .select(`${ENDPOINT_ITEMS_TABLE}.*`));
   return Promise.all(rawObjects.map(row => rowToObject(row)));
 };
 
 exports.update = async (dfspId, id, endpointItem) => {
   const dfspRawId = await DFSPModel.findIdByDfspId(dfspId);
-  const result = await knex.table(ENDPOINT_ITEMS_TABLE).where({ id, dfsp_id: dfspRawId }).update(endpointItem);
+  const result = await runQuery(() => dbTable.where({ id, dfsp_id: dfspRawId }).update(endpointItem));
   if (result === 1) {
     return exports.findObjectById(id);
   } else throw new Error(result);

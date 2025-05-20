@@ -15,7 +15,7 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { knex } = require('../db/database');
+const db = require('../db/database');
 const NotFoundError = require('../errors/NotFoundError');
 const InternalError = require('../errors/InternalError');
 
@@ -25,13 +25,22 @@ module.exports = class BaseCrudModel {
       throw new InternalError('BaseCrudModel needs a baseTable');
     }
     this.baseTable = baseTable;
+    this.db = db;
+    this.dbTable = db.knex.table(baseTable);
+  }
+
+  async runQuery(queryFn, operation) {
+    return this.db.executeWithErrorCount(queryFn, operation);
   }
 
   async findAll () {
-    return knex.table(this.baseTable).select();
+    return this.runQuery(() => this.dbTable.select(), 'findAll');
+    // OR
+    // return this.db.executeWithErrorCount((knex) => knex.table(this.baseTable).select(), 'findAll');
   };
-async findById(id) {
-    const rows = await knex.table(this.baseTable).where('id', id).select();
+
+  async findById(id) {
+    const rows = await this.#rawFindById(id);
     if (rows.length === 0) {
       throw new NotFoundError(`${this.baseTable} with id: ${id}`);
     } else if (rows.length === 1) {
@@ -41,7 +50,7 @@ async findById(id) {
       throw new InternalError('E_TOO_MANY_ROWS');
     }
   }
-   
+
   /**
    * Creates an object
    *
@@ -49,7 +58,7 @@ async findById(id) {
    * @returns {id : Integer}
    */
   async create (values) {
-    const result = await knex.table(this.baseTable).insert(values);
+    const result = await this.runQuery(() => this.dbTable.insert(values), 'create');
     if (result.length === 1) {
       return { id: result[0] };
     } else {
@@ -58,7 +67,7 @@ async findById(id) {
   };
 
   async delete (id) {
-    return knex.table(this.baseTable).where({ id }).del();
+    return this.runQuery(() => this.dbTable.where({ id }).del(), 'delete');
   };
 
   /**
@@ -69,7 +78,7 @@ async findById(id) {
    * @returns {id : Integer}
    */
   async update (id, values) {
-    const result = await knex.table(this.baseTable).where({ id }).update(values);
+    const result = await this.runQuery(() => this.dbTable.where({ id }).update(values), 'update');
     if (result === 0) {
       throw new NotFoundError('object with id: ' + id);
     } else if (result === 1) {
@@ -89,7 +98,7 @@ async findById(id) {
       const idObj = await this.create(values);
       return idObj;
     }
-    const rows = await knex.table(this.baseTable).where({ id }).select();
+    const rows = await this.#rawFindById(id);
     if (rows.length === 0) {
       return this.create(values);
     } else if (rows.length === 1) {
@@ -98,4 +107,8 @@ async findById(id) {
       throw new InternalError('E_TOO_MANY_ROWS');
     }
   };
+
+  async #rawFindById(id) {
+    return this.runQuery(() => this.dbTable.where({ id }).select(), 'rawFindById');
+  }
 };
