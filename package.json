@@ -55,7 +55,8 @@
     "swagger"
   ],
   "overrides": {
-    "cookie": "1.0.2"
+    "cookie": "1.0.2",
+    "multer": "^2.0.0"
   },
   "dependencies": {
     "@hapi/hapi": "21.4.0",
