@@ -23,18 +23,10 @@ exports.getRequestData = (req) => {
   if (['POST', 'PUT', 'PATCH'].includes(req.method.toUpperCase())) {
     data.body = req.body;
   }
-  if (req.openapi.pathParams) {
-    data.params = req.openapi.pathParams;
-  }
-  if (req.query) {
-    data.query = req.query;
-  }
-  if (req.headers) {
-    data.headers = req.headers;
-  }
-  if (req.cookies) {
-    data.cookies = req.cookies;
-  }
+  data.params = req.openapi.pathParams;
+  data.query = req.query;
+  data.headers = req.headers;
+  data.cookies = req.cookies;
 
   return data;
 };
