@@ -18,7 +18,7 @@
     "GHSA-qwcr-r2fm-qrc7", // body-parser DOS vulnerability - no fix available yet
     "GHSA-pppg-cpfq-h7wr", // JSONPath Plus Remote Code Execution (RCE) Vulnerability
     "GHSA-hw8r-x6gr-5gjp", // JSONPath Plus allows Remote Code Execution
-    "GHSA-75v8-2h7p-7m2m", // https://github.com/advisories/GHSA-75v8-2h7p-7m2m,
+    "GHSA-75v8-2h7p-7m2m", // https://github.com/advisories/GHSA-75v8-2h7p-7m2m
     "GHSA-44fp-w29j-9vj5", // https://github.com/advisories/GHSA-44fp-w29j-9vj5
     "GHSA-4pg4-qvpc-4q3h" // https://github.com/advisories/GHSA-4pg4-qvpc-4q3h
   ]
