@@ -17,7 +17,6 @@
 
 const metrics = require('@mojaloop/central-services-metrics');
 const { KnexWrapper } = require('@mojaloop/central-services-shared/src/mysql');
-// const { KnexWrapper } = require('@mojaloop/central-services-shared').mysql;
 const { logger } = require('../log/logger');
 const Constants = require('../constants/Constants');
 

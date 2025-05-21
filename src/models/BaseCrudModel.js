@@ -35,8 +35,6 @@ module.exports = class BaseCrudModel {
 
   async findAll () {
     return this.runQuery(() => this.dbTable.select(), 'findAll');
-    // OR
-    // return this.db.executeWithErrorCount((knex) => knex.table(this.baseTable).select(), 'findAll');
   };
 
   async findById(id) {
