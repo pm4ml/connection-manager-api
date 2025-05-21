@@ -27,8 +27,6 @@
 
 process.env.PING_PONG_SERVER_URL = 'ping-pong.url';
 
-console.log(process.env);
-
 const axios = require('axios');
 const AxiosMockAdapter = require('axios-mock-adapter');
 const { createDfspWatcher, DfspWatcher } = require('./index');

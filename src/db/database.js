@@ -15,9 +15,10 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
+const metrics = require('@mojaloop/central-services-metrics');
+const { KnexWrapper } = require('@mojaloop/central-services-shared/src/mysql');
+const { logger } = require('../log/logger');
 const Constants = require('../constants/Constants');
-const retry = require('async-retry');
-const exitHook = require('async-exit-hook');
 
 const knexOptions = {
   client: 'mysql2',
@@ -31,38 +32,27 @@ const knexOptions = {
   },
   pool: {
     min: 0,
-    max: 10,
+    max: Constants.DATABASE.DB_POOL_SIZE_MAX,
   },
   asyncStackTraces: true
 };
 
-const defaultKnex = require('knex')(knexOptions);
-
-exports.setKnex = (knexOptions) => {
-  exports.knex = require('knex')(knexOptions);
+const retryOptions = {
+  retries: Constants.DATABASE.DB_RETRIES,
+  minTimeout: Constants.DATABASE.DB_CONNECTION_RETRY_WAIT_MILLISECONDS,
+  // 1.3 ^ 10 ~= 14
+  // therefore, a factor of 1.3 with an initial 1s delay has a maximum between-attempt delay of
+  // 28 seconds, including jitter up to a factor of 2
+  factor: 1.3,
+  // async-retry has a default `randomize` parameter here which randomises retry delays by
+  // multiplying them by a factor of [1,2]. We leave this default to mitigate thundering herd,
+  // even though that's rather unlikely. You never know where your code will end up..
 };
 
-exports.waitForConnection = async () => {
-  await retry(async (_, attempt) => {
-    console.log(`Attempting database connection. Attempt ${attempt} of ${Constants.DATABASE.DB_RETRIES + 1}`);
-    await exports.knex.raw('SELECT 1');
-    exitHook(callback => {
-      exports.knex.destroy().finally(callback);
-    });
-    
-    console.log('Database connection attempt successful');
-  }, {
-    retries: Constants.DATABASE.DB_RETRIES,
-    minTimeout: Constants.DATABASE.DB_CONNECTION_RETRY_WAIT_MILLISECONDS,
-    onRetry: () => console.log('Database connection attempt failed'),
-    // 1.3 ^ 10 ~= 14
-    // therefore, a factor of 1.3 with an initial 1s delay has a maximum between-attempt delay of
-    // 28 seconds, including jitter up to a factor of 2
-    factor: 1.3,
-    // async-retry has a default `randomize` parameter here which randomises retry delays by
-    // multiplying them by a factor of [1,2]. We leave this default to mitigate thundering herd,
-    // even though that's rather unlikely. You never know where your code will end up..
-  });
-};
-
-exports.knex = defaultKnex;
+module.exports = new KnexWrapper({
+  knexOptions,
+  retryOptions,
+  logger,
+  metrics,
+  context: 'MCM_DB'
+});

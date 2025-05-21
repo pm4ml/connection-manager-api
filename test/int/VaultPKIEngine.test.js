@@ -268,27 +268,27 @@ describe("PKIEngine", () => {
       }
     }).timeout(15000);
   });
-  
+
   describe("validateCertificateValidity", () => {
     it("should return NOT_AVAILABLE when certificate is null", () => {
       const result = ctx.pkiEngine.validateCertificateValidity(null, "TEST_CODE");
       assert.equal(result.state, ValidationCodes.VALID_STATES.NOT_AVAILABLE);
     });
-  
+
     it("should invalidate a certificate with missing notBefore", () => {
       sinon.stub(ctx.pkiEngine, "getCertInfo").returns({ notAfter: new Date() });
       const result = ctx.pkiEngine.validateCertificateValidity("cert", "TEST_CODE");
       assert.equal(result.state, ValidationCodes.VALID_STATES.INVALID);
       ctx.pkiEngine.getCertInfo.restore();
     });
-  
+
     it("should invalidate a certificate with missing notAfter", () => {
       sinon.stub(ctx.pkiEngine, "getCertInfo").returns({ notBefore: new Date() });
       const result = ctx.pkiEngine.validateCertificateValidity("cert", "TEST_CODE");
       assert.equal(result.state, ValidationCodes.VALID_STATES.INVALID);
       ctx.pkiEngine.getCertInfo.restore();
     });
-  
+
     it("should handle unexpected errors gracefully", () => {
       sinon.stub(ctx.pkiEngine, "getCertInfo").throws(new Error("Unexpected error"));
       const result = ctx.pkiEngine.validateCertificateValidity("cert", "TEST_CODE");
@@ -296,13 +296,13 @@ describe("PKIEngine", () => {
       ctx.pkiEngine.getCertInfo.restore();
     });
   });
-  
+
   describe("validateCertificateUsageServer", () => {
     it("should return NOT_AVAILABLE for null certificate", () => {
       const result = ctx.pkiEngine.validateCertificateUsageServer(null);
       assert.equal(result.state, ValidationCodes.VALID_STATES.NOT_AVAILABLE);
     });
-  
+
     it("should invalidate certificate without serverAuth in extKeyUsage", () => {
       sinon.stub(forge.pki, "certificateFromPem").returns({
         getExtension: () => ({ serverAuth: false }),
@@ -311,7 +311,7 @@ describe("PKIEngine", () => {
       assert.equal(result.state, ValidationCodes.VALID_STATES.INVALID);
       forge.pki.certificateFromPem.restore();
     });
-  
+
     it("should validate certificate with serverAuth in extKeyUsage", () => {
       sinon.stub(forge.pki, "certificateFromPem").returns({
         getExtension: () => ({ serverAuth: true }),
@@ -320,7 +320,7 @@ describe("PKIEngine", () => {
       assert.equal(result.state, ValidationCodes.VALID_STATES.VALID);
       forge.pki.certificateFromPem.restore();
     });
-  
+
     it("should invalidate certificate missing extKeyUsage", () => {
       sinon.stub(forge.pki, "certificateFromPem").returns({
         getExtension: () => null,
@@ -330,7 +330,7 @@ describe("PKIEngine", () => {
       forge.pki.certificateFromPem.restore();
     });
   });
-  
+
   describe("createCSR", () => {
     it("should throw an error if subject is missing", async () => {
       try {
@@ -341,14 +341,14 @@ describe("PKIEngine", () => {
         assert.include(err.message, "Invalid CAInitialInfo document");
       }
     });
-    
+
     it("should generate a valid CSR with only a subject", async () => {
       const csrParameters = { subject: { CN: "example.com", O: "Example" } };
       const result = await ctx.pkiEngine.createCSR(csrParameters);
       assert.isNotNull(result.csr);
       assert.isNotNull(result.privateKey);
     });
-  
+
     it("should generate a valid CSR with DNS SANs", async () => {
       const csrParameters = {
         subject: { CN: "example.com", O: "Example" },
@@ -358,7 +358,7 @@ describe("PKIEngine", () => {
       assert.isNotNull(result.csr);
       assert.isNotNull(result.privateKey);
     });
-  
+
     it("should generate a valid CSR with IP SANs", async () => {
       const csrParameters = {
         subject: { CN: "example.com", O: "Example" },
@@ -369,7 +369,7 @@ describe("PKIEngine", () => {
       assert.isNotNull(result.privateKey);
     });
   });
-  
+
   describe("vault secret management", () => {
     it("should set and get a secret", async () => {
       const key = "test-secret";
@@ -500,7 +500,7 @@ describe("PKIEngine", () => {
       const dfspMonetaryZoneId = "USD";
       const isProxy = true;
       const fxpCurrencies = ["USD", "EUR"];
-    
+
       // Mock dependencies
       sinon.stub(ctx.pkiEngine, "validateId").returns(true);
       sinon.stub(ctx.pkiEngine, "getDFSPCA").resolves({
@@ -515,7 +515,7 @@ describe("PKIEngine", () => {
         subject: { CN: "test-client" },
       });
       const writeStub = sinon.stub(ctx.pkiEngine.client, "write").resolves();
-    
+
       // Call the method
       await ctx.pkiEngine.populateDFSPClientCertBundle(
         dfspId,
@@ -524,7 +524,7 @@ describe("PKIEngine", () => {
         isProxy,
         fxpCurrencies
       );
-    
+
       // Verify the behavior
       sinon.assert.calledWithExactly(ctx.pkiEngine.validateId, dfspId, "dfspId");
       sinon.assert.calledWithExactly(ctx.pkiEngine.getDFSPCA, dfspId);
@@ -540,7 +540,7 @@ describe("PKIEngine", () => {
         fxpCurrencies: "USD EUR",
         isProxy,
       });
-    
+
       // Restore stubs
       ctx.pkiEngine.validateId.restore();
       ctx.pkiEngine.getDFSPCA.restore();
@@ -554,7 +554,7 @@ describe("PKIEngine", () => {
       const dfspMonetaryZoneId = "USD";
       const isProxy = true;
       const fxpCurrencies = ["USD", "EUR"];
-    
+
       try {
         await ctx.pkiEngine.populateDFSPClientCertBundle(dfspId, dfspName, dfspMonetaryZoneId, isProxy, fxpCurrencies);
         assert.fail("Should throw an error");
@@ -563,31 +563,31 @@ describe("PKIEngine", () => {
         assert.include(err.message, "dfspId is not a number");
       }
     });
-  
-  
+
+
     it("should populate DFSP internal IP whitelist bundle successfully", async () => {
       const value = { whitelist: ["192.168.0.1", "192.168.0.2"] };
-    
+
       const writeStub = sinon.stub(ctx.pkiEngine.client, "write").resolves();
-    
+
       await ctx.pkiEngine.populateDFSPInternalIPWhitelistBundle(value);
-    
+
       sinon.assert.calledWithExactly(writeStub, `${ctx.pkiEngine.mounts.dfspInternalIPWhitelistBundle}`, value);
-    
+
       ctx.pkiEngine.client.write.restore();
     });
     it("should populate DFSP external IP whitelist bundle successfully", async () => {
       const value = { whitelist: ["203.0.113.1", "203.0.113.2"] };
-    
+
       const writeStub = sinon.stub(ctx.pkiEngine.client, "write").resolves();
-    
+
       await ctx.pkiEngine.populateDFSPExternalIPWhitelistBundle(value);
-    
+
       sinon.assert.calledWithExactly(writeStub, `${ctx.pkiEngine.mounts.dfspExternalIPWhitelistBundle}`, value);
-    
+
       ctx.pkiEngine.client.write.restore();
     });
-    
+
     it("should create a hub server certificate with minimal input", async () => {
       const csrParameters = {
         subject: { CN: "hub.example.com" },
@@ -647,17 +647,17 @@ describe("PKIEngine", () => {
         subject: { CN: "hub.example.com" },
         extensions: { subjectAltName: { ips: ["127.0.0.1", "192.168.1.1"] } },
       };
-    
+
       const mockResponse = {
         certificate: "mock-certificate",
         issuing_ca: "mock-issuing-ca",
         private_key: "mock-private-key",
       };
-    
+
       sinon.stub(ctx.pkiEngine.client, "request").resolves({ data: mockResponse });
-    
+
       const result = await ctx.pkiEngine.createHubServerCert(csrParameters);
-    
+
       assert.deepEqual(result, mockResponse);
       sinon.assert.calledWith(ctx.pkiEngine.client.request, {
         path: `/${ctx.pkiEngine.mounts.pki}/issue/${ctx.pkiEngine.pkiServerRole}`,
@@ -667,7 +667,7 @@ describe("PKIEngine", () => {
           ip_sans: "127.0.0.1,192.168.1.1",
         },
       });
-    
+
       ctx.pkiEngine.client.request.restore();
     });
     it("should create a hub server certificate with DNS and IP SANs", async () => {
@@ -675,17 +675,17 @@ describe("PKIEngine", () => {
         subject: { CN: "hub.example.com" },
         extensions: { subjectAltName: { dns: ["hub.example.com"], ips: ["127.0.0.1"] } },
       };
-    
+
       const mockResponse = {
         certificate: "mock-certificate",
         issuing_ca: "mock-issuing-ca",
         private_key: "mock-private-key",
       };
-    
+
       sinon.stub(ctx.pkiEngine.client, "request").resolves({ data: mockResponse });
-    
+
       const result = await ctx.pkiEngine.createHubServerCert(csrParameters);
-    
+
       assert.deepEqual(result, mockResponse);
       sinon.assert.calledWith(ctx.pkiEngine.client.request, {
         path: `/${ctx.pkiEngine.mounts.pki}/issue/${ctx.pkiEngine.pkiServerRole}`,
@@ -696,14 +696,14 @@ describe("PKIEngine", () => {
           ip_sans: "127.0.0.1",
         },
       });
-    
+
       ctx.pkiEngine.client.request.restore();
-    });  
+    });
     it("should throw an error if subject.CN is missing", async () => {
       const csrParameters = {
         subject: {},
       };
-    
+
       try {
         await ctx.pkiEngine.createHubServerCert(csrParameters);
         assert.fail("Should throw an error");
@@ -716,9 +716,9 @@ describe("PKIEngine", () => {
       const csrParameters = {
         subject: { CN: "hub.example.com" },
       };
-    
+
       sinon.stub(ctx.pkiEngine.client, "request").rejects(new Error("Request failed"));
-    
+
       try {
         await ctx.pkiEngine.createHubServerCert(csrParameters);
         assert.fail("Should throw an error");
@@ -729,53 +729,53 @@ describe("PKIEngine", () => {
         ctx.pkiEngine.client.request.restore();
       }
     });
-  
+
    it("should return NOT_AVAILABLE if no certificate is provided", () => {
     const code = "TEST_CODE";
     const enrollment = { csr: "mock-csr", certificate: null };
-  
+
     const result = ctx.pkiEngine.verifyCertificateCSRSameSubject(code, enrollment);
-  
+
     assert.deepEqual(
       result,
       new Validation(code, false, ValidationCodes.VALID_STATES.NOT_AVAILABLE, "No certificate")
     );
   });
-  
+
   it("should return NOT_AVAILABLE if no CSR is provided", () => {
     const code = "TEST_CODE";
     const enrollment = { csr: null, certificate: "mock-certificate" };
-  
+
     const result = ctx.pkiEngine.verifyCertificateCSRSameSubject(code, enrollment);
-  
+
     assert.deepEqual(result, new Validation(code, false, ValidationCodes.VALID_STATES.NOT_AVAILABLE, "No CSR"));
   });
   it("should return NOT_AVAILABLE if CA type is EXTERNAL", () => {
     const code = "TEST_CODE";
     const enrollment = { csr: "mock-csr", certificate: "mock-certificate", caType: CAType.EXTERNAL };
-  
+
     const result = ctx.pkiEngine.verifyCertificateCSRSameSubject(code, enrollment);
-  
+
     assert.deepEqual(result, new Validation(code, false, ValidationCodes.VALID_STATES.NOT_AVAILABLE, "It has an External CA"));
   });
   it("should return INVALID if CSR and certificate subjects do not match", () => {
     const code = "TEST_CODE";
     const enrollment = { csr: "mock-csr", certificate: "mock-certificate" };
-  
+
     sinon.stub(ctx.pkiEngine, "getCSRInfo").returns({ subject: { CN: "csr.example.com" } });
     sinon.stub(ctx.pkiEngine, "getCertInfo").returns({ subject: { CN: "cert.example.com" } });
     sinon.stub(ctx.pkiEngine, "compareSubjectBetweenCSRandCert").returns({ valid: false, reason: "Subjects do not match" });
-  
+
     const result = ctx.pkiEngine.verifyCertificateCSRSameSubject(code, enrollment);
-  
+
     assert.deepEqual(result, new Validation(
-      code, 
-      true, 
+      code,
+      true,
       ValidationCodes.VALID_STATES.INVALID,
       "The CSR and the Certificate must have the same Subject Information",
       "Subjects do not match"
     ));
-  
+
     ctx.pkiEngine.getCSRInfo.restore();
     ctx.pkiEngine.getCertInfo.restore();
     ctx.pkiEngine.compareSubjectBetweenCSRandCert.restore();
@@ -783,11 +783,11 @@ describe("PKIEngine", () => {
   it("should return INVALID if CSR and certificate SubjectAltNames do not match", () => {
     const code = "TEST_CODE";
     const enrollment = { csr: "mock-csr", certificate: "mock-certificate" };
-  
+
     sinon.stub(ctx.pkiEngine, "getCSRInfo").returns({ subject: { CN: "csr.example.com" } });
     sinon.stub(ctx.pkiEngine, "getCertInfo").returns({ subject: { CN: "csr.example.com" } });
     sinon.stub(ctx.pkiEngine, "compareSubjectBetweenCSRandCert").returns({ valid: true });
-  
+
     // Correct reference or mock for the AltName comparison
     if (!PKIEngine.compareSubjectAltNameBetweenCSRandCert) {
       PKIEngine.compareSubjectAltNameBetweenCSRandCert = sinon.stub().returns({
@@ -800,9 +800,9 @@ describe("PKIEngine", () => {
         reason: "AltNames do not match",
       });
     }
-  
+
     const result = ctx.pkiEngine.verifyCertificateCSRSameSubject(code, enrollment);
-  
+
     assert.deepEqual(
       result,
       new Validation(
@@ -813,7 +813,7 @@ describe("PKIEngine", () => {
         "AltNames do not match"
       )
     );
-  
+
     // Restore stubs
     ctx.pkiEngine.getCSRInfo.restore();
     ctx.pkiEngine.getCertInfo.restore();
@@ -822,25 +822,25 @@ describe("PKIEngine", () => {
       PKIEngine.compareSubjectAltNameBetweenCSRandCert.restore();
     }
   });
-  
-  
+
+
   it("should return VALID if CSR and certificate subjects and SubjectAltNames match", () => {
     const code = "TEST_CODE";
     const enrollment = { csr: "mock-csr", certificate: "mock-certificate" };
-  
+
     sinon.stub(ctx.pkiEngine, "getCSRInfo").returns({ subject: { CN: "csr.example.com" } });
     sinon.stub(ctx.pkiEngine, "getCertInfo").returns({ subject: { CN: "csr.example.com" } });
     sinon.stub(ctx.pkiEngine, "compareSubjectBetweenCSRandCert").returns({ valid: true });
-  
+
     // Stub or mock compareSubjectAltNameBetweenCSRandCert
     if (!PKIEngine.compareSubjectAltNameBetweenCSRandCert) {
       PKIEngine.compareSubjectAltNameBetweenCSRandCert = sinon.stub().returns({ valid: true });
     } else {
       sinon.stub(PKIEngine, "compareSubjectAltNameBetweenCSRandCert").returns({ valid: true });
     }
-  
+
     const result = ctx.pkiEngine.verifyCertificateCSRSameSubject(code, enrollment);
-  
+
     assert.deepEqual(
       result,
       new Validation(
@@ -850,7 +850,7 @@ describe("PKIEngine", () => {
         "The CSR and the Certificate must have the same Subject Information"
       )
     );
-  
+
     // Restore stubs
     ctx.pkiEngine.getCSRInfo.restore();
     ctx.pkiEngine.getCertInfo.restore();
@@ -858,14 +858,14 @@ describe("PKIEngine", () => {
     if (PKIEngine.compareSubjectAltNameBetweenCSRandCert.restore) {
       PKIEngine.compareSubjectAltNameBetweenCSRandCert.restore();
     }
-  });  
+  });
 
    it("should return NOT_AVAILABLE if no certificate is provided", () => {
     const code = "TEST_CODE";
     const enrollment = { csr: "mock-csr", certificate: null };
-  
+
     const result = ctx.pkiEngine.verifyCertificateCSRSameCN(code, enrollment);
-  
+
     assert.deepEqual(result, new Validation(
       code,
       false,
@@ -876,9 +876,9 @@ describe("PKIEngine", () => {
   it("should return NOT_AVAILABLE if no CSR is provided", () => {
     const code = "TEST_CODE";
     const enrollment = { csr: null, certificate: "mock-certificate" };
-  
+
     const result = ctx.pkiEngine.verifyCertificateCSRSameCN(code, enrollment);
-  
+
     assert.deepEqual(result, new Validation(
       code,
       false,
@@ -889,9 +889,9 @@ describe("PKIEngine", () => {
   it("should return NOT_AVAILABLE if CA type is INTERNAL", () => {
     const code = "TEST_CODE";
     const enrollment = { csr: "mock-csr", certificate: "mock-certificate", caType: CAType.INTERNAL };
-  
+
     const result = ctx.pkiEngine.verifyCertificateCSRSameCN(code, enrollment);
-  
+
     assert.deepEqual(result, new Validation(
       code,
       false,
@@ -902,13 +902,13 @@ describe("PKIEngine", () => {
   it("should return INVALID if CSR and certificate CNs do not match", () => {
     const code = "TEST_CODE";
     const enrollment = { csr: "mock-csr", certificate: "mock-certificate" };
-  
+
     sinon.stub(ctx.pkiEngine, "getCSRInfo").returns({ subject: { CN: "csr.example.com" } });
     sinon.stub(ctx.pkiEngine, "getCertInfo").returns({ subject: { CN: "cert.example.com" } });
     sinon.stub(ctx.pkiEngine, "compareCNBetweenCSRandCert").returns({ valid: false, reason: "CNs do not match" });
-  
+
     const result = ctx.pkiEngine.verifyCertificateCSRSameCN(code, enrollment);
-  
+
     assert.deepEqual(result, new Validation(
       code,
       true,
@@ -916,7 +916,7 @@ describe("PKIEngine", () => {
       "The CSR and the Certificate must have the same CN",
       "CNs do not match"
     ));
-  
+
     // Restore stubs
     ctx.pkiEngine.getCSRInfo.restore();
     ctx.pkiEngine.getCertInfo.restore();
@@ -925,24 +925,24 @@ describe("PKIEngine", () => {
   it("should return INVALID if the CSR cannot be parsed", () => {
     const csr = "invalid-csr";
     const code = "TEST_CODE";
-  
+
     sinon.stub(ctx.pkiEngine, "getCSRInfo").throws(new Error("Invalid CSR format"));
-  
+
     const result = ctx.pkiEngine.verifyCsrMandatoryDistinguishedNames(csr, code);
-  
+
     assert.deepEqual(result, new Validation(
       code,
       true,
       ValidationCodes.VALID_STATES.INVALID,
       "CSR couldn't be parsed"
     ));
-  
+
     ctx.pkiEngine.getCSRInfo.restore();
   });
   it("should return INVALID if CSR is missing a mandatory distinguished name field", () => {
     const csr = "mock-csr";
     const code = "TEST_CODE";
-  
+
     // Mock CSR info with missing 'C' (Country)
     const mockCsrInfo = {
       subject: {
@@ -954,24 +954,24 @@ describe("PKIEngine", () => {
         E: "email@example.com", // Missing 'C'
       },
     };
-  
+
     sinon.stub(ctx.pkiEngine, "getCSRInfo").returns(mockCsrInfo);
-  
+
     const result = ctx.pkiEngine.verifyCsrMandatoryDistinguishedNames(csr, code);
-  
+
     assert.deepEqual(result, new Validation(
       code,
       true,
       ValidationCodes.VALID_STATES.INVALID,
       "CSR missing required distinguished name attributes. Missing: C"
     ));
-  
+
     ctx.pkiEngine.getCSRInfo.restore();
   });
   it("should return VALID if CSR has all mandatory distinguished name fields", () => {
     const csr = "mock-csr";
     const code = "TEST_CODE";
-  
+
     // Mock CSR info with all mandatory fields
     const mockCsrInfo = {
       subject: {
@@ -984,79 +984,79 @@ describe("PKIEngine", () => {
         E: "email@example.com",
       },
     };
-  
+
     sinon.stub(ctx.pkiEngine, "getCSRInfo").returns(mockCsrInfo);
-  
+
     const result = ctx.pkiEngine.verifyCsrMandatoryDistinguishedNames(csr, code);
-  
+
     assert.deepEqual(result, new Validation(
       code,
       true,
       ValidationCodes.VALID_STATES.VALID,
       "CSR has all mandatory distiguished name attributes"
     ));
-  
+
     ctx.pkiEngine.getCSRInfo.restore();
   });
   it("should return INVALID if CSR is empty or null", () => {
     const csr = null; // Empty CSR
     const code = "TEST_CODE";
-  
+
     sinon.stub(ctx.pkiEngine, "getCSRInfo").throws(new Error("CSR is empty or null"));
-  
+
     const result = ctx.pkiEngine.verifyCsrMandatoryDistinguishedNames(csr, code);
-  
+
     assert.deepEqual(result, new Validation(
       code,
       true,
       ValidationCodes.VALID_STATES.INVALID,
       "CSR couldn't be parsed"
     ));
-  
+
     ctx.pkiEngine.getCSRInfo.restore();
   });
-  
-  
+
+
   it("should return VALID if certificate key length matches the required length", () => {
     const serverCert = "mock-server-cert";
     const keyLength = 2048;
     const code = "TEST_CODE";
-  
+
     sinon.stub(ctx.pkiEngine, "verifyCertKeyLength").returns({ valid: true });
-  
+
     const result = ctx.pkiEngine.validateCertificateKeyLength(serverCert, keyLength, code);
-  
+
     assert.deepEqual(
       result,
       new Validation(code, true, ValidationCodes.VALID_STATES.VALID, "Certificate key length valid")
     );
-  
+
     ctx.pkiEngine.verifyCertKeyLength.restore();
   });
   it("should return INVALID if certificate key length does not match the required length", () => {
     const serverCert = "mock-server-cert";
     const keyLength = 2048;
     const code = "TEST_CODE";
-  
+
     const reason = { actualKeySize: 1024 }; // Mocked reason
     sinon.stub(ctx.pkiEngine, "verifyCertKeyLength").returns({ valid: false, reason });
-  
+
     const result = ctx.pkiEngine.validateCertificateKeyLength(serverCert, keyLength, code);
-  
+
     assert.deepEqual(result.result, ValidationCodes.VALID_STATES.INVALID);
     assert.equal(result.message, "Certificate key length 1024 invalid, should be 2048");
     assert.deepEqual(result.data, {
       actualKeySize: { type: "INTEGER", value: 1024 },
       keyLength: { type: "INTEGER", value: 2048 },
     });
-  
+
     ctx.pkiEngine.verifyCertKeyLength.restore();
   });
   it("should throw an error if serverCert is null or undefined", () => {
     const serverCert = null; // Invalid certificate
     const keyLength = 2048;
     const code = "TEST_CODE";
-  
+
     try {
       ctx.pkiEngine.validateCertificateKeyLength(serverCert, keyLength, code);
       assert.fail("Should throw an error");
@@ -1070,9 +1070,9 @@ describe("PKIEngine", () => {
         const certificate = null; // Invalid certificate
         const code = "TEST_CODE";
         const algo = "SHA256withRSA";
-      
+
         const result = ctx.pkiEngine.validateCertificateSignatureAlgorithm(certificate, code, algo);
-      
+
         assert.deepEqual(
           result,
           new Validation(
@@ -1087,11 +1087,11 @@ describe("PKIEngine", () => {
         const certificate = "mock-certificate";
         const code = "TEST_CODE";
         const algo = "SHA256withRSA";
-      
+
         sinon.stub(ctx.pkiEngine, "verifyCertAlgorithm").returns({ valid: true });
-      
+
         const result = ctx.pkiEngine.validateCertificateSignatureAlgorithm(certificate, code, algo);
-      
+
         assert.deepEqual(
           result,
           new Validation(
@@ -1101,19 +1101,19 @@ describe("PKIEngine", () => {
             `certificate has a valid Signature Algorithm : ${algo}`
           )
         );
-      
+
         ctx.pkiEngine.verifyCertAlgorithm.restore();
       });
       it("should return INVALID if certificate has an incorrect signature algorithm", () => {
         const certificate = "mock-certificate";
         const code = "TEST_CODE";
         const algo = "SHA256withRSA";
-      
+
         const reason = { actualAlgorithm: "SHA1withRSA" }; // Mocked reason
         sinon.stub(ctx.pkiEngine, "verifyCertAlgorithm").returns({ valid: false, reason });
-      
+
         const result = ctx.pkiEngine.validateCertificateSignatureAlgorithm(certificate, code, algo);
-      
+
         assert.deepEqual(
           result,
           new Validation(
@@ -1123,18 +1123,18 @@ describe("PKIEngine", () => {
             `certificate has a an invalid Signature Algorithm ${reason.actualAlgorithm}`
           )
         );
-      
+
         ctx.pkiEngine.verifyCertAlgorithm.restore();
       });
       it("should return INVALID if certificate cannot be parsed", () => {
         const certificate = "invalid-certificate";
         const code = "TEST_CODE";
         const algo = "SHA256withRSA";
-      
+
         sinon.stub(ctx.pkiEngine, "verifyCertAlgorithm").throws(new Error("Invalid certificate format"));
-      
+
         const result = ctx.pkiEngine.validateCertificateSignatureAlgorithm(certificate, code, algo);
-      
+
         assert.deepEqual(
           result,
           new Validation(
@@ -1144,7 +1144,7 @@ describe("PKIEngine", () => {
             "certificate couldn't be parsed"
           )
         );
-      
+
         ctx.pkiEngine.verifyCertAlgorithm.restore();
       });
   it("should return VALID if CSR has the correct public key length", () => {
@@ -1173,13 +1173,13 @@ describe("PKIEngine", () => {
     const csr = "mock-csr";
     const code = "TEST_CODE";
     const length = 2048;
-  
+
     // Mock an invalid result with the actual key size
     const reason = { actualKeySize: 1024 };
     sinon.stub(ctx.pkiEngine, "verifyCSRKeyLength").returns({ valid: false, reason });
-  
+
     const result = ctx.pkiEngine.validateCsrPublicKeyLength(csr, code, length);
-  
+
     assert.deepEqual(
       result,
       new Validation(
@@ -1189,19 +1189,19 @@ describe("PKIEngine", () => {
         `CSR Public Key length is not ${length}, it is ${reason.actualKeySize}`
       )
     );
-  
+
     ctx.pkiEngine.verifyCSRKeyLength.restore();
   });
   it("should return INVALID if CSR cannot be parsed", () => {
     const csr = "invalid-csr";
     const code = "TEST_CODE";
     const length = 2048;
-  
+
     // Simulate an error thrown by `verifyCSRKeyLength`
     sinon.stub(ctx.pkiEngine, "verifyCSRKeyLength").throws(new Error("Invalid CSR format"));
-  
+
     const result = ctx.pkiEngine.validateCsrPublicKeyLength(csr, code, length);
-  
+
     assert.deepEqual(
       result,
       new Validation(
@@ -1211,10 +1211,10 @@ describe("PKIEngine", () => {
         "CSR couldn't be parsed"
       )
     );
-  
+
     ctx.pkiEngine.verifyCSRKeyLength.restore();
   });
-       
+
   it("should return NOT_AVAILABLE if no DFSP CA is provided", () => {
     const certificate = "mock-certificate";
     const dfspCA = null; // No DFSP CA
@@ -1236,9 +1236,9 @@ describe("PKIEngine", () => {
     const certificate = "mock-certificate";
     const dfspCA = { validationState: INVALID }; // Invalid validation state
     const code = "TEST_CODE";
-  
+
     const result = ctx.pkiEngine.verifyCertificateSignedByDFSPCA(certificate, dfspCA, code);
-  
+
     assert.deepEqual(
       result,
       new Validation(
@@ -1249,8 +1249,8 @@ describe("PKIEngine", () => {
       )
     );
   });
-  
-  
+
+
   it("should return VALID if the certificate is signed by the DFSP CA", () => {
     const certificate = "mock-certificate";
     const dfspCA = {
@@ -1259,15 +1259,15 @@ describe("PKIEngine", () => {
       validationState: "VALID",
     };
     const code = "TEST_CODE";
-  
+
     // Stub required methods
     sinon.stub(ctx.pkiEngine, "splitCertificateChain").returns(["mock-intermediate-cert"]);
     sinon.stub(forge.pki, "createCaStore").returns({});
     sinon.stub(forge.pki, "certificateFromPem").returns("parsed-cert");
     sinon.stub(forge.pki, "verifyCertificateChain").returns(true);
-  
+
     const result = ctx.pkiEngine.verifyCertificateSignedByDFSPCA(certificate, dfspCA, code);
-  
+
     assert.deepEqual(
       result,
       new Validation(
@@ -1277,7 +1277,7 @@ describe("PKIEngine", () => {
         "The Certificate is signed by the DFSP CA"
       )
     );
-  
+
     // Restore stubs
     ctx.pkiEngine.splitCertificateChain.restore();
     forge.pki.createCaStore.restore();
@@ -1292,14 +1292,14 @@ describe("PKIEngine", () => {
       validationState: "VALID",
     };
     const code = "TEST_CODE";
-  
+
     sinon.stub(ctx.pkiEngine, "splitCertificateChain").returns(["mock-intermediate-cert"]);
     sinon.stub(forge.pki, "createCaStore").returns({});
     sinon.stub(forge.pki, "certificateFromPem").returns("parsed-cert");
     sinon.stub(forge.pki, "verifyCertificateChain").throws(new Error("Chain verification failed"));
-  
+
     const result = ctx.pkiEngine.verifyCertificateSignedByDFSPCA(certificate, dfspCA, code);
-  
+
     assert.deepEqual(
       result,
       new Validation(
@@ -1309,7 +1309,7 @@ describe("PKIEngine", () => {
         "Chain verification failed"
       )
     );
-  
+
     // Restore stubs
     ctx.pkiEngine.splitCertificateChain.restore();
     forge.pki.createCaStore.restore();
@@ -1324,13 +1324,13 @@ describe("PKIEngine", () => {
       validationState: "VALID",
     };
     const code = "TEST_CODE";
-  
+
     sinon.stub(ctx.pkiEngine, "splitCertificateChain").returns(["mock-intermediate-cert"]);
     sinon.stub(forge.pki, "createCaStore").returns({});
     sinon.stub(forge.pki, "certificateFromPem").throws(new Error("Invalid certificate format"));
-  
+
     const result = ctx.pkiEngine.verifyCertificateSignedByDFSPCA(certificate, dfspCA, code);
-  
+
     assert.deepEqual(
       result,
       new Validation(
@@ -1340,7 +1340,7 @@ describe("PKIEngine", () => {
         "Invalid certificate format"
       )
     );
-  
+
     // Restore stubs
     ctx.pkiEngine.splitCertificateChain.restore();
     forge.pki.createCaStore.restore();
@@ -1350,9 +1350,9 @@ describe("PKIEngine", () => {
   it("should return NOT_AVAILABLE if no certificate is provided", () => {
     const certificate = null; // No certificate
     const code = "TEST_CODE";
-  
+
     const result = ctx.pkiEngine.verifyCertificateUsageClient(certificate, code);
-  
+
     assert.deepEqual(
       result,
       new Validation(
@@ -1366,14 +1366,14 @@ describe("PKIEngine", () => {
   it("should return INVALID if certificate is missing the 'extKeyUsage' extension", () => {
     const certificate = "mock-certificate";
     const code = "TEST_CODE";
-  
+
     // Stub `forge.pki.certificateFromPem` to return a mock certificate without `extKeyUsage`
     sinon.stub(forge.pki, "certificateFromPem").returns({
       getExtension: () => null, // No `extKeyUsage` extension
     });
-  
+
     const result = ctx.pkiEngine.verifyCertificateUsageClient(certificate, code);
-  
+
     assert.deepEqual(
       result,
       new Validation(
@@ -1383,20 +1383,20 @@ describe("PKIEngine", () => {
         'Certificate doesn\'t have the "TLS WWW client authentication" key usage extension'
       )
     );
-  
+
     forge.pki.certificateFromPem.restore();
   });
   it("should return INVALID if certificate is missing 'clientAuth' in the 'extKeyUsage' extension", () => {
     const certificate = "mock-certificate";
     const code = "TEST_CODE";
-  
+
     // Stub `forge.pki.certificateFromPem` to return a mock certificate with `extKeyUsage` but without `clientAuth`
     sinon.stub(forge.pki, "certificateFromPem").returns({
       getExtension: () => ({ clientAuth: false }), // `clientAuth` is false
     });
-  
+
     const result = ctx.pkiEngine.verifyCertificateUsageClient(certificate, code);
-  
+
     assert.deepEqual(
       result,
       new Validation(
@@ -1406,20 +1406,20 @@ describe("PKIEngine", () => {
         'Certificate doesn\'t have the "TLS WWW client authentication" key usage extension'
       )
     );
-  
+
     forge.pki.certificateFromPem.restore();
   });
   it("should return VALID if certificate has the 'clientAuth' key usage in the 'extKeyUsage' extension", () => {
     const certificate = "mock-certificate";
     const code = "TEST_CODE";
-  
+
     // Stub `forge.pki.certificateFromPem` to return a mock certificate with valid `extKeyUsage`
     sinon.stub(forge.pki, "certificateFromPem").returns({
       getExtension: () => ({ clientAuth: true }), // `clientAuth` is true
     });
-  
+
     const result = ctx.pkiEngine.verifyCertificateUsageClient(certificate, code);
-  
+
     assert.deepEqual(
       result,
       new Validation(
@@ -1429,15 +1429,15 @@ describe("PKIEngine", () => {
         'Certificate has the "TLS WWW client authentication" key usage extension'
       )
     );
-  
+
     forge.pki.certificateFromPem.restore();
   });
   it("should return NOT_AVAILABLE if no certificate is provided", () => {
     const code = "TEST_CODE";
     const enrollment = { csr: "mock-csr", certificate: null };
-  
+
     const result = ctx.pkiEngine.verifyCertificateCSRSameSubject(code, enrollment);
-  
+
     assert.deepEqual(
       result,
       new Validation(
@@ -1456,14 +1456,14 @@ describe("PKIEngine", () => {
         },
       };
       const mockResponse = { data: { certificate: "mock-signed-certificate" } };
-    
+
       // Stub dependencies
       sinon.stub(forge.pki, "certificationRequestFromPem").returns(mockCsrInfo);
       sinon.stub(ctx.pkiEngine.client, "request").resolves(mockResponse);
-    
+
       // Call the method
       const result = await ctx.pkiEngine.signIntermediateHubCSR(csr);
-    
+
       // Assertions
       assert.deepEqual(result, mockResponse.data);
       sinon.assert.calledOnceWithExactly(
@@ -1478,17 +1478,17 @@ describe("PKIEngine", () => {
           },
         }
       );
-    
+
       // Restore stubs
       forge.pki.certificationRequestFromPem.restore();
       ctx.pkiEngine.client.request.restore();
     });
     it("should throw an error if the CSR is invalid", async () => {
       const csr = "invalid-csr";
-    
+
       // Stub `forge.pki.certificationRequestFromPem` to throw an error
       sinon.stub(forge.pki, "certificationRequestFromPem").throws(new Error("Invalid CSR format"));
-    
+
       try {
         await ctx.pkiEngine.signIntermediateHubCSR(csr);
         assert.fail("Should have thrown an error");
@@ -1496,10 +1496,10 @@ describe("PKIEngine", () => {
         assert.instanceOf(err, Error);
         assert.include(err.message, "Invalid CSR format");
       }
-    
+
       // Restore stubs
       forge.pki.certificationRequestFromPem.restore();
-    });        
+    });
     it("should throw an error if signing the CSR fails", async () => {
       const csr = "mock-csr";
       const mockCsrInfo = {
@@ -1507,11 +1507,11 @@ describe("PKIEngine", () => {
           getField: sinon.stub().withArgs("CN").returns({ value: "intermediate.example.com" }),
         },
       };
-    
+
       // Stub dependencies
       sinon.stub(forge.pki, "certificationRequestFromPem").returns(mockCsrInfo);
       sinon.stub(ctx.pkiEngine.client, "request").rejects(new Error("Request failed"));
-    
+
       try {
         await ctx.pkiEngine.signIntermediateHubCSR(csr);
         assert.fail("Should have thrown an error");
@@ -1519,7 +1519,7 @@ describe("PKIEngine", () => {
         assert.instanceOf(err, Error);
         assert.include(err.message, "Request failed");
       }
-    
+
       // Restore stubs
       forge.pki.certificationRequestFromPem.restore();
       ctx.pkiEngine.client.request.restore();
@@ -1532,14 +1532,14 @@ describe("PKIEngine", () => {
         },
       };
       const mockResponse = { data: { certificate: "mock-signed-certificate" } };
-    
+
       // Stub dependencies
       sinon.stub(forge.pki, "certificationRequestFromPem").returns(mockCsrInfo);
       sinon.stub(ctx.pkiEngine.client, "request").resolves(mockResponse);
-    
+
       // Call the method
       const result = await ctx.pkiEngine.signWithIntermediateCA(csr);
-    
+
       // Assertions
       assert.equal(result, "mock-signed-certificate");
       sinon.assert.calledOnceWithExactly(
@@ -1553,18 +1553,18 @@ describe("PKIEngine", () => {
           },
         }
       );
-    
+
       // Restore stubs
       forge.pki.certificationRequestFromPem.restore();
       ctx.pkiEngine.client.request.restore();
     });
-    
+
     it("should throw an error if the CSR is invalid", async () => {
       const csr = "invalid-csr";
-    
+
       // Stub `forge.pki.certificationRequestFromPem` to throw an error
       sinon.stub(forge.pki, "certificationRequestFromPem").throws(new Error("Invalid CSR format"));
-    
+
       try {
         await ctx.pkiEngine.signWithIntermediateCA(csr);
         assert.fail("Should have thrown an error");
@@ -1572,7 +1572,7 @@ describe("PKIEngine", () => {
         assert.instanceOf(err, Error);
         assert.include(err.message, "Invalid CSR format");
       }
-    
+
       // Restore stubs
       forge.pki.certificationRequestFromPem.restore();
     });
@@ -1583,11 +1583,11 @@ describe("PKIEngine", () => {
           getField: sinon.stub().withArgs("CN").returns({ value: "example.com" }),
         },
       };
-    
+
       // Stub dependencies
       sinon.stub(forge.pki, "certificationRequestFromPem").returns(mockCsrInfo);
       sinon.stub(ctx.pkiEngine.client, "request").rejects(new Error("Request failed"));
-    
+
       try {
         await ctx.pkiEngine.signWithIntermediateCA(csr);
         assert.fail("Should have thrown an error");
@@ -1595,7 +1595,7 @@ describe("PKIEngine", () => {
         assert.instanceOf(err, Error);
         assert.include(err.message, "Request failed");
       }
-    
+
       // Restore stubs
       forge.pki.certificationRequestFromPem.restore();
       ctx.pkiEngine.client.request.restore();
@@ -1605,12 +1605,12 @@ describe("PKIEngine", () => {
     it("should return INVALID if the CSR cannot be parsed", () => {
       const csr = "invalid-csr";
       const code = "TEST_CODE";
-    
+
       // Stub `getCSRInfo` to throw an error
       sinon.stub(ctx.pkiEngine, "getCSRInfo").throws(new Error("CSR parsing failed"));
-    
+
       const result = ctx.pkiEngine.verifyCsrMandatoryDistinguishedNames(csr, code);
-    
+
       assert.deepEqual(
         result,
         new Validation(
@@ -1620,14 +1620,14 @@ describe("PKIEngine", () => {
           "CSR couldn't be parsed"
         )
       );
-    
+
       ctx.pkiEngine.getCSRInfo.restore();
     });
-    
+
     it("should return INVALID if the CSR is missing a mandatory distinguished name field", () => {
       const csr = "mock-csr";
       const code = "TEST_CODE";
-    
+
       // Mock CSR info with missing 'C' (Country)
       const mockCsrInfo = {
         subject: {
@@ -1639,11 +1639,11 @@ describe("PKIEngine", () => {
           E: "email@example.com", // Missing 'C'
         },
       };
-    
+
       sinon.stub(ctx.pkiEngine, "getCSRInfo").returns(mockCsrInfo);
-    
+
       const result = ctx.pkiEngine.verifyCsrMandatoryDistinguishedNames(csr, code);
-    
+
       assert.deepEqual(
         result,
         new Validation(
@@ -1653,13 +1653,13 @@ describe("PKIEngine", () => {
           "CSR missing required distinguished name attributes. Missing: C"
         )
       );
-    
+
       ctx.pkiEngine.getCSRInfo.restore();
     });
     it("should return VALID if the CSR has all mandatory distinguished name fields", () => {
       const csr = "mock-csr";
       const code = "TEST_CODE";
-    
+
       // Mock CSR info with all required fields
       const mockCsrInfo = {
         subject: {
@@ -1672,11 +1672,11 @@ describe("PKIEngine", () => {
           E: "email@example.com",
         },
       };
-    
+
       sinon.stub(ctx.pkiEngine, "getCSRInfo").returns(mockCsrInfo);
-    
+
       const result = ctx.pkiEngine.verifyCsrMandatoryDistinguishedNames(csr, code);
-    
+
       assert.deepEqual(
         result,
         new Validation(
@@ -1686,7 +1686,7 @@ describe("PKIEngine", () => {
           "CSR has all mandatory distiguished name attributes"
         )
       );
-    
+
       ctx.pkiEngine.getCSRInfo.restore();
     });
         it("should fetch all DFSP inbound enrollments for a valid dfspId", async () => {
@@ -1696,24 +1696,24 @@ describe("PKIEngine", () => {
             { id: "enrollment1", data: "mock-data-1" },
             { id: "enrollment2", data: "mock-data-2" }
           ];
-        
+
           // Stub `validateId`
           sinon.stub(ctx.pkiEngine, "validateId").returns(true);
-        
+
           // Stub `listSecrets` to return mock secrets
           sinon.stub(ctx.pkiEngine, "listSecrets").resolves(mockSecrets);
-        
+
           // Stub `getDFSPInboundEnrollment` to return mock enrollments
           sinon.stub(ctx.pkiEngine, "getDFSPInboundEnrollment")
             .withArgs(dfspId, "enrollment1").resolves(mockEnrollments[0])
             .withArgs(dfspId, "enrollment2").resolves(mockEnrollments[1]);
-        
+
           // Call the method
           const result = await ctx.pkiEngine.getDFSPInboundEnrollments(dfspId);
-        
+
           // Assertions
           assert.deepEqual(result, mockEnrollments);
-        
+
           // Restore stubs
           ctx.pkiEngine.validateId.restore();
           ctx.pkiEngine.listSecrets.restore();
@@ -1721,10 +1721,10 @@ describe("PKIEngine", () => {
         });
         it("should throw an error if dfspId is invalid", async () => {
           const dfspId = null; // Invalid dfspId
-        
+
           // Stub `validateId` to throw an error
           sinon.stub(ctx.pkiEngine, "validateId").throws(new Error("Invalid dfspId"));
-        
+
           try {
             await ctx.pkiEngine.getDFSPInboundEnrollments(dfspId);
             assert.fail("Should have thrown an error");
@@ -1732,25 +1732,25 @@ describe("PKIEngine", () => {
             assert.instanceOf(err, Error);
             assert.include(err.message, "Invalid dfspId");
           }
-        
+
           // Restore stubs
           ctx.pkiEngine.validateId.restore();
         });
         it("should return an empty array if no secrets are found", async () => {
           const dfspId = "mock-dfsp-id";
-        
+
           // Stub `validateId`
           sinon.stub(ctx.pkiEngine, "validateId").returns(true);
-        
+
           // Stub `listSecrets` to return an empty array
           sinon.stub(ctx.pkiEngine, "listSecrets").resolves([]);
-        
+
           // Call the method
           const result = await ctx.pkiEngine.getDFSPInboundEnrollments(dfspId);
-        
+
           // Assertions
           assert.deepEqual(result, []);
-        
+
           // Restore stubs
           ctx.pkiEngine.validateId.restore();
           ctx.pkiEngine.listSecrets.restore();
@@ -1758,18 +1758,18 @@ describe("PKIEngine", () => {
         it("should throw an error if fetching an individual enrollment fails", async () => {
           const dfspId = "mock-dfsp-id";
           const mockSecrets = ["enrollment1", "enrollment2"];
-        
+
           // Stub `validateId`
           sinon.stub(ctx.pkiEngine, "validateId").returns(true);
-        
+
           // Stub `listSecrets` to return mock secrets
           sinon.stub(ctx.pkiEngine, "listSecrets").resolves(mockSecrets);
-        
+
           // Stub `getDFSPInboundEnrollment` to throw an error for the first enrollment
           sinon.stub(ctx.pkiEngine, "getDFSPInboundEnrollment")
             .withArgs(dfspId, "enrollment1").throws(new Error("Failed to fetch enrollment"))
             .withArgs(dfspId, "enrollment2").resolves({ id: "enrollment2", data: "mock-data-2" });
-        
+
           try {
             await ctx.pkiEngine.getDFSPInboundEnrollments(dfspId);
             assert.fail("Should have thrown an error");
@@ -1777,43 +1777,43 @@ describe("PKIEngine", () => {
             assert.instanceOf(err, Error);
             assert.include(err.message, "Failed to fetch enrollment");
           }
-        
+
           // Restore stubs
           ctx.pkiEngine.validateId.restore();
           ctx.pkiEngine.listSecrets.restore();
           ctx.pkiEngine.getDFSPInboundEnrollment.restore();
         });
-        
-        
-        
+
+
+
         it("should return the DFSP CA for a valid dfspId", async () => {
           const dfspId = "mock-dfsp-id";
           const mockSecret = { key: "mock-key", value: "mock-value" };
-        
+
           // Stub `validateId`
           sinon.stub(ctx.pkiEngine, "validateId").returns(true);
-        
+
           // Stub `getSecret` to return a mock secret
           sinon.stub(ctx.pkiEngine, "getSecret").resolves(mockSecret);
-        
+
           // Call the method
           const result = await ctx.pkiEngine.getDFSPCA(dfspId);
-        
+
           // Assertions
           assert.deepEqual(result, mockSecret);
           sinon.assert.calledOnceWithExactly(ctx.pkiEngine.validateId, dfspId, "dfspId");
           sinon.assert.calledOnceWithExactly(ctx.pkiEngine.getSecret, `${vaultPaths.DFSP_CA}/${dfspId}`);
-        
+
           // Restore stubs
           ctx.pkiEngine.validateId.restore();
           ctx.pkiEngine.getSecret.restore();
         });
         it("should throw an error if dfspId is invalid", async () => {
           const dfspId = null; // Invalid dfspId
-        
+
           // Stub `validateId` to throw an error
           sinon.stub(ctx.pkiEngine, "validateId").throws(new Error("Invalid dfspId"));
-        
+
           try {
             await ctx.pkiEngine.getDFSPCA(dfspId);
             assert.fail("Should have thrown an error");
@@ -1821,19 +1821,19 @@ describe("PKIEngine", () => {
             assert.instanceOf(err, Error);
             assert.include(err.message, "Invalid dfspId");
           }
-        
+
           // Restore stubs
           ctx.pkiEngine.validateId.restore();
         });
         it("should throw an error if retrieving the secret fails", async () => {
           const dfspId = "mock-dfsp-id";
-        
+
           // Stub `validateId`
           sinon.stub(ctx.pkiEngine, "validateId").returns(true);
-        
+
           // Stub `getSecret` to throw an error
           sinon.stub(ctx.pkiEngine, "getSecret").throws(new Error("Secret retrieval failed"));
-        
+
           try {
             await ctx.pkiEngine.getDFSPCA(dfspId);
             assert.fail("Should have thrown an error");
@@ -1841,26 +1841,26 @@ describe("PKIEngine", () => {
             assert.instanceOf(err, Error);
             assert.include(err.message, "Secret retrieval failed");
           }
-        
+
           // Restore stubs
           ctx.pkiEngine.validateId.restore();
           ctx.pkiEngine.getSecret.restore();
         });
     //...............................................................
-  
+
     it("should return VALID if CSR has the correct signature algorithm", () => {
       const csr = "mock-csr";
       const code = "TEST_CODE";
       const algo = "SHA256withRSA";
-    
+
       // Mock `verifyCSRAlgorithm` to return valid result
       sinon.stub(ctx.pkiEngine, "verifyCSRAlgorithm").returns({
         valid: true,
         reason: { actualAlgorithm: "SHA256withRSA" },
       });
-    
+
       const result = ctx.pkiEngine.validateCsrSignatureAlgorithm(csr, code, algo);
-    
+
       assert.deepEqual(
         result,
         new Validation(
@@ -1870,7 +1870,7 @@ describe("PKIEngine", () => {
           "CSR has a valid Signature Algorithm : SHA256withRSA"
         )
       );
-    
+
       // Restore stubs
       ctx.pkiEngine.verifyCSRAlgorithm.restore();
     });
@@ -1878,15 +1878,15 @@ describe("PKIEngine", () => {
       const csr = "mock-csr";
       const code = "TEST_CODE";
       const algo = "SHA256withRSA";
-    
+
       // Mock `verifyCSRAlgorithm` to return invalid result
       sinon.stub(ctx.pkiEngine, "verifyCSRAlgorithm").returns({
         valid: false,
         reason: { actualAlgorithm: "SHA1withRSA" },
       });
-    
+
       const result = ctx.pkiEngine.validateCsrSignatureAlgorithm(csr, code, algo);
-    
+
       assert.deepEqual(
         result,
         new Validation(
@@ -1896,7 +1896,7 @@ describe("PKIEngine", () => {
           "CSR has a an invalid Signature Algorithm SHA1withRSA"
         )
       );
-    
+
       // Restore stubs
       ctx.pkiEngine.verifyCSRAlgorithm.restore();
     });
@@ -1904,12 +1904,12 @@ describe("PKIEngine", () => {
       const csr = "invalid-csr";
       const code = "TEST_CODE";
       const algo = "SHA256withRSA";
-    
+
       // Mock `verifyCSRAlgorithm` to throw an error
       sinon.stub(ctx.pkiEngine, "verifyCSRAlgorithm").throws(new Error("CSR parsing failed"));
-    
+
       const result = ctx.pkiEngine.validateCsrSignatureAlgorithm(csr, code, algo);
-    
+
       assert.deepEqual(
         result,
         new Validation(
@@ -1919,9 +1919,9 @@ describe("PKIEngine", () => {
           "CSR couldn't be parsed"
         )
       );
-    
+
       // Restore stubs
       ctx.pkiEngine.verifyCSRAlgorithm.restore();
     });
-    
+
 });
