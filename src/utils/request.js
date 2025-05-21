@@ -17,16 +17,10 @@
 
 'use strict';
 
-exports.getRequestData = (req) => {
-  const data = {};
-
-  if (['POST', 'PUT', 'PATCH'].includes(req.method.toUpperCase())) {
-    data.body = req.body;
-  }
-  data.params = req.openapi.pathParams;
-  data.query = req.query;
-  data.headers = req.headers;
-  data.cookies = req.cookies;
-
-  return data;
-};
+exports.getRequestData = (req) => ({
+  ...(['POST', 'PUT', 'PATCH'].includes(req.method.toUpperCase()) && { body: req.body }),
+  params: req.openapi.pathParams,
+  query: req.query,
+  headers: req.headers,
+  cookies: req.cookies
+});
