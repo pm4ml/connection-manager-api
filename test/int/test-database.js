@@ -17,12 +17,9 @@
 
 const db = require('../../src/db/database');
 
-let setup = false;
-
 exports.setupTestDB = async () => {
-  if (!setup) {
-    await db.waitForConnection();
-    setup = true;
+  if (!db.isConnected) {
+    await db.connect();
   }
 };
 
