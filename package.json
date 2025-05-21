@@ -7,8 +7,7 @@
   "contributors": [
     "@Yevhen Kyriukha <yevhen.kyriukha@modusbox.com>",
     "Miguel de Barros <miguel.debarros@modusbox.com>",
-    "Juan Correa <juan.correa@modusbox.com>",
-    "Steven Oderayi <steven.oderayi@infitx.com>"
+    "Juan Correa <juan.correa@modusbox.com>"
   ],
   "main": "src/index.js",
   "files": [
@@ -55,7 +54,8 @@
     "swagger"
   ],
   "overrides": {
-    "cookie": "1.0.2"
+    "cookie": "1.0.2",
+    "multer": "^2.0.0"
   },
   "dependencies": {
     "@hapi/hapi": "21.4.0",
