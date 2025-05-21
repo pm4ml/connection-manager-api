@@ -12,20 +12,29 @@
  *  distributed under the License is distributed on an "AS IS" BASIS,         *
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  *
  *  See the License for the specific language governing permissions and       *
- *  limitations under the License.                                            *
+ *  limitations under the License                                             *
  ******************************************************************************/
 
-const utils = require('../utils/writer.js');
-const DfspOnboardService = require('../service/DfspOnboardService');
-const { getRequestData } = require('../utils/request.js');
+'use strict';
 
-exports.onboardDFSP = (req, res, next) => {
-  const { params: { dfspId } } = getRequestData(req);
-  DfspOnboardService.onboardDFSP(req.context, dfspId)
-    .then(response => {
-      utils.writeJson(res, response);
-    })
-    .catch(response => {
-      utils.writeJson(res, response, response.status);
-    });
+exports.getRequestData = (req) => {
+  const data = {};
+
+  if (['POST', 'PUT', 'PATCH'].includes(req.method.toUpperCase())) {
+    data.body = req.body;
+  }
+  if (req.openapi.pathParams) {
+    data.params = req.openapi.pathParams;
+  }
+  if (req.query) {
+    data.query = req.query;
+  }
+  if (req.headers) {
+    data.headers = req.headers;
+  }
+  if (req.cookies) {
+    data.cookies = req.cookies;
+  }
+
+  return data;
 };

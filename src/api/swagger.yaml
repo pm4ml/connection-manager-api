@@ -2818,12 +2818,16 @@ components:
         email:
           type: string
           description: DFSP operator email address for sending invitation
+      required:
+        - dfspId
+        - name
       example:
         dfspId: DFSP1
         name: DFSP 1
         monetaryZoneId: EUR
     DFSPUpdate:
       type: object
+      minProperties: 1
       properties:
         name:
           type: string
@@ -2834,6 +2838,9 @@ components:
         isProxy:
           type: boolean
           description: Proxy flag
+        securityGroup:
+          type: string
+          description: DFSP Security group
       example:
         name: DFSP 1
         monetaryZoneId: EUR
@@ -2866,6 +2873,8 @@ components:
         clientCSR:
           type: string
           description: PEM encoded CSR
+      required:
+        - clientCSR
     Certificate:
       type: object
       properties:
