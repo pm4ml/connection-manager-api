@@ -2877,6 +2877,7 @@ components:
         - clientCSR
     Certificate:
       type: object
+      minProperties: 1
       properties:
         certificate:
           type: string
@@ -3308,6 +3309,8 @@ components:
         }
     InputURLValue:
       type: object
+      required:
+        - value
       properties:
         value:
           $ref: '#/components/schemas/URLEntry'
