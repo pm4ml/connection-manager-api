@@ -35,7 +35,7 @@ exports.up = async function(knex) {
   await knex.schema.dropTableIfExists(TABLE);
   return knex.schema.createTable(TABLE, (table) => {
     table.increments('id').primary();
-    table.integer('dfspId').unsigned().notNullable();
+    table.string('dfspId', 512).notNullable();
     [
       'PEER_JWS',
       'DFSP_JWS',
@@ -49,7 +49,7 @@ exports.up = async function(knex) {
     ].forEach(field => { table.json(field); });
     table.unique(['dfspId']);
     table.foreign('dfspId', 'FK_STATUS_DFSP_ID')
-      .references('dfsps.id')
+      .references('dfsps.dfsp_id')
       .onDelete('CASCADE')
       .onUpdate('NO ACTION');
   });
