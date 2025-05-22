@@ -102,7 +102,7 @@ describe('DfspWatcher Tests -->', () => {
       expect(dfspModel.updatePingStatus).toHaveBeenCalledWith(dfspId, PingStatus.NOT_REACHABLE);
     });
 
-    test('should update pingStatus to NOT_REACHABLE in case network error', async () => {
+    test('should update pingStatus to PING_ERROR in case network error', async () => {
       const dfspId = 'dfsp1';
       mockAxios.onPost()
         .networkError();
@@ -110,7 +110,7 @@ describe('DfspWatcher Tests -->', () => {
       const watcher = createDfspWatcher({ dfspModel });
 
       await watcher.processOneDfspPing(dfspId);
-      expect(dfspModel.updatePingStatus).toHaveBeenCalledWith(dfspId, PingStatus.NOT_REACHABLE);
+      expect(dfspModel.updatePingStatus).toHaveBeenCalledWith(dfspId, PingStatus.PING_ERROR);
     });
 
     test('should increment errorCounter if response from ping-pong server is not SUCCESS', async () => {
