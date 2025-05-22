@@ -21,10 +21,10 @@ const passport = require('passport');
 const Constants = require('../../src/constants/Constants');
 
 describe('PassportTokenVerifierTest tests', () => {
-  before(() => {
+  beforeAll(() => {
   });
 
-  after(() => {
+  afterAll(() => {
   });
 
   it('should fail because of an invalid signature', async () => {

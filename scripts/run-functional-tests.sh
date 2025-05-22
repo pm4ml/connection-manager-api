@@ -42,6 +42,6 @@ fi
 
 npm i
 
-echo "Executong Functional Tests for $GIT_TAG"
+echo "Executing Functional Tests for $GIT_TAG"
 
 npm test

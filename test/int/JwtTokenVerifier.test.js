@@ -21,11 +21,10 @@ const Constants = require('../../src/constants/Constants');
 const { assert } = require('chai');
 
 describe('JwtTokenVerifierTest tests', function () {
-  this.timeout(0);
-  before(() => {
+  beforeAll(() => {
   });
 
-  after(() => {
+  afterAll(() => {
   });
 
   beforeEach(() => {
@@ -112,7 +111,7 @@ it('should take this as a valid token ( unless it expires )', async () => {
 it('should fail with empty token string', async () => {
   let callbackCalled = false;
   const token = '';
-  const strategy = createJwtStrategy(tokenPropertyExtractor); 
+  const strategy = createJwtStrategy(tokenPropertyExtractor);
   strategy.fail = (err) => {
     assert.deepEqual(err.name, 'JsonWebTokenError');
     assert.deepEqual(err.message, 'jwt must be provided');
@@ -130,7 +129,7 @@ it('should fail with malformed token missing parts', async () => {
   const strategy = createJwtStrategy(tokenPropertyExtractor);
   strategy.fail = (err) => {
     assert.deepEqual(err.name, 'JsonWebTokenError');
-    assert.deepEqual(err.message, 'jwt malformed'); 
+    assert.deepEqual(err.message, 'jwt malformed');
     callbackCalled = true;
   };
   const req = {};
@@ -174,7 +173,7 @@ it('should fail with token issued in future (invalid nbf claim)', async () => {
   // Token with future nbf (not before) claim
   const futureDate = Math.floor(Date.now() / 1000) + 3600; // 1 hour in future
   const token = `eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwibmJmIjoke futureDate},ImlzcyI6InRlc3QiLCJpYXQiOjE1MTYyMzkwMjJ9.signature`;
-  
+
   const strategy = createJwtStrategy(tokenPropertyExtractor);
   strategy.fail = (err) => {
     assert.deepEqual(err.name, 'NotBeforeError');

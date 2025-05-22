@@ -34,12 +34,12 @@ const ROOT_CA = {
 
 describe('PkiService', () => {
   let ctx;
-  before(async () => {
+  beforeAll(async () => {
     await setupTestDB();
     ctx = await createContext();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
@@ -78,7 +78,7 @@ describe('PkiService', () => {
       } catch (error) {
         assert.isTrue(error instanceof ValidationError);
       }
-    }).timeout(15000);
+    }, 15000);
 
     it('should create a CA', async () => {
       const result = await createInternalHubCA(ctx, ROOT_CA);
@@ -86,7 +86,7 @@ describe('PkiService', () => {
 
       const newCa = await getHubCA(ctx);
       assert.isNotNull(newCa);
-    }).timeout(15000);
+    }, 15000);
 
     it('should throw ValidationError when passing a CAInitialInfo without CSR', async () => {
       // Bad input
@@ -104,7 +104,7 @@ describe('PkiService', () => {
       } catch (error) {
         assert.isTrue(error instanceof ValidationError);
       }
-    }).timeout(15000);
+    }, 15000);
 
     it('should throw NotFoundError when getting a non-existent CA', async () => {
       try {
@@ -113,14 +113,14 @@ describe('PkiService', () => {
       } catch (error) {
         assert.isTrue(error instanceof NotFoundError);
       }
-    }).timeout(15000);
+    }, 15000);
   });
 
   describe('DFSP', () => {
-    beforeEach('creating hook Environment', async () => {
+    beforeEach(async () => {
     });
 
-    afterEach('tearing down hook CA', async () => {
+    afterEach(async () => {
     });
 
     it('should create a DFSP and delete it', async () => {

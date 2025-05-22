@@ -115,21 +115,21 @@ const createSelfSignedCA = () => {
 
 describe('HubCAServiceTest', () => {
   let ctx;
-  before(async () => {
+  beforeAll(async () => {
     await setupTestDB();
     ctx = await createContext();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
 
   describe('input parameters validation', () => {
-    beforeEach('creating hook Environment', async () => {
+    beforeEach(async () => {
     });
 
-    afterEach('tearing down hook CA', async () => {
+    afterEach(async () => {
     });
 
     it('should create external CA', async () => {
@@ -141,7 +141,7 @@ describe('HubCAServiceTest', () => {
       };
 
       await HubCAService.createExternalHubCA(ctx, body);
-    }).timeout(15000);
+    }, 15000);
 
     it('should create internal CA', async () => {
       const body = {
@@ -149,6 +149,6 @@ describe('HubCAServiceTest', () => {
         O: 'Example Company'
       };
       await HubCAService.createInternalHubCA(ctx, body);
-    }).timeout(15000);
+    }, 15000);
   });
 });

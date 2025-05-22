@@ -38,17 +38,17 @@ describe('DfspNetworkConfigService Unit Tests', () => {
   const dfspId = 'DFSP_TEST_1';
   const endpointId = 'ENDPOINT_TEST_1';
 
-  before(async () => {
+  beforeAll(async () => {
     ctx = await createContext();
     await setupTestDB();
   });
-  beforeEach(() => sinon.restore());  
+  beforeEach(() => sinon.restore());
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
-  
+
   // Test getDfspStatus
   describe('getDfspStatus', () => {
     it('should return default status when DFSP exists', async () => {
@@ -99,7 +99,7 @@ describe('DfspNetworkConfigService Unit Tests', () => {
   // Test createDFSPIngressIp
   describe('createDFSPIngressIp', () => {
     beforeEach(() => {
-      sinon.restore(); 
+      sinon.restore();
     });
     it('should create a DFSP Ingress IP entry', async () => {
       sinon.stub(PkiService, 'validateDfsp').resolves();
@@ -114,9 +114,9 @@ describe('DfspNetworkConfigService Unit Tests', () => {
 
     it('should throw ValidationError for missing address', async () => {
       sinon.stub(PkiService, 'validateDfsp').resolves();
-    
+
       const body = { value: { ports: ['80'] } };
-    
+
       try {
         await DfspNetworkConfigService.createDFSPIngressIp(ctx, dfspId, body);
         assert.fail('Expected ValidationError');
@@ -124,12 +124,12 @@ describe('DfspNetworkConfigService Unit Tests', () => {
         assert.instanceOf(error, ValidationError);
         assert.equal(error.message, 'No address received');
       }
-    }); 
- 
+    });
+
 
     it('should throw ValidationError for missing ports', async () => {
-      sinon.stub(PkiService, 'validateDfsp').resolves();     
-      const body = { value: { address: '1.1.1.1' } };   
+      sinon.stub(PkiService, 'validateDfsp').resolves();
+      const body = { value: { address: '1.1.1.1' } };
       try {
         await DfspNetworkConfigService.createDFSPIngressIp(ctx, dfspId, body);
         assert.fail('Expected ValidationError');
@@ -138,12 +138,12 @@ describe('DfspNetworkConfigService Unit Tests', () => {
         assert.equal(error.message, 'No ports received');
       }
     });
-    
+
     it('should throw ValidationError when creating DFSP Ingress with empty body', async () => {
       sinon.stub(PkiService, 'validateDfsp').resolves(); // Prevent NotFoundError
-    
+
       const emptyBody = { value: {} }; // Ensure the structure exists
-    
+
       try {
         await DfspNetworkConfigService.createDFSPIngressIp(ctx, dfspId, emptyBody);
         assert.fail('Expected ValidationError');
@@ -166,16 +166,16 @@ describe('DfspNetworkConfigService Unit Tests', () => {
       assert.notEqual(updated.url, original.url);
       assert.equal(updated.state, StatusEnum.NOT_STARTED);
     });
-  
+
     it('should maintain consistent state between create and get operations', async () => {
       const body = { url: 'http://test.com' };
-  
+
       sinon.stub(DfspNetworkConfigService, 'createDFSPIngress').resolves({ dfspId, url: body.url, state: StatusEnum.NOT_STARTED });
       sinon.stub(DfspNetworkConfigService, 'getDFSPIngress').resolves({ dfspId, url: body.url, state: StatusEnum.NOT_STARTED });
-  
+
       const created = await DfspNetworkConfigService.createDFSPIngress(ctx, dfspId, body);
       const retrieved = await DfspNetworkConfigService.getDFSPIngress(ctx, dfspId);
-  
+
       assert.deepEqual(created, retrieved);
       assert.equal(created.dfspId, retrieved.dfspId);
       assert.equal(created.url, retrieved.url);
@@ -184,7 +184,7 @@ describe('DfspNetworkConfigService Unit Tests', () => {
 
     it('should throw NotFoundError when getting non-existent DFSP Ingress', async () => {
       sinon.stub(DfspNetworkConfigService, 'getDFSPIngress').throws(new NotFoundError('DFSP Ingress not found'));
-    
+
       try {
         await DfspNetworkConfigService.getDFSPIngress(ctx, 'NONEXISTENT_DFSP');
         assert.fail('Expected NotFoundError'); // Fails the test if error is not thrown
@@ -255,7 +255,7 @@ describe('DfspNetworkConfigService', () => {
   const dfspId = 'DFSP_TEST_1';
   const epId = 'EP_TEST_1';
 
-  before(async () => {
+  beforeAll(async () => {
     ctx = await createContext();
     await setupTestDB();
   });
@@ -279,7 +279,7 @@ describe('DfspNetworkConfigService', () => {
     sinon.restore();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
@@ -366,16 +366,16 @@ describe('validateDirectionType Tests', () => {
 describe('DfspNetworkConfigService creating endpoint items', () => {
   let dfspId = null;
   let ctx;
-  before(async () => {
+  beforeAll(async () => {
     ctx = await createContext();
     await setupTestDB();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
-  beforeEach('creating hook DFSP', async () => {
+  beforeEach(async () => {
     const dfsp = {
       dfspId: 'DFSP_TEST_B',
       name: 'DFSP_TEST_B_description'
@@ -384,7 +384,7 @@ describe('DfspNetworkConfigService creating endpoint items', () => {
     dfspId = resultDfsp.id;
   });
 
-  afterEach('tearing down hook DFSP', async () => {
+  afterEach(async () => {
     await PkiService.deleteDFSP(ctx, dfspId);
   });
 
@@ -576,20 +576,20 @@ describe('DfspNetworkConfigService creating endpoint items', () => {
 
   it('should update a set of endpoints', async () => {
     let urlBody = { value: { url: 'http://www.sun.com' } };
-  
+
     // Step 1: Create the initial URL
     const created = await DfspNetworkConfigService.createDFSPIngressUrl(ctx, dfspId, urlBody);
     assert.equal(created.value.url, 'http://www.sun.com');
-  
+
     // Step 2: Update the same endpoint using its ID
     urlBody = { value: { url: 'http://www.oracle.com' } };
     await DfspNetworkConfigService.updateDFSPEndpoint(ctx, dfspId, created.id, urlBody);
-  
+
     // Step 3: Retrieve and check if the update was successful
     const updated = await DfspNetworkConfigService.getDFSPIngressUrls(ctx, dfspId);
     assert.equal(updated[0].value.url, 'http://www.oracle.com');
-  });  
-  
+  });
+
 
   it('should not throw NotFoundError when no IngressUrl endpoint configured', async () => {
     const items = await DfspNetworkConfigService.getDFSPIngressUrls(ctx, dfspId);
@@ -703,7 +703,7 @@ describe('DfspNetworkConfigService creating endpoint items', () => {
 
   it('should throw NotFoundError when DFSP status is not found', async () => {
     sinon.stub(DFSPModel, 'findByDfspId').throws(new NotFoundError('DFSP not found'));
-  
+
     try {
       await DfspNetworkConfigService.getDfspStatus(ctx, 'INVALID_DFSP');
       assert.fail('Expected NotFoundError');
@@ -711,13 +711,13 @@ describe('DfspNetworkConfigService creating endpoint items', () => {
       assert(error instanceof NotFoundError);
       assert.equal(error.message, 'Status for environment: dfsp: INVALID_DFSP not found');
     }
-  
+
     DFSPModel.findByDfspId.restore();
   });
-  
+
   it('should throw ValidationError when creating DFSP Ingress IP with missing ports', async () => {
     const invalidBody = { value: { address: '1.1.1.1' } };
-  
+
     try {
       await DfspNetworkConfigService.createDFSPIngressIp(ctx, dfspId, invalidBody);
       assert.fail('Expected ValidationError');
@@ -728,7 +728,7 @@ describe('DfspNetworkConfigService creating endpoint items', () => {
   });
   it('should throw ValidationError if ports is not an array', async () => {
     const invalidBody = { value: { address: '1.1.1.1', ports: '80' } }; // String instead of array
-  
+
     try {
       await DfspNetworkConfigService.createDFSPEgressIp(ctx, dfspId, invalidBody);
       assert.fail('Expected ValidationError');
@@ -737,10 +737,10 @@ describe('DfspNetworkConfigService creating endpoint items', () => {
       assert.equal(error.message, 'Ports must be an array');
     }
   });
-  
+
   it('should throw ValidationError when creating DFSP Egress IP with invalid IP format', async () => {
     const invalidBody = { value: { address: '999.999.999.999', ports: ['80'] } };
-  
+
     try {
       await DfspNetworkConfigService.createDFSPEgressIp(ctx, dfspId, invalidBody);
       assert.fail('Expected ValidationError');
@@ -749,14 +749,14 @@ describe('DfspNetworkConfigService creating endpoint items', () => {
       assert.include(error.message, 'Invalid IP address or CIDR range'); // Updated message
     }
   });
-  
-  
+
+
   it('should throw ValidationError when updating DFSP endpoint with invalid URL', async () => {
     const endpointId = 'some-endpoint-id';
     const invalidBody = { value: { url: 'invalid-url' } };
-  
+
     sinon.stub(DFSPEndpointItemModel, 'findObjectById').resolves({ id: endpointId });
-  
+
     try {
       await DfspNetworkConfigService.updateDFSPEndpoint(ctx, dfspId, endpointId, invalidBody);
       assert.fail('Expected ValidationError');
@@ -764,14 +764,14 @@ describe('DfspNetworkConfigService creating endpoint items', () => {
       assert(error instanceof ValidationError);
       assert.include(error.message, 'Invalid URL');
     }
-  
+
     DFSPEndpointItemModel.findObjectById.restore();
-  });    
+  });
   it('should throw NotFoundError when deleting non-existent DFSP endpoint', async () => {
     const endpointId = 'non-existent-id';
-  
+
     sinon.stub(DFSPEndpointItemModel, 'findObjectById').throws(new NotFoundError('Endpoint not found'));
-  
+
     try {
       await DfspNetworkConfigService.deleteDFSPEndpoint(ctx, dfspId, endpointId);
       assert.fail('Expected NotFoundError');
@@ -779,43 +779,43 @@ describe('DfspNetworkConfigService creating endpoint items', () => {
       assert(error instanceof NotFoundError);
       assert.equal(error.message, 'Endpoint not found');
     }
-  
+
     DFSPEndpointItemModel.findObjectById.restore();
   });
   it('should return an array of unprocessed endpoint items', async () => {
     const mockData = [{ id: '1', value: { url: 'http://test.com' } }];
     sinon.stub(DFSPEndpointItemModel, 'findAllEnvState').resolves(mockData);
-  
+
     const items = await DfspNetworkConfigService.getUnprocessedEndpointItems(ctx);
-  
+
     assert.isArray(items);
     assert.equal(items.length, 1);
     assert.equal(items[0].value.url, 'http://test.com');
-  
+
     DFSPEndpointItemModel.findAllEnvState.restore();
   });
   it('should confirm an endpoint item successfully', async () => {
     const endpointId = 'endpoint-id';
-  
+
     sinon.stub(DFSPEndpointItemModel, 'update').resolves({ id: endpointId, state: 'CONFIRMED' });
-  
+
     const result = await DfspNetworkConfigService.confirmEndpointItem(ctx, dfspId, endpointId);
-  
+
     assert.equal(result.state, 'CONFIRMED');
-  
+
     DFSPEndpointItemModel.update.restore();
   });
   it('should return an empty array when no DFSP Egress IPs exist', async () => {
     sinon.stub(DFSPEndpointItemModel, 'findObjectByDirectionType').resolves([]);
-  
+
     const result = await DfspNetworkConfigService.getDFSPEgressIps(ctx, dfspId);
-  
+
     assert.isArray(result);
     assert.isEmpty(result);
-  
+
     DFSPEndpointItemModel.findObjectByDirectionType.restore();
   });
-              
+
   it('should create an Endpoint Ingress config', async () => {
     const body = {
       url: 'string'
@@ -841,14 +841,14 @@ describe('DfspNetworkConfigService Edge Cases and Validations', () => {
   const dfspId = 'EDGE_TEST_DFSP';
   const epId = 'EDGE_TEST_EP';
 
-  before(async () => {
+  beforeAll(async () => {
     ctx = await createContext();
     await setupTestDB();
   });
 
   beforeEach(() => sinon.restore());
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
@@ -936,14 +936,14 @@ describe('DfspNetworkConfigService Edge Cases and Validations', () => {
       });
 
       const result = await DfspNetworkConfigService.confirmEndpointItem(ctx, dfspId, epId);
-      
+
       assert.equal(result.state, 'CONFIRMED');
       assert.isTrue(DFSPEndpointItemModel.update.calledWith(dfspId, epId, { state: 'CONFIRMED' }));
     });
 
     it('should validate direction consistency during updates', async () => {
       const body = { direction: 'INVALID' };
-      
+
       try {
         await DfspNetworkConfigService.updateDFSPIngressIpEndpoint(ctx, dfspId, epId, body);
         assert.fail('Should reject invalid direction');
@@ -1006,17 +1006,17 @@ describe('getDFSPIngressIpEndpoint', () => {
 
   const dfspId = 'dfsp123';
   const epId = 'ep123';
-  
+
   beforeEach(() => {
 
     getDFSPEndpointStub = sinon.stub(DfspNetworkConfigService, 'getDFSPEndpoint').resolves({
-      direction: 'INGRESS',  
-      type: 'IP',  
+      direction: 'INGRESS',
+      type: 'IP',
     });
   });
 
   afterEach(() => {
-    sinon.restore();  
+    sinon.restore();
   });
 
 
@@ -1035,7 +1035,7 @@ describe('getDFSPIngressIpEndpoint', () => {
   it('should throw ValidationError if type does not match', async () => {
     getDFSPEndpointStub.resolves({ direction: 'INGRESS', type: 'ADDRESS' });
 
-   
+
     try {
       await DfspNetworkConfigService.getDFSPIngressIpEndpoint(dfspId, epId);
       assert.fail('Expected ValidationError to be thrown');
@@ -1056,37 +1056,37 @@ describe('updateDFSPEgressIpEndpoint', () => {
 
   beforeEach(() => {
     getDFSPEndpointStub = sinon.stub(DfspNetworkConfigService, 'getDFSPEndpoint').resolves({
-      direction: 'EGRESS',  
-      type: 'IP',  
+      direction: 'EGRESS',
+      type: 'IP',
     });
 
-  
+
     updateDFSPEndpointStub = sinon.stub(DfspNetworkConfigService, 'updateDFSPEndpoint').resolves({ success: true });
   });
 
   afterEach(() => {
-    sinon.restore(); 
+    sinon.restore();
   });
 
   it('should throw ValidationError if direction is not "EGRESS"', async () => {
-    body.direction = 'INGRESS';  
-  
+    body.direction = 'INGRESS';
+
     try {
       await DfspNetworkConfigService.updateDFSPEgressIpEndpoint(null, dfspId, epId, body);
       assert.fail('Expected ValidationError to be thrown');
     } catch (err) {
       assert.instanceOf(err, ValidationError, 'Expected a ValidationError');
-      
+
       assert.include(err.message, 'Bad direction value', 'Error message should mention bad direction');
-  
+
       assert.isObject(err.payload.validationErrors, 'Validation errors should be in the payload');
     }
   });
-  
+
 
   it('should throw ValidationError if type is not "IP"', async () => {
     body.type = 'ADDRESS';  // Invalid type
-    
+
     try {
       await DfspNetworkConfigService.updateDFSPEgressIpEndpoint(null, dfspId, epId, body);
       assert.fail('Expected ValidationError to be thrown');
@@ -1097,17 +1097,17 @@ describe('updateDFSPEgressIpEndpoint', () => {
   });
 
   it('should not throw error if direction is "EGRESS" and type is "IP"', async () => {
-    body.direction = 'EGRESS';  
-    body.type = 'IP'; 
+    body.direction = 'EGRESS';
+    body.type = 'IP';
 
     const result = await DfspNetworkConfigService.updateDFSPEgressIpEndpoint(null, dfspId, epId, body);
-    
+
     assert.isTrue(updateDFSPEndpointStub.calledOnceWith(dfspId, epId, body), 'updateDFSPEndpoint should be called with correct parameters');
     assert.deepEqual(result, { success: true }, 'Returned result should match the mock data');
   });
 
   it('should throw ValidationError if direction is not "EGRESS"', async () => {
-    body.direction = 'INGRESS';  
+    body.direction = 'INGRESS';
 
     try {
       await DfspNetworkConfigService.updateDFSPEgressIpEndpoint(null, dfspId, epId, body);
@@ -1123,18 +1123,18 @@ describe('getDFSPIngressUrlEndpoint', () => {
   let getDFSPEndpointStub;
   const dfspId = 'dfsp123';
   const epId = 'ep123';
-  const ctx = {}; 
+  const ctx = {};
 
   beforeEach(() => {
     getDFSPEndpointStub = sinon.stub(DfspNetworkConfigService, 'getDFSPEndpoint').resolves({
-      direction: 'INGRESS',  
-      type: 'URL',  
-      url: 'https://example.com', 
+      direction: 'INGRESS',
+      type: 'URL',
+      url: 'https://example.com',
     });
   });
 
   afterEach(() => {
-    sinon.restore(); 
+    sinon.restore();
   });
 
   it('should call validateDirectionType with correct arguments', async () => {
@@ -1155,7 +1155,7 @@ describe('getDFSPIngressUrlEndpoint', () => {
       getDFSPEndpointStub.calledOnce,
       'getDFSPEndpoint should be called once'
     );
-    
+
     assert.isTrue(
       getDFSPEndpointStub.calledWith(dfspId, epId),
       `getDFSPEndpoint should be called with ${dfspId} and ${epId}`
@@ -1167,7 +1167,7 @@ describe('getDFSPIngressUrlEndpoint', () => {
       'The returned endpoint should match the mock response from getDFSPEndpoint'
     );
   });
-  
+
 
   it('should throw ValidationError if direction does not match', async () => {
     getDFSPEndpointStub.resolves({ direction: 'EGRESS', type: 'URL' });
@@ -1199,17 +1199,17 @@ describe('updateDFSPIngressUrlEndpoint', () => {
   let validateDirectionTypeStub;
   const dfspId = 'dfsp123';
   const epId = 'ep123';
-  const ctx = {};  
+  const ctx = {};
   beforeEach(() => {
     updateDFSPEndpointStub = sinon.stub(DfspNetworkConfigService, 'updateDFSPEndpoint').resolves({}); // Mocking success response
   });
 
   afterEach(() => {
-    sinon.restore();  
-  });  
+    sinon.restore();
+  });
 
   it('should set type to URL if not provided', async () => {
-    const body = {};  
+    const body = {};
     const result = await DfspNetworkConfigService.updateDFSPIngressUrlEndpoint(ctx, dfspId, epId, body);
 
     assert.equal(body.type, 'URL', 'Type should default to URL');
@@ -1390,7 +1390,7 @@ describe('DfspNetworkConfigService', () => {
       expect(error.message).to.equal('Bad type value');
     }
   });
- 
+
   it('should not throw error if type is "IP"', async () => {
     const body = { type: 'IP' };  // type is already "IP"
     const result = await DfspNetworkConfigService.updateDFSPEgressIpEndpoint(ctx, dfspId, epId, body);
@@ -1484,14 +1484,14 @@ describe('DfspNetworkConfigService Edge Cases and Validations', () => {
   const dfspId = 'EDGE_TEST_DFSP';
   const epId = 'EDGE_TEST_EP';
 
-  before(async () => {
+  beforeAll(async () => {
     ctx = await createContext();
     await setupTestDB();
   });
 
   beforeEach(() => sinon.restore());
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
@@ -1579,14 +1579,14 @@ describe('DfspNetworkConfigService Edge Cases and Validations', () => {
       });
 
       const result = await DfspNetworkConfigService.confirmEndpointItem(ctx, dfspId, epId);
-      
+
       assert.equal(result.state, 'CONFIRMED');
       assert.isTrue(DFSPEndpointItemModel.update.calledWith(dfspId, epId, { state: 'CONFIRMED' }));
     });
 
     it('should validate direction consistency during updates', async () => {
       const body = { direction: 'INVALID' };
-      
+
       try {
         await DfspNetworkConfigService.updateDFSPIngressIpEndpoint(ctx, dfspId, epId, body);
         assert.fail('Should reject invalid direction');
@@ -1668,5 +1668,5 @@ describe('DfspNetworkConfigService Edge Cases and Validations', () => {
         assert.instanceOf(error, NotFoundError);
       }
     });
-  });  
+  });
 });
