@@ -33,7 +33,7 @@ const createWinstonLogger = () => {
     meta: true,
     msg: 'HTTP {{req.method}} {{req.url}}',
     expressFormat: true,
-    colorize: true,
+    colorize: false,
     ignoreRoute: function (req, res) { return false; }
   });
 };
