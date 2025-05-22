@@ -32,12 +32,14 @@ const PingStatus = Object.freeze({
   NOT_REACHABLE: 'NOT_REACHABLE',
   JWS_FAILED: 'JWS_FAILED',
   TIMED_OUT: 'TIMED_OUT',
+  PING_ERROR: 'PING_ERROR', // connection to ping-pong server failed
 });
 
 const PingStatusToError = Object.freeze({
   [PingStatus.NOT_REACHABLE]: 'network',
   [PingStatus.JWS_FAILED]: 'jws',
   [PingStatus.TIMED_OUT]: 'timeout',
+  [PingStatus.PING_ERROR]: 'ping_error',
   // todo: think, how to detect mTLS error
 });
 
