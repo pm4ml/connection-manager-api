@@ -36,10 +36,13 @@ cd ./test/functional-tests
 echo "Installing dependencies"
 
 if [[ -f ".nvmrc" ]]; then
+  # Set NVM_DIR for CircleCI or fallback to $HOME/.nvm
+  export NVM_DIR="${NVM_DIR:-/opt/circleci/.nvm}"
+  # shellcheck disable=SC1090
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
   if ! command -v nvm &> /dev/null; then
     echo "nvm not found, installing nvm..."
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-    export NVM_DIR="$HOME/.nvm"
     # shellcheck disable=SC1090
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
   fi

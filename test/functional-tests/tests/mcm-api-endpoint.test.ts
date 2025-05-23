@@ -52,7 +52,7 @@ describe('MCM API Tests', () => {
 
   const apiHelper = new ApiHelper(apiHelperOptions);
 
-  before(async () => {
+  beforeAll(async () => {
     // lets see if the DFSP already exists
     const getDFSPResponse = await apiHelper.sendRequest({
       method: MethodEnum.GET,
