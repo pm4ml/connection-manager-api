@@ -32,12 +32,12 @@ describe('first login', () => {
   let wso2ClientTokenMock;
   let ctx;
 
-  before(async () => {
+  beforeAll(async () => {
     ctx = await createContext();
     wso2ClientTokenMock = sinon.stub(Wso2Client, 'getToken');
   });
 
-  after(() => {
+  afterAll(() => {
     destroyContext(ctx);
     wso2ClientTokenMock.restore();
   });
@@ -100,14 +100,14 @@ describe('2step', () => {
   let wso2MSClientMock;
   let ctx;
 
-  before(async () => {
+  beforeAll(async () => {
     ctx = await createContext();
     wso2ClientTokenMock = sinon.stub(Wso2Client, 'getToken');
     wso2MSClientMock = sinon.stub(Wso2MSClient, 'setUserClaimValue');
     wso2TotpClientMock = sinon.stub(Wso2TotpClient, 'validateTOTP');
   });
 
-  after(() => {
+  afterAll(() => {
     wso2ClientTokenMock.restore();
     wso2MSClientMock.restore();
     wso2TotpClientMock.restore();
@@ -184,11 +184,11 @@ describe('change password', () => {
 
   let ctx;
 
-  before(async () => {
+  beforeAll(async () => {
     ctx = await createContext();
   });
 
-  after(() => {
+  afterAll(() => {
     destroyContext(ctx);
   });
 
@@ -221,7 +221,7 @@ describe('logout', () => {
   let ctx;
   let req;
   let res;
-  
+
   beforeEach(async () => {
     ctx = await createContext();
     req = {};
@@ -234,12 +234,12 @@ describe('logout', () => {
 
   it('should clear the JWT cookie', async () => {
     const cookiesStub = sinon.stub(Cookies.prototype, 'set');
-    
+
     await LoginService.logoutUser(ctx, req, res);
-    
+
     assert.isTrue(cookiesStub.calledOnce);
     assert.isTrue(cookiesStub.calledWith(Constants.OAUTH.JWT_COOKIE_NAME));
-    
+
     cookiesStub.restore();
   });
 });
@@ -266,16 +266,16 @@ describe('loginUser additional scenarios', () => {
   it('should handle 2FA enrolled user login correctly', async () => {
     Constants.OAUTH.AUTH_ENABLED = true;
     Constants.AUTH_2FA.AUTH_2FA_ENABLED = true;
-    
+
     const loginResponseObj = {
       access_token: 'test-token',
       id_token: 'eyJ4NXQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJraWQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJhbGciOiJIUzUxMiJ9.eyJhdF9oYXNoIjoidFMzdkRvb1NkQmtaWkt1d2VCcGtGUSIsImVucm9sbGVkIjoiZmFsc2UiLCJhdWQiOiJwa2lfYWRtaW5fcG9ydGFsX2Rldl9wa2kiLCJzdWIiOiJncmVnMSIsInVzZXJndWlkIjoiNjI0OTFlMTYtN2Q0Yi00NTA0LTk3NWEtMDMxM2MxMzIwOTRmIiwibmJmIjoxNTY3NzY3OTk0LCJhenAiOiJwa2lfYWRtaW5fcG9ydGFsX2Rldl9wa2kiLCJhbXIiOlsicGFzc3dvcmQiXSwiaXNzIjoiaHR0cHM6Ly9kZXZpbnQxd3NvMmlza20uY2FzYWh1Yi5saXZlOjk0NDMvb2F1dGgyL3Rva2VuIiwiZ3JvdXBzIjoiSW50ZXJuYWwvZXZlcnlvbmUiLCJleHAiOjE1Njc3NzE1OTQsImlhdCI6MTU2Nzc2Nzk5NCwiMmZhLWVucm9sbGVkIjoidHJ1ZSJ9'
     };
-    
+
     wso2ClientTokenMock.returns(loginResponseObj);
-    
+
     const response = await LoginService.loginUser(ctx, { username: 'user1', password: 'pass1' }, req, res);
-    
+
     assert.strictEqual(response.enrolled, true);
     assert.strictEqual(response['2faEnabled'], true);
   });
@@ -283,17 +283,17 @@ describe('loginUser additional scenarios', () => {
   it('should extract DFSP ID from groups when not directly provided', async () => {
     Constants.OAUTH.AUTH_ENABLED = true;
     Constants.AUTH_2FA.AUTH_2FA_ENABLED = false;
-    
+
     const loginResponseObj = {
       access_token: 'test-token',
       id_token: 'eyJ4NXQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJraWQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJhbGciOiJIUzUxMiJ9.eyJhdF9oYXNoIjoidFMzdkRvb1NkQmtaWkt1d2VCcGtGUSIsImF1ZCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsInN1YiI6ImdyZWcxIiwidXNlcmd1aWQiOiI2MjQ5MWUxNi03ZDRiLTQ1MDQtOTc1YS0wMzEzYzEzMjA5NGYiLCJuYmYiOjE1Njc3Njc5OTQsImF6cCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsImFtciI6WyJwYXNzd29yZCJdLCJpc3MiOiJodHRwczovL2RldmludDF3c28yaXNrbS5jYXNhaHViLmxpdmU6OTQ0My9vYXV0aDIvdG9rZW4iLCJncm91cHMiOlsiQXBwbGljYXRpb24vREZTUDp0ZXN0REZTUCIsIkludGVybmFsL2V2ZXJ5b25lIl0sImV4cCI6MTU2Nzc3MTU5NCwiaWF0IjoxNTY3NzY3OTk0fQ'
     };
-    
+
     wso2ClientTokenMock.returns(loginResponseObj);
-    
+
     const cookiesStub = sinon.stub(Cookies.prototype, 'set');
     const response = await LoginService.loginUser(ctx, { username: 'user1', password: 'pass1' }, req, res);
-    
+
     assert.strictEqual(response.token.payload.dfspId, 'testDFSP');
     assert.isTrue(cookiesStub.calledOnce);
     assert.isTrue(cookiesStub.calledWith(
@@ -306,42 +306,42 @@ describe('loginUser additional scenarios', () => {
   it('should handle non-enrolled 2FA user login correctly', async () => {
     Constants.OAUTH.AUTH_ENABLED = true;
     Constants.AUTH_2FA.AUTH_2FA_ENABLED = true;
-    
+
     const sharedSecret = 'TEST_SECRET_KEY';
     const wso2TotpClientMock = sinon.stub(Wso2TotpClient, 'retrieveSecretKey').returns(sharedSecret);
-    
+
     const loginResponseObj = {
       access_token: 'test-token',
       id_token: 'eyJ4NXQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJraWQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJhbGciOiJIUzUxMiJ9.eyJhdF9oYXNoIjoidFMzdkRvb1NkQmtaWkt1d2VCcGtGUSIsImF1ZCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsInN1YiI6ImdyZWcxIiwidXNlcmd1aWQiOiI2MjQ5MWUxNi03ZDRiLTQ1MDQtOTc1YS0wMzEzYzEzMjA5NGYiLCJuYmYiOjE1Njc3Njc5OTQsImF6cCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsImFtciI6WyJwYXNzd29yZCJdLCJpc3MiOiJodHRwczovL2RldmludDF3c28yaXNrbS5jYXNhaHViLmxpdmU6OTQ0My9vYXV0aDIvdG9rZW4iLCJncm91cHMiOiJJbnRlcm5hbC9ldmVyeW9uZSIsImV4cCI6MTU2Nzc3MTU5NCwiaWF0IjoxNTY3NzY3OTk0LCIyZmEtZW5yb2xsZWQiOiJmYWxzZSJ9'
     };
-    
+
     wso2ClientTokenMock.returns(loginResponseObj);
-    
+
     const response = await LoginService.loginUser(ctx, { username: 'user1', password: 'pass1' }, req, res);
-    
+
     assert.strictEqual(response.enrolled, false);
     assert.strictEqual(response['2faEnabled'], true);
     assert.strictEqual(response.sharedSecret, sharedSecret);
     assert.strictEqual(response.issuer, Constants.AUTH_2FA.TOTP_ISSUER);
     assert.strictEqual(response.label, Constants.AUTH_2FA.TOTP_LABEL);
-    
+
     wso2TotpClientMock.restore();
   });
 
   it('should handle multiple DFSP groups and use the first one', async () => {
     Constants.OAUTH.AUTH_ENABLED = true;
     Constants.AUTH_2FA.AUTH_2FA_ENABLED = false;
-    
+
     const loginResponseObj = {
       access_token: 'test-token',
       id_token: 'eyJ4NXQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJraWQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJhbGciOiJIUzUxMiJ9.eyJhdF9oYXNoIjoidFMzdkRvb1NkQmtaWkt1d2VCcGtGUSIsImF1ZCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsInN1YiI6ImdyZWcxIiwidXNlcmd1aWQiOiI2MjQ5MWUxNi03ZDRiLTQ1MDQtOTc1YS0wMzEzYzEzMjA5NGYiLCJuYmYiOjE1Njc3Njc5OTQsImF6cCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsImFtciI6WyJwYXNzd29yZCJdLCJpc3MiOiJodHRwczovL2RldmludDF3c28yaXNrbS5jYXNhaHViLmxpdmU6OTQ0My9vYXV0aDIvdG9rZW4iLCJncm91cHMiOlsiQXBwbGljYXRpb24vREZTUDpmaXJzdERGU1AiLCJBcHBsaWNhdGlvbi9ERlNQOnNlY29uZERGU1AiLCJJbnRlcm5hbC9ldmVyeW9uZSJdLCJleHAiOjE1Njc3NzE1OTQsImlhdCI6MTU2Nzc2Nzk5NH0'
     };
-    
+
     wso2ClientTokenMock.returns(loginResponseObj);
-    
+
     const cookiesStub = sinon.stub(Cookies.prototype, 'set');
     const response = await LoginService.loginUser(ctx, { username: 'user1', password: 'pass1' }, req, res);
-    
+
     assert.strictEqual(response.token.payload.dfspId, 'firstDFSP');
     cookiesStub.restore();
   });
@@ -349,17 +349,17 @@ describe('loginUser additional scenarios', () => {
   it('should handle direct dfspId in token payload', async () => {
     Constants.OAUTH.AUTH_ENABLED = true;
     Constants.AUTH_2FA.AUTH_2FA_ENABLED = false;
-    
+
     const loginResponseObj = {
       access_token: 'test-token',
       id_token: 'eyJ4NXQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJraWQiOiJOVEF4Wm1NeE5ETXlaRGczTVRVMVpHTTBNekV6T0RKaFpXSTRORE5sWkRVMU9HRmtOakZpTVEiLCJhbGciOiJIUzUxMiJ9.eyJhdF9oYXNoIjoidFMzdkRvb1NkQmtaWkt1d2VCcGtGUSIsImF1ZCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsInN1YiI6ImdyZWcxIiwidXNlcmd1aWQiOiI2MjQ5MWUxNi03ZDRiLTQ1MDQtOTc1YS0wMzEzYzEzMjA5NGYiLCJuYmYiOjE1Njc3Njc5OTQsImF6cCI6InBraV9hZG1pbl9wb3J0YWxfZGV2X3BraSIsImFtciI6WyJwYXNzd29yZCJdLCJpc3MiOiJodHRwczovL2RldmludDF3c28yaXNrbS5jYXNhaHViLmxpdmU6OTQ0My9vYXV0aDIvdG9rZW4iLCJncm91cHMiOlsiSW50ZXJuYWwvZXZlcnlvbmUiXSwiZGZzcElkIjoiZGlyZWN0REZTUCIsImV4cCI6MTU2Nzc3MTU5NCwiaWF0IjoxNTY3NzY3OTk0fQ'
     };
-    
+
     wso2ClientTokenMock.returns(loginResponseObj);
-    
+
     const cookiesStub = sinon.stub(Cookies.prototype, 'set');
     const response = await LoginService.loginUser(ctx, { username: 'user1', password: 'pass1' }, req, res);
-    
+
     assert.strictEqual(response.token.payload.dfspId, 'directDFSP');
     cookiesStub.restore();
   });

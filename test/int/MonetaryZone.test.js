@@ -22,12 +22,12 @@ const { createContext, destroyContext } = require('./context');
 
 describe('MonetaryZoneTest', () => {
   let ctx;
-  before(async () => {
+  beforeAll(async () => {
     await setupTestDB();
     ctx = await createContext();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });

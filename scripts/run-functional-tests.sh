@@ -36,12 +36,22 @@ cd ./test/functional-tests
 echo "Installing dependencies"
 
 if [[ -f ".nvmrc" ]]; then
-    nvm install $(cat .nvmrc)
-    nvm use
+  # Set NVM_DIR for CircleCI or fallback to $HOME/.nvm
+  export NVM_DIR="${NVM_DIR:-/opt/circleci/.nvm}"
+  # shellcheck disable=SC1090
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  if ! command -v nvm &> /dev/null; then
+    echo "nvm not found, installing nvm..."
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+    # shellcheck disable=SC1090
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  fi
+  nvm install "$(cat .nvmrc)"
+  nvm use
 fi
 
 npm i
 
-echo "Executong Functional Tests for $GIT_TAG"
+echo "Executing Functional Tests for $GIT_TAG"
 
 npm test

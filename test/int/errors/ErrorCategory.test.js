@@ -1,5 +1,4 @@
 const { expect } = require('chai');
-const { describe, it } = require('mocha');
 const ErrorCategory = require('../../../src/errors/ErrorCategory');
 
 describe('ErrorCategory', () => {

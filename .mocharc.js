@@ -4,7 +4,4 @@ module.exports = {
     exit: true,
     recursive: true,
     reporter: 'spec',
-    spec: [
-      'test/**/*.test.js'
-    ]
 };

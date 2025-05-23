@@ -9,7 +9,7 @@ describe('BaseCrudModel', () => {
         const TEST_TABLE = 'test_table';
         let model;
 
-        before(async () => {
+        beforeAll(async () => {
             await knex.schema.createTable(TEST_TABLE, (table) => {
                 table.increments('id');
                 table.string('name');
@@ -21,7 +21,7 @@ describe('BaseCrudModel', () => {
         await knex(TEST_TABLE).del();
     });
 
-    after(async () => {
+    afterAll(async () => {
         await knex.schema.dropTable(TEST_TABLE);
     });
 
@@ -94,7 +94,7 @@ describe('BaseCrudModel', () => {
         it('should create and retrieve a record', async () => {
             const created = await model.create({ name: 'test' });
             expect(created).to.have.property('id');
-            
+
             const found = await model.findById(created.id);
             expect(found.name).to.equal('test');
         });
@@ -102,7 +102,7 @@ describe('BaseCrudModel', () => {
         it('should find all records', async () => {
             await model.create({ name: 'test1' });
             await model.create({ name: 'test2' });
-            
+
             const results = await model.findAll();
             expect(results).to.have.length(2);
         });
@@ -110,7 +110,7 @@ describe('BaseCrudModel', () => {
         it('should update a record', async () => {
             const created = await model.create({ name: 'test' });
             await model.update(created.id, { name: 'updated' });
-            
+
             const found = await model.findById(created.id);
             expect(found.name).to.equal('updated');
         });
@@ -118,7 +118,7 @@ describe('BaseCrudModel', () => {
         it('should delete a record', async () => {
             const created = await model.create({ name: 'test' });
             await model.delete(created.id);
-            
+
             try {
                 await model.findById(created.id);
                 expect.fail('Should have thrown NotFoundError');
@@ -135,7 +135,7 @@ describe('BaseCrudModel', () => {
         it('should upsert - update when record exists', async () => {
             const created = await model.create({ name: 'test' });
             await model.upsert(created.id, { name: 'updated' });
-            
+
             const found = await model.findById(created.id);
             expect(found.name).to.equal('updated');
         });
@@ -186,107 +186,107 @@ describe('BaseCrudModel', () => {
                 ])
               })
             });
-          
+
             try {
-             
+
               await model.findById(1);
-             
+
               expect.fail('Should have thrown InternalError');
             } catch (err) {
-             
+
               expect(err).to.be.instanceof(InternalError);
               expect(err.message).to.equal('E_TOO_MANY_ROWS');
             } finally {
-             
+
               stub.restore();
             }
           });
           it('should throw InternalError if more than one row created', async () => {
-     
-      const stub = sinon.stub(knex.table(TEST_TABLE), 'insert').resolves([1, 2]);  
+
+      const stub = sinon.stub(knex.table(TEST_TABLE), 'insert').resolves([1, 2]);
 
       try {
-        await model.create({ name: 'test' });  
+        await model.create({ name: 'test' });
         expect.fail('Should have thrown InternalError');
       } catch (err) {
-      
+
         expect(err).to.be.instanceof(InternalError);
         expect(err.message).to.equal('More than one row created');
       } finally {
-        stub.restore();  
+        stub.restore();
       }
      });
      it('should throw InternalError if more than one row created', async () => {
-     
-      const stub = sinon.stub(knex.table(TEST_TABLE), 'insert').resolves([1, 2]); 
+
+      const stub = sinon.stub(knex.table(TEST_TABLE), 'insert').resolves([1, 2]);
 
       try {
-        await model.create({ name: 'test' });  
+        await model.create({ name: 'test' });
         expect.fail('Should have thrown InternalError');
       } catch (err) {
-        
+
         expect(err).to.be.instanceof(InternalError);
         expect(err.message).to.equal('More than one row created');
       } finally {
-        stub.restore();  
+        stub.restore();
       }
-    });     
+    });
     });
     it('should return the inserted ID when one row is created', async () => {
-      
-        const stub = sinon.stub(knex.table(TEST_TABLE), 'insert').resolves([1]);  
-    
-        const result = await model.create({ name: 'test' });  
-        expect(result).to.deep.equal({ id: 1 });  
-    
-        stub.restore();  
+
+        const stub = sinon.stub(knex.table(TEST_TABLE), 'insert').resolves([1]);
+
+        const result = await model.create({ name: 'test' });
+        expect(result).to.deep.equal({ id: 1 });
+
+        stub.restore();
       });
 
       it('should throw InternalError if more than one row is created', async () => {
-       
-        const stub = sinon.stub(knex.table(TEST_TABLE), 'insert').resolves([1, 2]);  
-      
+
+        const stub = sinon.stub(knex.table(TEST_TABLE), 'insert').resolves([1, 2]);
+
         let caughtError;
-      
+
         try {
-          
+
           await model.create({ name: 'test' });
         } catch (err) {
-          caughtError = err;  
+          caughtError = err;
           console.log('Caught Error:', err);
         }
-      
-        
-        expect(caughtError).to.not.be.undefined;  
-      
-      
+
+
+        expect(caughtError).to.not.be.undefined;
+
+
         expect(caughtError).to.be.instanceof(InternalError);
-      
+
         expect(caughtError.message).to.equal('More than one row created');
-      
+
         if (caughtError.category) {
-          expect(caughtError.category).to.equal('INTERNAL');  
+          expect(caughtError.category).to.equal('INTERNAL');
         }
-      
+
         if (caughtError.payload) {
           expect(caughtError.payload.message).to.equal('More than one row created');
         }
-      
-        stub.restore();  
+
+        stub.restore();
       });
 
       it('should throw InternalError if no rows are created (empty result)', async () => {
-        const stub = sinon.stub(knex.table(TEST_TABLE), 'insert').resolves([]);  
-    
+        const stub = sinon.stub(knex.table(TEST_TABLE), 'insert').resolves([]);
+
         try {
-          await model.create({ name: 'test' });  
-          expect.fail('Should have thrown InternalError');  
+          await model.create({ name: 'test' });
+          expect.fail('Should have thrown InternalError');
         } catch (err) {
           expect(err).to.be.instanceof(InternalError);
           expect(err.message).to.equal('More than one row created');
         }
-    
-        stub.restore(); 
+
+        stub.restore();
       });
 
       describe('create', () => {
@@ -323,7 +323,7 @@ describe('BaseCrudModel', () => {
           const result = await model.upsert(created.id, { name: 'updated' });
           expect(result).to.have.property('id');
         });
-           
+
 
         //10/02/2025
         it('should call create() and return new record when no rows exist', async () => {
@@ -332,49 +332,49 @@ describe('BaseCrudModel', () => {
               select: sinon.stub().resolves([]),
             }),
           });
-        
+
           const createStub = sinon.stub(model, 'create').resolves({ id: 3 });
-        
+
           const result = await model.create({ name: 'new record' });
-        
+
           expect(createStub.calledOnce).to.be.true;
           expect(result).to.deep.equal({ id: 3 });
-        
+
           createStub.restore();
           sinon.restore();
         });
-        
+
         it('should throw an error if create() fails', async () => {
           sinon.stub(knex, 'table').returns({
             where: sinon.stub().returns({
               select: sinon.stub().resolves([]),
             }),
           });
-        
+
           const createStub = sinon.stub(model, 'create').rejects(new Error('DB error'));
-        
+
           try {
             await model.create({ name: 'fail case' });
             expect.fail('Should have thrown an error');
           } catch (err) {
             expect(err.message).to.equal('DB error');
           }
-        
+
           createStub.restore();
           sinon.restore();
         });
-        
+
         it('should update a single record successfully', async () => {
           sinon.stub(knex, 'table').returns({
             where: sinon.stub().returns({
               update: sinon.stub().resolves(1),
             }),
           });
-        
+
           const result = await model.update(1, { name: 'updated' });
-        
+
           expect(result).to.deep.equal({ id: 1 });
-        
+
           sinon.restore();
         });
         it('should throw an error if update() fails', async () => {
@@ -383,46 +383,46 @@ describe('BaseCrudModel', () => {
               update: sinon.stub().rejects(new Error('DB update error')),
             }),
           });
-        
+
           try {
             await model.update(1, { name: 'fail case' });
             expect.fail('Should have thrown an error');
           } catch (err) {
             expect(err.message).to.equal('DB update error');
           }
-        
+
           sinon.restore();
         });
-       
+
 
 
         it('should create a new record if no existing record is found', async () => {
           const stub = sinon.stub(knex, 'table').returns({
             where: sinon.stub().returns({
-              select: sinon.stub().resolves([]), 
+              select: sinon.stub().resolves([]),
             }),
           });
-        
+
           const createStub = sinon.stub(model, 'create').resolves({ id: 2 });
-        
+
           const result = await model.upsert(2, { name: 'new record' });
-        
+
           expect(createStub.calledOnce).to.be.true;
           expect(createStub.calledWith({ name: 'new record' })).to.be.true;
-        
+
           expect(result).to.deep.equal({ id: 2 });
-        
+
           createStub.restore();
           stub.restore();
         });
-        
+
         it('should throw InternalError when more than one row is found', async () => {
           const stub = sinon.stub(knex, 'table').returns({
             where: sinon.stub().returns({
-              select: sinon.stub().resolves([{ id: 1 }, { id: 2 }]), 
+              select: sinon.stub().resolves([{ id: 1 }, { id: 2 }]),
             }),
           });
-        
+
           try {
             await model.upsert(1, { name: 'new record' });
             expect.fail('Should have thrown InternalError');
@@ -430,17 +430,17 @@ describe('BaseCrudModel', () => {
             expect(err).to.be.instanceof(InternalError);
             expect(err.message).to.equal('E_TOO_MANY_ROWS');
           }
-        
+
           stub.restore();
         });
-        
+
         it('should throw InternalError when more than one row is updated', async () => {
           const stub = sinon.stub(knex, 'table').returns({
             where: sinon.stub().returns({
-              update: sinon.stub().resolves(2), 
+              update: sinon.stub().resolves(2),
             }),
           });
-        
+
           try {
             await model.update(1, { name: 'updated' });
             expect.fail('Should have thrown InternalError');
@@ -448,17 +448,17 @@ describe('BaseCrudModel', () => {
             expect(err).to.be.instanceof(InternalError);
             expect(err.message).to.equal('More than one row updated');
           }
-        
+
           stub.restore();
         });
-         
+
         it('should throw NotFoundError when no rows are updated', async () => {
           const stub = sinon.stub(knex, 'table').returns({
             where: sinon.stub().returns({
-              update: sinon.stub().resolves(0), 
+              update: sinon.stub().resolves(0),
             }),
           });
-        
+
           try {
             await model.update(1, { name: 'updated' });
             expect.fail('Should have thrown NotFoundError');
@@ -466,14 +466,14 @@ describe('BaseCrudModel', () => {
             expect(err).to.be.instanceof(NotFoundError);
             expect(err.message).to.equal('object with id: 1');
           }
-        
+
           stub.restore();
         });
         it('should throw InternalError when more than one row is created', async () => {
           const stub = sinon.stub(knex, 'table').returns({
-            insert: sinon.stub().resolves([1, 2]), 
+            insert: sinon.stub().resolves([1, 2]),
           });
-        
+
           try {
             await model.create({ name: 'new record' });
             expect.fail('Should have thrown InternalError');
@@ -481,10 +481,10 @@ describe('BaseCrudModel', () => {
             expect(err).to.be.instanceof(InternalError);
             expect(err.message).to.equal('More than one row created');
           }
-        
+
           stub.restore();
         });
-        
+
       });
     });
 

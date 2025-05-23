@@ -66,12 +66,12 @@ const createCertFromCSR = (csrPem) => {
 
 describe("DfspOutboundService", function () {
   let ctx;
-  before(async () => {
+  beforeAll(async () => {
     await setupTestDB();
     ctx = await createContext();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
@@ -80,7 +80,6 @@ describe("DfspOutboundService", function () {
     let dfspId = null;
     const DFSP_TEST_OUTBOUND = "dfsp.outbound.io";
     beforeEach("creating DFSP", async function () {
-      this.timeout(10000);
 
       await createInternalHubCA(ctx, ROOT_CA);
 
@@ -95,7 +94,7 @@ describe("DfspOutboundService", function () {
       try {
         await ctx.pkiEngine.deleteAllDFSPData(dbDfspId);
       } catch (e) {}
-    });
+    }, 10000);
 
     afterEach("tearing down ENV and DFSP", async () => {
       await PkiService.deleteDFSP(ctx, dfspId);
@@ -233,9 +232,9 @@ describe("DfspOutboundService", function () {
         "CERT_SIGNED",
         JSON.stringify(afterCertValidatedEnrollmentWithCA, null, 2)
       );
-    }).timeout(15000);
-  }).timeout(30000);
-}).timeout(45000);
+    }, 15000);
+  }, 30000);
+}, 45000);
 
 describe("getDFSPOutboundEnrollments", () => {
   let ctx;

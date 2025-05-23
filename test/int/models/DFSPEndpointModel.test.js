@@ -27,11 +27,11 @@ const DFSPEndpointModel = require('../../../src/models/DFSPEndpointModel');
 const { StatusEnum, DirectionEnum } = require('../../../src/service/DfspNetworkConfigService');
 
 describe('DFSPEndpointModel', async function () {
-  before(async () => {
+  beforeAll(async () => {
     await setupTestDB();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
   });
 
@@ -40,7 +40,7 @@ describe('DFSPEndpointModel', async function () {
     let endpointData = null;
     const endpointIdList = [];
 
-    beforeEach('setup', async function () {
+    beforeEach(async function () {
       // Setup
 
       dfspData = [
@@ -84,7 +84,7 @@ describe('DFSPEndpointModel', async function () {
       }
     });
 
-    afterEach('cleanup', async () => {
+    afterEach(async () => {
       // Cleanup
 
       console.log('deleting dfsp records');
@@ -105,10 +105,10 @@ describe('DFSPEndpointModel', async function () {
       const dfsp1Endpoint = await DFSPEndpointModel.create(dfspData[0].dfsp_id, StatusEnum.NOT_STARTED, DirectionEnum.EGRESS, endpointData.value);
       const dfsp2Endpoint = await DFSPEndpointModel.create(dfspData[1].dfsp_id, StatusEnum.NOT_STARTED, DirectionEnum.EGRESS, endpointData.value);
       endpointIdList.push(dfsp1Endpoint, dfsp2Endpoint);
-    
+
       // Act
       const result = await DFSPEndpointModel.findAllLatestByDirection(DirectionEnum.EGRESS);
-    
+
       // Assert
       assert.equal(result.length, 2);
       assert.isTrue(result.some(r => r.dfsp_id === dfspData[0].dfsp_id));
@@ -119,29 +119,29 @@ describe('DFSPEndpointModel', async function () {
         assert.deepEqual(endpoint.ipList, endpointData.value.ipList);
       });
     });
-    
+
     it('should return only latest endpoint when multiple exist for same DFSP', async () => {
       // Arrange
       const oldEndpoint = await DFSPEndpointModel.create(dfspData[0].dfsp_id, StatusEnum.NOT_STARTED, DirectionEnum.EGRESS, endpointData.value);
       const latestEndpoint = await DFSPEndpointModel.create(dfspData[0].dfsp_id, StatusEnum.COMPLETED, DirectionEnum.EGRESS, endpointData.value);
       endpointIdList.push(oldEndpoint, latestEndpoint);
-    
+
       // Act
       const result = await DFSPEndpointModel.findLastestByDirection(dfspData[0].dfsp_id, DirectionEnum.EGRESS);
-    
-      // Assert  
+
+      // Assert
       assert.equal(result.id, latestEndpoint);
       assert.equal(result.state, StatusEnum.COMPLETED);
       assert.notEqual(result.id, oldEndpoint);
     });
-    
+
     it('should throw NotFoundError when getting endpoint for non-existent DFSP', async () => {
       // Act & Assert
       try {
         await DFSPEndpointModel.findAllByDirection('fake.dfsp', DirectionEnum.EGRESS);
         assert.fail('Should have thrown NotFoundError');
       } catch (err) {
-        assert.equal(err.name, 'NotFoundError'); 
+        assert.equal(err.name, 'NotFoundError');
       }
     });
 
@@ -280,7 +280,7 @@ describe('DFSPEndpointModel', async function () {
     });
 
     it('should return empty array when no endpoints exist for findAllByDirection', async () => {
-      // Act 
+      // Act
       const result = await DFSPEndpointModel.findAllByDirection(dfspData[1].dfsp_id, DirectionEnum.EGRESS);
 
       // Assert
@@ -291,7 +291,7 @@ describe('DFSPEndpointModel', async function () {
     it('should return empty array when no endpoints exist for findAllLatestByDirection', async () => {
       // Act
       const result = await DFSPEndpointModel.findAllLatestByDirection(DirectionEnum.INGRESS);
-      
+
       // Assert
       assert.isArray(result);
       assert.isEmpty(result);

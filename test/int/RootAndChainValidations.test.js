@@ -30,22 +30,20 @@ const { createContext, destroyContext } = require('./context');
 
 describe('DfspPkiService', () => {
   let ctx;
-  before(async function () {
-    this.timeout(10000);
+  beforeAll(async function () {
+
     await setupTestDB();
     ctx = await createContext();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
 
   let dfspId = null;
   const DFSP_TEST_OUTBOUND = 'dfsp.outbound.io';
-  beforeEach('creating DFSP', async function () {
-    this.timeout(30000);
-
+  beforeEach(async function () {
     await createInternalHubCA(ctx, ROOT_CA);
 
     const dfsp = {
@@ -57,9 +55,9 @@ describe('DfspPkiService', () => {
 
     const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
     try { await ctx.pkiEngine.deleteAllDFSPData(dbDfspId); } catch (e) { }
-  });
+  }, 30000);
 
-  afterEach('tearing down ENV and DFSP', async () => {
+  afterEach(async () => {
     await PkiService.deleteDFSP(ctx, dfspId);
   });
 
@@ -78,7 +76,7 @@ describe('DfspPkiService', () => {
     );
     assert.equal(result.validationState, 'VALID');
     assert.equal(validationRootCertificate.details, 'VALID(SELF_SIGNED)');
-  }).timeout(15000);
+  }, 15000);
 
   it('should not validate an intermediate certificate signed by a non publicly trusted root certificate', async () => {
     const body = {
@@ -86,7 +84,7 @@ describe('DfspPkiService', () => {
     };
     const result = await PkiService.setDFSPca(ctx, dfspId, body);
     assert.equal(result.validationState, 'INVALID');
-  }).timeout(15000);
+  }, 15000);
 
   it('should validate an intermediate signed by a globally trusted CA', async () => {
     const body = {
@@ -100,7 +98,7 @@ describe('DfspPkiService', () => {
 
     assert.equal(validationIntermediateChainCertificate.result, 'VALID');
     assert.equal(result.validationState, 'VALID');
-  }).timeout(15000);
+  }, 15000);
 
   it('should validate an intermediate signed by a self-signed root', async () => {
     const body = {
@@ -113,5 +111,5 @@ describe('DfspPkiService', () => {
     );
     assert.equal(result.validationState, 'VALID');
     assert.equal(validationRootCertificate.details, 'VALID(SELF_SIGNED)');
-  }).timeout(15000);
-}).timeout(15000);
+  }, 15000);
+}, 15000);
