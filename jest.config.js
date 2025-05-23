@@ -28,7 +28,7 @@
 require('dotenv').config({ path: './.env.test' });
 
 module.exports = {
-  testMatch: ['<rootDir>/test/**/*.test.js'],
+  testMatch: ['<rootDir>/src/**/*.test.js'],
   verbose: true,
   clearMocks: true,
 };

@@ -36,8 +36,15 @@ cd ./test/functional-tests
 echo "Installing dependencies"
 
 if [[ -f ".nvmrc" ]]; then
-    nvm install $(cat .nvmrc)
-    nvm use
+  if ! command -v nvm &> /dev/null; then
+    echo "nvm not found, installing nvm..."
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+    export NVM_DIR="$HOME/.nvm"
+    # shellcheck disable=SC1090
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  fi
+  nvm install "$(cat .nvmrc)"
+  nvm use
 fi
 
 npm i
