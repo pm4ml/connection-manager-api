@@ -3601,28 +3601,25 @@ components:
     DfspStatesStatusPayload:
       type: object
       properties:
-        fetchingHubCA:
+        PEER_JWS:
           $ref: "#/components/schemas/DfspStateStatus"
-        creatingDFSPCA:
+        DFSP_JWS:
           $ref: "#/components/schemas/DfspStateStatus"
-        creatingDfspServerCert:
+        DFSP_CA:
           $ref: "#/components/schemas/DfspStateStatus"
-        creatingDfspClientCert:
+        DFSP_SERVER_CERT:
           $ref: "#/components/schemas/DfspStateStatus"
-        creatingHubClientCert:
+        DFSP_CLIENT_CERT:
           $ref: "#/components/schemas/DfspStateStatus"
-        creatingJWS:
+        HUB_CA:
           $ref: "#/components/schemas/DfspStateStatus"
-        pullingPeerJWS:
+        HUB_CERT:
           $ref: "#/components/schemas/DfspStateStatus"
-        uploadingPeerJWS:
+        HUB_CLIENT_CERT:
+           $ref: "#/components/schemas/DfspStateStatus"
+        ENDPOINT_CONFIG:
           $ref: "#/components/schemas/DfspStateStatus"
-        endpointConfig:
-          $ref: "#/components/schemas/DfspStateStatus"
-        connectorConfig:
-          $ref: "#/components/schemas/DfspStateStatus"
-        progressMonitor:
-          $ref: "#/components/schemas/DfspStateStatus"
+      additionalProperties: false
     DfspStateStatus:
       title: State status
       type: object
@@ -3648,6 +3645,7 @@ components:
       required:
         - status
         - lastUpdated
+      additionalProperties: false
   securitySchemes:
     OAuth2:
       type: oauth2
