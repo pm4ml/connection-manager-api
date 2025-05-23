@@ -38,7 +38,7 @@ describe('JWSCertsService Tests', () => {
   let ctx;
   let publicKey;
 
-  before(async () => {
+  beforeAll(async () => {
     await setupTestDB();
     ctx = await createContext();
     const keypair = forge.rsa.generateKeyPair({ bits: 2048 });

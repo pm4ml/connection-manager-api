@@ -27,12 +27,12 @@ const { createContext, destroyContext } = require('./context');
 
 describe('ctx.pkiEngine', () => {
   let ctx;
-  before(async () => {
+  beforeAll(async () => {
     ctx = await createContext();
     await setupTestDB();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
@@ -62,7 +62,7 @@ describe('ctx.pkiEngine', () => {
     it('should not validate an expired certificate', async () => {
       // Not Before: Jun  6 01:37:00 2019 GMT
       // Not After : Jun  6 02:37:00 2019 GMT
-      if (moment().isbefore(moment('20190606T023700'))) {
+      if (moment().isbeforeAll(moment('20190606T023700'))) {
         // ignore
         return;
       }

@@ -38,13 +38,13 @@ describe('DfspNetworkConfigService Unit Tests', () => {
   const dfspId = 'DFSP_TEST_1';
   const endpointId = 'ENDPOINT_TEST_1';
 
-  before(async () => {
+  beforeAll(async () => {
     ctx = await createContext();
     await setupTestDB();
   });
   beforeEach(() => sinon.restore());
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
@@ -255,7 +255,7 @@ describe('DfspNetworkConfigService', () => {
   const dfspId = 'DFSP_TEST_1';
   const epId = 'EP_TEST_1';
 
-  before(async () => {
+  beforeAll(async () => {
     ctx = await createContext();
     await setupTestDB();
   });
@@ -279,7 +279,7 @@ describe('DfspNetworkConfigService', () => {
     sinon.restore();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
@@ -366,12 +366,12 @@ describe('validateDirectionType Tests', () => {
 describe('DfspNetworkConfigService creating endpoint items', () => {
   let dfspId = null;
   let ctx;
-  before(async () => {
+  beforeAll(async () => {
     ctx = await createContext();
     await setupTestDB();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
@@ -841,14 +841,14 @@ describe('DfspNetworkConfigService Edge Cases and Validations', () => {
   const dfspId = 'EDGE_TEST_DFSP';
   const epId = 'EDGE_TEST_EP';
 
-  before(async () => {
+  beforeAll(async () => {
     ctx = await createContext();
     await setupTestDB();
   });
 
   beforeEach(() => sinon.restore());
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
@@ -1484,14 +1484,14 @@ describe('DfspNetworkConfigService Edge Cases and Validations', () => {
   const dfspId = 'EDGE_TEST_DFSP';
   const epId = 'EDGE_TEST_EP';
 
-  before(async () => {
+  beforeAll(async () => {
     ctx = await createContext();
     await setupTestDB();
   });
 
   beforeEach(() => sinon.restore());
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });

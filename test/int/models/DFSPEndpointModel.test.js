@@ -27,11 +27,11 @@ const DFSPEndpointModel = require('../../../src/models/DFSPEndpointModel');
 const { StatusEnum, DirectionEnum } = require('../../../src/service/DfspNetworkConfigService');
 
 describe('DFSPEndpointModel', async function () {
-  before(async () => {
+  beforeAll(async () => {
     await setupTestDB();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
   });
 

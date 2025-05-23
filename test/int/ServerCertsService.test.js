@@ -39,13 +39,13 @@ const TTL_FOR_CA = '200h';
 
 describe('ServerCertsService', () => {
   let ctx;
-  before(async function () {
+  beforeAll(async function () {
     await setupTestDB();
     ctx = await createContext();
     await createInternalHubCA(ctx, ROOT_CA, TTL_FOR_CA);
   });
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     await deleteHubCA(ctx);
     destroyContext(ctx);

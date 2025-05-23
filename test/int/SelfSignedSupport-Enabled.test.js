@@ -33,7 +33,7 @@ describe('SelfSignedSupportTest', () => {
 
   let server;
 
-  before(() => {
+  beforeAll(() => {
     Constants.AUTH_2FA.WSO2_MANAGER_SERVICE_USER = 'user';
     Constants.AUTH_2FA.WSO2_MANAGER_SERVICE_PASSWORD = 'password';
     Constants.OAUTH.OAUTH2_ISSUER = 'https://localhost:6000';
@@ -58,7 +58,7 @@ describe('SelfSignedSupportTest', () => {
   afterEach(() => {
   });
 
-  after(() => {
+  afterAll(() => {
     if (process.env.TEST_START_SELF_SIGNED_SERVER && server) {
       server.close();
     }

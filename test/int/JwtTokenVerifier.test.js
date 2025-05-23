@@ -21,10 +21,10 @@ const Constants = require('../../src/constants/Constants');
 const { assert } = require('chai');
 
 describe('JwtTokenVerifierTest tests', function () {
-  before(() => {
+  beforeAll(() => {
   });
 
-  after(() => {
+  afterAll(() => {
   });
 
   beforeEach(() => {
