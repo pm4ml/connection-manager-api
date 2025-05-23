@@ -19,8 +19,10 @@
 
 const utils = require('../utils/writer.js');
 const Login = require('../service/LoginService');
+const { getRequestData } = require('../utils/request.js');
 
-exports.loginUser = (req, res, next, body) => {
+exports.loginUser = (req, res, next) => {
+  const { body } = getRequestData(req);
   Login.loginUser(req.context, body, req, res)
     .then(response => {
       utils.writeJson(res, response);
@@ -40,7 +42,8 @@ exports.logoutUser = (req, res, next) => {
     });
 };
 
-exports.login2step = (req, res, next, username, password, generatedToken) => {
+exports.login2step = (req, res, next) => {
+  const { body: { username, password, generatedToken } } = getRequestData(req);
   Login.login2step(req.context, username, password, generatedToken, req, res)
     .then(response => {
       utils.writeJson(res, response);
@@ -50,7 +53,8 @@ exports.login2step = (req, res, next, username, password, generatedToken) => {
     });
 };
 
-exports.resetPassword = (req, res, username, newPassword, userguid) => {
+exports.resetPassword = (req, res, next) => {
+  const { body: { username, newPassword, userguid } } = getRequestData(req);
   Login.resetPassword(req.context, username, newPassword, userguid)
     .then(response => {
       utils.writeJson(res, response, 204);

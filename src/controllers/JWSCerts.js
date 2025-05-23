@@ -17,8 +17,10 @@
 
 const utils = require('../utils/writer.js');
 const JWSCertsService = require('../service/JWSCertsService');
+const { getRequestData } = require('../utils/request.js');
 
-exports.createDfspJWSCerts = (req, res, next, body, dfspId) => {
+exports.createDfspJWSCerts = (req, res, next) => {
+  const { body, params: { dfspId } } = getRequestData(req);
   JWSCertsService.createDfspJWSCerts(req.context, dfspId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -28,8 +30,8 @@ exports.createDfspJWSCerts = (req, res, next, body, dfspId) => {
     });
 };
 
-exports.createDfspExternalJWSCerts = (req, res, next, body) => {
-  const sourceDfspId = req.headers['X-DFSP-ID'];
+exports.createDfspExternalJWSCerts = (req, res, next) => {
+  const { body, headers: { 'X-DFSP-ID': sourceDfspId } } = getRequestData(req);
   JWSCertsService.createDfspExternalJWSCerts(req.context, body, sourceDfspId)
     .then(response => {
       utils.writeJson(res, response);
@@ -39,7 +41,8 @@ exports.createDfspExternalJWSCerts = (req, res, next, body) => {
     });
 };
 
-exports.setHubJWSCerts = (req, res, next, body) => {
+exports.setHubJWSCerts = (req, res, next) => {
+  const { body } = getRequestData(req);
   JWSCertsService.setHubJWSCerts(req.context, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -49,7 +52,8 @@ exports.setHubJWSCerts = (req, res, next, body) => {
     });
 };
 
-exports.getDfspJWSCerts = (req, res, next, dfspId) => {
+exports.getDfspJWSCerts = (req, res, next) => {
+  const { params: { dfspId } } = getRequestData(req);
   JWSCertsService.getDfspJWSCerts(req.context, dfspId)
     .then(response => {
       utils.writeJson(res, response);
@@ -79,7 +83,8 @@ exports.getAllDfspJWSCerts = (req, res, next) => {
     });
 };
 
-exports.deleteDfspJWSCerts = (req, res, next, dfspId) => {
+exports.deleteDfspJWSCerts = (req, res, next) => {
+  const { params: { dfspId } } = getRequestData(req);
   JWSCertsService.deleteDfspJWSCerts(req.context, dfspId)
     .then(response => {
       utils.writeJson(res, response);

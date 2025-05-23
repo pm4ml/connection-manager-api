@@ -19,8 +19,10 @@
 
 const utils = require('../utils/writer.js');
 const Pki = require('../service/PkiService');
+const { getRequestData } = require('../utils/request.js');
 
-exports.createDFSP = (req, res, next, body) => {
+exports.createDFSP = (req, res, next) => {
+  const { body } = getRequestData(req);
   Pki.createDFSPWithCSR(req.context, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -30,7 +32,8 @@ exports.createDFSP = (req, res, next, body) => {
     });
 };
 
-exports.deleteDFSP = (req, res, next, dfspId) => {
+exports.deleteDFSP = (req, res, next) => {
+  const { params: { dfspId } } = getRequestData(req);
   Pki.deleteDFSP(req.context, dfspId)
     .then(response => {
       utils.writeJson(res, response);
@@ -50,7 +53,8 @@ exports.getDFSPs = (req, res, next) => {
     });
 };
 
-exports.setDFSPca = (req, res, next, body, dfspId) => {
+exports.setDFSPca = (req, res, next) => {
+  const { body, params: { dfspId } } = getRequestData(req);
   Pki.setDFSPca(req.context, dfspId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -60,7 +64,8 @@ exports.setDFSPca = (req, res, next, body, dfspId) => {
     });
 };
 
-exports.getDFSPca = (req, res, next, dfspId) => {
+exports.getDFSPca = (req, res, next) => {
+  const { params: { dfspId } } = getRequestData(req);
   Pki.getDFSPca(req.context, dfspId)
     .then(response => {
       utils.writeJson(res, response);
@@ -70,7 +75,8 @@ exports.getDFSPca = (req, res, next, dfspId) => {
     });
 };
 
-exports.updateDFSP = (req, res, next, body, dfspId) => {
+exports.updateDFSP = (req, res, next) => {
+  const { body, params: { dfspId } } = getRequestData(req);
   Pki.updateDFSP(req.context, dfspId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -80,7 +86,8 @@ exports.updateDFSP = (req, res, next, body, dfspId) => {
     });
 };
 
-exports.getDfspsByMonetaryZones = (req, res, next, monetaryZoneId) => {
+exports.getDfspsByMonetaryZones = (req, res, next) => {
+  const { query: { monetaryZoneId } } = getRequestData(req);
   Pki.getDfspsByMonetaryZones(req.context, monetaryZoneId)
     .then(response => {
       utils.writeJson(res, response);

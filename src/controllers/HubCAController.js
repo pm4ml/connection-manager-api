@@ -19,8 +19,10 @@
 
 const utils = require('../utils/writer');
 const HubCAService = require('../service/HubCAService');
+const { getRequestData } = require('../utils/request.js');
 
-exports.createInternalHubCA = (req, res, next, body) => {
+exports.createInternalHubCA = (req, res, next) => {
+  const { body } = getRequestData(req);
   HubCAService.createInternalHubCA(req.context, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -30,7 +32,8 @@ exports.createInternalHubCA = (req, res, next, body) => {
     });
 };
 
-exports.createExternalHubCA = (req, res, next, body) => {
+exports.createExternalHubCA = (req, res, next) => {
+  const { body } = getRequestData(req);
   HubCAService.createExternalHubCA(req.context, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -60,7 +63,8 @@ exports.deleteHubCA = (req, res, next) => {
     });
 };
 
-exports.updateHubCA = (req, res, next, body) => {
+exports.updateHubCA = (req, res, next) => {
+  const { body } = getRequestData(req);
   HubCAService.updateHubCA(req.context, body)
     .then(response => {
       utils.writeJson(res, response);

@@ -19,8 +19,10 @@
 
 const utils = require('../utils/writer.js');
 const DfspNetworkConfig = require('../service/DfspNetworkConfigService');
+const { getRequestData } = require('../utils/request.js');
 
-exports.getDfspStatus = (req, res, next, dfspId) => {
+exports.getDfspStatus = (req, res, next) => {
+  const { params: { dfspId } } = getRequestData(req);
   DfspNetworkConfig.getDfspStatus(req.context, dfspId)
     .then(response => {
       utils.writeJson(res, response);
@@ -30,7 +32,8 @@ exports.getDfspStatus = (req, res, next, dfspId) => {
     });
 };
 
-exports.createDFSPEgress = (req, res, next, body, dfspId) => {
+exports.createDFSPEgress = (req, res, next) => {
+  const { body, params: { dfspId } } = getRequestData(req);
   DfspNetworkConfig.createDFSPEgress(req.context, dfspId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -40,7 +43,8 @@ exports.createDFSPEgress = (req, res, next, body, dfspId) => {
     });
 };
 
-exports.getDFSPEgress = (req, res, next, dfspId) => {
+exports.getDFSPEgress = (req, res, next) => {
+  const { params: { dfspId } } = getRequestData(req);
   DfspNetworkConfig.getDFSPEgress(req.context, dfspId)
     .then(response => {
       utils.writeJson(res, response);
@@ -50,7 +54,8 @@ exports.getDFSPEgress = (req, res, next, dfspId) => {
     });
 };
 
-exports.createDFSPEgressIp = (req, res, next, body, dfspId) => {
+exports.createDFSPEgressIp = (req, res, next) => {
+  const { body, params: { dfspId } } = getRequestData(req);
   DfspNetworkConfig.createDFSPEgressIp(req.context, dfspId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -60,7 +65,8 @@ exports.createDFSPEgressIp = (req, res, next, body, dfspId) => {
     });
 };
 
-exports.createDFSPIngressIp = (req, res, next, body, dfspId) => {
+exports.createDFSPIngressIp = (req, res, next) => {
+  const { body, params: { dfspId } } = getRequestData(req);
   DfspNetworkConfig.createDFSPIngressIp(req.context, dfspId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -70,7 +76,8 @@ exports.createDFSPIngressIp = (req, res, next, body, dfspId) => {
     });
 };
 
-exports.createDFSPIngressUrl = (req, res, next, body, dfspId) => {
+exports.createDFSPIngressUrl = (req, res, next) => {
+  const { body, params: { dfspId } } = getRequestData(req);
   DfspNetworkConfig.createDFSPIngressUrl(req.context, dfspId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -90,7 +97,8 @@ exports.getUnprocessedEndpointItems = (req, res, next) => {
     });
 };
 
-exports.getUnprocessedDfspItems = (req, res, next, dfspId) => {
+exports.getUnprocessedDfspItems = (req, res, next) => {
+  const { params: { dfspId } } = getRequestData(req);
   DfspNetworkConfig.getUnprocessedDfspItems(req.context, dfspId)
     .then(response => {
       utils.writeJson(res, response);
@@ -100,7 +108,8 @@ exports.getUnprocessedDfspItems = (req, res, next, dfspId) => {
     });
 };
 
-exports.confirmEndpointItem = (req, res, next, dfspId, epId) => {
+exports.confirmEndpointItem = (req, res, next) => {
+  const { params: { dfspId, epId } } = getRequestData(req);
   DfspNetworkConfig.confirmEndpointItem(req.context, dfspId, epId)
     .then(response => {
       utils.writeJson(res, response);
@@ -110,7 +119,8 @@ exports.confirmEndpointItem = (req, res, next, dfspId, epId) => {
     });
 };
 
-exports.getDFSPIngressUrls = (req, res, next, dfspId) => {
+exports.getDFSPIngressUrls = (req, res, next) => {
+  const { params: { dfspId } } = getRequestData(req);
   DfspNetworkConfig.getDFSPIngressUrls(req.context, dfspId)
     .then(response => {
       utils.writeJson(res, response);
@@ -120,7 +130,8 @@ exports.getDFSPIngressUrls = (req, res, next, dfspId) => {
     });
 };
 
-exports.getDFSPIngressIps = (req, res, next, dfspId) => {
+exports.getDFSPIngressIps = (req, res, next) => {
+  const { params: { dfspId } } = getRequestData(req);
   DfspNetworkConfig.getDFSPIngressIps(req.context, dfspId)
     .then(response => {
       utils.writeJson(res, response);
@@ -130,7 +141,8 @@ exports.getDFSPIngressIps = (req, res, next, dfspId) => {
     });
 };
 
-exports.getDFSPEgressIps = (req, res, next, dfspId) => {
+exports.getDFSPEgressIps = (req, res, next) => {
+  const { params: { dfspId } } = getRequestData(req);
   DfspNetworkConfig.getDFSPEgressIps(req.context, dfspId)
     .then(response => {
       utils.writeJson(res, response);
@@ -140,7 +152,8 @@ exports.getDFSPEgressIps = (req, res, next, dfspId) => {
     });
 };
 
-exports.updateDFSPEndpoint = (req, res, next, body, dfspId, epId) => {
+exports.updateDFSPEndpoint = (req, res, next) => {
+  const { body, params: { dfspId, epId } } = getRequestData(req);
   DfspNetworkConfig.updateDFSPEndpoint(req.context, dfspId, epId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -150,7 +163,8 @@ exports.updateDFSPEndpoint = (req, res, next, body, dfspId, epId) => {
     });
 };
 
-exports.deleteDFSPEndpoint = (req, res, next, dfspId, epId) => {
+exports.deleteDFSPEndpoint = (req, res, next) => {
+  const { params: { dfspId, epId } } = getRequestData(req);
   DfspNetworkConfig.deleteDFSPEndpoint(req.context, dfspId, epId)
     .then(response => {
       utils.writeJson(res, response, 204);
@@ -160,7 +174,8 @@ exports.deleteDFSPEndpoint = (req, res, next, dfspId, epId) => {
     });
 };
 
-exports.getDFSPEndpoints = (req, res, next, dfspId) => {
+exports.getDFSPEndpoints = (req, res, next) => {
+  const { params: { dfspId } } = getRequestData(req);
   DfspNetworkConfig.getDFSPEndpoints(req.context, dfspId)
     .then(response => {
       utils.writeJson(res, response);
@@ -170,7 +185,8 @@ exports.getDFSPEndpoints = (req, res, next, dfspId) => {
     });
 };
 
-exports.getDFSPEndpoint = (req, res, next, dfspId, epId) => {
+exports.getDFSPEndpoint = (req, res, next) => {
+  const { params: { dfspId, epId } } = getRequestData(req);
   DfspNetworkConfig.getDFSPEndpoint(req.context, dfspId, epId)
     .then(response => {
       utils.writeJson(res, response);
@@ -180,7 +196,8 @@ exports.getDFSPEndpoint = (req, res, next, dfspId, epId) => {
     });
 };
 
-exports.createDFSPIngress = (req, res, next, body, dfspId) => {
+exports.createDFSPIngress = (req, res, next) => {
+  const { body, params: { dfspId } } = getRequestData(req);
   DfspNetworkConfig.createDFSPIngress(req.context, dfspId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -190,7 +207,8 @@ exports.createDFSPIngress = (req, res, next, body, dfspId) => {
     });
 };
 
-exports.getDFSPIngress = (req, res, next, dfspId) => {
+exports.getDFSPIngress = (req, res, next) => {
+  const { params: { dfspId } } = getRequestData(req);
   DfspNetworkConfig.getDFSPIngress(req.context, dfspId)
     .then(response => {
       utils.writeJson(res, response);
@@ -200,7 +218,8 @@ exports.getDFSPIngress = (req, res, next, dfspId) => {
     });
 };
 
-exports.getDFSPIngressIpEndpoint = (req, res, next, dfspId, epId) => {
+exports.getDFSPIngressIpEndpoint = (req, res, next) => {
+  const { params: { dfspId, epId } } = getRequestData(req);
   DfspNetworkConfig.getDFSPIngressIpEndpoint(req.context, dfspId, epId)
     .then(response => {
       utils.writeJson(res, response);
@@ -210,7 +229,8 @@ exports.getDFSPIngressIpEndpoint = (req, res, next, dfspId, epId) => {
     });
 };
 
-exports.updateDFSPIngressIpEndpoint = (req, res, next, body, dfspId, epId) => {
+exports.updateDFSPIngressIpEndpoint = (req, res, next) => {
+  const { body, params: { dfspId, epId } } = getRequestData(req);
   DfspNetworkConfig.updateDFSPIngressIpEndpoint(req.context, dfspId, epId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -220,7 +240,8 @@ exports.updateDFSPIngressIpEndpoint = (req, res, next, body, dfspId, epId) => {
     });
 };
 
-exports.deleteDFSPIngressIpEndpoint = (req, res, next, dfspId, epId) => {
+exports.deleteDFSPIngressIpEndpoint = (req, res, next) => {
+  const { dfspId, epId } = getRequestData(req).params;
   DfspNetworkConfig.deleteDFSPIngressIpEndpoint(req.context, dfspId, epId)
     .then(response => {
       utils.writeJson(res, response, 204);
@@ -230,7 +251,8 @@ exports.deleteDFSPIngressIpEndpoint = (req, res, next, dfspId, epId) => {
     });
 };
 
-exports.getDFSPEgressIpEndpoint = (req, res, next, dfspId, epId) => {
+exports.getDFSPEgressIpEndpoint = (req, res, next) => {
+  const { dfspId, epId } = getRequestData(req).params;
   DfspNetworkConfig.getDFSPEgressIpEndpoint(req.context, dfspId, epId)
     .then(response => {
       utils.writeJson(res, response);
@@ -240,7 +262,8 @@ exports.getDFSPEgressIpEndpoint = (req, res, next, dfspId, epId) => {
     });
 };
 
-exports.updateDFSPEgressIpEndpoint = (req, res, next, body, dfspId, epId) => {
+exports.updateDFSPEgressIpEndpoint = (req, res, next) => {
+  const { body, params: { dfspId, epId } } = getRequestData(req);
   DfspNetworkConfig.updateDFSPEgressIpEndpoint(req.context, dfspId, epId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -250,7 +273,8 @@ exports.updateDFSPEgressIpEndpoint = (req, res, next, body, dfspId, epId) => {
     });
 };
 
-exports.deleteDFSPEgressIpEndpoint = (req, res, next, dfspId, epId) => {
+exports.deleteDFSPEgressIpEndpoint = (req, res, next) => {
+  const { dfspId, epId } = getRequestData(req).params;
   DfspNetworkConfig.deleteDFSPEgressIpEndpoint(req.context, dfspId, epId)
     .then(response => {
       utils.writeJson(res, response, 204);
@@ -260,7 +284,8 @@ exports.deleteDFSPEgressIpEndpoint = (req, res, next, dfspId, epId) => {
     });
 };
 
-exports.getDFSPIngressUrlEndpoint = (req, res, next, dfspId, epId) => {
+exports.getDFSPIngressUrlEndpoint = (req, res, next) => {
+  const { dfspId, epId } = getRequestData(req).params;
   DfspNetworkConfig.getDFSPIngressUrlEndpoint(req.context, dfspId, epId)
     .then(response => {
       utils.writeJson(res, response);
@@ -270,7 +295,8 @@ exports.getDFSPIngressUrlEndpoint = (req, res, next, dfspId, epId) => {
     });
 };
 
-exports.updateDFSPIngressUrlEndpoint = (req, res, next, body, dfspId, epId) => {
+exports.updateDFSPIngressUrlEndpoint = (req, res, next) => {
+  const { body, params: { dfspId , epId } } = getRequestData(req);
   DfspNetworkConfig.updateDFSPIngressUrlEndpoint(req.context, dfspId, epId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -280,7 +306,8 @@ exports.updateDFSPIngressUrlEndpoint = (req, res, next, body, dfspId, epId) => {
     });
 };
 
-exports.deleteDFSPIngressUrlEndpoint = (req, res, next, dfspId, epId) => {
+exports.deleteDFSPIngressUrlEndpoint = (req, res, next) => {
+  const { dfspId, epId } = getRequestData(req).params;
   DfspNetworkConfig.deleteDFSPIngressUrlEndpoint(req.context, dfspId, epId)
     .then(response => {
       utils.writeJson(res, response, 204);
@@ -290,11 +317,8 @@ exports.deleteDFSPIngressUrlEndpoint = (req, res, next, dfspId, epId) => {
     });
 };
 
-// When use such approach: uploadDfspStatesStatus = (req, res, next, body, dfspId),
-// and send body as {}, it defines body as routeParam, and dfspId is undefined
 exports.uploadDfspStatesStatus = (req, res) => {
-  const { body } = req;
-  const { dfspId } = req.openapi.pathParams;
+  const { body, params: { dfspId } } = getRequestData(req);
   DfspNetworkConfig.uploadDfspStatesStatus(req.context, dfspId, body)
     .then(response => {
       utils.writeJson(res, response);
