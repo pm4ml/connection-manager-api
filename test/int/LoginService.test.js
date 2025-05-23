@@ -32,12 +32,12 @@ describe('first login', () => {
   let wso2ClientTokenMock;
   let ctx;
 
-  beforeAll(async () => {
+  before(async () => {
     ctx = await createContext();
     wso2ClientTokenMock = sinon.stub(Wso2Client, 'getToken');
   });
 
-  afterAll(() => {
+  after(() => {
     destroyContext(ctx);
     wso2ClientTokenMock.restore();
   });
@@ -100,14 +100,14 @@ describe('2step', () => {
   let wso2MSClientMock;
   let ctx;
 
-  beforeAll(async () => {
+  before(async () => {
     ctx = await createContext();
     wso2ClientTokenMock = sinon.stub(Wso2Client, 'getToken');
     wso2MSClientMock = sinon.stub(Wso2MSClient, 'setUserClaimValue');
     wso2TotpClientMock = sinon.stub(Wso2TotpClient, 'validateTOTP');
   });
 
-  afterAll(() => {
+  after(() => {
     wso2ClientTokenMock.restore();
     wso2MSClientMock.restore();
     wso2TotpClientMock.restore();
@@ -184,11 +184,11 @@ describe('change password', () => {
 
   let ctx;
 
-  beforeAll(async () => {
+  before(async () => {
     ctx = await createContext();
   });
 
-  afterAll(() => {
+  after(() => {
     destroyContext(ctx);
   });
 

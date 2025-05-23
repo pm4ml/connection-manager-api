@@ -2,9 +2,6 @@ module.exports = {
     timeout: 20000,
     colors: true,
     exit: true,
-    recursive: true,
+    recursive: false,
     reporter: 'spec',
-    spec: [
-      'test/**/*.test.js'
-    ]
 };

@@ -2,7 +2,6 @@ const chai = require('chai');
 const sinon = require('sinon');
 const rp = require('request-promise-native');
 const Wso2Client = require('../../../src/service/Wso2Client');
-const Constants = require('../../../src/constants/Constants');
 const UnauthorizedError = require('../../../src/errors/UnauthorizedError');
 
 const { expect } = chai;
@@ -77,18 +76,18 @@ describe('Wso2Client', () => {
       const username = 'testuser';
       const password = 'testpassword';
       const tokenResponse = JSON.stringify({ access_token: 'testtoken' });
-  
+
       const consoleLogSpy = sinon.spy(console, 'log');
       const postStub = sinon.stub(rp, 'post').returns({
         form: () => ({
           auth: () => Promise.resolve(tokenResponse)
         })
       });
-  
+
       await Wso2Client.getToken(username, password);
-  
+
       expect(consoleLogSpy.calledWith(`Wso2Client.getToken received ${tokenResponse}`)).to.be.true;
-  
+
       consoleLogSpy.restore();
       postStub.restore();
     });
@@ -97,19 +96,19 @@ describe('Wso2Client', () => {
       const username = 'testuser';
       const password = 'testpassword';
       const tokenResponse = JSON.stringify({ access_token: 'testtoken' });
-  
+
       const postStub = sinon.stub(rp, 'post').returns({
         form: () => ({
           auth: () => Promise.resolve(tokenResponse)
         })
       });
-  
+
       const result = await Wso2Client.getToken(username, password);
       expect(result).to.deep.equal({ access_token: 'testtoken' });
-  
+
       postStub.restore();
     });
-  
+
     it('should throw UnauthorizedError for authentication failure', async () => {
       const username = 'testuser';
       const password = 'testpassword';
@@ -118,13 +117,13 @@ describe('Wso2Client', () => {
         message: 'Authentication failed',
         error: 'Invalid credentials'
       };
-  
+
       const postStub = sinon.stub(rp, 'post').returns({
         form: () => ({
           auth: () => Promise.reject(errorResponse)
         })
       });
-  
+
       try {
         await Wso2Client.getToken(username, password);
       } catch (err) {
@@ -132,29 +131,27 @@ describe('Wso2Client', () => {
         expect(err.message).to.equal(`Authentication failed for user ${username}`);
         expect(err.payload.authErrors).to.equal('Invalid credentials');
       }
-  
+
       postStub.restore();
     });
-  
-
 
     it('should throw error for other failures', async () => {
       const username = 'testuser';
       const password = 'testpassword';
       const errorResponse = new Error('Some other error');
-  
+
       const postStub = sinon.stub(rp, 'post').returns({
         form: () => ({
           auth: () => Promise.reject(errorResponse)
         })
       });
-  
+
       try {
         await Wso2Client.getToken(username, password);
       } catch (err) {
         expect(err).to.equal(errorResponse);
       }
-  
+
       postStub.restore();
     });
 });

@@ -30,13 +30,13 @@ const { createContext, destroyContext } = require('./context');
 
 describe('DfspPkiService', () => {
   let ctx;
-  beforeAll(async function () {
+  before(async function () {
 
     await setupTestDB();
     ctx = await createContext();
   });
 
-  afterAll(async () => {
+  after(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });

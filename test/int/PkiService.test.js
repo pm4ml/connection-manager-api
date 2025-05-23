@@ -34,12 +34,12 @@ const ROOT_CA = {
 
 describe('PkiService', () => {
   let ctx;
-  beforeAll(async () => {
+  before(async () => {
     await setupTestDB();
     ctx = await createContext();
   });
 
-  afterAll(async () => {
+  after(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });

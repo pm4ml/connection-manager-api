@@ -38,12 +38,12 @@ const ValidationCodes = require('../../src/pki_engine/ValidationCodes.js');
 
 describe("PKIEngine", () => {
   let ctx;
-  beforeAll(async () => {
+  before(async () => {
     ctx = await createContext();
     await setupTestDB();
   });
 
-  afterAll(async () => {
+  after(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });

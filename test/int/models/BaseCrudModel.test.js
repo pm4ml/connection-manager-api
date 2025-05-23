@@ -9,7 +9,7 @@ describe('BaseCrudModel', () => {
         const TEST_TABLE = 'test_table';
         let model;
 
-        beforeAll(async () => {
+        before(async () => {
             await knex.schema.createTable(TEST_TABLE, (table) => {
                 table.increments('id');
                 table.string('name');
@@ -21,7 +21,7 @@ describe('BaseCrudModel', () => {
         await knex(TEST_TABLE).del();
     });
 
-    afterAll(async () => {
+    after(async () => {
         await knex.schema.dropTable(TEST_TABLE);
     });
 

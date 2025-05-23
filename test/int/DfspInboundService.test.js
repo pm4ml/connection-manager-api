@@ -33,12 +33,12 @@ const TTL_FOR_CA = '200h';
 
 describe('DfspInboundService', async function () {
   let ctx;
-  beforeAll(async () => {
+  before(async () => {
     ctx = await createContext();
     await setupTestDB();
   });
 
-  afterAll(async () => {
+  after(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
@@ -293,7 +293,7 @@ describe('DfspInboundService', async function () {
     let dbDfspId;
     let enrollments;
 
-    beforeAll(async () => {
+    before(async () => {
       ctx = await createContext();
       await setupTestDB();
       dfspId = 'test-dfsp-id';
@@ -309,7 +309,7 @@ describe('DfspInboundService', async function () {
       sinon.stub(ctx.pkiEngine, 'getDFSPInboundEnrollments').resolves(enrollments);
     });
 
-    afterAll(async () => {
+    after(async () => {
       await tearDownTestDB();
       destroyContext(ctx);
       sinon.restore();

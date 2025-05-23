@@ -66,12 +66,12 @@ const createCertFromCSR = (csrPem) => {
 
 describe("DfspOutboundService", function () {
   let ctx;
-  beforeAll(async () => {
+  before(async () => {
     await setupTestDB();
     ctx = await createContext();
   });
 
-  afterAll(async () => {
+  after(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
