@@ -15,17 +15,11 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const db = require('../../src/db/database');
-
-let setup = false;
-
-exports.setupTestDB = async () => {
-  if (!setup) {
-    await db.waitForConnection();
-    setup = true;
-  }
-};
-
-exports.tearDownTestDB = async () => {
-  await db.knex.destroy();
+module.exports = {
+  CN: 'modusbox',
+  O: 'Modusbox',
+  OU: 'TSP',
+  L: '-',
+  ST: '-',
+  C: '-'
 };

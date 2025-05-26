@@ -15,21 +15,21 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { setupTestDB, tearDownTestDB } = require("./test-database");
+const { setupTestDB, tearDownTestDB } = require("../int/test-database.js");
 
 const fs = require("fs");
 const path = require("path");
-const PkiService = require("../../src/service/PkiService");
-const DfspOutboundService = require("../../src/service/DfspOutboundService");
+const PkiService = require("../../src/service/PkiService.js");
+const DfspOutboundService = require("../../src/service/DfspOutboundService.js");
 const { assert } = require("chai");
 const { expect } = require("chai");
-const ROOT_CA = require("./Root_CA.js");
-const DFSPModel = require("../../src/models/DFSPModel");
+const ROOT_CA = require("../int/Root_CA.js");
+const DFSPModel = require("../../src/models/DFSPModel.js");
 const forge = require("node-forge");
 const sinon = require("sinon");
-const ValidationCodes = require("../../src/pki_engine/ValidationCodes");
-const { createInternalHubCA } = require("../../src/service/HubCAService");
-const { createContext, destroyContext } = require("./context");
+const ValidationCodes = require("../../src/pki_engine/ValidationCodes.js");
+const { createInternalHubCA } = require("../../src/service/HubCAService.js");
+const { createContext, destroyContext } = require("../int/context.js");
 
 // Sign CSR and return certificate ( what the DFSP would do )
 const createCertFromCSR = (csrPem) => {
