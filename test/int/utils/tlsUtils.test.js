@@ -1,11 +1,9 @@
-const chai = require("chai");
 const sinon = require("sinon");
 const tls = require("tls");
 const fs = require("fs");
 const Constants = require("../../../src/constants/Constants");
 const { enableCustomRootCAs } = require("../../../src/utils/tlsUtils");
 
-const { expect } = chai;
 
 describe("tlsUtils", () => {
   let readFileSyncStub;
@@ -50,7 +48,7 @@ describe("tlsUtils", () => {
       enableCustomRootCAs();
       tls.createSecureContext = origCreateSecureContext;
 
-      expect(tls.createSecureContext).to.equal(origCreateSecureContext);
+      expect(tls.createSecureContext).toEqual(origCreateSecureContext);
     });
 
     it("should log appropriate messages when custom root CAs are already enabled", () => {
@@ -74,8 +72,7 @@ describe("tlsUtils", () => {
       enableCustomRootCAs();
       enableCustomRootCAs(); // Call it again
 
-      expect(consoleLogStub.calledWith("Custom root CAs was already enabled"))
-        .to.be.true;
+      expect(consoleLogStub.calledWith("Custom root CAs was already enabled")).toBe(true);
 
       consoleLogStub.restore();
     });

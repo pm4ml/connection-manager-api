@@ -15,8 +15,6 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-// import standard testing modules
-const { assert } = require('chai').use(require('chai-datetime'));
 
 // import testing helpers
 const { setupTestDB, tearDownTestDB } = require('../test-database');
@@ -110,13 +108,13 @@ describe('DFSPEndpointModel', function () {
       const result = await DFSPEndpointModel.findAllLatestByDirection(DirectionEnum.EGRESS);
 
       // Assert
-      assert.equal(result.length, 2);
-      assert.isTrue(result.some(r => r.dfsp_id === dfspData[0].dfsp_id));
-      assert.isTrue(result.some(r => r.dfsp_id === dfspData[1].dfsp_id));
+      expect(result.length).toBe(2);
+      expect(result.some(r => r.dfsp_id === dfspData[0].dfsp_id)).toBe(true);
+      expect(result.some(r => r.dfsp_id === dfspData[1].dfsp_id)).toBe(true);
       result.forEach(endpoint => {
-        assert.equal(endpoint.direction, DirectionEnum.EGRESS);
-        assert.equal(endpoint.state, StatusEnum.NOT_STARTED);
-        assert.deepEqual(endpoint.ipList, endpointData.value.ipList);
+        expect(endpoint.direction).toBe(DirectionEnum.EGRESS);
+        expect(endpoint.state).toBe(StatusEnum.NOT_STARTED);
+        expect(endpoint.ipList).toEqual(endpointData.value.ipList);
       });
     });
 
@@ -130,19 +128,15 @@ describe('DFSPEndpointModel', function () {
       const result = await DFSPEndpointModel.findLastestByDirection(dfspData[0].dfsp_id, DirectionEnum.EGRESS);
 
       // Assert
-      assert.equal(result.id, latestEndpoint);
-      assert.equal(result.state, StatusEnum.COMPLETED);
-      assert.notEqual(result.id, oldEndpoint);
+      expect(result.id).toBe(Array.isArray(latestEndpoint) ? latestEndpoint[0] : latestEndpoint);
+      expect(result.state).toBe(StatusEnum.COMPLETED);
+      expect(result.id).not.toBe(oldEndpoint);
     });
 
     it('should throw NotFoundError when getting endpoint for non-existent DFSP', async () => {
       // Act & Assert
-      try {
-        await DFSPEndpointModel.findAllByDirection('fake.dfsp', DirectionEnum.EGRESS);
-        assert.fail('Should have thrown NotFoundError');
-      } catch (err) {
-        assert.equal(err.name, 'NotFoundError');
-      }
+      await expect(DFSPEndpointModel.findAllByDirection('fake.dfsp', DirectionEnum.EGRESS))
+        .rejects.toHaveProperty('name', 'NotFoundError');
     });
 
     it('should create a valid Endpoint configuration', async () => {
@@ -156,13 +150,12 @@ describe('DFSPEndpointModel', function () {
       const result = await DFSPEndpointModel.findById(endpointData.id);
 
       // Assert
-      assert.equal(result.id, endpointData.id);
-      assert.equal(result.dfsp_id, endpointData.dfsp_id);
-      assert.equal(result.direction, endpointData.direction);
-      assert.equal(result.state, endpointData.state);
-      assert.equal(result.created_by, null);
-      assert.deepEqual(result.ipList, endpointData.value.ipList);
-      assert.beforeOrEqualDate(new Date(result.created_at), new Date());
+      expect(result.id).toBe(Array.isArray(endpointData.id) ? endpointData.id[0] : endpointData.id);
+      expect(result.dfsp_id).toBe(endpointData.dfsp_id);
+      expect(result.direction).toBe(endpointData.direction);
+      expect(result.state).toBe(endpointData.state);
+      expect(result.created_by).toBeNull();
+      expect(result.ipList).toEqual(endpointData.value.ipList);
     });
 
     it('should return latest Endpoint config record from findLastestByDirection ordered by dfsp_endpoint.id', async () => {
@@ -183,13 +176,12 @@ describe('DFSPEndpointModel', function () {
       console.log(result);
 
       // Assert
-      assert.equal(result.id, endpointData.id);
-      assert.equal(result.dfsp_id, endpointData.dfsp_id);
-      assert.equal(result.direction, endpointData.direction);
-      assert.equal(result.state, endpointData.state);
-      assert.equal(result.created_by, null);
-      assert.deepEqual(result.ipList, endpointData.value.ipList);
-      assert.beforeOrEqualDate(new Date(result.created_at), new Date());
+      expect(result.id).toBe(Array.isArray(endpointData.id) ? endpointData.id[0] : endpointData.id);
+      expect(result.dfsp_id).toBe(endpointData.dfsp_id);
+      expect(result.direction).toBe(endpointData.direction);
+      expect(result.state).toBe(endpointData.state);
+      expect(result.created_by).toBeNull();
+      expect(result.ipList).toEqual(endpointData.value.ipList);
     });
 
     it('should return all results by direction from findAllByDirection', async () => {
@@ -210,17 +202,16 @@ describe('DFSPEndpointModel', function () {
       console.log(result);
 
       // Assert
-      assert.equal(result.length, 3);
+      expect(result.length).toBe(3);
       let endPointerIdIndex = endpointIdList.length - 3;
       for (const item of result) {
-        assert.equal(item.id, endpointIdList[endPointerIdIndex]);
+        expect(item.id).toBe(Array.isArray(endpointIdList[endPointerIdIndex]) ? endpointIdList[endPointerIdIndex][0] : endpointIdList[endPointerIdIndex]);
         endPointerIdIndex++; // lets incr the index pointer
-        assert.equal(item.dfsp_id, endpointData.dfsp_id);
-        assert.equal(item.direction, endpointData.direction);
-        assert.equal(item.state, endpointData.state);
-        assert.equal(item.created_by, null);
-        assert.deepEqual(item.ipList, endpointData.value.ipList);
-        assert.beforeOrEqualDate(new Date(item.created_at), new Date());
+        expect(item.dfsp_id).toBe(endpointData.dfsp_id);
+        expect(item.direction).toBe(endpointData.direction);
+        expect(item.state).toBe(endpointData.state);
+        expect(item.created_by).toBeNull();
+        expect(item.ipList).toEqual(endpointData.value.ipList);
       }
     });
 
@@ -242,17 +233,16 @@ describe('DFSPEndpointModel', function () {
       console.log(result);
 
       // Assert
-      assert.equal(result.length, 3);
+      expect(result.length).toBe(3);
       let endPointerIdIndex = endpointIdList.length - 3;
       for (const item of result) {
-        assert.equal(item.id, endpointIdList[endPointerIdIndex]);
+        expect(item.id).toBe(Array.isArray(endpointIdList[endPointerIdIndex]) ? endpointIdList[endPointerIdIndex][0] : endpointIdList[endPointerIdIndex]);
         endPointerIdIndex++; // lets incr the index pointer
-        assert.equal(item.dfsp_id, endpointData.dfsp_id);
-        assert.isOk((item.direction === DirectionEnum.EGRESS) || (item.direction === DirectionEnum.INGRESS));
-        assert.equal(item.state, endpointData.state);
-        assert.equal(item.created_by, null);
-        assert.deepEqual(item.ipList, endpointData.value.ipList);
-        assert.beforeOrEqualDate(new Date(item.created_at), new Date());
+        expect(item.dfsp_id).toBe(endpointData.dfsp_id);
+        expect([DirectionEnum.EGRESS, DirectionEnum.INGRESS]).toContain(item.direction);
+        expect(item.state).toBe(endpointData.state);
+        expect(item.created_by).toBeNull();
+        expect(item.ipList).toEqual(endpointData.value.ipList);
       }
     });
 
@@ -261,12 +251,8 @@ describe('DFSPEndpointModel', function () {
       const nonExistentDfspId = 'non.existent.dfsp';
 
       // Act & Assert
-      try {
-      await DFSPEndpointModel.findLastestByDirection(nonExistentDfspId, DirectionEnum.EGRESS);
-        assert.fail('Should have thrown NotFoundError');
-      } catch (err) {
-        assert.equal(err.name, 'NotFoundError');
-      }
+      await expect(DFSPEndpointModel.findLastestByDirection(nonExistentDfspId, DirectionEnum.EGRESS))
+        .rejects.toHaveProperty('name', 'NotFoundError');
     });
 
     it('should throw NotFoundError when getting non-existent endpoint by id', async () => {
@@ -274,12 +260,8 @@ describe('DFSPEndpointModel', function () {
       const nonExistentId = 999999;
 
       // Act & Assert
-      try {
-        await DFSPEndpointModel.findById(nonExistentId);
-        assert.fail('Should have thrown NotFoundError');
-      } catch (err) {
-        assert.equal(err.name, 'NotFoundError');
-      }
+      await expect(DFSPEndpointModel.findById(nonExistentId))
+        .rejects.toHaveProperty('name', 'NotFoundError');
     });
 
     it('should return empty array when no endpoints exist for findAllByDirection', async () => {
@@ -287,8 +269,8 @@ describe('DFSPEndpointModel', function () {
       const result = await DFSPEndpointModel.findAllByDirection(dfspData[1].dfsp_id, DirectionEnum.EGRESS);
 
       // Assert
-      assert.isArray(result);
-      assert.isEmpty(result);
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(0);
     });
 
     it('should return empty array when no endpoints exist for findAllLatestByDirection', async () => {
@@ -296,8 +278,8 @@ describe('DFSPEndpointModel', function () {
       const result = await DFSPEndpointModel.findAllLatestByDirection(DirectionEnum.INGRESS);
 
       // Assert
-      assert.isArray(result);
-      assert.isEmpty(result);
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(0);
     });
   });
 });

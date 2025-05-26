@@ -17,7 +17,6 @@
 
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 const MonetaryZoneService = require('../../src/service/MonetaryZoneService');
-const { assert } = require('chai');
 const { createContext, destroyContext } = require('./context');
 
 describe('MonetaryZoneTest', () => {
@@ -34,6 +33,6 @@ describe('MonetaryZoneTest', () => {
 
   it('get all MZ Enables', async () => {
     const mzs = await MonetaryZoneService.getMonetaryZones(ctx);
-    assert.isTrue(mzs.length > 1);
+    expect(mzs.length).toBeGreaterThan(1);
   });
 });

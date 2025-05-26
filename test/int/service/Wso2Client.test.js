@@ -1,11 +1,7 @@
-const chai = require('chai');
 const sinon = require('sinon');
 const rp = require('request-promise-native');
 const Wso2Client = require('../../../src/service/Wso2Client');
 const UnauthorizedError = require('../../../src/errors/UnauthorizedError');
-
-const { expect } = chai;
-
 
 describe('Wso2Client', () => {
     afterEach(() => {
@@ -25,7 +21,7 @@ describe('Wso2Client', () => {
             });
 
             const result = await Wso2Client.getToken(username, password);
-            expect(result).to.deep.equal({ access_token: 'testtoken' });
+            expect(result).toEqual({ access_token: 'testtoken' });
 
             postStub.restore();
         });
@@ -41,8 +37,8 @@ describe('Wso2Client', () => {
             try {
                 await Wso2Client.getToken(username, password);
             } catch (err) {
-                expect(err).to.be.instanceOf(UnauthorizedError);
-                expect(err.message).to.equal(`Authentication failed for user ${username}`);
+                expect(err).toBeInstanceOf(UnauthorizedError);
+                expect(err.message).toEqual(`Authentication failed for user ${username}`);
             }
         });
     });
@@ -58,7 +54,7 @@ describe('Wso2Client', () => {
             sinon.stub(rp, 'put').resolves(successResponse);
 
             const result = await Wso2Client.resetPassword(username, newPassword, userguid);
-            expect(result).to.deep.equal(successResponse);
+            expect(result).toEqual(successResponse);
         });
 
         it.skip('should throw UnauthorizedError when reset password fails', async () => {
@@ -73,8 +69,8 @@ describe('Wso2Client', () => {
             try {
                 await Wso2Client.resetPassword(username, newPassword, userguid);
             } catch (err) {
-                expect(err).to.be.instanceOf(UnauthorizedError);
-                expect(err.message).to.equal(`Authentication failed for user ${username}`);
+                expect(err).toBeInstanceOf(UnauthorizedError);
+                expect(err.message).toEqual(`Authentication failed for user ${username}`);
             }
         });
     });
@@ -94,7 +90,7 @@ describe('Wso2Client', () => {
 
       await Wso2Client.getToken(username, password);
 
-      expect(consoleLogSpy.calledWith(`Wso2Client.getToken received ${tokenResponse}`)).to.be.true;
+      expect(consoleLogSpy.calledWith(`Wso2Client.getToken received ${tokenResponse}`)).toBe(true);
 
       consoleLogSpy.restore();
       postStub.restore();
@@ -112,7 +108,8 @@ describe('Wso2Client', () => {
       });
 
       const result = await Wso2Client.getToken(username, password);
-      expect(result).to.deep.equal({ access_token: 'testtoken' });
+      expect(result).toEqual({ access_token: 'testtoken' });
+
 
       postStub.restore();
     });
@@ -135,9 +132,9 @@ describe('Wso2Client', () => {
       try {
         await Wso2Client.getToken(username, password);
       } catch (err) {
-        expect(err).to.be.instanceOf(UnauthorizedError);
-        expect(err.message).to.equal(`Authentication failed for user ${username}`);
-        expect(err.payload.authErrors).to.equal('Invalid credentials');
+        expect(err).toBeInstanceOf(UnauthorizedError);
+        expect(err.message).toEqual(`Authentication failed for user ${username}`);
+        expect(err.payload.authErrors).toEqual('Invalid credentials');
       }
 
       postStub.restore();
@@ -157,7 +154,7 @@ describe('Wso2Client', () => {
       try {
         await Wso2Client.getToken(username, password);
       } catch (err) {
-        expect(err).to.equal(errorResponse);
+        expect(err).toEqual(errorResponse);
       }
 
       postStub.restore();
