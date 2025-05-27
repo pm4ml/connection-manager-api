@@ -26,12 +26,13 @@ const ValidationCodes = require('../../src/pki_engine/ValidationCodes.js');
 const { createInternalHubCA } = require('../../src/service/HubCAService.js');
 const DFSPModel = require('../../src/models/DFSPModel.js');
 const { createContext, destroyContext } = require('../int-failed/context.js');
+const database = require('../../src/db/database.js');
 
 describe('DfspPkiService', () => {
   let ctx;
   beforeAll(async function () {
-
     await setupTestDB();
+    await database.knex('dfsps').del();
     ctx = await createContext();
   });
 
@@ -58,6 +59,7 @@ describe('DfspPkiService', () => {
 
   afterEach(async () => {
     await PkiService.deleteDFSP(ctx, dfspId);
+    await database.knex('dfsps').del();
   });
 
   const ROOT_CA_PATH = './resources/digicert/digicert.global.root.pem';

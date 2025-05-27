@@ -8,10 +8,14 @@ describe('BaseCrudModel', () => {
   let model;
 
   beforeAll(async () => {
-    await knex.schema.createTable(TEST_TABLE, (table) => {
-      table.increments('id');
-      table.string('name');
-    });
+    try {
+      await knex.schema.createTable(TEST_TABLE, (table) => {
+        table.increments('id');
+        table.string('name');
+      });
+    } catch (error) {
+      // If the table already exists, we can ignore the error
+    }
     model = new BaseCrudModel(TEST_TABLE);
   });
 

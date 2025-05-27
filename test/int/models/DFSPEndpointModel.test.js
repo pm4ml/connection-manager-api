@@ -23,9 +23,11 @@ const { setupTestDB, tearDownTestDB } = require('../test-database');
 const DFSPModel = require('../../../src/models/DFSPModel');
 const DFSPEndpointModel = require('../../../src/models/DFSPEndpointModel');
 const { StatusEnum, DirectionEnum } = require('../../../src/service/DfspNetworkConfigService');
+const database = require('../../../src/db/database');
 
 describe('DFSPEndpointModel', function () {
   beforeAll(async () => {
+    await database.knex('dfsp_endpoint').del();
     await setupTestDB();
   });
 
