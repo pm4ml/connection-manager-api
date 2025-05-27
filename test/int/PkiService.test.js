@@ -14,13 +14,13 @@
  *  See the License for the specific language governing permissions and       *
  *  limitations under the License.                                            *
  ******************************************************************************/
-const { setupTestDB, tearDownTestDB } = require('../int-failed/test-database');
+const { setupTestDB, tearDownTestDB } = require('../int/test-database');
 
 const PkiService = require('../../src/service/PkiService');
 const ValidationError = require('../../src/errors/ValidationError');
 const NotFoundError = require('../../src/errors/NotFoundError');
 const { createInternalHubCA, getHubCA } = require('../../src/service/HubCAService');
-const { createContext, destroyContext } = require('../int-failed/context');
+const { createContext, destroyContext } = require('../int/context');
 const database = require('../../src/db/database');
 
 const ROOT_CA = {

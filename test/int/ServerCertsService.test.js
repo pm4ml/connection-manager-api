@@ -15,16 +15,16 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { setupTestDB, tearDownTestDB } = require('../int-failed/test-database');
+const { setupTestDB, tearDownTestDB } = require('../int/test-database');
 
 const fs = require('fs');
 const path = require('path');
 const ServerCertsService = require('../../src/service/ServerCertsService');
 const PkiService = require('../../src/service/PkiService');
 const NotFoundError = require('../../src/errors/NotFoundError');
-const ROOT_CA = require('../int-failed/Root_CA');
+const ROOT_CA = require('../int/Root_CA');
 const { createInternalHubCA, deleteHubCA } = require('../../src/service/HubCAService');
-const { createContext, destroyContext } = require('../int-failed/context');
+const { createContext, destroyContext } = require('../int/context');
 const Constants = require('../../src/constants/Constants');
 
 const AMAZON_ROOT_CA_PATH = 'resources/amazon.com/RootCA.pem';

@@ -15,14 +15,14 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { setupTestDB, tearDownTestDB } = require('../int-failed/test-database');
+const { setupTestDB, tearDownTestDB } = require('../int/test-database');
 
 const fs = require('fs');
 const path = require('path');
 const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
 const ValidationError = require('../../src/errors/ValidationError');
 const moment = require('moment');
-const { createContext, destroyContext } = require('../int-failed/context');
+const { createContext, destroyContext } = require('../int/context');
 
 describe('ctx.pkiEngine', () => {
   let ctx;

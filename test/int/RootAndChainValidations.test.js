@@ -15,17 +15,17 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { setupTestDB, tearDownTestDB } = require('../int-failed/test-database.js');
+const { setupTestDB, tearDownTestDB } = require('../int/test-database.js');
 
 const fs = require('fs');
 const path = require('path');
 const PkiService = require('../../src/service/PkiService.js');
-const ROOT_CA = require('../int-failed/Root_CA.js');
+const ROOT_CA = require('../int/Root_CA.js');
 
 const ValidationCodes = require('../../src/pki_engine/ValidationCodes.js');
 const { createInternalHubCA } = require('../../src/service/HubCAService.js');
 const DFSPModel = require('../../src/models/DFSPModel.js');
-const { createContext, destroyContext } = require('../int-failed/context.js');
+const { createContext, destroyContext } = require('../int/context.js');
 const database = require('../../src/db/database.js');
 
 describe('DfspPkiService', () => {

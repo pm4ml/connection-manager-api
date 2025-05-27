@@ -16,12 +16,12 @@
  ******************************************************************************/
 
 const sinon = require('sinon');
-const { setupTestDB, tearDownTestDB } = require('../int-failed/test-database');
+const { setupTestDB, tearDownTestDB } = require('../int/test-database');
 const PkiService = require('../../src/service/PkiService');
 const DfspNetworkConfigService = require('../../src/service/DfspNetworkConfigService');
 const ValidationError = require('../../src/errors/ValidationError');
 const NotFoundError = require('../../src/errors/NotFoundError');
-const { createContext, destroyContext } = require('../int-failed/context');
+const { createContext, destroyContext } = require('../int/context');
 const { StatusEnum } = require('../../src/service/DfspNetworkConfigService');
 const DFSPEndpointModel = require('../../src/models/DFSPEndpointModel');
 const DFSPModel = require('../../src/models/DFSPModel');

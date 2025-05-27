@@ -23,7 +23,7 @@ const Wso2Client = require('../../src/service/Wso2Client');
 const BadRequestError = require('../../src/errors/BadRequestError');
 const UnauthorizedError = require('../../src/errors/UnauthorizedError');
 const ExternalProcessError = require('../../src/errors/ExternalProcessError');
-const { createContext, destroyContext } = require('../int-failed/context');
+const { createContext, destroyContext } = require('../int/context');
 
 const sinon = require('sinon');
 const Cookies = require('cookies');

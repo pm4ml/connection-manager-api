@@ -15,10 +15,10 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { setupTestDB, tearDownTestDB } = require('../int-failed/test-database');
+const { setupTestDB, tearDownTestDB } = require('../int/test-database');
 const HubCAService = require('../../src/service/HubCAService');
 const { pki } = require('node-forge');
-const { createContext, destroyContext } = require('../int-failed/context');
+const { createContext, destroyContext } = require('../int/context');
 
 /**
  * Leaving these here as they look useful

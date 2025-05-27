@@ -16,7 +16,7 @@
  ******************************************************************************/
 
 const sinon = require('sinon');
-const { setupTestDB, tearDownTestDB } = require("../int-failed/test-database.js");
+const { setupTestDB, tearDownTestDB } = require("../int/test-database.js");
 const NotFoundError = require("../../src/errors/NotFoundError.js");
 const ValidationError = require("../../src/errors/ValidationError.js");
 const InvalidEntityError = require("../../src/errors/InvalidEntityError.js");
@@ -29,7 +29,7 @@ const forge = require("node-forge");
 
 const fs = require("fs");
 const path = require("path");
-const { createContext, destroyContext } = require("../int-failed/context.js");
+const { createContext, destroyContext } = require("../int/context.js");
 const ValidationCodes = require('../../src/pki_engine/ValidationCodes.js');
 
 // TODO: replace sinon with jest mocks
