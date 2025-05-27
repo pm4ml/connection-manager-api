@@ -16,10 +16,10 @@
  ******************************************************************************/
 
 const sinon = require('sinon');
-const { setupTestDB, tearDownTestDB } = require("./test-database");
-const NotFoundError = require("../../src/errors/NotFoundError");
-const ValidationError = require("../../src/errors/ValidationError");
-const InvalidEntityError = require("../../src/errors/InvalidEntityError");
+const { setupTestDB, tearDownTestDB } = require("../int-failed/test-database.js");
+const NotFoundError = require("../../src/errors/NotFoundError.js");
+const ValidationError = require("../../src/errors/ValidationError.js");
+const InvalidEntityError = require("../../src/errors/InvalidEntityError.js");
 const Validation = require("../../src/pki_engine/Validation.js");
 const CAType = require("../../src/models/CAType.js");
 const PKIEngine = require("../../src/pki_engine/PKIEngine.js");
@@ -29,10 +29,10 @@ const forge = require("node-forge");
 
 const fs = require("fs");
 const path = require("path");
-const { createContext, destroyContext } = require("./context");
+const { createContext, destroyContext } = require("../int-failed/context.js");
 const ValidationCodes = require('../../src/pki_engine/ValidationCodes.js');
 
-
+// TODO: replace sinon with jest mocks
 describe("PKIEngine", () => {
   let ctx;
   beforeAll(async () => {

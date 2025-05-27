@@ -15,17 +15,16 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { setupTestDB, tearDownTestDB } = require('./test-database');
+const { setupTestDB, tearDownTestDB } = require('../int-failed/test-database');
 
 const fs = require('fs');
 const path = require('path');
 const ServerCertsService = require('../../src/service/ServerCertsService');
 const PkiService = require('../../src/service/PkiService');
-const { assert } = require('chai');
 const NotFoundError = require('../../src/errors/NotFoundError');
-const ROOT_CA = require('./Root_CA');
+const ROOT_CA = require('../int-failed/Root_CA');
 const { createInternalHubCA, deleteHubCA } = require('../../src/service/HubCAService');
-const { createContext, destroyContext } = require('./context');
+const { createContext, destroyContext } = require('../int-failed/context');
 const Constants = require('../../src/constants/Constants');
 
 const AMAZON_ROOT_CA_PATH = 'resources/amazon.com/RootCA.pem';
@@ -59,8 +58,8 @@ describe('ServerCertsService', () => {
         },
       };
       const result = await ServerCertsService.createHubServerCerts(ctx);
-      assert.isNotNull(result.serverCertificate);
-      assert.isNotNull(result.rootCertificate);
+      expect(result.serverCertificate).not.toBeNull();
+      expect(result.rootCertificate).not.toBeNull();
     }, 30000);
 
     it('should create and delete a HubServerCerts entry', async () => {
@@ -70,13 +69,14 @@ describe('ServerCertsService', () => {
         },
       };
       const result = await ServerCertsService.createHubServerCerts(ctx);
-      assert.isNotNull(result.serverCertificate);
+      expect(result.serverCertificate).not.toBeNull();
       await ServerCertsService.deleteHubServerCerts(ctx);
       try {
         await ServerCertsService.getHubServerCerts(ctx);
-        assert.fail('Should have throw NotFoundError');
+        // Should not reach here
+        throw new Error('Should have throw NotFoundError');
       } catch (error) {
-        assert.instanceOf(error, NotFoundError);
+        expect(error).toBeInstanceOf(NotFoundError);
       }
     }, 30000);
   }, 30000);
@@ -97,9 +97,9 @@ describe('ServerCertsService', () => {
       const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
       dfspId = resultDfsp.id;
       const result = await ServerCertsService.createDfspServerCerts(ctx, dfspId, body);
-      assert.isNotNull(result);
-      assert.equal(result.serverCertificateInfo.serialNumber, '0e4098bddd80b0d3394a0e1487d7765c');
-      assert.equal(result.intermediateChainInfo[0].notBefore.toISOString(), '2017-06-15T00:00:42.000Z');
+      expect(result).not.toBeNull();
+      expect(result.serverCertificateInfo.serialNumber).toBe('0e4098bddd80b0d3394a0e1487d7765c');
+      expect(result.intermediateChainInfo[0].notBefore.toISOString()).toBe('2017-06-15T00:00:42.000Z');
       await PkiService.deleteDFSP(ctx, dfspId);
     }, 30000);
 
@@ -116,13 +116,13 @@ describe('ServerCertsService', () => {
       const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
       dfspId = resultDfsp.id;
       const result = await ServerCertsService.createDfspServerCerts(ctx, dfspId, body);
-      assert.isNotNull(result);
+      expect(result).not.toBeNull();
       await ServerCertsService.deleteDfspServerCerts(ctx, dfspId);
       try {
         await ServerCertsService.getDfspServerCerts(ctx, dfspId);
-        assert.fail('Should have throw NotFoundError');
+        throw new Error('Should have throw NotFoundError');
       } catch (error) {
-        assert.instanceOf(error, NotFoundError);
+        expect(error).toBeInstanceOf(NotFoundError);
       }
       await PkiService.deleteDFSP(ctx, dfspId);
     }, 30000);
@@ -140,9 +140,9 @@ describe('ServerCertsService', () => {
       const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
       dfspId = resultDfsp.id;
       const result = await ServerCertsService.createDfspServerCerts(ctx, dfspId, body);
-      assert.isNotNull(result);
-      assert.equal(result.serverCertificateInfo.serialNumber, '0e4098bddd80b0d3394a0e1487d7765c');
-      assert.equal(result.intermediateChainInfo[0].notBefore.toISOString(), '2017-06-15T00:00:42.000Z');
+      expect(result).not.toBeNull();
+      expect(result.serverCertificateInfo.serialNumber).toBe('0e4098bddd80b0d3394a0e1487d7765c');
+      expect(result.intermediateChainInfo[0].notBefore.toISOString()).toBe('2017-06-15T00:00:42.000Z');
 
       const newBody = {
         rootCertificate: fs.readFileSync(path.join(__dirname, AMAZON_ROOT_CA_PATH)).toString(),
@@ -150,8 +150,8 @@ describe('ServerCertsService', () => {
         serverCertificate: fs.readFileSync(path.join(__dirname, AMAZON_SERVER_CERT_PATH)).toString(),
       };
       const resultAfter = await ServerCertsService.updateDfspServerCerts(ctx, dfspId, newBody);
-      assert.isNotNull(resultAfter.id);
-      assert.equal('0c8ee0c90d6a89158804061ee241f9af', resultAfter.intermediateChainInfo[0].serialNumber);
+      expect(resultAfter.id).not.toBeNull();
+      expect(resultAfter.intermediateChainInfo[0].serialNumber).toBe('0c8ee0c90d6a89158804061ee241f9af');
       await PkiService.deleteDFSP(ctx, dfspId);
     }, 30000);
 
@@ -174,13 +174,13 @@ describe('ServerCertsService', () => {
         dfspIds.push(eachId);
 
         const result = await ServerCertsService.createDfspServerCerts(ctx, dfsp.dfspId, body);
-        assert.isNotNull(result);
+        expect(result).not.toBeNull();
       }
 
       const certs = await ServerCertsService.getAllDfspServerCerts(ctx);
       certs.forEach(cert => {
-        assert.equal(cert.serverCertificateInfo.serialNumber, '0e4098bddd80b0d3394a0e1487d7765c');
-        assert.equal(cert.intermediateChainInfo[0].notBefore, '2017-06-15T00:00:42.000Z');
+        expect(cert.serverCertificateInfo.serialNumber).toBe('0e4098bddd80b0d3394a0e1487d7765c');
+        expect(cert.intermediateChainInfo[0].notBefore).toBe('2017-06-15T00:00:42.000Z');
       });
 
       await Promise.all(dfspIds.map(id => PkiService.deleteDFSP(ctx, id)));
@@ -205,14 +205,14 @@ describe('ServerCertsService', () => {
         dfspIds.push(eachId);
 
         const result = await ServerCertsService.createDfspServerCerts(ctx, eachId, body);
-        assert.isNotNull(result);
+        expect(result).not.toBeNull();
       }
 
       const certs = await ServerCertsService.getAllDfspServerCerts(ctx);
 
       certs.forEach(cert => {
-        assert.isNotNull(cert.dfspId);
-        assert.include(dfspIds, cert.dfspId);
+        expect(cert.dfspId).not.toBeNull();
+        expect(dfspIds).toContain(cert.dfspId);
       });
 
       await Promise.all(dfspIds.map(id => PkiService.deleteDFSP(ctx, id)));
