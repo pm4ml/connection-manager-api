@@ -41,6 +41,6 @@ exports.up = async function(knex) {
  */
 exports.down = function(knex) {
   return knex.schema.alterTable('gid', (table) => {
-    table.dropPrimary('id');
+    table.dropPrimary();
   });
 };
