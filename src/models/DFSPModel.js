@@ -95,7 +95,7 @@ exports.create = async (values) => {
 
 exports.createFxpSupportedCurrencies = async (dfsp_id, monetaryZoneIds) => {
   if (!monetaryZoneIds?.length) return;
-  const dfspId = await findIdByDfspId(dfsp_id);
+  const dfspId = await exports.findIdByDfspId(dfsp_id);
   return knex.table('fxp_supported_currencies').insert(
     monetaryZoneIds.map((monetaryZoneId) => ({ dfspId, monetaryZoneId }))
   );

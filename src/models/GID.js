@@ -15,7 +15,7 @@ exports.createID = async () => {
   return result?.[0]?.[0]?.[0]?.id;
 };
 
-if (process.env.TEST) {
+if (eval(process.env.TEST)) {
   exports.globalId = 1;
   exports.createID = async () => exports.globalId++;
 }
