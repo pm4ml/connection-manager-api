@@ -17,7 +17,6 @@
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 
 const PkiService = require('../../src/service/PkiService');
-const { assert } = require('chai');
 const ValidationError = require('../../src/errors/ValidationError');
 const NotFoundError = require('../../src/errors/NotFoundError');
 const { createInternalHubCA, getHubCA } = require('../../src/service/HubCAService');
@@ -72,20 +71,15 @@ describe('PkiService', () => {
           ]
         }
       };
-      try {
-        await createInternalHubCA(ctx, caBody);
-        assert.fail();
-      } catch (error) {
-        assert.isTrue(error instanceof ValidationError);
-      }
+      await expect(createInternalHubCA(ctx, caBody)).rejects.toBeInstanceOf(ValidationError);
     }, 15000);
 
     it('should create a CA', async () => {
       const result = await createInternalHubCA(ctx, ROOT_CA);
-      assert.isNotNull(result.id);
+      expect(result.id).not.toBeNull();
 
       const newCa = await getHubCA(ctx);
-      assert.isNotNull(newCa);
+      expect(newCa).not.toBeNull();
     }, 15000);
 
     it('should throw ValidationError when passing a CAInitialInfo without CSR', async () => {
@@ -98,21 +92,11 @@ describe('PkiService', () => {
           ]
         }
       };
-      try {
-        await createInternalHubCA(ctx, caBody);
-        assert.fail();
-      } catch (error) {
-        assert.isTrue(error instanceof ValidationError);
-      }
+      await expect(createInternalHubCA(ctx, caBody)).rejects.toBeInstanceOf(ValidationError);
     }, 15000);
 
     it('should throw NotFoundError when getting a non-existent CA', async () => {
-      try {
-        await getHubCA(ctx, 'non-existent-ca');
-        assert.fail();
-      } catch (error) {
-        assert.isTrue(error instanceof NotFoundError);
-      }
+      await expect(getHubCA(ctx, 'non-existent-ca')).rejects.toBeInstanceOf(NotFoundError);
     }, 15000);
   });
 
@@ -129,12 +113,12 @@ describe('PkiService', () => {
         name: 'DFSP_B_description'
       };
       const result = await PkiService.createDFSP(ctx, dfsp);
-      assert.property(result, 'id');
-      assert.isNotNull(result.id);
+      expect(result).toHaveProperty('id');
+      expect(result.id).not.toBeNull();
       const saved = await PkiService.getDFSPById(ctx, result.id);
-      assert.equal(saved.name, dfsp.name);
+      expect(saved.name).toBe(dfsp.name);
       const deleted = await PkiService.deleteDFSP(ctx, result.id);
-      assert.equal(deleted, 1);
+      expect(deleted).toBe(1);
     });
 
     it('should create a DFSP with an space and use dashed for the security group', async () => {
@@ -143,13 +127,13 @@ describe('PkiService', () => {
         name: 'DFSP_B_description',
       };
       const result = await PkiService.createDFSP(ctx, dfsp);
-      assert.property(result, 'id');
-      assert.isNotNull(result.id);
+      expect(result).toHaveProperty('id');
+      expect(result.id).not.toBeNull();
       const saved = await PkiService.getDFSPById(ctx, result.id);
-      assert.equal(saved.name, dfsp.name);
-      assert.equal(saved.securityGroup, 'Application/DFSP:MTN-CI');
+      expect(saved.name).toBe(dfsp.name);
+      expect(saved.securityGroup).toBe('Application/DFSP:MTN-CI');
       const deleted = await PkiService.deleteDFSP(ctx, result.id);
-      assert.equal(deleted, 1);
+      expect(deleted).toBe(1);
     });
 
     it('should create a DFSP with MZ', async () => {
@@ -159,13 +143,13 @@ describe('PkiService', () => {
         monetaryZoneId: 'EUR'
       };
       const result = await PkiService.createDFSP(ctx, dfsp);
-      assert.property(result, 'id');
-      assert.isNotNull(result.id);
+      expect(result).toHaveProperty('id');
+      expect(result.id).not.toBeNull();
       const saved = await PkiService.getDFSPById(ctx, result.id);
-      assert.equal(saved.name, dfsp.name);
-      assert.equal(saved.monetaryZoneId, dfsp.monetaryZoneId);
+      expect(saved.name).toBe(dfsp.name);
+      expect(saved.monetaryZoneId).toBe(dfsp.monetaryZoneId);
       const deleted = await PkiService.deleteDFSP(ctx, result.id);
-      assert.equal(deleted, 1);
+      expect(deleted).toBe(1);
     });
 
     it('should create a DFSP without MZ and then add it', async () => {
@@ -179,14 +163,14 @@ describe('PkiService', () => {
       // remove the mz
       const newDfsp = { dfspId: dfsp.dfspId, monetaryZoneId: 'MAD' };
       const result = await PkiService.updateDFSP(ctx, dfsp.dfspId, newDfsp);
-      assert.equal(result.name, dfsp.name);
-      assert.equal(result.monetaryZoneId, 'MAD');
+      expect(result.name).toBe(dfsp.name);
+      expect(result.monetaryZoneId).toBe('MAD');
 
       const saved = await PkiService.getDFSPById(ctx, dfsp.dfspId);
-      assert.equal(saved.name, dfsp.name);
-      assert.equal(saved.monetaryZoneId, 'MAD');
+      expect(saved.name).toBe(dfsp.name);
+      expect(saved.monetaryZoneId).toBe('MAD');
       const deleted = await PkiService.deleteDFSP(ctx, dfsp.dfspId);
-      assert.equal(deleted, 1);
+      expect(deleted).toBe(1);
     });
 
     it('should create a DFSP with MZ and then remove it', async () => {
@@ -200,24 +184,19 @@ describe('PkiService', () => {
       // remove the mz
       const newDfsp = { ...dfsp, monetaryZoneId: null };
       const result = await PkiService.updateDFSP(ctx, dfsp.dfspId, newDfsp);
-      assert.equal(result.name, dfsp.name);
-      assert.equal(result.monetaryZoneId, null);
+      expect(result.name).toBe(dfsp.name);
+      expect(result.monetaryZoneId).toBeNull();
 
       const saved = await PkiService.getDFSPById(ctx, dfsp.dfspId);
-      assert.equal(saved.name, dfsp.name);
-      assert.equal(saved.monetaryZoneId, null);
+      expect(saved.name).toBe(dfsp.name);
+      expect(saved.monetaryZoneId).toBeNull();
 
       const deleted = await PkiService.deleteDFSP(ctx, dfsp.dfspId);
-      assert.equal(deleted, 1);
+      expect(deleted).toBe(1);
     });
 
     it('should throw NotFoundError when getting a non-existent DFSP', async () => {
-      try {
-        await PkiService.getDFSPById(ctx, 'non-existent-dfsp');
-        assert.fail();
-      } catch (error) {
-        assert.isTrue(error instanceof NotFoundError);
-      }
+      await expect(PkiService.getDFSPById(ctx, 'non-existent-dfsp')).rejects.toBeInstanceOf(NotFoundError);
     });
 
     it('should throw ValidationError when creating a DFSP with invalid data', async () => {
@@ -225,12 +204,7 @@ describe('PkiService', () => {
         dfspId: null,
         name: 'Invalid DFSP'
       };
-      try {
-        await PkiService.createDFSP(ctx, dfsp);
-        assert.fail();
-      } catch (error) {
-        assert.isTrue(error instanceof ValidationError);
-      }
+      await expect(PkiService.createDFSP(ctx, dfsp)).rejects.toBeInstanceOf(ValidationError);
     });
 
     it('should throw ValidationError when updating a DFSP with invalid data', async () => {
@@ -241,21 +215,11 @@ describe('PkiService', () => {
       await PkiService.createDFSP(ctx, dfsp);
 
       const newDfsp = { dfspId: dfsp.dfspId, name: null };
-      try {
-        await PkiService.updateDFSP(ctx, dfsp.dfspId, newDfsp);
-        assert.fail();
-      } catch (error) {
-        assert.isTrue(error instanceof ValidationError);
-      }
+      await expect(PkiService.updateDFSP(ctx, dfsp.dfspId, newDfsp)).rejects.toBeInstanceOf(ValidationError);
     });
 
     it('should throw NotFoundError when deleting a non-existent DFSP', async () => {
-      try {
-        await PkiService.deleteDFSP(ctx, 'non-existent-dfsp');
-        assert.fail();
-      } catch (error) {
-        assert.isTrue(error instanceof NotFoundError);
-      }
+      await expect(PkiService.deleteDFSP(ctx, 'non-existent-dfsp')).rejects.toBeInstanceOf(NotFoundError);
     });
 
     it('should get all DFSPs', async () => {
@@ -272,8 +236,8 @@ describe('PkiService', () => {
       await PkiService.createDFSP(ctx, dfsp2);
 
       const dfsps = await PkiService.getDFSPs(ctx);
-      assert.isArray(dfsps);
-      assert.lengthOf(dfsps, 2);
+      expect(Array.isArray(dfsps)).toBe(true);
+      expect(dfsps).toHaveLength(2);
     });
 
     it('should set and get DFSP CA', async () => {
@@ -292,8 +256,8 @@ describe('PkiService', () => {
       await PkiService.setDFSPca(ctx, dfsp.dfspId, caBody);
 
       const ca = await PkiService.getDFSPca(ctx, dfsp.dfspId);
-      assert.equal(ca.rootCertificate, 'root-cert');
-      assert.equal(ca.intermediateChain, 'intermediate-cert');
+      expect(ca.rootCertificate).toBe('root-cert');
+      expect(ca.intermediateChain).toBe('intermediate-cert');
     });
 
     it('should delete DFSP CA', async () => {
@@ -313,8 +277,8 @@ describe('PkiService', () => {
       await PkiService.deleteDFSPca(ctx, dfsp.dfspId);
 
       const ca = await PkiService.getDFSPca(ctx, dfsp.dfspId);
-      assert.isNull(ca.rootCertificate);
-      assert.isNull(ca.intermediateChain);
+      expect(ca.rootCertificate).toBeNull();
+      expect(ca.intermediateChain).toBeNull();
     });
 
     it('should get DFSPs by monetary zone', async () => {
@@ -333,9 +297,9 @@ describe('PkiService', () => {
       await PkiService.createDFSP(ctx, dfsp2);
 
       const dfsps = await PkiService.getDfspsByMonetaryZones(ctx, 'EUR');
-      assert.isArray(dfsps);
-      assert.lengthOf(dfsps, 1);
-      assert.equal(dfsps[0].monetaryZoneId, 'EUR');
+      expect(Array.isArray(dfsps)).toBe(true);
+      expect(dfsps).toHaveLength(1);
+      expect(dfsps[0].monetaryZoneId).toBe('EUR');
     });
 
     it('should create a DFSP with CSR and delete it', async () => {
@@ -344,12 +308,12 @@ describe('PkiService', () => {
         name: 'DFSP_C_description'
       };
       const result = await PkiService.createDFSPWithCSR(ctx, dfsp);
-      assert.property(result, 'id');
-      assert.isNotNull(result.id);
+      expect(result).toHaveProperty('id');
+      expect(result.id).not.toBeNull();
       const saved = await PkiService.getDFSPById(ctx, result.id);
-      assert.equal(saved.name, dfsp.name);
+      expect(saved.name).toBe(dfsp.name);
       const deleted = await PkiService.deleteDFSP(ctx, result.id);
-      assert.equal(deleted, 1);
+      expect(deleted).toBe(1);
     });
 
     it('should throw InternalError when failing to create DFSP with CSR', async () => {
@@ -362,14 +326,9 @@ describe('PkiService', () => {
         throw new Error('Failed to create CSR');
       });
 
-      try {
-        await PkiService.createDFSPWithCSR(ctx, dfsp);
-        assert.fail();
-      } catch (error) {
-        assert.isTrue(error instanceof InternalError);
-      } finally {
-        PkiService.__set__('createCSRAndDFSPOutboundEnrollment', createCSRAndDFSPOutboundEnrollment);
-      }
+      await expect(PkiService.createDFSPWithCSR(ctx, dfsp)).rejects.toBeInstanceOf(InternalError);
+
+      PkiService.__set__('createCSRAndDFSPOutboundEnrollment', createCSRAndDFSPOutboundEnrollment);
     });
   });
 });

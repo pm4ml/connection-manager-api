@@ -1,10 +1,14 @@
+const chai = require('chai');
 const sinon = require('sinon');
 const fs = require('fs');
+const path = require('path');
 const passport = require('passport');
 const Cookies = require('cookies');
-const PkiService = require('../../../src/service/PkiService');
+const PkiService = require('../../../src//service/PkiService');
 const Constants = require('../../../src/constants/Constants');
 const { createJwtStrategy, createOAuth2Handler } = require('../../../src/oauth/OAuthHelper');
+
+const { expect } = chai;
 
 describe('OAuthHelper', () => {
   let sandbox;
@@ -30,7 +34,7 @@ describe('OAuthHelper', () => {
 
   describe('cookieExtractor', () => {
     it('should extract JWT token from cookies', () => {
-      const mockReq = { headers: {}, authorization: 'Bearer test'};
+      const mockReq = {};
       const mockToken = 'test.jwt.token';
       const getCookieStub = sandbox.stub().returns(mockToken);
       sandbox.stub(Cookies.prototype, 'get').callsFake(getCookieStub);
@@ -38,7 +42,7 @@ describe('OAuthHelper', () => {
       const strategy = createJwtStrategy();
       const token = strategy._jwtFromRequest(mockReq);
 
-      expect(token).toBe(mockToken);
+      expect(token).to.equal(mockToken);
     });
 
     it('should return undefined when cookie is not present', () => {
@@ -46,10 +50,9 @@ describe('OAuthHelper', () => {
       sandbox.stub(Cookies.prototype, 'get').returns(undefined);
 
       const strategy = createJwtStrategy();
+      const token = strategy._jwtFromRequest(mockReq);
 
-      expect(() => {
-        strategy._jwtFromRequest(mockReq);
-      }).toThrow();
+      expect(token).to.be.undefined;
     });
   });
 
@@ -58,8 +61,8 @@ describe('OAuthHelper', () => {
       Constants.OAUTH.EMBEDDED_CERTIFICATE = MOCK_CERT;
       const strategy = createJwtStrategy();
 
-      expect(strategy).toHaveProperty('name', 'jwt');
-      expect(typeof strategy._secretOrKeyProvider).toBe('function');
+      expect(strategy).to.have.property('name', 'jwt');
+      expect(strategy._secretOrKeyProvider).to.be.a('function');
     });
 
     it('should create strategy with certificate from file', () => {
@@ -69,8 +72,8 @@ describe('OAuthHelper', () => {
 
       const strategy = createJwtStrategy();
 
-      expect(strategy).toHaveProperty('name', 'jwt');
-      expect(fs.readFileSync.calledWith('/test/cert.pem')).toBe(true);
+      expect(strategy).to.have.property('name', 'jwt');
+      expect(fs.readFileSync.calledWith('/test/cert.pem')).to.be.true;
     });
   });
 
@@ -82,18 +85,14 @@ describe('OAuthHelper', () => {
     };
 
     it('should verify valid JWT payload', (done) => {
-      const mockReq = {
-        headers: {
-          authorization: 'Bearer test.jwt.token'
-        }
-      };
+      const mockReq = {};
       const strategy = createJwtStrategy();
 
       strategy._verify(mockReq, validPayload, (err, client, authInfo) => {
-        expect(err).toBeNull();
-        expect(client).toEqual({ name: 'testUser' });
-        expect(authInfo.roles).toHaveProperty('mta', true);
-        expect(authInfo.roles).toHaveProperty('everyone', true);
+        expect(err).to.be.null;
+        expect(client).to.deep.equal({ name: 'testUser' });
+        expect(authInfo.roles).to.have.property('mta', true);
+        expect(authInfo.roles).to.have.property('everyone', true);
         done();
       });
     });
@@ -106,8 +105,8 @@ describe('OAuthHelper', () => {
       const strategy = createJwtStrategy();
 
       strategy._verify(mockReq, invalidPayload, (err, client, info) => {
-        expect(client).toBe(false);
-        expect(info).toContain('no sub');
+        expect(client).to.be.false;
+        expect(info).to.contain('no sub');
         done();
       });
     });
@@ -134,7 +133,7 @@ describe('OAuthHelper', () => {
 
     it('should allow access for PTA role', async () => {
       const result = await handler(mockReq, ['PTA_ROLE'], {});
-      expect(result).toBe(true);
+      expect(result).to.be.true;
     });
 
     it('should check DFSP permissions for specific paths', async () => {
@@ -143,7 +142,12 @@ describe('OAuthHelper', () => {
         securityGroup: 'TEST_GROUP'
       });
 
-      await expect(handler(mockReq, ['MTA_ROLE'], {})).rejects.toHaveProperty('statusCode', 403);
+      try {
+        await handler(mockReq, ['MTA_ROLE'], {});
+        expect.fail('Should have thrown error');
+      } catch (err) {
+        expect(err.statusCode).to.equal(403);
+      }
     });
 
     it('should reject when user lacks required roles', async () => {
@@ -152,7 +156,12 @@ describe('OAuthHelper', () => {
         return (req) => callback(null, req.user, { roles: { basic: true } });
       });
 
-      await expect(handler(mockReq, ['PTA_ROLE'], {})).rejects.toHaveProperty('statusCode', 403);
+      try {
+        await handler(mockReq, ['PTA_ROLE'], {});
+        expect.fail('Should have thrown error');
+      } catch (err) {
+        expect(err.statusCode).to.equal(403);
+      }
     });
   });
 
@@ -176,7 +185,12 @@ describe('OAuthHelper', () => {
       sandbox.stub(passport, 'authenticate').callsFake((strategy, options, callback) => {
         return (req) => callback(null, req.user, { roles: { PTA_ROLE: true, EXTRA_ROLE: true } });
       });
-      await expect(handler(mockReq, ['PTA_ROLE', 'MTA_ROLE'], {})).rejects.toHaveProperty('statusCode', 403);
+      try {
+        await handler(mockReq, ['PTA_ROLE', 'MTA_ROLE'], {});
+        expect.fail('Should have thrown error');
+      } catch (err) {
+        expect(err.statusCode).to.equal(403);
+      }
     });
 
     it('should allow when roles fully overlap with multiple required scopes', async () => {
@@ -184,7 +198,7 @@ describe('OAuthHelper', () => {
         return (req) => callback(null, req.user, { roles: { PTA_ROLE: true, MTA_ROLE: true, EXTRA_ROLE: true } });
       });
       const result = await handler(mockReq, ['PTA_ROLE', 'MTA_ROLE'], {});
-      expect(result).toBe(true);
+      expect(result).to.be.true;
     });
 
     it('should handle custom DFSP path with no specific securityGroup', async () => {
@@ -195,7 +209,7 @@ describe('OAuthHelper', () => {
       });
       sandbox.stub(PkiService, 'getDFSPById').resolves({}); // no securityGroup
       const result = await handler(mockReq, ['PTA_ROLE'], {});
-      expect(result).toBe(true);
+      expect(result).to.be.true;
     });
 
     it('should reject DFSP paths when returned securityGroup is missing from user roles', async () => {
@@ -204,7 +218,12 @@ describe('OAuthHelper', () => {
         return (req) => callback(null, req.user, { roles: { MTA_ROLE: true } });
       });
       sandbox.stub(PkiService, 'getDFSPById').resolves({ securityGroup: 'SECRET_GROUP' });
-      await expect(handler(mockReq, ['MTA_ROLE'], {})).rejects.toHaveProperty('statusCode', 403);
+      try {
+        await handler(mockReq, ['MTA_ROLE'], {});
+        expect.fail('Should have thrown error');
+      } catch (err) {
+        expect(err.statusCode).to.equal(403);
+      }
     });
   });
 
@@ -223,8 +242,8 @@ describe('OAuthHelper', () => {
       };
 
       strategy._verify({}, invalidPayload, (err, client, info) => {
-        expect(client).toBe(false);
-        expect(info).toContain('wrong issuer');
+        expect(client).to.be.false;
+        expect(info).to.contain('wrong issuer');
         done();
       });
     });
@@ -236,8 +255,8 @@ describe('OAuthHelper', () => {
       };
 
       strategy._verify({}, invalidPayload, (err, client, info) => {
-        expect(client).toBe(false);
-        expect(info).toContain('no groups');
+        expect(client).to.be.false;
+        expect(info).to.contain('no groups');
         done();
       });
     });
@@ -250,11 +269,11 @@ describe('OAuthHelper', () => {
       };
 
       strategy._verify({}, payload, (err, client, authInfo) => {
-        expect(err).toBeNull();
-        expect(client).toEqual({ name: 'testUser' });
-        expect(authInfo.roles).toHaveProperty('mta', true);
-        expect(authInfo.roles).toHaveProperty('everyone', true);
-        expect(authInfo.roles).toHaveProperty('CUSTOM_ROLE', true);
+        expect(err).to.be.null;
+        expect(client).to.deep.equal({ name: 'testUser' });
+        expect(authInfo.roles).to.have.property('mta', true);
+        expect(authInfo.roles).to.have.property('everyone', true);
+        expect(authInfo.roles).to.have.property('CUSTOM_ROLE', true);
         done();
       });
     });
@@ -267,9 +286,9 @@ describe('OAuthHelper', () => {
       };
 
       strategy._verify({}, payload, (err, client, authInfo) => {
-        expect(err).toBeNull();
-        expect(client).toEqual({ name: 'testUser' });
-        expect(authInfo.roles).toHaveProperty('pta', true);
+        expect(err).to.be.null;
+        expect(client).to.deep.equal({ name: 'testUser' });
+        expect(authInfo.roles).to.have.property('pta', true);
         done();
       });
     });
@@ -296,17 +315,25 @@ describe('OAuthHelper', () => {
         return (req) => callback(new Error('Auth failed'));
       });
 
-      await expect(handler(mockReq, ['PTA_ROLE'], {})).rejects.toThrow('Auth failed');
+      try {
+        await handler(mockReq, ['PTA_ROLE'], {});
+        expect.fail('Should have thrown error');
+      } catch (err) {
+        expect(err.message).to.equal('Auth failed');
+      }
     });
 
     it('should handle PkiService errors gracefully', async () => {
       mockReq.openapi.openApiRoute = '/dfsps/{dfspId}';
       sandbox.stub(PkiService, 'getDFSPById').rejects(new Error('Database error'));
 
-      await expect(handler(mockReq, ['MTA_ROLE'], {})).rejects.toMatchObject({
-        statusCode: 500,
-        headers: expect.objectContaining({ 'X-AUTH-ERROR': 'Database error' })
-      });
+      try {
+        await handler(mockReq, ['MTA_ROLE'], {});
+        expect.fail('Should have thrown error');
+      } catch (err) {
+        expect(err.statusCode).to.equal(500);
+        expect(err.headers['X-AUTH-ERROR']).to.equal('Database error');
+      }
     });
 
     it('should pass for non-DFSP routes with valid roles', async () => {
@@ -315,7 +342,7 @@ describe('OAuthHelper', () => {
       });
 
       const result = await handler(mockReq, ['MTA_ROLE'], {});
-      expect(result).toBe(true);
+      expect(result).to.be.true;
     });
 
     it('should handle missing openapi path info', async () => {
@@ -325,7 +352,7 @@ describe('OAuthHelper', () => {
       });
 
       const result = await handler(mockReq, ['MTA_ROLE'], {});
-      expect(result).toBe(true);
+      expect(result).to.be.true;
     });
   });
 
@@ -333,25 +360,25 @@ describe('OAuthHelper', () => {
     it('should handle multiple extractors correctly', () => {
       const customExtractor = () => 'custom-token';
       const strategy = createJwtStrategy([customExtractor]);
-      expect(typeof strategy._jwtFromRequest).toBe('function');
+      expect(strategy._jwtFromRequest).to.be.a('function');
     });
 
     it('should handle single extractor correctly', () => {
       const customExtractor = () => 'custom-token';
       const strategy = createJwtStrategy(customExtractor);
-      expect(typeof strategy._jwtFromRequest).toBe('function');
+      expect(strategy._jwtFromRequest).to.be.a('function');
     });
 
     it('should work without any custom extractors', () => {
       const strategy = createJwtStrategy();
-      expect(typeof strategy._jwtFromRequest).toBe('function');
+      expect(strategy._jwtFromRequest).to.be.a('function');
     });
 
     it('should handle missing certificate configurations', () => {
       delete Constants.OAUTH.EMBEDDED_CERTIFICATE;
       delete Constants.OAUTH.CERTIFICATE_FILE_NAME;
       const strategy = createJwtStrategy();
-      expect(strategy).toHaveProperty('name', 'jwt');
+      expect(strategy).to.have.property('name', 'jwt');
     });
   });
 
@@ -379,14 +406,19 @@ describe('OAuthHelper', () => {
       });
 
       const result = await handler(mockReq, ['PTA_ROLE'], {});
-      expect(result).toBe(true);
+      expect(result).to.be.true;
     });
 
     it('should handle missing pathParams in DFSP routes', async () => {
       mockReq.openapi.openApiRoute = '/dfsps/{dfspId}';
       delete mockReq.openapi.pathParams;
 
-      await expect(handler(mockReq, ['MTA_ROLE'], {})).rejects.toHaveProperty('statusCode', 500);
+      try {
+        await handler(mockReq, ['MTA_ROLE'], {});
+        expect.fail('Should have thrown error');
+      } catch (err) {
+        expect(err.statusCode).to.equal(500);
+      }
     });
   });
 
@@ -417,7 +449,7 @@ describe('OAuthHelper', () => {
       });
 
       const result = await handler(mockReq, ['MTA_ROLE', 'PTA_ROLE'], {});
-      expect(result).toBe(true);
+      expect(result).to.be.true;
     });
 
     it('should reject when missing one of multiple required scopes', async () => {
@@ -429,31 +461,36 @@ describe('OAuthHelper', () => {
         });
       });
 
-      await expect(handler(mockReq, ['MTA_ROLE', 'PTA_ROLE'], {})).rejects.toHaveProperty('statusCode', 403);
+      try {
+        await handler(mockReq, ['MTA_ROLE', 'PTA_ROLE'], {});
+        expect.fail('Should have thrown error');
+      } catch (err) {
+        expect(err.statusCode).to.equal(403);
+      }
     });
 
     it('should handle multiple extractors correctly', () => {
       const customExtractor = () => 'custom-token';
       const strategy = createJwtStrategy([customExtractor]);
-      expect(typeof strategy._jwtFromRequest).toBe('function');
+      expect(strategy._jwtFromRequest).to.be.a('function');
     });
 
     it('should handle single extractor correctly', () => {
       const customExtractor = () => 'custom-token';
       const strategy = createJwtStrategy(customExtractor);
-      expect(typeof strategy._jwtFromRequest).toBe('function');
+      expect(strategy._jwtFromRequest).to.be.a('function');
     });
 
     it('should work without any custom extractors', () => {
       const strategy = createJwtStrategy();
-      expect(typeof strategy._jwtFromRequest).toBe('function');
+      expect(strategy._jwtFromRequest).to.be.a('function');
     });
 
     it('should handle missing certificate configurations', () => {
       delete Constants.OAUTH.EMBEDDED_CERTIFICATE;
       delete Constants.OAUTH.CERTIFICATE_FILE_NAME;
       const strategy = createJwtStrategy();
-      expect(strategy).toHaveProperty('name', 'jwt');
+      expect(strategy).to.have.property('name', 'jwt');
     });
   });
 
@@ -481,14 +518,19 @@ describe('OAuthHelper', () => {
       });
 
       const result = await handler(mockReq, ['PTA_ROLE'], {});
-      expect(result).toBe(true);
+      expect(result).to.be.true;
     });
 
     it('should handle missing pathParams in DFSP routes', async () => {
       mockReq.openapi.openApiRoute = '/dfsps/{dfspId}';
       delete mockReq.openapi.pathParams;
 
-      await expect(handler(mockReq, ['MTA_ROLE'], {})).rejects.toHaveProperty('statusCode', 500);
+      try {
+        await handler(mockReq, ['MTA_ROLE'], {});
+        expect.fail('Should have thrown error');
+      } catch (err) {
+        expect(err.statusCode).to.equal(500);
+      }
     });
   });
 
@@ -512,9 +554,9 @@ describe('OAuthHelper', () => {
       };
 
       strategy._verify({}, payload, (err, client, authInfo) => {
-        expect(err).toBeNull();
-        expect(client.name).toBe('testUser');
-        expect(authInfo.roles).toMatchObject({
+        expect(err).to.be.null;
+        expect(client.name).to.equal('testUser');
+        expect(authInfo.roles).to.include({
           'PARENT_GROUP': true,
           'PARENT_GROUP_CHILD_1': true,
           'PARENT_GROUP_CHILD_2': true,
@@ -532,10 +574,10 @@ describe('OAuthHelper', () => {
       };
 
       strategy._verify({}, payload, (err, client, authInfo) => {
-        expect(err).toBeNull();
-        expect(client.name).toBe('testUser');
-        expect(authInfo.roles.mta).toBe(true);
-        expect(authInfo.roles.pta).toBe(true);
+        expect(err).to.be.null;
+        expect(client.name).to.equal('testUser');
+        expect(authInfo.roles.mta).to.be.true;
+        expect(authInfo.roles.pta).to.be.true;
         done();
       });
     });
@@ -549,9 +591,9 @@ describe('OAuthHelper', () => {
       };
 
       strategy._verify({}, payload, (err, client, authInfo) => {
-        expect(err).toBeNull();
-        expect(client.name).toBe('testUser');
-        expect(authInfo.roles[longGroupName]).toBe(true);
+        expect(err).to.be.null;
+        expect(client.name).to.equal('testUser');
+        expect(authInfo.roles[longGroupName]).to.be.true;
         done();
       });
     });
@@ -564,11 +606,11 @@ describe('OAuthHelper', () => {
       };
 
       strategy._verify({}, payload, (err, client, authInfo) => {
-        expect(err).toBeNull();
-        expect(client.name).toBe('testUser');
-        expect(authInfo.roles['GROUP_👍']).toBe(true);
-        expect(authInfo.roles['GROUP_českýŘetězec']).toBe(true);
-        expect(authInfo.roles['GROUP_中文']).toBe(true);
+        expect(err).to.be.null;
+        expect(client.name).to.equal('testUser');
+        expect(authInfo.roles['GROUP_👍']).to.be.true;
+        expect(authInfo.roles['GROUP_českýŘetězec']).to.be.true;
+        expect(authInfo.roles['GROUP_中文']).to.be.true;
         done();
       });
     });
@@ -581,11 +623,11 @@ describe('OAuthHelper', () => {
       };
 
       strategy._verify({}, payload, (err, client, authInfo) => {
-        expect(err).toBeNull();
-        expect(client.name).toBe('testUser');
-        expect(authInfo.roles['GROUP.WITH.DOTS']).toBe(true);
-        expect(authInfo.roles['GROUP-WITH-DASHES']).toBe(true);
-        expect(authInfo.roles['GROUP_WITH_UNDERSCORES']).toBe(true);
+        expect(err).to.be.null;
+        expect(client.name).to.equal('testUser');
+        expect(authInfo.roles['GROUP.WITH.DOTS']).to.be.true;
+        expect(authInfo.roles['GROUP-WITH-DASHES']).to.be.true;
+        expect(authInfo.roles['GROUP_WITH_UNDERSCORES']).to.be.true;
         done();
       });
     });
@@ -598,8 +640,8 @@ describe('OAuthHelper', () => {
       };
 
       strategy._verify({}, payload, (err, client, info) => {
-        expect(client).toBe(false);
-        expect(info).toContain('no iss');
+        expect(client).to.be.false;
+        expect(info).to.contain('no iss');
         done();
       });
     });
@@ -620,9 +662,9 @@ describe('OAuthHelper', () => {
       };
 
       strategy._verify({}, payload, (err, client, authInfo) => {
-        expect(err).toBeNull();
-        expect(client).toEqual({ name: 'testUser' });
-        expect(authInfo.roles).toEqual({
+        expect(err).to.be.null;
+        expect(client).to.deep.equal({ name: 'testUser' });
+        expect(authInfo.roles).to.deep.equal({
           mta: false,
           pta: false,
           everyone: false
@@ -639,8 +681,8 @@ describe('OAuthHelper', () => {
       };
 
       strategy._verify({}, payload, (err, client, info) => {
-        expect(client).toBe(false);
-        expect(info).toContain('wrong issuer');
+        expect(client).to.be.false;
+        expect(info).to.contain('wrong issuer');
         done();
       });
     });
@@ -659,7 +701,7 @@ describe('OAuthHelper', () => {
       const [seconds, nanoseconds] = process.hrtime(startTime);
       const executionTime = seconds * 1000 + nanoseconds / 1000000;
 
-      expect(executionTime).toBeLessThan(100); // 50 sequential requests under 100ms
+      expect(executionTime).to.be.below(100); // 50 sequential requests under 100ms
     });
 
     it('should maintain consistent performance with varied payload sizes', async () => {
@@ -685,7 +727,7 @@ describe('OAuthHelper', () => {
       }
 
       const variance = Math.max(...times) - Math.min(...times);
-      expect(variance).toBeLessThan(10); // Max 10ms variance between different payload sizes
+      expect(variance).to.be.below(10); // Max 10ms variance between different payload sizes
     });
   });
 
@@ -717,7 +759,7 @@ describe('OAuthHelper', () => {
       const [seconds, nanoseconds] = process.hrtime(startTime);
       const executionTime = seconds * 1000 + nanoseconds / 1000000;
 
-      expect(executionTime).toBeLessThan(50); // 10 concurrent requests under 50ms
+      expect(executionTime).to.be.below(50); // 10 concurrent requests under 50ms
     });
 
     it('should maintain performance with deeply nested role hierarchies', async () => {
@@ -744,7 +786,7 @@ describe('OAuthHelper', () => {
       const [seconds, nanoseconds] = process.hrtime(startTime);
       const executionTime = seconds * 1000 + nanoseconds / 1000000;
 
-      expect(executionTime).toBeLessThan(5); // Process deep hierarchy under 5ms
+      expect(executionTime).to.be.below(5); // Process deep hierarchy under 5ms
     });
 
     it('should scale linearly with increasing number of required scopes', async () => {
@@ -768,7 +810,7 @@ describe('OAuthHelper', () => {
       }));
 
       const ratios = timings.slice(1).map((time, i) => time / timings[i]);
-      ratios.forEach(ratio => expect(ratio).toBeLessThan(5)); // Each 10x increase should be <5x slower
+      ratios.forEach(ratio => expect(ratio).to.be.below(5)); // Each 10x increase should be <5x slower
     });
 
     it('should handle error cases efficiently', async () => {
@@ -798,7 +840,7 @@ describe('OAuthHelper', () => {
       }
 
       const maxTime = Math.max(...times);
-      expect(maxTime).toBeLessThan(5); // Error handling should be fast
+      expect(maxTime).to.be.below(5); // Error handling should be fast
     });
   });
 
@@ -839,8 +881,8 @@ describe('OAuthHelper', () => {
       const [s, ns] = process.hrtime(start);
       const executionTime = s * 1000 + ns / 1000000;
 
-      expect(executionTime).toBeLessThan(10); // Should be fast due to caching
-      expect(passport.authenticate.callCount).toBe(3); // Still called but cached
+      expect(executionTime).to.be.below(10); // Should be fast due to caching
+      expect(passport.authenticate.callCount).to.equal(3); // Still called but cached
     });
 
     it('should handle role inheritance efficiently', async () => {
@@ -854,8 +896,8 @@ describe('OAuthHelper', () => {
       const result = await handler(mockReq, ['MTA_ROLE'], {});
       const [s, ns] = process.hrtime(start);
 
-      expect(result).toBe(true);
-      expect(s * 1000 + ns / 1000000).toBeLessThan(5);
+      expect(result).to.be.true;
+      expect(s * 1000 + ns / 1000000).to.be.below(5);
     });
 
     it('should optimize permission checks for multiple scopes', async () => {
@@ -873,8 +915,8 @@ describe('OAuthHelper', () => {
       ]);
       const [s, ns] = process.hrtime(start);
 
-      results.forEach(result => expect(result).toBe(true));
-      expect(s * 1000 + ns / 1000000).toBeLessThan(15); // Parallel execution
+      results.forEach(result => expect(result).to.be.true);
+      expect(s * 1000 + ns / 1000000).to.be.below(15); // Parallel execution
     });
 
     it('should efficiently handle role checking order', async () => {
@@ -892,7 +934,7 @@ describe('OAuthHelper', () => {
       ]);
       const [s, ns] = process.hrtime(start);
 
-      expect(s * 1000 + ns / 1000000).toBeLessThan(15);
+      expect(s * 1000 + ns / 1000000).to.be.below(15);
     });
 
     it('should optimize error handling paths', async () => {
@@ -923,7 +965,7 @@ describe('OAuthHelper', () => {
       }));
 
       const maxTime = Math.max(...times);
-      expect(maxTime).toBeLessThan(5); // Fast error handling
+      expect(maxTime).to.be.below(5); // Fast error handling
     });
   });
 });
