@@ -2,6 +2,7 @@ const VaultPKIEngine = require('../../src/pki_engine/VaultPKIEngine');
 const Constants = require('../../src/constants/Constants');
 
 exports.createContext = async () => {
+  console.log(Constants.vault);
   const pkiEngine = new VaultPKIEngine({
     ...Constants.vault,
     signExpiryHours: 1,
