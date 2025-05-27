@@ -14,12 +14,7 @@ source "${SCRIPT_DIR}/env.sh"
 # Determine if running in CI or locally
 if [ -z "${CI}" ]; then
   # Running locally
-
-  # Check if backend is running
-  if ! nc -z localhost 3001; then
-    echo "WARNING: Backend is not running. Run \"npm run backend:start\" before executing..."
-    exit 1
-  fi
+  npm run backend:start
 
   # Set coverage directory
   COVERAGE_DIR="${PROJECT_ROOT}/coverage"
@@ -37,6 +32,7 @@ if [ -z "${CI}" ]; then
 else
   # Running in CI
   echo "Running in CI environment..."
+  npm run backend:start
 
   # Set coverage directory
   COVERAGE_DIR="${PROJECT_ROOT}/coverage"
