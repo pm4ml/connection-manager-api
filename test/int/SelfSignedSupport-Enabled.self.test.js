@@ -21,7 +21,6 @@ const Wso2Client = require('../../src/service/Wso2Client');
 const ExternalProcessError = require('../../src/errors/ExternalProcessError');
 const { enableCustomRootCAs } = require('../../src/utils/tlsUtils');
 
-const { assert } = require('chai');
 const path = require('path');
 
 describe('SelfSignedSupportTest', () => {
@@ -67,20 +66,20 @@ describe('SelfSignedSupportTest', () => {
   it('should not throw error when connecting to a Wso2MSClient self-signed server with the patch enabled', async () => {
     try {
       await Wso2MSClient.getUserClaimValue('johndoe', 'admin');
-      assert.fail('Should have raised an Error');
+      throw new Error('Should have raised an Error');
     } catch (error) {
       // The response from our custom test server
-      assert.instanceOf(error, ExternalProcessError);
-      assert.equal(error.payload.rootError.body, 'Alive!\n');
+      expect(error).toBeInstanceOf(ExternalProcessError);
+      expect(error.payload.rootError.body).toBe('Alive!\n');
     }
   });
 
   it('should connect to a Wso2Client self-signed server - getToken', async () => {
     try {
       await Wso2Client.getToken('johndoe', 'admin');
-      assert.fail('Should have raised an Error');
+      throw new Error('Should have raised an Error');
     } catch (error) {
-      assert.isTrue(error.message.includes('Unexpected token A'));
+      expect(error.message).toContain('Unexpected token A');
     }
   });
 

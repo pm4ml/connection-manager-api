@@ -20,8 +20,6 @@ const Wso2MSClient = require('../../src/service/Wso2ManagerServiceClient');
 const Wso2Client = require('../../src/service/Wso2Client');
 const ExternalProcessError = require('../../src/errors/ExternalProcessError');
 
-const { assert } = require('chai');
-
 describe('SelfSignedSupportTest - Disabled', () => {
   if (!process.env.TEST_START_SELF_SIGNED_SERVER) {
     console.log('Not running self-signed tests');
@@ -60,32 +58,35 @@ describe('SelfSignedSupportTest - Disabled', () => {
       // server.close();
     }
   });
-
   it('should fail with SELF_SIGNED_CERT_IN_CHAIN when connecting to a Wso2MSClient self-signed server without a patch', async () => {
+    expect.assertions(2);
     try {
       await Wso2MSClient.getUserClaimValue('johndoe', 'admin');
-      assert.fail('Should have raised an Error');
+      // Should not reach here
+      throw new Error('Should have raised an Error');
     } catch (error) {
-      assert.instanceOf(error, ExternalProcessError);
-      assert.equal(error.payload.rootError.code, 'SELF_SIGNED_CERT_IN_CHAIN');
+      expect(error).toBeInstanceOf(ExternalProcessError);
+      expect(error.payload.rootError.code).toBe('SELF_SIGNED_CERT_IN_CHAIN');
     }
   });
 
   it('should fail with SELF_SIGNED_CERT_IN_CHAIN when connecting to a Wso2Client self-signed server - getToken', async () => {
+    expect.assertions(1);
     try {
       await Wso2Client.getToken('johndoe', 'admin');
-      assert.fail('Should have raised an Error');
+      throw new Error('Should have raised an Error');
     } catch (error) {
-      assert.equal(error.error.code, 'SELF_SIGNED_CERT_IN_CHAIN');
+      expect(error.error.code).toBe('SELF_SIGNED_CERT_IN_CHAIN');
     }
   });
 
   it('should fail with SELF_SIGNED_CERT_IN_CHAIN when connecting to a Wso2Client self-signed server - resetPassword', async () => {
+    expect.assertions(1);
     try {
       await Wso2Client.resetPassword('johndoe', 'admin', '23');
-      assert.fail('Should have raised an Error');
+      throw new Error('Should have raised an Error');
     } catch (error) {
-      assert.equal(error.error.code, 'SELF_SIGNED_CERT_IN_CHAIN');
+      expect(error.error.code).toBe('SELF_SIGNED_CERT_IN_CHAIN');
     }
   });
 });

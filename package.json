@@ -19,7 +19,7 @@
     "prepare": "husky || true",
     "test": "npm run test:int",
     "test:int": "echo 'WARNING: Run \"npm run backend:start\" before executing...\n' && TEST=true SWITCH_ID=switch jest --testMatch '**/test/int/**/*.test.js'",
-    "test-self-signed-server": "./run-vault.sh && TEST_START_SELF_SIGNED_SERVER=true npm test ; ./kill-vault.sh",
+    "test-self-signed-server": "TEST_START_SELF_SIGNED_SERVER=true jest --testMatch '**/test/int/**/*self.test.js'",
     "test:unit": "jest --testMatch '**/test/unit/**/*.test.js'",
     "test:xunit": "npm run test:unit",
     "test-with-coverage": "./docker compose up -d --wait vault-dev && nyc --reporter=text jest --timeout 20000 --colors -exit ; docker compose down -v",
