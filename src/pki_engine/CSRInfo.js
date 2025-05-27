@@ -49,6 +49,9 @@ module.exports = class CSRInfo {
       const emailEntry = doc.Subject.Names.find(entry => entry.Type.length === emailAddressOIDN.length && entry.Type.every((value, index) => value === emailAddressOIDN[index]));
       emailAddress = emailEntry ? emailEntry.Value : null;
     }
+    if (!emailAddress && doc && doc.Subject && doc.Subject.EmailAddress) {
+      emailAddress = Array.isArray(doc.Subject.EmailAddress) ? doc.Subject.EmailAddress.join() : doc.Subject.EmailAddress;
+    }
     this.subject = {
       CN: doc && doc.Subject && doc.Subject.CommonName ? Array.isArray(doc.Subject.CommonName) ? doc.Subject.CommonName.join() : doc.Subject.CommonName : null,
       emailAddress,

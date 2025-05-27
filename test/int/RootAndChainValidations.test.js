@@ -15,18 +15,17 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { setupTestDB, tearDownTestDB } = require('./test-database');
+const { setupTestDB, tearDownTestDB } = require('../int-failed/test-database.js');
 
 const fs = require('fs');
 const path = require('path');
-const PkiService = require('../../src/service/PkiService');
-const { assert } = require('chai');
-const ROOT_CA = require('./Root_CA.js');
+const PkiService = require('../../src/service/PkiService.js');
+const ROOT_CA = require('../int-failed/Root_CA.js');
 
-const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
-const { createInternalHubCA } = require('../../src/service/HubCAService');
-const DFSPModel = require('../../src/models/DFSPModel');
-const { createContext, destroyContext } = require('./context');
+const ValidationCodes = require('../../src/pki_engine/ValidationCodes.js');
+const { createInternalHubCA } = require('../../src/service/HubCAService.js');
+const DFSPModel = require('../../src/models/DFSPModel.js');
+const { createContext, destroyContext } = require('../int-failed/context.js');
 
 describe('DfspPkiService', () => {
   let ctx;
@@ -74,8 +73,8 @@ describe('DfspPkiService', () => {
     const validationRootCertificate = result.validations.find((element) =>
       element.validationCode === ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code
     );
-    assert.equal(result.validationState, 'VALID');
-    assert.equal(validationRootCertificate.details, 'VALID(SELF_SIGNED)');
+    expect(result.validationState).toBe('VALID');
+    expect(validationRootCertificate.details).toBe('VALID(SELF_SIGNED)');
   }, 15000);
 
   it('should not validate an intermediate certificate signed by a non publicly trusted root certificate', async () => {
@@ -83,7 +82,7 @@ describe('DfspPkiService', () => {
       rootCertificate: fs.readFileSync(path.join(__dirname, SELF_SIGNED_INTERMEDIATE_PATH)).toString(),
     };
     const result = await PkiService.setDFSPca(ctx, dfspId, body);
-    assert.equal(result.validationState, 'INVALID');
+    expect(result.validationState).toBe('INVALID');
   }, 15000);
 
   it('should validate an intermediate signed by a globally trusted CA', async () => {
@@ -96,8 +95,8 @@ describe('DfspPkiService', () => {
       element.validationCode === ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code
     );
 
-    assert.equal(validationIntermediateChainCertificate.result, 'VALID');
-    assert.equal(result.validationState, 'VALID');
+    expect(validationIntermediateChainCertificate.result).toBe('VALID');
+    expect(result.validationState).toBe('VALID');
   }, 15000);
 
   it('should validate an intermediate signed by a self-signed root', async () => {
@@ -109,7 +108,7 @@ describe('DfspPkiService', () => {
     const validationRootCertificate = result.validations.find((element) =>
       element.validationCode === ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code
     );
-    assert.equal(result.validationState, 'VALID');
-    assert.equal(validationRootCertificate.details, 'VALID(SELF_SIGNED)');
+    expect(result.validationState).toBe('VALID');
+    expect(validationRootCertificate.details).toBe('VALID(SELF_SIGNED)');
   }, 15000);
 }, 15000);

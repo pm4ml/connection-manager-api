@@ -32,7 +32,8 @@ module.exports = class CertInfo {
       C: doc && doc.subject && doc.subject.country ? Array.isArray(doc.subject.country) ? doc.subject.country.join() : doc.subject.country : null,
       L: doc && doc.subject && doc.subject.locality ? Array.isArray(doc.subject.locality) ? doc.subject.locality.join() : doc.subject.locality : null,
       emailAddress: doc && doc.subject && doc.subject.email_address ? Array.isArray(doc.subject.email_address) ? doc.subject.email_address.join() : doc.subject.email_address : null,
-      ST: doc && doc.subject && doc.subject.province ? Array.isArray(doc.subject.province) ? doc.subject.province.join() : doc.subject.province : null
+      ST: doc && doc.subject && doc.subject.province ? Array.isArray(doc.subject.province) ? doc.subject.province.join() : doc.subject.province : null,
+      E: doc && doc.subject && doc.subject.email_address ? Array.isArray(doc.subject.email_address) ? doc.subject.email_address.join() : doc.subject.email_address : null
     };
     this.issuer = {
       CN: doc && doc.issuer && doc.issuer.common_name ? Array.isArray(doc.issuer.common_name) ? doc.issuer.common_name.join() : doc.issuer.common_name : null,
