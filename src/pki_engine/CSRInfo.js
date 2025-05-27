@@ -52,11 +52,13 @@ module.exports = class CSRInfo {
     this.subject = {
       CN: doc && doc.Subject && doc.Subject.CommonName ? Array.isArray(doc.Subject.CommonName) ? doc.Subject.CommonName.join() : doc.Subject.CommonName : null,
       emailAddress,
+      // NOTE: Not sure if this is correct but 'E' is in mandatory distinguished names
+      E: emailAddress,
       O: doc && doc.Subject && doc.Subject.Organization ? Array.isArray(doc.Subject.Organization) ? doc.Subject.Organization.join() : doc.Subject.Organization : null,
       OU: doc && doc.Subject && doc.Subject.OrganizationalUnit ? Array.isArray(doc.Subject.OrganizationalUnit) ? doc.Subject.OrganizationalUnit.join() : doc.Subject.OrganizationalUnit : null,
       C: doc && doc.Subject && doc.Subject.Country ? Array.isArray(doc.Subject.Country) ? doc.Subject.Country.join() : doc.Subject.Country : null,
       L: doc && doc.Subject && doc.Subject.Locality ? Array.isArray(doc.Subject.Locality) ? doc.Subject.Locality.join() : doc.Subject.Locality : null,
-      ST: doc && doc.Subject && doc.Subject.Province ? Array.isArray(doc.Subject.Province) ? doc.Subject.Province.join() : doc.Subject.Province : null
+      ST: doc && doc.Subject && doc.Subject.Province ? Array.isArray(doc.Subject.Province) ? doc.Subject.Province.join() : doc.Subject.Province : null,
     };
     this.extensions = {
       subjectAltName: {

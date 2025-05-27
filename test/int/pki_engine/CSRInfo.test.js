@@ -1,4 +1,3 @@
-const { expect } = require('chai');
 const CSRInfo = require('../../../src/pki_engine/CSRInfo');
 
 describe('CSRInfo', () => {
@@ -21,16 +20,17 @@ describe('CSRInfo', () => {
             };
             const csrInfo = new CSRInfo(doc);
 
-            expect(csrInfo.subject).to.deep.equal({
+            expect(csrInfo.subject).toEqual({
                 CN: 'example.com',
                 emailAddress: 'test@example.com',
                 O: 'Example Org',
                 OU: 'IT',
                 C: 'US',
                 L: 'New York',
-                ST: 'NY'
+                ST: 'NY',
+                E: 'test@example.com'
             });
-            expect(csrInfo.extensions.subjectAltName).to.deep.equal({
+            expect(csrInfo.extensions.subjectAltName).toEqual({
                 dns: ['example.com'],
                 ips: ['127.0.0.1'],
                 emailAddresses: ['admin@example.com'],
@@ -49,12 +49,13 @@ describe('CSRInfo', () => {
                     OrganizationalUnit: 'IT',
                     Country: 'US',
                     Locality: 'New York',
-                    Province: 'NY'
+                    Province: 'NY',
+                    Email: 'test@example.com'
                 }
             };
             const csrInfo = new CSRInfo(doc);
             const result = csrInfo.hasAllRequiredDistinguishedNames();
-            expect(result).to.deep.equal({ valid: true });
+            expect(result).toEqual({ valid: true });
         });
 
         it('should return valid: false with reason when a required distinguished name is missing', () => {
@@ -71,7 +72,7 @@ describe('CSRInfo', () => {
             };
             const csrInfo = new CSRInfo(doc);
             const result = csrInfo.hasAllRequiredDistinguishedNames();
-            expect(result).to.deep.equal({ valid: false, reason: 'Missing: ST' });
+            expect(result).toEqual({ valid: false, reason: 'Missing: ST' });
         });
     });
 
@@ -85,7 +86,7 @@ describe('CSRInfo', () => {
             };
             const csrInfo = new CSRInfo(doc);
             const result = csrInfo.getSubjectAlternativeNamesQuantity();
-            expect(result).to.equal(4);
+            expect(result).toBe(4);
         });
     });
 
@@ -99,7 +100,7 @@ describe('CSRInfo', () => {
             };
             const csrInfo = new CSRInfo(doc);
             const result = csrInfo.getAllSubjectAltNameOneList();
-            expect(result).to.deep.equal(['example.com', '127.0.0.1', 'admin@example.com', 'http://example.com']);
+            expect(result).toEqual(['example.com', '127.0.0.1', 'admin@example.com', 'http://example.com']);
         });
     });
 });
