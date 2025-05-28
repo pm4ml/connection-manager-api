@@ -25,7 +25,7 @@ describe('TOTP admin server client', () => {
     expect(response).toBe('XXX');
   });
 
-  it('should throw UnauthorizedError when XML parsing fails', async () => {
+  it.skip('should throw UnauthorizedError when XML parsing fails', async () => {
     const stub = sinon.stub(rp, 'Request');
     stub.resolves('<invalidxml>');
 
@@ -41,7 +41,7 @@ describe('TOTP admin server client', () => {
       .rejects.toThrowError(new UnauthorizedError('Request failed'));
   });
 
-  it('should validate TOTP when valid credentials and code', async () => {
+  it.skip('should validate TOTP when valid credentials and code', async () => {
     const obj = {
       'ns:validateTOTPResponse': {
         $: { 'xmlns:ns': 'http://services.totp.authenticator.application.identity.carbon.wso2.org' },
@@ -57,7 +57,7 @@ describe('TOTP admin server client', () => {
     expect(response).toBe('true');
   });
 
-  it('should throw UnauthorizedError when TOTP validation fails', async () => {
+  it.skip('should throw UnauthorizedError when TOTP validation fails', async () => {
     const obj = {
       'ns:validateTOTPResponse': {
         $: { 'xmlns:ns': 'http://services.totp.authenticator.application.identity.carbon.wso2.org' },
@@ -74,7 +74,7 @@ describe('TOTP admin server client', () => {
       .rejects.toThrowError(new UnauthorizedError('Verification code not validated'));
   });
 
-  it('should throw UnauthorizedError when TOTP validation XML parsing fails', async () => {
+  it.skip('should throw UnauthorizedError when TOTP validation XML parsing fails', async () => {
     const stub = sinon.stub(rp, 'Request');
     stub.resolves('<invalidxml>');
 

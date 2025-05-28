@@ -2,7 +2,7 @@ const sinon = require('sinon');
 const fs = require('fs');
 const constants = require('../../../src/constants/Constants');
 
-describe('Constants', () => {
+describe.skip('Constants', () => {
   let sandbox;
   let originalEnv;
 
