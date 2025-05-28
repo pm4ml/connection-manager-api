@@ -124,20 +124,17 @@ exports.update = async (dfspId, newDfsp) => {
 
 exports.updatePingStatus = async (dfspId, pingStatus) => {
   const result = await knex.table(DFSP_TABLE)
-    .insert({
-      dfsp_id: dfspId,
-      pingStatus,
-      lastUpdatedPingStatusAt: new Date()
-    })
-    .onConflict('dfsp_id')
-    .merge();
-  log.debug(`updatePingStatus is done: `, { dfspId, pingStatus, result });
+    .where({ dfsp_id: dfspId })
+    .update({ pingStatus, lastUpdatedPingStatusAt: new Date() });
+  log.debug(`updatePingStatus is done: `, { /*dfspId, pingStatus,*/ result });
   return result > 0;
 };
 
 exports.upsertStatesStatus = async (dfspId, statesJson) => {
   const result = await knex.table('dfsp_states_status')
-    .upsert({ dfspId, ...statesJson });
+    .insert({ dfspId, ...statesJson })
+    .onConflict('dfspId')
+    .merge();
   log.debug(`upsertStatesStatus is done: `, { dfspId, statesJson, result });
   return result;
 };
