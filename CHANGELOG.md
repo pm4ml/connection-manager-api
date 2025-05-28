@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.10.3](https://github.com/pm4ml/connection-manager-api/compare/v2.10.2...v2.10.3) (2025-05-28)
+
+
+### Bug Fixes
+
+* **csi-1519:** added migration recreate create_gid procedure ([fd470d2](https://github.com/pm4ml/connection-manager-api/commit/fd470d26d04183100bf41e834aa4ef3e451bf9fe))
+* **csi-1519:** added migration to add primary key to gid table ([cd1e251](https://github.com/pm4ml/connection-manager-api/commit/cd1e251a78b87e9a178ce918cdccbbfb11827015))
+* **csi-1519:** added migration to add primary key to gid table ([0ab27fd](https://github.com/pm4ml/connection-manager-api/commit/0ab27fdd9a9979b02bc94f9f7bc8c87ddef507bc))
+* **csi-1519:** addressed PR comments ([8b01622](https://github.com/pm4ml/connection-manager-api/commit/8b01622b70876e437102faff1a7c7a5e3d163977))
+* **csi-1519:** renamed [@update](https://github.com/update)_id to [@counter](https://github.com/counter) ([9f5eb38](https://github.com/pm4ml/connection-manager-api/commit/9f5eb38d1ba283e79bbfbe22d7e2df20f92a852a))
+
 ### [2.10.2](https://github.com/pm4ml/connection-manager-api/compare/v2.10.1...v2.10.2) (2025-05-23)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@pm4ml/connection-manager-api",
-  "version": "2.10.2",
+  "version": "2.10.3",
   "description": "ModusBox Connection Manager API",
   "license": "Apache-2.0",
   "author": "ModusBox",
@@ -95,7 +95,6 @@
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.27.2",
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "@types/jest": "29.5.14",
