@@ -34,11 +34,11 @@ exports.up = async function(knex) {
   return knex.raw(`
     CREATE PROCEDURE create_gid()
     BEGIN
-        SET @update_id := 0;
+        SET @counter := 0;
         UPDATE gid
-        SET id = (SELECT @update_id := id + 1)
+        SET id = (SELECT @counter := id + 1)
         WHERE pk = 'singleton';
-        SELECT @update_id as id;
+        SELECT @counter as id;
     END
   `);
 };
