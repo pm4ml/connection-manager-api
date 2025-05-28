@@ -195,4 +195,3 @@ module.exports = {
 
   dfspWatcherEnabled: env.get('DFSP_WATCHER_ENABLED').default('false').asBool(),
 };
-console.log(module.exports.vault);
