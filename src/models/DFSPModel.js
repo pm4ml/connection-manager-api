@@ -124,8 +124,13 @@ exports.update = async (dfspId, newDfsp) => {
 
 exports.updatePingStatus = async (dfspId, pingStatus) => {
   const result = await knex.table(DFSP_TABLE)
-    .where({ dfsp_id: dfspId })
-    .update({ pingStatus, lastUpdatedPingStatusAt: new Date() });
+    .insert({
+      dfsp_id: dfspId,
+      pingStatus,
+      lastUpdatedPingStatusAt: new Date()
+    })
+    .onConflict('dfsp_id')
+    .merge();
   log.debug(`updatePingStatus is done: `, { dfspId, pingStatus, result });
   return result > 0;
 };
