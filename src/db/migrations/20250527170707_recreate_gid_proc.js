@@ -37,8 +37,7 @@ exports.up = async function(knex) {
         SET @update_id := 0;
         UPDATE gid
         SET id = (SELECT @update_id := id + 1)
-        WHERE id > 0
-        LIMIT 1;
+        WHERE pk = 'singleton';
         SELECT @update_id as id;
     END
   `);

@@ -31,8 +31,12 @@
  */
 exports.up = async function(knex) {
   return knex.schema.alterTable('gid', (table) => {
-    table.primary(['id']);
-  });
+    table
+      .specificType('pk', "ENUM('singleton')")
+      .primary()
+      .defaultTo('singleton');
+  })
+    .then(() => knex('gid').update({ pk: 'singleton' }));
 };
 
 /**
@@ -42,5 +46,6 @@ exports.up = async function(knex) {
 exports.down = function(knex) {
   return knex.schema.alterTable('gid', (table) => {
     table.dropPrimary();
+    table.dropColumn('pk');
   });
 };
