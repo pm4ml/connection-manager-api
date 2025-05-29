@@ -33,7 +33,7 @@ git checkout tags/$GIT_TAG
 
 npm ci
 npm run backend:start
-TEST=true TEST_INT=true npm run start
+TEST=true TEST_INT=true SWITCH_ID=switch npm run start
 
 cd ./test/functional-tests
 
