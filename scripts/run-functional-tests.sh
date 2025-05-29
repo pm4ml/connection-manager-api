@@ -31,6 +31,7 @@ git clone $GIT_URL .
 echo "Switching to $GIT_TAG"
 git checkout tags/$GIT_TAG
 
+npm ci
 npm run backend:start
 TEST=true TEST_INT=true npm run start
 
