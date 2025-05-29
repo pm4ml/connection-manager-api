@@ -2,11 +2,7 @@
 set -eo pipefail
 
 npm ci
-npm run backend:start
-export TEST=true
-export TEST_INT=true
-export SWITCH_ID=switch
-npm run start
+npm run backend:start-functional
 
 cd ./test/functional-tests
 

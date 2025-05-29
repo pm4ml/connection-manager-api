@@ -1,5 +1,36 @@
 services:
 
+  connection-manager-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    profiles:
+      - functional
+    depends_on:
+      connection-manager-db:
+        condition: service_healthy
+      vault-dev:
+        condition: service_healthy
+    volumes:
+      - ./docker/vault/tmp:/vault/tmp
+    environment:
+      - PORT=3001
+      - DATABASE_HOST=connection-manager-db
+      - DATABASE_PORT=3306
+      - DATABASE_USER=${DBUSER:-mcm}
+      - DATABASE_PASSWORD=${DBPASS:-mcm}
+      - DATABASE_SCHEMA=${DBUSER:-mcm}
+      - AUTH_ENABLED=false
+      - VAULT_AUTH_METHOD=APP_ROLE
+      - VAULT_ENDPOINT=http://vault-dev:8233
+      - VAULT_ROLE_ID_FILE=/vault/tmp/role-id
+      - VAULT_ROLE_SECRET_ID_FILE=/vault/tmp/secret-id
+      - VAULT_PKI_SERVER_ROLE=example.com
+      - VAULT_PKI_CLIENT_ROLE=example.com
+      - SWITCH_ID=switch
+    ports:
+      - "3001:3001"
+
   connection-manager-db:
     image: mysql/mysql-server
     ports:
