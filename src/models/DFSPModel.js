@@ -133,8 +133,7 @@ exports.updatePingStatus = async (dfspId, pingStatus) => {
 exports.upsertStatesStatus = async (dfspId, statesJson) => {
   const result = await knex.table('dfsp_states_status')
     .insert({ dfspId, ...statesJson })
-    .onConflict('dfspId')
-    .merge();
+    .onConflict('dfspId').merge();
   log.debug(`upsertStatesStatus is done: `, { dfspId, statesJson, result });
   return result;
 };
