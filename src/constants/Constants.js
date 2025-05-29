@@ -39,8 +39,8 @@ if (process.env.TEST) {
     AUTH_ENABLED: 'false',
     AUTH_2FA_ENABLED: 'false',
     VAULT_AUTH_METHOD: 'APP_ROLE',
-    VAULT_ROLE_ID_FILE: createTemp(randomUUID()),
-    VAULT_ROLE_SECRET_ID_FILE: createTemp(randomUUID()),
+    VAULT_ROLE_ID_FILE: process.env.TEST_INT ? 'docker/vault/tmp/role-id': createTemp(randomUUID()),
+    VAULT_ROLE_SECRET_ID_FILE: process.env.TEST_INT ? 'docker/vault/tmp/secret-id': createTemp(randomUUID()),
     VAULT_PKI_CLIENT_ROLE: 'example.com',
     VAULT_PKI_SERVER_ROLE: 'example.com'
   };

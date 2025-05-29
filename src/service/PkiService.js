@@ -29,7 +29,7 @@ const keycloakService = require('./KeycloakService');
 
 /**
  * Create Keycloak accounts for a DFSP
- * 
+ *
  * @param {string} dfspId - The DFSP ID to create account for
  * @param {string} [email] - Optional email for the DFSP operator
  * @returns {Promise<void>}
@@ -38,17 +38,17 @@ async function createKeycloakAccountForDfsp(dfspId, email) {
   if (!Constants.KEYCLOAK.ENABLED || !Constants.KEYCLOAK.AUTO_CREATE_ACCOUNTS) {
     return;
   }
-  
+
   let createdUser = null;
   let createdClient = null;
-  
+
   try {
     // Create a Keycloak user for the DFSP
     createdUser = await keycloakService.createDfspUser(dfspId, email);
-    
+
     // Create a Keycloak client for the DFSP
     createdClient = await keycloakService.createDfspClient(dfspId);
-    
+
     console.log(`Successfully created Keycloak accounts for DFSP ${dfspId}`);
   } catch (keycloakError) {
     // Clean up any partially created resources
@@ -57,7 +57,7 @@ async function createKeycloakAccountForDfsp(dfspId, email) {
     }
     if (createdClient) {
       await keycloakService.deleteDfspClient(dfspId);
-    } 
+    }
 
     console.error(`Failed to complete Keycloak setup for DFSP ${dfspId}:`, keycloakError);
     throw keycloakError;
@@ -72,6 +72,7 @@ async function createKeycloakAccountForDfsp(dfspId, email) {
  * returns ObjectCreatedResponse
  **/
 exports.createDFSP = async (ctx, body) => {
+  console.log('Creating DFSP with body:', body);
   const regex = / /gi;
   const dfspIdNoSpaces = body.dfspId ? body.dfspId.replace(regex, '-') : null;
 
@@ -118,7 +119,7 @@ exports.createDFSPWithCSR = async (ctx, body) => {
  **/
 exports.getDFSPs = async ctx => {
   const rows = await DFSPModel.findAll();
-  return rows.map(r => dfspRowToObject(r));
+  return rows.map(r => exports.dfspRowToObject(r));
 };
 
 /**
@@ -138,7 +139,7 @@ exports.getDFSPById = async (ctx, dfspId) => {
   }
   try {
     const result = await DFSPModel.findByDfspId(dfspId);
-    return dfspRowToObject(result);
+    return exports.dfspRowToObject(result);
   } catch (error) {
     if (error instanceof NotFoundError) {
       throw new NotFoundError(`DFSP with id ${dfspId} not found`);
@@ -171,7 +172,7 @@ exports.splitChainIntermediateCertificateInfo = (intermediateChain, pkiEngine) =
 
 /**
  * Delete Keycloak account for a DFSP
- * 
+ *
  * @param {string} dfspId - The DFSP ID to delete account for
  * @returns {Promise<void>}
  */
@@ -179,9 +180,9 @@ async function deleteKeycloakAccountForDfsp(dfspId) {
   if (!Constants.KEYCLOAK.ENABLED) {
     return;
   }
-  
+
   const cleanupPromises = [];
-  
+
   // Try to delete the client
   cleanupPromises.push(
     keycloakService.deleteDfspClient(dfspId)
@@ -189,7 +190,7 @@ async function deleteKeycloakAccountForDfsp(dfspId) {
         console.error(`Failed to delete Keycloak client for DFSP ${dfspId}:`, error);
       })
   );
-  
+
   // Try to delete the user
   cleanupPromises.push(
     keycloakService.deleteDfspUser(dfspId)
@@ -197,7 +198,7 @@ async function deleteKeycloakAccountForDfsp(dfspId) {
         console.error(`Failed to delete Keycloak user for DFSP ${dfspId}:`, error);
       })
   );
-  
+
   // Wait for all cleanup operations to complete
   await Promise.all(cleanupPromises);
 }
@@ -213,9 +214,9 @@ exports.deleteDFSP = async (ctx, dfspId) => {
   const { pkiEngine } = ctx;
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   await pkiEngine.deleteAllDFSPData(dbDfspId);
-  
+
   await deleteKeycloakAccountForDfsp(dfspId);
-  
+
   return DFSPModel.delete(dfspId);
 };
 
@@ -249,7 +250,7 @@ exports.setDFSPca = async (ctx, dfspId, body) => {
 
 exports.getDfspsByMonetaryZones = async (ctx, monetaryZoneId) => {
   const dfsps = await DFSPModel.getDfspsByMonetaryZones(monetaryZoneId);
-  return dfsps.map(r => dfspRowToObject(r));
+  return dfsps.map(r => exports.dfspRowToObject(r));
 };
 
 exports.getDFSPca = async (ctx, dfspId) => {
@@ -284,7 +285,7 @@ exports.deleteDFSPca = async (ctx, dfspId) => {
  *
  * @param {RowObject} row RowObject as returned by the DFSPModel or knex
  */
-const dfspRowToObject = (row) => {
+exports.dfspRowToObject = (row) => {
   return {
     id: row.dfsp_id,
     name: row.name,

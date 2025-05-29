@@ -31,8 +31,8 @@ console.log(process.env);
 
 const axios = require('axios');
 const AxiosMockAdapter = require('axios-mock-adapter');
-const { createDfspWatcher, DfspWatcher } = require('./index');
-const { PingStatus } = require('./constants');
+const { createDfspWatcher, DfspWatcher } = require('../../src/dfsp-watcher/index');
+const { PingStatus } = require('../../src/dfsp-watcher/constants');
 
 const mockAxios = new AxiosMockAdapter(axios);
 

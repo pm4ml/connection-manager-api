@@ -15,18 +15,10 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { setupTestDB, tearDownTestDB } = require('./test-database');
+const { setupTestDB, tearDownTestDB } = require('../int/test-database');
 const HubCAService = require('../../src/service/HubCAService');
-const { assert } = require('chai');
-const ValidationError = require('../../src/errors/ValidationError');
-const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
-// const PkiService = require('../../src/service/PkiService');
-// const fs = require('fs');
-// const path = require('path');
 const { pki } = require('node-forge');
-const { createContext, destroyContext } = require('./context');
-const sinon = require('sinon');
-const PkiService = require('../../src/service/PkiService');
+const { createContext, destroyContext } = require('../int/context');
 
 /**
  * Leaving these here as they look useful
@@ -115,21 +107,21 @@ const createSelfSignedCA = () => {
 
 describe('HubCAServiceTest', () => {
   let ctx;
-  before(async () => {
+  beforeAll(async () => {
     await setupTestDB();
     ctx = await createContext();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
 
   describe('input parameters validation', () => {
-    beforeEach('creating hook Environment', async () => {
+    beforeEach(async () => {
     });
 
-    afterEach('tearing down hook CA', async () => {
+    afterEach(async () => {
     });
 
     it('should create external CA', async () => {
@@ -141,7 +133,7 @@ describe('HubCAServiceTest', () => {
       };
 
       await HubCAService.createExternalHubCA(ctx, body);
-    }).timeout(15000);
+    }, 15000);
 
     it('should create internal CA', async () => {
       const body = {
@@ -149,6 +141,6 @@ describe('HubCAServiceTest', () => {
         O: 'Example Company'
       };
       await HubCAService.createInternalHubCA(ctx, body);
-    }).timeout(15000);
+    }, 15000);
   });
 });

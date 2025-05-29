@@ -1,12 +1,8 @@
-const chai = require('chai');
 const sinon = require('sinon');
 const { knex } = require('../../../src/db/database');
 const HubEndpointItemModel = require('../../../src/models/HubEndpointItemModel');
 const NotFoundError = require('../../../src/errors/NotFoundError');
 const InternalError = require('../../../src/errors/InternalError');
-
-
-const { expect } = chai;
 
 describe('HubEndpointItemModel', () => {
     let sandbox;
@@ -30,7 +26,7 @@ describe('HubEndpointItemModel', () => {
             });
 
             const result = await HubEndpointItemModel.findById(id);
-            expect(result).to.deep.equal(mockRow);
+            expect(result).toEqual(mockRow);
         });
 
         it('should throw NotFoundError if no item is found', async () => {
@@ -44,8 +40,8 @@ describe('HubEndpointItemModel', () => {
             try {
                 await HubEndpointItemModel.findById(id);
             } catch (err) {
-                expect(err).to.be.instanceOf(NotFoundError);
-                expect(err.message).to.equal('Item with id: ' + id);
+                expect(err).toBeInstanceOf(NotFoundError);
+                expect(err.message).toBe('Item with id: ' + id);
             }
         });
 
@@ -61,8 +57,8 @@ describe('HubEndpointItemModel', () => {
             try {
                 await HubEndpointItemModel.findById(id);
             } catch (err) {
-                expect(err).to.be.instanceOf(InternalError);
-                expect(err.message).to.equal('E_TOO_MANY_ROWS');
+                expect(err).toBeInstanceOf(InternalError);
+                expect(err.message).toBe('E_TOO_MANY_ROWS');
             }
         });
     });
@@ -75,8 +71,8 @@ describe('HubEndpointItemModel', () => {
             });
 
             const result = await HubEndpointItemModel.create(values);
-            expect(insertStub.calledOnce).to.be.true;
-            expect(result).to.deep.equal([1]);
+            expect(insertStub.called).toBe(true);
+            expect(result).toEqual([1]);
         });
 
         it('should throw an error if insert fails', async () => {
@@ -88,8 +84,8 @@ describe('HubEndpointItemModel', () => {
             try {
                 await HubEndpointItemModel.create(values);
             } catch (err) {
-                expect(err).to.be.instanceOf(Error);
-                expect(err.message).to.equal('Insert failed');
+                expect(err).toBeInstanceOf(Error);
+                expect(err.message).toEqual('Insert failed');
             }
         });
     });
@@ -104,8 +100,8 @@ describe('HubEndpointItemModel', () => {
             });
 
             const result = await HubEndpointItemModel.delete(id);
-            expect(deleteStub.calledOnce).to.be.true;
-            expect(result).to.equal(1);
+            expect(deleteStub.called).toBe(true);
+            expect(result).toEqual(1);
         });
 
         it('should throw an error if delete fails', async () => {
@@ -119,7 +115,7 @@ describe('HubEndpointItemModel', () => {
             try {
                 await HubEndpointItemModel.delete(id);
             } catch (err) {
-                expect(err).to.be.instanceOf(Error);
+                expect(err).toBeInstanceOf(Error);
             }
         });
     });
@@ -136,8 +132,8 @@ describe('HubEndpointItemModel', () => {
             sandbox.stub(HubEndpointItemModel, 'findObjectById').resolves(endpointItem);
 
             const result = await HubEndpointItemModel.update(id, endpointItem);
-            expect(updateStub.calledOnce).to.be.true;
-            expect(result).to.deep.equal(endpointItem);
+            expect(updateStub.called).toBe(true);
+            expect(result).toEqual(endpointItem);
         });
 
         it('should throw an error if update fails', async () => {
@@ -152,7 +148,7 @@ describe('HubEndpointItemModel', () => {
             try {
                 await HubEndpointItemModel.update(id, endpointItem);
             } catch (err) {
-                expect(err).to.be.instanceOf(Error);
+                expect(err).toBeInstanceOf(Error);
             }
         });
     });
@@ -164,7 +160,7 @@ describe('HubEndpointItemModel', () => {
             sandbox.stub(HubEndpointItemModel, 'findById').resolves(mockRow);
 
             const result = await HubEndpointItemModel.findObjectById(id);
-            expect(result).to.deep.equal({ id, value: { ip: '127.0.0.1' } });
+            expect(result).toEqual({ id, value: { ip: '127.0.0.1' } });
         });
 
         it('should throw NotFoundError if no item is found', async () => {
@@ -174,7 +170,7 @@ describe('HubEndpointItemModel', () => {
             try {
                 await HubEndpointItemModel.findObjectById(id);
             } catch (err) {
-                expect(err).to.be.instanceOf(NotFoundError);
+                expect(err).toBeInstanceOf(NotFoundError);
             }
         });
     });
@@ -190,7 +186,7 @@ describe('HubEndpointItemModel', () => {
             });
 
             const result = await HubEndpointItemModel.findObjectAll();
-            expect(result).to.deep.equal([
+            expect(result).toEqual([
                 { id: 1, value: { ip: '127.0.0.1' } },
                 { id: 2, value: { ip: '192.168.0.1' } }
             ]);
@@ -214,7 +210,7 @@ describe('HubEndpointItemModel', () => {
             });
 
             const result = await HubEndpointItemModel.findObjectByDirectionType(direction, type);
-            expect(result).to.deep.equal([
+            expect(result).toEqual([
                 { id: 1, value: { ip: '127.0.0.1' }, direction, type },
                 { id: 2, value: { ip: '192.168.0.1' }, direction, type }
             ]);
@@ -232,8 +228,7 @@ describe('HubEndpointItemModel', () => {
             });
 
             const result = await HubEndpointItemModel.findObjectByDirectionType(direction, type);
-            expect(result).to.deep.equal([]);
+            expect(result).toEqual([]);
         });
     });
 });
-      

@@ -1,14 +1,19 @@
-const { expect } = require('chai');
-const sinon = require('sinon');
 const PkiService = require('../../../src/service/PkiService');
 const DFSPModel = require('../../../src/models/DFSPModel');
 const InternalError = require('../../../src/errors/InternalError');
 const ValidationError = require('../../../src/errors/ValidationError');
 const NotFoundError = require('../../../src/errors/NotFoundError');
 const { createCSRAndDFSPOutboundEnrollment } = require('../../../src/service/DfspOutboundService');
-const Constants = require('../../../src/constants/Constants');
+
+jest.mock('../../../src/models/DFSPModel');
+jest.mock('../../../src/service/DfspOutboundService');
 
 describe('PkiService', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+    jest.restoreAllMocks && jest.restoreAllMocks();
+  });
+
   describe('createDFSP', () => {
     it('should create a DFSP and return its id', async () => {
       const ctx = {};
@@ -21,14 +26,11 @@ describe('PkiService', () => {
         fxpCurrencies: ['USD', 'EUR']
       };
 
-      sinon.stub(DFSPModel, 'create').resolves();
-      sinon.stub(DFSPModel, 'createFxpSupportedCurrencies').resolves();
+      DFSPModel.create.mockResolvedValue({ dfsp_id: body.dfspId });
+      DFSPModel.createFxpSupportedCurrencies.mockResolvedValue();
 
       const result = await PkiService.createDFSP(ctx, body);
-      expect(result).to.deep.equal({ id: body.dfspId });
-
-      DFSPModel.create.restore();
-      DFSPModel.createFxpSupportedCurrencies.restore();
+      expect(result).toEqual({ id: body.dfspId });
     });
 
     it('should throw an InternalError if DFSP creation fails', async () => {
@@ -42,16 +44,10 @@ describe('PkiService', () => {
         fxpCurrencies: ['USD', 'EUR']
       };
 
-      sinon.stub(DFSPModel, 'create').throws(new Error('DB Error'));
+      DFSPModel.create.mockImplementation(() => { throw new Error('DB Error'); });
 
-      try {
-        await PkiService.createDFSP(ctx, body);
-        expect.fail('Should have thrown an error');
-      } catch (err) {
-        expect(err).to.be.instanceof(InternalError);
-      }
-
-      DFSPModel.create.restore();
+      await expect(PkiService.createDFSP(ctx, body))
+        .rejects.toBeInstanceOf(InternalError);
     });
   });
 
@@ -59,47 +55,37 @@ describe('PkiService', () => {
     it('should create a DFSP and generate CSR', async () => {
       const ctx = {};
       const body = {
-        dfspId: 'test-dfsp',
-        name: 'Test DFSP',
-        monetaryZoneId: 'USD',
-        isProxy: false,
-        securityGroup: 'TestGroup',
-        fxpCurrencies: ['USD', 'EUR']
+      dfspId: 'test-dfsp',
+      name: 'Test DFSP',
+      monetaryZoneId: 'USD',
+      isProxy: false,
+      securityGroup: 'TestGroup',
+      fxpCurrencies: ['USD', 'EUR']
       };
 
-      sinon.stub(PkiService, 'createDFSP').resolves({ id: body.dfspId });
-      sinon.stub(createCSRAndDFSPOutboundEnrollment).resolves();
+      jest.spyOn(PkiService, 'createDFSP').mockResolvedValue({ id: body.dfspId });
+      createCSRAndDFSPOutboundEnrollment.mockResolvedValue();
 
       const result = await PkiService.createDFSPWithCSR(ctx, body);
-      expect(result).to.deep.equal({ id: body.dfspId });
-
-      PkiService.createDFSP.restore();
-      createCSRAndDFSPOutboundEnrollment.restore();
+      expect(result).toEqual({ id: body.dfspId });
     });
 
     it('should throw an InternalError if CSR generation fails', async () => {
       const ctx = {};
       const body = {
-        dfspId: 'test-dfsp',
-        name: 'Test DFSP',
-        monetaryZoneId: 'USD',
-        isProxy: false,
-        securityGroup: 'TestGroup',
-        fxpCurrencies: ['USD', 'EUR']
+      dfspId: 'test-dfsp',
+      name: 'Test DFSP',
+      monetaryZoneId: 'USD',
+      isProxy: false,
+      securityGroup: 'TestGroup',
+      fxpCurrencies: ['USD', 'EUR']
       };
 
-      sinon.stub(PkiService, 'createDFSP').resolves({ id: body.dfspId });
-      sinon.stub(createCSRAndDFSPOutboundEnrollment).throws(new Error('CSR Error'));
+      jest.spyOn(PkiService, 'createDFSP').mockResolvedValue({ id: body.dfspId });
+      createCSRAndDFSPOutboundEnrollment.mockRejectedValue(new Error('CSR Error'));
 
-      try {
-        await PkiService.createDFSPWithCSR(ctx, body);
-        expect.fail('Should have thrown an error');
-      } catch (err) {
-        expect(err).to.be.instanceof(InternalError);
-      }
-
-      PkiService.createDFSP.restore();
-      createCSRAndDFSPOutboundEnrollment.restore();
+      await expect(PkiService.createDFSPWithCSR(ctx, body))
+      .rejects.toBeInstanceOf(InternalError);
     });
   });
 
@@ -107,16 +93,21 @@ describe('PkiService', () => {
     it('should return all DFSPs', async () => {
       const ctx = {};
       const dfspRows = [
-        { dfsp_id: 'dfsp1', name: 'DFSP 1', monetaryZoneId: 'USD', isProxy: false, security_group: 'Group1' },
-        { dfsp_id: 'dfsp2', name: 'DFSP 2', monetaryZoneId: 'EUR', isProxy: true, security_group: 'Group2' }
+      { dfsp_id: 'dfsp1', name: 'DFSP 1', monetaryZoneId: 'USD', isProxy: false, security_group: 'Group1' },
+      { dfsp_id: 'dfsp2', name: 'DFSP 2', monetaryZoneId: 'EUR', isProxy: true, security_group: 'Group2' }
       ];
 
-      sinon.stub(DFSPModel, 'findAll').resolves(dfspRows);
+      jest.spyOn(DFSPModel, 'findAll').mockResolvedValue(dfspRows);
+      jest.spyOn(PkiService, 'dfspRowToObject').mockImplementation(row => ({
+      id: row.dfsp_id,
+      name: row.name,
+      monetaryZoneId: row.monetaryZoneId,
+      isProxy: row.isProxy,
+      securityGroup: row.security_group
+      }));
 
       const result = await PkiService.getDFSPs(ctx);
-      expect(result).to.deep.equal(dfspRows.map(PkiService.dfspRowToObject));
-
-      DFSPModel.findAll.restore();
+      expect(result).toEqual(dfspRows.map(PkiService.dfspRowToObject));
     });
   });
 
@@ -125,12 +116,10 @@ describe('PkiService', () => {
       const ctx = {};
       const dfspId = 'test-dfsp';
 
-      sinon.stub(PkiService, 'getDFSPById').resolves({ id: dfspId });
+      jest.spyOn(PkiService, 'getDFSPById').mockResolvedValue({ id: dfspId });
 
       const result = await PkiService.validateDfsp(ctx, dfspId);
-      expect(result).to.deep.equal({ id: dfspId });
-
-      PkiService.getDFSPById.restore();
+      expect(result).toEqual({ id: dfspId });
     });
   });
 
@@ -140,40 +129,35 @@ describe('PkiService', () => {
       const dfspId = 'test-dfsp';
       const dfspRow = { dfsp_id: dfspId, name: 'Test DFSP', monetaryZoneId: 'USD', isProxy: false, security_group: 'Group1' };
 
-      sinon.stub(DFSPModel, 'findByDfspId').resolves(dfspRow);
+      jest.spyOn(DFSPModel, 'findByDfspId').mockResolvedValue(dfspRow);
+      jest.spyOn(PkiService, 'dfspRowToObject').mockImplementation(row => ({
+      id: row.dfsp_id,
+      name: row.name,
+      monetaryZoneId: row.monetaryZoneId,
+      isProxy: row.isProxy,
+      securityGroup: row.security_group
+      }));
 
       const result = await PkiService.getDFSPById(ctx, dfspId);
-      expect(result).to.deep.equal(PkiService.dfspRowToObject(dfspRow));
-
-      DFSPModel.findByDfspId.restore();
+      expect(result).toEqual(PkiService.dfspRowToObject(dfspRow));
     });
 
     it('should throw NotFoundError if DFSP is not found', async () => {
       const ctx = {};
       const dfspId = 'test-dfsp';
 
-      sinon.stub(DFSPModel, 'findByDfspId').throws(new NotFoundError());
+      jest.spyOn(DFSPModel, 'findByDfspId').mockImplementation(() => { throw new NotFoundError(); });
 
-      try {
-        await PkiService.getDFSPById(ctx, dfspId);
-        expect.fail('Should have thrown an error');
-      } catch (err) {
-        expect(err).to.be.instanceof(NotFoundError);
-      }
-
-      DFSPModel.findByDfspId.restore();
+      await expect(PkiService.getDFSPById(ctx, dfspId))
+      .rejects.toBeInstanceOf(NotFoundError);
     });
 
     it('should throw ValidationError if dfspId is invalid', async () => {
       const ctx = {};
       const dfspId = null;
 
-      try {
-        await PkiService.getDFSPById(ctx, dfspId);
-        expect.fail('Should have thrown an error');
-      } catch (err) {
-        expect(err).to.be.instanceof(ValidationError);
-      }
+      await expect(PkiService.getDFSPById(ctx, dfspId))
+      .rejects.toBeInstanceOf(ValidationError);
     });
   });
 
@@ -183,11 +167,10 @@ describe('PkiService', () => {
       const dfspId = 'test-dfsp';
       const newDfsp = { name: 'Updated DFSP', monetaryZoneId: 'EUR', isProxy: true, securityGroup: 'UpdatedGroup' };
 
-      sinon.stub(DFSPModel, 'update').resolves();
+      DFSPModel.update.mockResolvedValue();
 
       await PkiService.updateDFSP(ctx, dfspId, newDfsp);
-
-      DFSPModel.update.restore();
+      expect(DFSPModel.update).toHaveBeenCalled();
     });
 
     it('should throw ValidationError if dfspId is invalid', async () => {
@@ -195,101 +178,100 @@ describe('PkiService', () => {
       const dfspId = null;
       const newDfsp = { name: 'Updated DFSP', monetaryZoneId: 'EUR', isProxy: true, securityGroup: 'UpdatedGroup' };
 
-      try {
-        await PkiService.updateDFSP(ctx, dfspId, newDfsp);
-        expect.fail('Should have thrown an error');
-      } catch (err) {
-        expect(err).to.be.instanceof(ValidationError);
-      }
+      await expect(PkiService.updateDFSP(ctx, dfspId, newDfsp))
+        .rejects.toBeInstanceOf(ValidationError);
     });
   });
 
   describe('deleteDFSP', () => {
     it('should delete a DFSP by its id', async () => {
-      const ctx = { pkiEngine: { deleteAllDFSPData: sinon.stub().resolves() } };
+      const ctx = { pkiEngine: { deleteAllDFSPData: jest.fn().mockResolvedValue() } };
       const dfspId = 'test-dfsp';
 
-      sinon.stub(PkiService, 'validateDfsp').resolves();
-      sinon.stub(DFSPModel, 'findIdByDfspId').resolves(1);
-      sinon.stub(DFSPModel, 'delete').resolves();
+      jest.spyOn(PkiService, 'validateDfsp').mockResolvedValue();
+      jest.spyOn(DFSPModel, 'findIdByDfspId').mockResolvedValue(1);
+      jest.spyOn(DFSPModel, 'delete').mockResolvedValue();
 
       await PkiService.deleteDFSP(ctx, dfspId);
 
-      PkiService.validateDfsp.restore();
-      DFSPModel.findIdByDfspId.restore();
-      DFSPModel.delete.restore();
+      expect(ctx.pkiEngine.deleteAllDFSPData).toHaveBeenCalled();
+      expect(DFSPModel.delete).toHaveBeenCalled();
     });
   });
 
   describe('setDFSPca', () => {
     it('should set DFSP CA certificates', async () => {
-      const ctx = { pkiEngine: { validateCACertificate: sinon.stub().resolves({ validations: [], validationState: 'VALID' }), setDFSPCA: sinon.stub().resolves() } };
+      const ctx = {
+      pkiEngine: {
+        validateCACertificate: jest.fn().mockResolvedValue({ validations: [], validationState: 'VALID' }),
+        setDFSPCA: jest.fn().mockResolvedValue()
+      }
+      };
       const dfspId = 'test-dfsp';
       const body = { rootCertificate: 'root-cert', intermediateChain: 'intermediate-chain' };
 
-      sinon.stub(PkiService, 'validateDfsp').resolves();
-      sinon.stub(DFSPModel, 'findIdByDfspId').resolves(1);
+      jest.spyOn(PkiService, 'validateDfsp').mockResolvedValue();
+      jest.spyOn(DFSPModel, 'findIdByDfspId').mockResolvedValue(1);
 
       const result = await PkiService.setDFSPca(ctx, dfspId, body);
-      expect(result).to.deep.equal({
-        rootCertificate: body.rootCertificate,
-        intermediateChain: body.intermediateChain,
-        validations: [],
-        validationState: 'VALID'
+      expect(ctx.pkiEngine.setDFSPCA).toHaveBeenCalledWith(1, {"intermediateChain": "intermediate-chain", "rootCertificate": "root-cert", "validationState": "VALID", "validations": []});
+      expect(result).toEqual({
+      rootCertificate: body.rootCertificate,
+      intermediateChain: body.intermediateChain,
+      validations: [],
+      validationState: 'VALID'
       });
-
-      PkiService.validateDfsp.restore();
-      DFSPModel.findIdByDfspId.restore();
     });
   });
 
   describe('getDFSPca', () => {
     it('should return DFSP CA certificates', async () => {
-      const ctx = { pkiEngine: { getDFSPCA: sinon.stub().resolves({ rootCertificate: 'root-cert', intermediateChain: 'intermediate-chain' }) } };
+      const ctx = {
+      pkiEngine: {
+        getDFSPCA: jest.fn().mockResolvedValue({ rootCertificate: 'root-cert', intermediateChain: 'intermediate-chain' })
+      }
+      };
       const dfspId = 'test-dfsp';
 
-      sinon.stub(PkiService, 'validateDfsp').resolves();
-      sinon.stub(DFSPModel, 'findIdByDfspId').resolves(1);
+      jest.spyOn(PkiService, 'validateDfsp').mockResolvedValue();
+      jest.spyOn(DFSPModel, 'findIdByDfspId').mockResolvedValue(1);
 
       const result = await PkiService.getDFSPca(ctx, dfspId);
-      expect(result).to.deep.equal({ rootCertificate: 'root-cert', intermediateChain: 'intermediate-chain' });
-
-      PkiService.validateDfsp.restore();
-      DFSPModel.findIdByDfspId.restore();
+      expect(result).toEqual({ rootCertificate: 'root-cert', intermediateChain: 'intermediate-chain' });
     });
 
     it('should return default values if DFSP CA certificates are not found', async () => {
-      const ctx = { pkiEngine: { getDFSPCA: sinon.stub().throws(new NotFoundError()) } };
+      const ctx = {
+      pkiEngine: {
+        getDFSPCA: jest.fn().mockImplementation(() => { throw new NotFoundError(); })
+      }
+      };
       const dfspId = 'test-dfsp';
 
-      sinon.stub(PkiService, 'validateDfsp').resolves();
-      sinon.stub(DFSPModel, 'findIdByDfspId').resolves(1);
+      jest.spyOn(PkiService, 'validateDfsp').mockResolvedValue();
+      jest.spyOn(DFSPModel, 'findIdByDfspId').mockResolvedValue(1);
 
       const result = await PkiService.getDFSPca(ctx, dfspId);
-      expect(result).to.deep.equal({
-        rootCertificate: null,
-        intermediateChain: null,
-        validations: [],
-        validationState: 'NOT_AVAILABLE'
+      expect(result).toEqual({
+      rootCertificate: null,
+      intermediateChain: null,
+      validations: [],
+      validationState: 'NOT_AVAILABLE'
       });
-
-      PkiService.validateDfsp.restore();
-      DFSPModel.findIdByDfspId.restore();
     });
   });
 
   describe('deleteDFSPca', () => {
     it('should delete DFSP CA certificates', async () => {
-      const ctx = { pkiEngine: { deleteDFSPCA: sinon.stub().resolves() } };
+      const ctx = { pkiEngine: { deleteDFSPCA: jest.fn().mockResolvedValue() } };
       const dfspId = 'test-dfsp';
 
-      sinon.stub(PkiService, 'validateDfsp').resolves();
-      sinon.stub(DFSPModel, 'findIdByDfspId').resolves(1);
+      jest.spyOn(PkiService, 'validateDfsp').mockResolvedValue();
+      jest.spyOn(DFSPModel, 'findIdByDfspId').mockResolvedValue(1);
 
       await PkiService.deleteDFSPca(ctx, dfspId);
 
-      PkiService.validateDfsp.restore();
-      DFSPModel.findIdByDfspId.restore();
+      expect(ctx.pkiEngine.deleteDFSPCA).toHaveBeenCalledWith(1);
     });
   });
 
@@ -302,12 +284,10 @@ describe('PkiService', () => {
         { dfsp_id: 'dfsp2', name: 'DFSP 2', monetaryZoneId: 'USD', isProxy: true, security_group: 'Group2' }
       ];
 
-      sinon.stub(DFSPModel, 'getDfspsByMonetaryZones').resolves(dfspRows);
+      DFSPModel.getDfspsByMonetaryZones.mockResolvedValue(dfspRows);
 
       const result = await PkiService.getDfspsByMonetaryZones(ctx, monetaryZoneId);
-      expect(result).to.deep.equal(dfspRows.map(PkiService.dfspRowToObject));
-
-      DFSPModel.getDfspsByMonetaryZones.restore();
+      expect(result).toEqual(dfspRows.map(PkiService.dfspRowToObject));
     });
   });
 });

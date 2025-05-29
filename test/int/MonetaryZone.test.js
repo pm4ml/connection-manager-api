@@ -17,23 +17,22 @@
 
 const { setupTestDB, tearDownTestDB } = require('./test-database');
 const MonetaryZoneService = require('../../src/service/MonetaryZoneService');
-const { assert } = require('chai');
 const { createContext, destroyContext } = require('./context');
 
 describe('MonetaryZoneTest', () => {
   let ctx;
-  before(async () => {
+  beforeAll(async () => {
     await setupTestDB();
     ctx = await createContext();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
 
   it('get all MZ Enables', async () => {
     const mzs = await MonetaryZoneService.getMonetaryZones(ctx);
-    assert.isTrue(mzs.length > 1);
+    expect(mzs.length).toBeGreaterThan(1);
   });
 });

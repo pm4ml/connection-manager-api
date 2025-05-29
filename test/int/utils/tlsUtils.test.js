@@ -1,83 +1,79 @@
-const chai = require("chai");
-const sinon = require("sinon");
 const tls = require("tls");
 const fs = require("fs");
 const Constants = require("../../../src/constants/Constants");
 const { enableCustomRootCAs } = require("../../../src/utils/tlsUtils");
 
-const { expect } = chai;
-
 describe("tlsUtils", () => {
-  let readFileSyncStub;
-  let createSecureContextStub;
-  let addCACertStub;
+  let readFileSyncMock;
+  let createSecureContextMock;
+  let addCACertMock;
   let origCreateSecureContext;
 
   beforeEach(() => {
-    readFileSyncStub = sinon.stub(fs, "readFileSync");
-    createSecureContextStub = sinon
-      .stub(tls, "createSecureContext")
-      .callsFake(() => ({
+    readFileSyncMock = jest.spyOn(fs, "readFileSync");
+    addCACertMock = jest.fn();
+    createSecureContextMock = jest
+      .spyOn(tls, "createSecureContext")
+      .mockImplementation(() => ({
         context: {
-          addCACert: (addCACertStub = sinon.stub()),
+          addCACert: addCACertMock,
         },
       }));
     origCreateSecureContext = tls.createSecureContext;
   });
 
   afterEach(() => {
-    sinon.restore();
+    jest.restoreAllMocks();
   });
 
   describe("enableCustomRootCAs", () => {
     it("should restore original createSecureContext after enabling custom root CAs", () => {
+      global.console = { log: jest.fn() };
       Constants.EXTRA_TLS = {
         EXTRA_CERTIFICATE_CHAIN_FILE_NAME: "chain.pem",
         EXTRA_ROOT_CERT_FILE_NAME: "root.pem",
       };
 
-      readFileSyncStub
-        .withArgs("chain.pem")
-        .returns(
-          "-----BEGIN CERTIFICATE-----\nchain\n-----END CERTIFICATE-----"
-        );
-      readFileSyncStub
-        .withArgs("root.pem")
-        .returns(
-          "-----BEGIN CERTIFICATE-----\nroot\n-----END CERTIFICATE-----"
-        );
+      readFileSyncMock.mockImplementation((file) => {
+        if (file === "chain.pem") {
+          return "-----BEGIN CERTIFICATE-----\nchain\n-----END CERTIFICATE-----";
+        }
+        if (file === "root.pem") {
+          return "-----BEGIN CERTIFICATE-----\nroot\n-----END CERTIFICATE-----";
+        }
+        // Always return a valid string for any other file
+        return "";
+      });
 
       enableCustomRootCAs();
       tls.createSecureContext = origCreateSecureContext;
 
-      expect(tls.createSecureContext).to.equal(origCreateSecureContext);
+      expect(tls.createSecureContext).toBe(origCreateSecureContext);
+      global.console.log.mockRestore();
     });
 
     it("should log appropriate messages when custom root CAs are already enabled", () => {
-      const consoleLogStub = sinon.stub(console, "log");
+      global.console = { log: jest.fn() };
       Constants.EXTRA_TLS = {
         EXTRA_CERTIFICATE_CHAIN_FILE_NAME: "chain.pem",
         EXTRA_ROOT_CERT_FILE_NAME: "root.pem",
       };
 
-      readFileSyncStub
-        .withArgs("chain.pem")
-        .returns(
-          "-----BEGIN CERTIFICATE-----\nchain\n-----END CERTIFICATE-----"
-        );
-      readFileSyncStub
-        .withArgs("root.pem")
-        .returns(
-          "-----BEGIN CERTIFICATE-----\nroot\n-----END CERTIFICATE-----"
-        );
+      readFileSyncMock.mockImplementation((file) => {
+        if (file === "chain.pem") {
+          return "-----BEGIN CERTIFICATE-----\nchain\n-----END CERTIFICATE-----";
+        }
+        if (file === "root.pem") {
+          return "-----BEGIN CERTIFICATE-----\nroot\n-----END CERTIFICATE-----";
+        }
+      });
 
       enableCustomRootCAs();
       enableCustomRootCAs(); // Call it again
 
-      expect(consoleLogStub.calledWith("Custom root CAs was already enabled"))
-        .to.be.true;
+      expect(global.console.log).toHaveBeenCalledWith("Custom root CAs was already enabled");
 
-      consoleLogStub.restore();
+      global.console.log.mockRestore();
     });
   });
 });
