@@ -31,28 +31,27 @@ const TABLE = 'dfsp_states_status';
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.up = function(knex) {
+exports.up = async function(knex) {
+  await knex.schema.dropTableIfExists(TABLE);
   return knex.schema.createTable(TABLE, (table) => {
     table.increments('id').primary();
-    table.integer('dfspId').unsigned().notNullable();
+    table.string('dfspId', 512).notNullable();
     [
-      'fetchingHubCA',
-      'creatingDFSPCA',
-      'creatingDfspClientCert',
-      'creatingDfspServerCert',
-      'creatingHubClientCert',
-      'creatingJWS',
-      'pullingPeerJWS',
-      'uploadingPeerJWS',
-      'endpointConfig',
-      'connectorConfig',
-      'progressMonitor'
+      'PEER_JWS',
+      'DFSP_JWS',
+      'DFSP_CA',
+      'DFSP_SERVER_CERT',
+      'DFSP_CLIENT_CERT',
+      'HUB_CA',
+      'HUB_CERT',
+      'HUB_CLIENT_CERT',
+      'ENDPOINT_CONFIG'
     ].forEach(field => { table.json(field); });
     table.unique(['dfspId']);
-    table.foreign('dfspId', 'FK_STATUS_DFSP_ID')
-      .references('dfsps.id')
-      .onDelete('CASCADE')
-      .onUpdate('NO ACTION');
+    // table.foreign('dfspId', 'FK_STATUS_DFSP_ID')
+    //   .references('dfsps.dfsp_id')
+    //   .onDelete('CASCADE')
+    //   .onUpdate('NO ACTION');
   });
 };
 
@@ -62,5 +61,4 @@ exports.up = function(knex) {
  */
 exports.down = function(knex) {
   return knex.schema.dropTableIfExists(TABLE);
-
 };
