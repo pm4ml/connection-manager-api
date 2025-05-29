@@ -14,7 +14,7 @@
 
   # from exports
   readonly GIT_URL=${GIT_URL:-"https://github.com/pm4ml/connection-manager-api.git"}
-  readonly GIT_TAG=${GIT_TAG:-"v2.4.0"}
+  readonly GIT_TAG=${GIT_TAG:-"v2.10.3"}
   readonly TARGET_DIR=${TARGET_DIR:-"/tmp/tests"}
   IFS=$'\t\n'   # Split on newlines and tabs (but not on spaces)
 # }}}
@@ -31,24 +31,12 @@ git clone $GIT_URL .
 echo "Switching to $GIT_TAG"
 git checkout tags/$GIT_TAG
 
+npm run backend:start
+TEST=true TEST_INT=true npm run start
+
 cd ./test/functional-tests
 
 echo "Installing dependencies"
-
-if [[ -f ".nvmrc" ]]; then
-  # Set NVM_DIR for CircleCI or fallback to $HOME/.nvm
-  export NVM_DIR="${NVM_DIR:-/opt/circleci/.nvm}"
-  # shellcheck disable=SC1090
-  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-  if ! command -v nvm &> /dev/null; then
-    echo "nvm not found, installing nvm..."
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-    # shellcheck disable=SC1090
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-  fi
-  nvm install "$(cat .nvmrc)"
-  nvm use
-fi
 
 npm i
 
