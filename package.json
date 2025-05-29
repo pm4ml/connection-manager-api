@@ -42,7 +42,7 @@
     "start-with-oauth-enabled": "source oauth.env && node src/index.js",
     "migrate": "npm run knex-cli  migrate:latest",
     "seed": "npm run knex-cli  seed:run",
-    "migrate-and-seed": "npm -s run migrate && npm -s run seed",
+    "migrate-and-seed": "echo '!!! NO ACTIONS !!! npm -s run migrate && npm -s run seed'",
     "migrate:rollback": "npm run knex-cli  migrate:rollback",
     "migrate:new": "npm run knex-cli  migrate:make",
     "knex-cli": "NODE_OPTIONS='-r dotenv/config' npx knex --knexfile src/knexfile.js ",
@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "@hapi/hapi": "21.4.0",
-    "@kubernetes/client-node": "^1.2.0",
+    "@kubernetes/client-node": "^1.3.0",
     "@mojaloop/central-services-logger": "11.9.0",
     "@mojaloop/central-services-metrics": "12.6.0",
     "async-exit-hook": "^2.0.1",
