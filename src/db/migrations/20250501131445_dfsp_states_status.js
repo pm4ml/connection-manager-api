@@ -49,10 +49,10 @@ exports.up = function(knex) {
       'progressMonitor'
     ].forEach(field => { table.json(field); });
     table.unique(['dfspId']);
-    // table.foreign('dfspId', 'FK_STATUS_DFSP_ID')
-    //   .references('dfsps.id')
-    //   .onDelete('CASCADE')
-    //   .onUpdate('NO ACTION');
+    table.foreign('dfspId', 'FK_STATUS_DFSP_ID')
+      .references('dfsps.id')
+      .onDelete('CASCADE')
+      .onUpdate('NO ACTION');
   });
 };
 

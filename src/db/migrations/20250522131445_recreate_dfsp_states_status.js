@@ -48,10 +48,10 @@ exports.up = async function(knex) {
       'ENDPOINT_CONFIG'
     ].forEach(field => { table.json(field); });
     table.unique(['dfspId']);
-    // table.foreign('dfspId', 'FK_STATUS_DFSP_ID')
-    //   .references('dfsps.dfsp_id')
-    //   .onDelete('CASCADE')
-    //   .onUpdate('NO ACTION');
+    table.foreign('dfspId', 'FK_STATUS_DFSP_ID')
+      .references('dfsps.dfsp_id')
+      .onDelete('CASCADE')
+      .onUpdate('NO ACTION');
   });
 };
 
