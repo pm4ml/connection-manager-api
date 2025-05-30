@@ -58,6 +58,8 @@
     "cookie": "1.0.2",
     "multer": "^2.0.0",
     "nanoid": "5.1.5",
+    "ejs": "3.1.10",
+    "sanitize-html": "2.12.1",
     "postcss": {
       "nanoid": "5.1.5"
     },
