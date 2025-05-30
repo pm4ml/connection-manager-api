@@ -1628,7 +1628,6 @@ describe("PKIEngine", () => {
 
       ctx.pkiEngine.getCSRInfo.restore();
     });
-
     it("should fetch all DFSP inbound enrollments for a valid dfspId", async () => {
       const dfspId = "mock-dfsp-id";
       const mockSecrets = ["enrollment1", "enrollment2"];

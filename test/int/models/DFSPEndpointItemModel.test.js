@@ -1,15 +1,17 @@
+const mockKnex = {
+  table: jest.fn()
+};
+jest.mock('../../../src/db/database', () => ({
+  knex: mockKnex,
+  executeWithErrorCount: jest.fn((queryFn) => queryFn(mockKnex))
+}));
+jest.mock('../../../src/models/DFSPModel');
+
 const DFSPEndpointItemModel = require('../../../src/models/DFSPEndpointItemModel');
 const DFSPModel = require('../../../src/models/DFSPModel');
 const NotFoundError = require('../../../src/errors/NotFoundError');
 const InternalError = require('../../../src/errors/InternalError');
 const knex = require('../../../src/db/database').knex;
-
-jest.mock('../../../src/db/database', () => ({
-  knex: {
-    table: jest.fn()
-  }
-}));
-jest.mock('../../../src/models/DFSPModel');
 
 describe('DFSPEndpointItemModel', () => {
   afterEach(() => {

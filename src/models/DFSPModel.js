@@ -15,16 +15,18 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { knex } = require('../db/database');
+const db = require('../db/database');
 const { logger } = require('../log/logger');
 const NotFoundError = require('../errors/NotFoundError');
 const InternalError = require('../errors/InternalError');
+
 const DFSP_TABLE = 'dfsps';
+const runQuery = async (queryFn, operation) => db.executeWithErrorCount(queryFn, operation);
 
 const log = logger.child({ component: 'DFSPModel' });
 
 exports.findAll = () => {
-  return knex.table(DFSP_TABLE).select();
+  return runQuery((knex) => knex.table(DFSP_TABLE).select(), 'findAllDfsps');
 };
 
 exports.findByRawId = async (id) => {
@@ -45,15 +47,17 @@ exports.getDfspsByMonetaryZones = async (monetaryZoneId) => {
 };
 
 exports.getFxpSupportedCurrencies = async (dfspId) => {
-  return (await knex.table('fxp_supported_currencies')
+  const result = await runQuery((knex) => knex.table('fxp_supported_currencies')
     .join(DFSP_TABLE, 'fxp_supported_currencies.dfspId', 'dfsps.id')
     .where(DFSP_TABLE + '.dfsp_id', dfspId)
-    .select('fxp_supported_currencies.monetaryZoneId')
-  ).map((row) => row.monetaryZoneId);
+    .select('fxp_supported_currencies.monetaryZoneId'), 'findFromFxpSupportedCurrenciesJoinDfsps');
+  return result.map((row) => row.monetaryZoneId);
 };
 
 const findByField = async (columnName, value) => {
-  const rows = await knex.table(DFSP_TABLE).where(columnName, value).select();
+  const rows = await runQuery((knex) => knex.table(DFSP_TABLE)
+    .where(columnName, value)
+    .select(), 'findByField');
   if (rows.length === 0) {
     throw new NotFoundError(`dfsp with ${columnName} = ${value}`);
   } else if (rows.length === 1) {
@@ -64,7 +68,9 @@ const findByField = async (columnName, value) => {
 };
 
 const findAllByField = async (columnName, value) => {
-  const rows = await knex.table(DFSP_TABLE).where(columnName, value).select();
+  const rows = await runQuery((knex) => knex.table(DFSP_TABLE)
+    .where(columnName, value)
+    .select(), 'findAllByField');
   if (rows.length === 0) {
     throw new NotFoundError(`dfsp with ${columnName} = ${value}`);
   } else {
@@ -75,42 +81,48 @@ const findAllByField = async (columnName, value) => {
 exports.findByField = findByField;
 
 exports.findWatchedDfspIds = async () => {
-  const rows = await knex.table(DFSP_TABLE)
-    .select('dfsp_id')
-    .where('watch', true);
+  const rows = await runQuery((knex) => knex.table(DFSP_TABLE)
+      .select('dfsp_id')
+      .where('watch', true), 'findWatchedDfspIds');
   return rows.map((row) => row.dfsp_id);
 };
 
 exports.findDfspStatesStatus = async (dfspId) => {
-  const [row] = await knex.table('dfsp_states_status')
-    .where({ dfspId });
+  const [row] = await runQuery((knex) => knex.table('dfsp_states_status')
+    .where({ dfspId }), 'findDfspStatesStatus');
   return !row ? null : Object.fromEntries( // filter out empty values and ids
     Object.entries(row).filter(([_, value]) => value && typeof value === 'object')
   );
 };
 
 exports.create = async (values) => {
-  return knex.table(DFSP_TABLE).insert(values);
+  return runQuery((knex) => knex.table(DFSP_TABLE).insert(values), 'createDfsp');
 };
 
 exports.createFxpSupportedCurrencies = async (dfsp_id, monetaryZoneIds) => {
   if (!monetaryZoneIds?.length) return;
   const dfspId = await exports.findIdByDfspId(dfsp_id);
-  return knex.table('fxp_supported_currencies').insert(
+  return runQuery((knex) => knex.table('fxp_supported_currencies').insert(
     monetaryZoneIds.map((monetaryZoneId) => ({ dfspId, monetaryZoneId }))
-  );
+  ), 'createFxpSupportedCurrencies');
 };
 
 exports.deleteByRawId = async (id) => {
-  return knex.table(DFSP_TABLE).where({ id }).del();
+  return runQuery((knex) => knex.table(DFSP_TABLE)
+    .where({ id })
+    .del(), 'deleteDfspByRawId');
 };
 
 exports.delete = async (dfspId) => {
-  return knex.table(DFSP_TABLE).where({ dfsp_id: dfspId }).del();
+  return runQuery((knex) => knex.table(DFSP_TABLE)
+    .where({ dfsp_id: dfspId })
+    .del(), 'deleteDfsp');
 };
 
 exports.update = async (dfspId, newDfsp) => {
-  const result = await knex.table(DFSP_TABLE).where({ dfsp_id: dfspId }).update(newDfsp);
+  const result = await runQuery((knex) => knex.table(DFSP_TABLE)
+    .where({ dfsp_id: dfspId })
+    .update(newDfsp), 'updateDfsp');
   if (result === 0) {
     throw new NotFoundError(`dfsp with ${dfspId}`);
   } else if (result === 1) {
@@ -123,17 +135,17 @@ exports.update = async (dfspId, newDfsp) => {
 };
 
 exports.updatePingStatus = async (dfspId, pingStatus) => {
-  const result = await knex.table(DFSP_TABLE)
+  const result = await runQuery((knex) => knex.table(DFSP_TABLE)
     .where({ dfsp_id: dfspId })
-    .update({ pingStatus, lastUpdatedPingStatusAt: new Date() });
+    .update({ pingStatus, lastUpdatedPingStatusAt: new Date() }), 'updatePingStatus');
   log.debug(`updatePingStatus is done: `, { dfspId, pingStatus, result });
   return result > 0;
 };
 
 exports.upsertStatesStatus = async (dfspId, statesJson) => {
-  const result = await knex.table('dfsp_states_status')
+  const result = await runQuery((knex) => knex.table('dfsp_states_status')
     .insert({ dfspId, ...statesJson })
-    .onConflict('dfspId').merge();
+    .onConflict('dfspId').merge(), 'upsertStatesStatus');
   log.debug(`upsertStatesStatus is done: `, { dfspId, statesJson, result });
   return result;
 };

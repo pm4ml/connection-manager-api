@@ -25,25 +25,21 @@
  --------------
  ******/
 
-const convict = require('convict');
+const metrics = require('@mojaloop/central-services-metrics');
+const { logger } = require('../log/logger');
+const MetricsServer = require('./MetricsServer');
+const defaultConfig = require('./config');
 
-/** @type {import('convict').Config} */
-const config = convict({
-  pingInterval: {
-    doc: 'Interval in seconds to send ping-pong requests',
-    format: Number,
-    default: 120,
-    env: 'PING_INTERVAL_SECONDS',
-  },
+/** @returns {MetricsServer} */
+const createMetricsServer = () => {
+  const { metricsServerConfig: config } = defaultConfig.getProperties();
+  return new MetricsServer({
+    config,
+    logger,
+    metrics
+  });
+};
 
-  pingPongServerUrl: {
-    doc: 'URL of ping-pong server',
-    format: String,
-    default: null,
-    env: 'PING_PONG_SERVER_URL',
-  },
-});
-
-config.validate({ allowed: 'strict' });
-
-module.exports = config;
+module.exports = {
+  createMetricsServer
+};

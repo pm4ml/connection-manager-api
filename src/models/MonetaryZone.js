@@ -15,10 +15,10 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { knex } = require('../db/database');
+const db = require('../db/database');
 
 const MONETARY_ZONE_TABLE = 'monetaryZone';
 
-exports.findAllActive = () =>
-  knex.table(MONETARY_ZONE_TABLE).where('isActive', true)
-    .select();
+exports.findAllActive = () => db.executeWithErrorCount(knex => knex.table(MONETARY_ZONE_TABLE)
+  .where('isActive', true)
+  .select(), 'findAllActiveMonetaryZone');

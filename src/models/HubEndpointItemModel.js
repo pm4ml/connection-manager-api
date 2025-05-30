@@ -16,13 +16,18 @@
  ******************************************************************************/
 
 'use strict';
-const { knex } = require('../db/database');
+
+const db = require('../db/database');
 const NotFoundError = require('../errors/NotFoundError');
 const InternalError = require('../errors/InternalError');
+
 const ENDPOINT_ITEMS_TABLE = 'hub_endpoint_items';
+const runQuery = async (queryFn, operation) => db.executeWithErrorCount(queryFn, operation);
 
 exports.findById = async (id) => {
-  const rows = await knex.table(ENDPOINT_ITEMS_TABLE).where('id', id).select();
+  const rows = await runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE)
+    .where('id', id)
+    .select(), 'findHubEndpointItemById');
   if (rows.length === 0) {
     throw new NotFoundError('Item with id: ' + id);
   } else if (rows.length === 1) {
@@ -50,8 +55,7 @@ exports.findObjectById = async (id) => {
 };
 
 exports.findObjectAll = async () => {
-  const rawObjects = await knex.table(ENDPOINT_ITEMS_TABLE)
-    .select();
+  const rawObjects = await runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE).select());
   return rawObjects.map(row => rowToObject(row));
 };
 
@@ -62,26 +66,28 @@ exports.create = async (values) => {
     value: values.value,
     direction: values.direction,
   };
-  return knex.table(ENDPOINT_ITEMS_TABLE).insert(record);
+  return runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE).insert(record), 'createHubEndpointItem');
 };
 
 exports.delete = async (id) => {
-  return knex.table(ENDPOINT_ITEMS_TABLE).where({ id }).del();
+  return runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE).where({ id }).del());
 };
 
 /**
  * Gets a set of endpoints, parse the JSON in value, returning an Array of Objects
  */
 exports.findObjectByDirectionType = async (direction, type) => {
-  const rawObjects = await knex.table(ENDPOINT_ITEMS_TABLE)
+  const rawObjects = await runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE)
     .where(`${ENDPOINT_ITEMS_TABLE}.direction`, direction)
     .where(`${ENDPOINT_ITEMS_TABLE}.type`, type)
-    .select(`${ENDPOINT_ITEMS_TABLE}.*`);
+    .select(`${ENDPOINT_ITEMS_TABLE}.*`), 'findObjectByDirectionType');
   return rawObjects.map(row => rowToObject(row));
 };
 
 exports.update = async (id, endpointItem) => {
-  const result = await knex.table(ENDPOINT_ITEMS_TABLE).where({ id }).update(endpointItem);
+  const result = await runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE)
+    .where({ id })
+    .update(endpointItem), 'updateHubEndpointItem');
   if (result === 1) {
     return exports.findObjectById(id);
   } else throw new Error(result);

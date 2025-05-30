@@ -26,6 +26,7 @@
  ******/
 
 const { ulid } = require('ulid');
+const { CONTEXT} = require('../constants/Constants');
 const { PingStatus, PingStatusToError, PingStep } = require('./constants');
 
 /**
@@ -34,7 +35,7 @@ const { PingStatus, PingStatusToError, PingStep } = require('./constants');
  * @prop {ContextLogger} logger - ContextLogger instance.
  * @prop {DFSPModel} dfspModel - Model to interact with DB (dfsps table).
  * @prop {PingPongClient} pingPongClient - Send http request to PingPong server.
- * @prop {MetricsServer} metricsServer - Http server to expose metrics.
+ * @prop {Metrics} metrics - Wrapper for prom-client from @mojaloop/central-services-metrics.
  */
 
 class DfspWatcher {
@@ -46,11 +47,10 @@ class DfspWatcher {
     this.config = deps.config;
     this.dfspModel = deps.dfspModel;
     this.pingPongClient = deps.pingPongClient;
-    this.metricsServer = deps.metricsServer;
+    this.metrics = deps.metrics;
   }
 
   async start() {
-    await this.metricsServer.start();
     await this.startWatching();
     this.log.info(`DfspWatcher is started`);
   }
@@ -65,7 +65,6 @@ class DfspWatcher {
   async stopWatching() {
     clearTimeout(this.#timer);
     this.#timer = null;
-    await this.metricsServer.stop();
     this.log.info(`stopWatching is done`);
   }
 
@@ -100,8 +99,22 @@ class DfspWatcher {
     const step = pingStatus !== PingStatus.PING_ERROR
       ? PingStep.RECEIVE
       : PingStep.SEND;
-    const errCode = PingStatusToError[pingStatus] || 'unknown';
-    this.metricsServer.incrementErrorCounter(dfspId, errCode, step);
+    const log = this.log.child({ dfspId, step });
+
+    try {
+      const errorCounter = this.metrics.getCounter('errorCount');
+      const errDetails = {
+        system: dfspId,
+        code: PingStatusToError[pingStatus] || 'unknown',
+        context: CONTEXT,
+        operation: `ping-${dfspId}`,
+        step // or add here dfsp?
+      };
+      errorCounter.inc(errDetails);
+      log.info('incrementErrorCounter is called:', { errDetails });
+    } catch (error) {
+      log.error('error in incrementErrorCounter: ', error);
+    }
   }
 
   #generateRequestId() {

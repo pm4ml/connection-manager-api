@@ -4,23 +4,24 @@ const InternalError = require("../../../src/errors/InternalError");
 const { knex } = require("../../../src/db/database");
 
 jest.mock("../../../src/db/database", () => {
-  const tableMock = jest.fn(() => ({
-    where: jest.fn(() => ({
-      update: jest.fn(),
-      del: jest.fn(),
-      select: jest.fn(),
-    })),
-    join: jest.fn(() => ({
+  const mockKnex = {
+    table: jest.fn(() => ({
       where: jest.fn(() => ({
+        update: jest.fn(),
+        del: jest.fn(),
         select: jest.fn(),
       })),
-    })),
-    insert: jest.fn(),
-  }));
+      join: jest.fn(() => ({
+        where: jest.fn(() => ({
+          select: jest.fn(),
+        })),
+      })),
+      insert: jest.fn(),
+    }))
+  };
   return {
-    knex: {
-      table: tableMock
-    }
+    knex: mockKnex,
+    executeWithErrorCount: jest.fn((queryFn) => queryFn(mockKnex))
   };
 });
 
@@ -109,7 +110,6 @@ describe("DFSPModel", () => {
   });
 
   describe("getFxpSupportedCurrencies", () => {
-
     it("should throw NotFoundError if select throws NotFoundError", async () => {
       const dfspId = "someDfspId";
       knex.table.mockReturnValue({
