@@ -27,7 +27,7 @@
 
 const { ulid } = require('ulid');
 const { CONTEXT} = require('../constants/Constants');
-const { PingStatusToError, PingStep } = require('./constants');
+const { PingStatus, PingStatusToError, PingStep } = require('./constants');
 
 /**
  * @typedef {Object} DfspWatcherDeps
@@ -82,8 +82,8 @@ class DfspWatcher {
     const requestId = this.#generateRequestId();
     const { pingStatus, errorInformation } = await this.pingPongClient.sendPingRequest(dfspId, requestId);
     const isUpdated = await this.dfspModel.updatePingStatus(dfspId, pingStatus);
-    if (errorInformation) this.#incrementErrorCounter(dfspId, pingStatus, errorInformation);
-    this.log.verbose(`processOneDfspPing is done:`, { dfspId, requestId, pingStatus, isUpdated });
+    if (pingStatus !== PingStatus.SUCCESS) this.#incrementErrorCounter(dfspId, pingStatus);
+    this.log.verbose(`processOneDfspPing is done:`, { dfspId, isUpdated, requestId, pingStatus, errorInformation });
     return { pingStatus, dfspId };
   }
 
@@ -95,8 +95,8 @@ class DfspWatcher {
       });
   }
 
-  #incrementErrorCounter(dfspId, pingStatus, errorInformation) {
-    const step = errorInformation.errorDescription
+  #incrementErrorCounter(dfspId, pingStatus) {
+    const step = pingStatus !== PingStatus.PING_ERROR
       ? PingStep.RECEIVE
       : PingStep.SEND;
     const log = this.log.child({ dfspId, step });

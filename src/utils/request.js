@@ -1,5 +1,5 @@
 /******************************************************************************
- *  Copyright 2019 ModusBox, Inc.                                             *
+ *  Copyright 2025 ModusBox, Inc.                                             *
  *                                                                            *
  *  info@modusbox.com                                                         *
  *                                                                            *
@@ -12,20 +12,15 @@
  *  distributed under the License is distributed on an "AS IS" BASIS,         *
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  *
  *  See the License for the specific language governing permissions and       *
- *  limitations under the License.                                            *
+ *  limitations under the License                                             *
  ******************************************************************************/
 
-const utils = require('../utils/writer.js');
-const DfspOnboardService = require('../service/DfspOnboardService');
-const { getRequestData } = require('../utils/request.js');
+'use strict';
 
-exports.onboardDFSP = (req, res, next) => {
-  const { params: { dfspId } } = getRequestData(req);
-  DfspOnboardService.onboardDFSP(req.context, dfspId)
-    .then(response => {
-      utils.writeJson(res, response);
-    })
-    .catch(response => {
-      utils.writeJson(res, response, response.status);
-    });
-};
+exports.getRequestData = (req) => ({
+  ...(['POST', 'PUT', 'PATCH'].includes(req.method.toUpperCase()) && { body: req.body }),
+  params: req.openapi.pathParams,
+  query: req.query,
+  headers: req.headers,
+  cookies: req.cookies
+});

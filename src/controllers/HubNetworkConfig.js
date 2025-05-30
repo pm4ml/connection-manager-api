@@ -19,8 +19,10 @@
 
 const utils = require('../utils/writer.js');
 const HubNetworkConfig = require('../service/HubNetworkConfigService');
+const { getRequestData } = require('../utils/request.js');
 
-exports.createHubEgressIp = (req, res, next, body) => {
+exports.createHubEgressIp = (req, res, next) => {
+  const { body } = getRequestData(req);
   HubNetworkConfig.createHubEgressIp(req.context, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -30,7 +32,8 @@ exports.createHubEgressIp = (req, res, next, body) => {
     });
 };
 
-exports.createHubIngressIp = (req, res, next, body) => {
+exports.createHubIngressIp = (req, res, next) => {
+  const { body } = getRequestData(req);
   HubNetworkConfig.createHubIngressIp(req.context, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -40,7 +43,8 @@ exports.createHubIngressIp = (req, res, next, body) => {
     });
 };
 
-exports.createHubIngressUrl = (req, res, next, body) => {
+exports.createHubIngressUrl = (req, res, next) => {
+  const { body } = getRequestData(req);
   HubNetworkConfig.createHubIngressUrl(req.context, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -80,7 +84,8 @@ exports.getHubEgressIps = (req, res, next) => {
     });
 };
 
-exports.updateHubEndpoint = (req, res, next, body, epId) => {
+exports.updateHubEndpoint = (req, res, next) => {
+  const { body, params: { epId } } = getRequestData(req);
   HubNetworkConfig.updateHubEndpoint(req.context, epId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -90,7 +95,8 @@ exports.updateHubEndpoint = (req, res, next, body, epId) => {
     });
 };
 
-exports.deleteHubEndpoint = (req, res, next, epId) => {
+exports.deleteHubEndpoint = (req, res, next) => {
+  const { params: { epId } } = getRequestData(req);
   HubNetworkConfig.deleteHubEndpoint(req.context, epId)
     .then(response => {
       utils.writeJson(res, response, 204);
@@ -110,7 +116,8 @@ exports.getHubEndpoints = (req, res, next) => {
     });
 };
 
-exports.getHubEndpoint = (req, res, next, epId) => {
+exports.getHubEndpoint = (req, res, next) => {
+  const { params: { epId } } = getRequestData(req);
   HubNetworkConfig.getHubEndpoint(req.context, epId)
     .then(response => {
       utils.writeJson(res, response);
@@ -120,7 +127,8 @@ exports.getHubEndpoint = (req, res, next, epId) => {
     });
 };
 
-exports.getHubIngressIpEndpoint = (req, res, next, epId) => {
+exports.getHubIngressIpEndpoint = (req, res, next) => {
+  const { params: { epId } } = getRequestData(req);
   HubNetworkConfig.getHubIngressIpEndpoint(req.context, epId)
     .then(response => {
       utils.writeJson(res, response);
@@ -130,7 +138,8 @@ exports.getHubIngressIpEndpoint = (req, res, next, epId) => {
     });
 };
 
-exports.updateHubIngressIpEndpoint = (req, res, next, body, epId) => {
+exports.updateHubIngressIpEndpoint = (req, res, next) => {
+  const { body, params: { epId } } = getRequestData(req);
   HubNetworkConfig.updateHubIngressIpEndpoint(req.context, epId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -140,7 +149,8 @@ exports.updateHubIngressIpEndpoint = (req, res, next, body, epId) => {
     });
 };
 
-exports.deleteHubIngressIpEndpoint = (req, res, next, epId) => {
+exports.deleteHubIngressIpEndpoint = (req, res, next) => {
+  const { params: { epId } } = getRequestData(req);
   HubNetworkConfig.deleteHubIngressIpEndpoint(req.context, epId)
     .then(response => {
       utils.writeJson(res, response, 204);
@@ -150,7 +160,8 @@ exports.deleteHubIngressIpEndpoint = (req, res, next, epId) => {
     });
 };
 
-exports.getHubEgressIpEndpoint = (req, res, next, epId) => {
+exports.getHubEgressIpEndpoint = (req, res, next) => {
+  const { params: { epId } } = getRequestData(req);
   HubNetworkConfig.getHubEgressIpEndpoint(req.context, epId)
     .then(response => {
       utils.writeJson(res, response);
@@ -160,7 +171,8 @@ exports.getHubEgressIpEndpoint = (req, res, next, epId) => {
     });
 };
 
-exports.updateHubEgressIpEndpoint = (req, res, next, body, epId) => {
+exports.updateHubEgressIpEndpoint = (req, res, next) => {
+  const { body, params: { epId } } = getRequestData(req);
   HubNetworkConfig.updateHubEgressIpEndpoint(req.context, epId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -170,7 +182,8 @@ exports.updateHubEgressIpEndpoint = (req, res, next, body, epId) => {
     });
 };
 
-exports.deleteHubEgressIpEndpoint = (req, res, next, epId) => {
+exports.deleteHubEgressIpEndpoint = (req, res, next) => {
+  const { params: { epId } } = getRequestData(req);
   HubNetworkConfig.deleteHubEgressIpEndpoint(req.context, epId)
     .then(response => {
       utils.writeJson(res, response, 204);
@@ -180,7 +193,8 @@ exports.deleteHubEgressIpEndpoint = (req, res, next, epId) => {
     });
 };
 
-exports.getHubIngressUrlEndpoint = (req, res, next, epId) => {
+exports.getHubIngressUrlEndpoint = (req, res, next) => {
+  const { params: { epId } } = getRequestData(req);
   HubNetworkConfig.getHubIngressUrlEndpoint(req.context, epId)
     .then(response => {
       utils.writeJson(res, response);
@@ -190,7 +204,8 @@ exports.getHubIngressUrlEndpoint = (req, res, next, epId) => {
     });
 };
 
-exports.updateHubIngressUrlEndpoint = (req, res, next, body, epId) => {
+exports.updateHubIngressUrlEndpoint = (req, res, next) => {
+  const { body, params: { epId } } = getRequestData(req);
   HubNetworkConfig.updateHubIngressUrlEndpoint(req.context, epId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -200,7 +215,8 @@ exports.updateHubIngressUrlEndpoint = (req, res, next, body, epId) => {
     });
 };
 
-exports.deleteHubIngressUrlEndpoint = (req, res, next, epId) => {
+exports.deleteHubIngressUrlEndpoint = (req, res, next) => {
+  const { params: { epId } } = getRequestData(req);
   HubNetworkConfig.deleteHubIngressUrlEndpoint(req.context, epId)
     .then(response => {
       utils.writeJson(res, response, 204);

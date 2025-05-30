@@ -139,14 +139,15 @@ exports.update = async (dfspId, newDfsp) => {
 exports.updatePingStatus = async (dfspId, pingStatus) => {
   const result = await runQuery(() => dbTable
     .where({ dfsp_id: dfspId })
-    .update({ pingStatus }), 'updatePingStatus');
+    .update({ pingStatus, lastUpdatedPingStatusAt: new Date() }), 'updatePingStatus');
   log.debug(`updatePingStatus is done: `, { dfspId, pingStatus, result });
   return result > 0;
 };
 
 exports.upsertStatesStatus = async (dfspId, statesJson) => {
   const result = await db.executeWithErrorCount((knex) => knex.table('dfsp_states_status')
-    .upsert({ dfspId, ...statesJson }), 'upsertStatesStatus');
+    .insert({ dfspId, ...statesJson })
+    .onConflict('dfspId').merge(), 'upsertStatesStatus');
   log.debug(`upsertStatesStatus is done: `, { dfspId, statesJson, result });
   return result;
 };

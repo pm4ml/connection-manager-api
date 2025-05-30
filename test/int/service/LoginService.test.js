@@ -1,4 +1,4 @@
-const { expect } = require('chai');
+
 const sinon = require('sinon');
 const jwt = require('jsonwebtoken');
 const Cookies = require('cookies');
@@ -28,27 +28,27 @@ describe('LoginService', () => {
     dfspId: null
   };
 
-  beforeEach(() => {
-    sandbox = sinon.createSandbox();
-    sandbox.stub(Cookies.prototype, 'set');
-    sandbox.stub(jwt, 'decode');
-    sandbox.stub(wso2Client, 'getToken');
-    sandbox.stub(wso2TotpClient, 'retrieveSecretKey');
-    sandbox.stub(wso2TotpClient, 'validateTOTP');
-    sandbox.stub(wso2ManagerServiceClient, 'setUserClaimValue');
-  });
+    beforeEach(() => {
+      jest.spyOn(Cookies.prototype, 'set').mockImplementation(jest.fn());
+      jest.spyOn(jwt, 'decode').mockReturnValue(undefined);
+      jest.spyOn(wso2Client, 'getToken').mockResolvedValue(undefined);
+      jest.spyOn(wso2TotpClient, 'retrieveSecretKey').mockResolvedValue(undefined);
+      jest.spyOn(wso2TotpClient, 'validateTOTP').mockResolvedValue(undefined);
+      jest.spyOn(wso2ManagerServiceClient, 'setUserClaimValue').mockResolvedValue(undefined);
+    });
 
-  afterEach(() => {
-    sandbox.restore();
-  });
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
 
   describe('loginUser', () => {
     it('should successfully login without 2FA', async () => {
       Constants.OAUTH.AUTH_ENABLED = true;
       Constants.AUTH_2FA.AUTH_2FA_ENABLED = false;
-      
-      jwt.decode.returns(sampleDecodedToken);
-      wso2Client.getToken.resolves(sampleToken);
+
+      jwt.decode.mockReturnValue(sampleDecodedToken);
+      wso2Client.getToken.mockResolvedValue(sampleToken);
 
       const result = await LoginService.loginUser(
         mockCtx,
@@ -56,16 +56,15 @@ describe('LoginService', () => {
         mockReq,
         mockRes
       );
-
-      expect(result.ok).to.be.true;
-      expect(result.token.payload).to.deep.include(sampleDecodedToken);
-      expect(Cookies.prototype.set.calledOnce).to.be.true;
+      expect(result.ok).toBe(true);
+      expect(result.token.payload).toEqual(expect.objectContaining(sampleDecodedToken));
+      expect(Cookies.prototype.set).toHaveBeenCalled();
     });
 
     it('should handle first login with password reset', async () => {
       const passwordResetToken = { ...sampleDecodedToken, askPassword: 'true', userguid: 'guid123' };
-      jwt.decode.returns(passwordResetToken);
-      wso2Client.getToken.resolves(sampleToken);
+      jwt.decode.mockReturnValue(passwordResetToken);
+      wso2Client.getToken.mockResolvedValue(sampleToken);
 
       const result = await LoginService.loginUser(
         mockCtx,
@@ -73,16 +72,15 @@ describe('LoginService', () => {
         mockReq,
         mockRes
       );
-
-      expect(result.askPassword).to.be.true;
-      expect(result.userguid).to.equal('guid123');
+      expect(result.askPassword).toBe(true);
+      expect(result.userguid).toBe('guid123');
     });
 
     it('should handle 2FA enrolled user', async () => {
       Constants.AUTH_2FA.AUTH_2FA_ENABLED = true;
       const twoFAToken = { ...sampleDecodedToken, '2fa-enrolled': 'true' };
-      jwt.decode.returns(twoFAToken);
-      wso2Client.getToken.resolves(sampleToken);
+      jwt.decode.mockReturnValue(twoFAToken);
+      wso2Client.getToken.mockResolvedValue(sampleToken);
 
       const result = await LoginService.loginUser(
         mockCtx,
@@ -90,14 +88,13 @@ describe('LoginService', () => {
         mockReq,
         mockRes
       );
-
-      expect(result.enrolled).to.be.true;
-      expect(result['2faEnabled']).to.be.true;
+      expect(result.enrolled).toBe(true);
+      expect(result['2faEnabled']).toBe(true);
     });
 
     it('should throw UnauthorizedError on authentication failure', async () => {
-      wso2Client.getToken.rejects({ 
-        statusCode: 400, 
+      wso2Client.getToken.mockRejectedValue({
+        statusCode: 400,
         message: 'Authentication failed'
       });
 
@@ -110,7 +107,7 @@ describe('LoginService', () => {
         );
         expect.fail('Should have thrown error');
       } catch (error) {
-        expect(error).to.be.instanceOf(UnauthorizedError);
+        expect(error).toBeInstanceOf(UnauthorizedError);
       }
     });
   });
@@ -119,9 +116,9 @@ describe('LoginService', () => {
     it('should successfully complete 2FA login', async () => {
       Constants.AUTH_2FA.AUTH_2FA_ENABLED = true;
       const twoFAToken = { ...sampleDecodedToken, '2fa-enrolled': 'true' };
-      jwt.decode.returns(twoFAToken);
-      wso2Client.getToken.resolves(sampleToken);
-      wso2TotpClient.validateTOTP.resolves();
+      jwt.decode.mockReturnValue(twoFAToken);
+      wso2Client.getToken.mockResolvedValue(sampleToken);
+      wso2TotpClient.validateTOTP.mockResolvedValue();
 
       const result = await LoginService.login2step(
         mockCtx,
@@ -131,9 +128,8 @@ describe('LoginService', () => {
         mockReq,
         mockRes
       );
-
-      expect(result.ok).to.be.true;
-      expect(result.token.payload).to.deep.include(twoFAToken);
+      expect(result.ok).toBe(true);
+      expect(result.token.payload).toEqual(expect.objectContaining(twoFAToken));
     });
 
     it('should throw error when 2FA is disabled', async () => {
@@ -150,7 +146,7 @@ describe('LoginService', () => {
         );
         expect.fail('Should have thrown error');
       } catch (error) {
-        expect(error.message).to.equal('2FA is not enabled');
+        expect(error.message).toEqual('2FA is not enabled');
       }
     });
   });
@@ -158,17 +154,18 @@ describe('LoginService', () => {
   describe('logoutUser', () => {
     it('should clear the JWT cookie', async () => {
       await LoginService.logoutUser(mockCtx, mockReq, mockRes);
-      expect(Cookies.prototype.set.calledWith(Constants.OAUTH.JWT_COOKIE_NAME)).to.be.true;
-    });
+      expect(Cookies.prototype.set).toHaveBeenCalledWith(
+        Constants.OAUTH.JWT_COOKIE_NAME
+      ); });
   });
 
   describe('resetPassword', () => {
     it('should call wso2Client to reset password', async () => {
-      sandbox.stub(wso2Client, 'resetPassword').resolves();
-      
+      jest.spyOn(wso2Client, 'resetPassword').mockResolvedValue();
+
       await LoginService.resetPassword(mockCtx, 'test', 'newpass', 'guid123');
-      
-      expect(wso2Client.resetPassword.calledWith('test', 'newpass', 'guid123')).to.be.true;
+
+      expect(wso2Client.resetPassword).toHaveBeenCalledWith('test', 'newpass', 'guid123');
     });
   });
 });

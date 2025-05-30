@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.10.4](https://github.com/pm4ml/connection-manager-api/compare/v2.10.3...v2.10.4) (2025-05-29)
+
+
+### Chore
+
+* reenable ci, int tests, func tests and switch to jest ([#116](https://github.com/pm4ml/connection-manager-api/issues/116)) ([0883109](https://github.com/pm4ml/connection-manager-api/commit/088310943db6e19c9e8805ec24e9dfa79a0c23ab))
+
+### [2.10.3](https://github.com/pm4ml/connection-manager-api/compare/v2.10.2...v2.10.3) (2025-05-28)
+
+
+### Bug Fixes
+
+* **csi-1519:** added migration recreate create_gid procedure ([fd470d2](https://github.com/pm4ml/connection-manager-api/commit/fd470d26d04183100bf41e834aa4ef3e451bf9fe))
+* **csi-1519:** added migration to add primary key to gid table ([cd1e251](https://github.com/pm4ml/connection-manager-api/commit/cd1e251a78b87e9a178ce918cdccbbfb11827015))
+* **csi-1519:** added migration to add primary key to gid table ([0ab27fd](https://github.com/pm4ml/connection-manager-api/commit/0ab27fdd9a9979b02bc94f9f7bc8c87ddef507bc))
+* **csi-1519:** addressed PR comments ([8b01622](https://github.com/pm4ml/connection-manager-api/commit/8b01622b70876e437102faff1a7c7a5e3d163977))
+* **csi-1519:** renamed [@update](https://github.com/update)_id to [@counter](https://github.com/counter) ([9f5eb38](https://github.com/pm4ml/connection-manager-api/commit/9f5eb38d1ba283e79bbfbe22d7e2df20f92a852a))
+
+### [2.10.2](https://github.com/pm4ml/connection-manager-api/compare/v2.10.1...v2.10.2) (2025-05-23)
+
+
+### Bug Fixes
+
+* **csi-1483:** fix request data extraction mapping ([4997498](https://github.com/pm4ml/connection-manager-api/commit/49974988b7a57c3e1339a00947d3d5e51491550d))
+* fix request data mapping ([fbf7d64](https://github.com/pm4ml/connection-manager-api/commit/fbf7d6438e3895f900357da4fe64a83b188d0e48))
+* update api spec ([107ee06](https://github.com/pm4ml/connection-manager-api/commit/107ee06657e0e06b0e510b44bd5b9e3f0f9c82f7))
+
+
+### Refactor
+
+* simplify getRequestData function ([5b3da33](https://github.com/pm4ml/connection-manager-api/commit/5b3da33da516d527737e7b6b4d0002122248cd8c))
+* simplify getRequestData function ([281db43](https://github.com/pm4ml/connection-manager-api/commit/281db432d4a515c94748ff4c7cb4b11ef9fecbb6))
+
+
+### Chore
+
+* override multer to fix audit ([e1af61c](https://github.com/pm4ml/connection-manager-api/commit/e1af61ca4a5878141e6e74b3c1ac701babeb13ee))
+* update license ([c610dd6](https://github.com/pm4ml/connection-manager-api/commit/c610dd6dd449729e230cad330c6200f8df94d53e))
+* upgrade node ([9780398](https://github.com/pm4ml/connection-manager-api/commit/9780398948a407d319bd13c5e4a65c6048a52519))
+
+### [2.10.1](https://github.com/pm4ml/connection-manager-api/compare/v2.10.1-snapshot.5...v2.10.1) (2025-05-23)
+
 ## [2.10.0](https://github.com/pm4ml/connection-manager-api/compare/v2.10.0-snapshot.0...v2.10.0) (2025-05-16)
 
 ### [2.9.6](https://github.com/pm4ml/connection-manager-api/compare/v2.9.4...v2.9.6) (2025-05-13)

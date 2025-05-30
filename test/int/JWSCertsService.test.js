@@ -15,7 +15,6 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { assert } = require('chai');
 const forge = require('node-forge');
 const { switchId } = require('../../src/constants/Constants');
 const JWSCertsService = require('../../src/service/JWSCertsService');
@@ -24,13 +23,13 @@ const PkiService = require('../../src/service/PkiService');
 const NotFoundError = require('../../src/errors/NotFoundError');
 const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
 const DFSPModel = require('../../src/models/DFSPModel');
-const { setupTestDB, tearDownTestDB } = require('./test-database');
-const { createContext, destroyContext } = require('./context');
+const { setupTestDB, tearDownTestDB } = require('../int/test-database');
+const { createContext, destroyContext } = require('../int/context');
 const sinon = require('sinon');
 const ValidationError = require('../../src/errors/ValidationError');
-const { expect } = require('chai');
+const database = require('../../src/db/database');
 
-const ctx = { pkiEngine: { validateJWSCertificate: sinon.stub(), setDFSPJWSCerts: sinon.stub(), getDFSPJWSCerts: sinon.stub(), deleteDFSPJWSCerts: sinon.stub(), getAllDFSPJWSCerts: sinon.stub() }};
+//const ctx = { pkiEngine: { validateJWSCertificate: sinon.stub(), setDFSPJWSCerts: sinon.stub(), getDFSPJWSCerts: sinon.stub(), deleteDFSPJWSCerts: sinon.stub(), getAllDFSPJWSCerts: sinon.stub() }};
 
 const SWITCH_ID = 'switch';
 
@@ -38,17 +37,26 @@ describe('JWSCertsService Tests', () => {
   let ctx;
   let publicKey;
 
-  before(async () => {
+  beforeEach(async () => {
+    // Reset the database before each test
+    await database.knex('dfsps').del();
+  });
+
+  beforeAll(async () => {
     await setupTestDB();
+    await database.knex('dfsps').del();
     ctx = await createContext();
     const keypair = forge.rsa.generateKeyPair({ bits: 2048 });
     publicKey = forge.pki.publicKeyToPem(keypair.publicKey, 72);
   });
 
+  afterAll(async () => {
+    await tearDownTestDB();
+    destroyContext(ctx);
+  });
 
   describe('JWS Certificates', () => {
     let dfspId = null;
-    
 
     it('should create a DfspJWSCerts entry', async () => {
       const body = { publicKey };
@@ -59,33 +67,33 @@ describe('JWSCertsService Tests', () => {
       const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
       dfspId = resultDfsp.id;
       const result = await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
-      assert.equal(publicKey, result.publicKey);
+      expect(result.publicKey).toBe(publicKey);
       const certs = await JWSCertsService.getAllDfspJWSCerts(ctx);
       console.log(certs);
       await PkiService.deleteDFSP(ctx, dfspId);
       const certs2 = await JWSCertsService.getAllDfspJWSCerts(ctx);
       console.log(certs2);
-    }).timeout(30000);
+    }, 30000);
 
     it('should set a hub JWSCerts', async () => {
       const body = { publicKey };
       const result = await JWSCertsService.setHubJWSCerts(ctx, body);
-      assert.equal(publicKey, result.publicKey);
+      expect(result.publicKey).toBe(publicKey);
 
       const hubKeyData = await JWSCertsService.getHubJWSCerts(ctx);
       console.log(hubKeyData);
-      assert.equal(hubKeyData.dfspId, SWITCH_ID);
-      assert.equal(hubKeyData.publicKey, publicKey);
-      assert.equal(hubKeyData.validationState, 'VALID');
+      expect(hubKeyData.dfspId).toBe(SWITCH_ID);
+      expect(hubKeyData.publicKey).toBe(publicKey);
+      expect(hubKeyData.validationState).toBe('VALID');
 
       const allKeysData = await JWSCertsService.getAllDfspJWSCerts(ctx);
       console.log(allKeysData);
       const hubKey = allKeysData.find(k => k.dfspId === SWITCH_ID);
-      assert.exists(hubKey);
+      expect(hubKey).toBeDefined();
 
       await JWSCertsService.deleteDfspJWSCerts(ctx, SWITCH_ID);
       await DFSPModel.delete(SWITCH_ID);
-    }).timeout(30000);
+    }, 30000);
 
     it('should create and delete a DfspJWSCerts entry', async () => {
       const body = { publicKey };
@@ -97,18 +105,13 @@ describe('JWSCertsService Tests', () => {
       dfspId = resultDfsp.id;
       await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
       await JWSCertsService.deleteDfspJWSCerts(ctx, dfspId);
-      try {
-        await JWSCertsService.getDfspJWSCerts(ctx, dfspId);
-        assert.fail('Should have throw NotFoundError');
-      } catch (error) {
-        assert.instanceOf(error, NotFoundError);
-      }
+      await expect(JWSCertsService.getDfspJWSCerts(ctx, dfspId)).rejects.toBeInstanceOf(NotFoundError);
       await PkiService.deleteDFSP(ctx, dfspId);
-    }).timeout(30000);
+    }, 30000);
 
     it('should create and find several dfsps certs and dfspId shouldnt be null', async () => {
       const body = { publicKey };
-    
+
       const N_DFSPS = 20;
       const dfspIds = [];
 
@@ -119,10 +122,10 @@ describe('JWSCertsService Tests', () => {
           await PkiService.deleteDFSP(ctx, dfspId).catch(() => {}); // Ignore errors if DFSP doesn't exist
         })
       );
-    
+
       for (let i = 0; i < N_DFSPS; i++) {
         const dfspId = `DFSP_TEST${i}`;
-    
+
         try {
           await PkiService.createDFSP(ctx, { dfspId, name: 'DFSP' });
           dfspIds.push(dfspId);
@@ -131,18 +134,18 @@ describe('JWSCertsService Tests', () => {
           console.error(`Error creating DFSP ${dfspId}:`, error);
         }
       }
-    
-        const certs = await JWSCertsService.getAllDfspJWSCerts(ctx);
-        const retrievedDfspIds = certs.map(cert => cert.dfspId);
 
-        console.log("Retrieved DFSP IDs:", retrievedDfspIds);
+      const certs = await JWSCertsService.getAllDfspJWSCerts(ctx);
+      const retrievedDfspIds = certs.map(cert => cert.dfspId);
 
-        dfspIds.forEach(dfspId => {
-          assert.include(retrievedDfspIds, dfspId, `DFSP ${dfspId} is missing!`);
-        });
+      console.log("Retrieved DFSP IDs:", retrievedDfspIds);
+
+      dfspIds.forEach(dfspId => {
+        expect(retrievedDfspIds).toContain(dfspId);
+      });
 
       await Promise.all(dfspIds.map(id => PkiService.deleteDFSP(ctx, id)));
-    }).timeout(30000);
+    }, 30000);
 
     it('should create a DfspExternalJWSCerts entries', async () => {
       const body = [
@@ -158,11 +161,11 @@ describe('JWSCertsService Tests', () => {
         }
       ];
       const result = await JWSCertsService.createDfspExternalJWSCerts(ctx, body);
-      assert.equal(result.length, 2);
+      expect(result.length).toBe(2);
       const certs = await JWSCertsService.getAllDfspJWSCerts(ctx);
-      assert.include(certs.map(cert => cert.dfspId), 'EXT_DFSP_TEST1');
-      assert.include(certs.map(cert => cert.dfspId), 'EXT_DFSP_TEST2');
-    }).timeout(30000);
+      expect(certs.map(cert => cert.dfspId)).toContain('EXT_DFSP_TEST1');
+      expect(certs.map(cert => cert.dfspId)).toContain('EXT_DFSP_TEST2');
+    }, 30000);
 
     it('should create a DfspExternalJWSCerts entries and db entries when source dfsp is passed in header', async () => {
       const body = [
@@ -179,13 +182,13 @@ describe('JWSCertsService Tests', () => {
       ];
       const sourceDfsp = 'DFSP_TEST';
       const result = await JWSCertsService.createDfspExternalJWSCerts(ctx, body, sourceDfsp);
-      assert.equal(result.length, 2);
+      expect(result.length).toBe(2);
       const certs = await JWSCertsService.getAllDfspJWSCerts(ctx);
-      assert.include(certs.map(cert => cert.dfspId), 'EXT_DFSP_TEST3');
-      assert.include(certs.map(cert => cert.dfspId), 'EXT_DFSP_TEST4');
+      expect(certs.map(cert => cert.dfspId)).toContain('EXT_DFSP_TEST3');
+      expect(certs.map(cert => cert.dfspId)).toContain('EXT_DFSP_TEST4');
       const externalDfsps = await ExternalDFSPModel.findAll();
-      assert.equal(externalDfsps.length, 2);
-    }).timeout(30000);
+      expect(externalDfsps.length).toBe(2);
+    }, 30000);
 
     it('should throw an error with a wrong key size', async () => {
       const body = { publicKey: publicKey.replace('A', '') };
@@ -196,68 +199,36 @@ describe('JWSCertsService Tests', () => {
       const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
       dfspId = resultDfsp.id;
       const result = await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
-      assert.isNotNull(result.validations);
-      assert.isNotNull(result.validationState);
-      assert.strictEqual(result.validationState, ValidationCodes.VALID_STATES.INVALID);
+      expect(result.validations).not.toBeNull();
+      expect(result.validationState).not.toBeNull();
+      expect(result.validationState).toBe(ValidationCodes.VALID_STATES.INVALID);
       await PkiService.deleteDFSP(ctx, dfspId);
-    }).timeout(30000);
+    }, 30000);
   });
-  it('should throw ValidationError when body is null or undefined in createDfspJWSCerts', async () => {
-    try {
-    await JWSCertsService.createDfspJWSCerts(ctx, 'DFSP_TEST', null);
-    assert.fail('Should have thrown ValidationError');
-    } catch (error) {
-    assert.instanceOf(error, ValidationError);
-    }
 
-    try {
-    await JWSCertsService.createDfspJWSCerts(ctx, 'DFSP_TEST', undefined);
-    assert.fail('Should have thrown ValidationError');
-    } catch (error) {
-    assert.instanceOf(error, ValidationError);
-    }
-  }).timeout(30000);
+  it('should throw ValidationError when body is null or undefined in createDfspJWSCerts', async () => {
+    await expect(JWSCertsService.createDfspJWSCerts(ctx, 'DFSP_TEST', null)).rejects.toBeInstanceOf(ValidationError);
+    await expect(JWSCertsService.createDfspJWSCerts(ctx, 'DFSP_TEST', undefined)).rejects.toBeInstanceOf(ValidationError);
+  }, 30000);
 
   it('should throw ValidationError when body is null or undefined in createDfspExternalJWSCerts', async () => {
-    try {
-    await JWSCertsService.createDfspExternalJWSCerts(ctx, null);
-    assert.fail('Should have thrown ValidationError');
-    } catch (error) {
-    assert.instanceOf(error, ValidationError);
-    }
-
-    try {
-    await JWSCertsService.createDfspExternalJWSCerts(ctx, undefined);
-    assert.fail('Should have thrown ValidationError');
-    } catch (error) {
-    assert.instanceOf(error, ValidationError);
-    }
-  }).timeout(30000);
+    await expect(JWSCertsService.createDfspExternalJWSCerts(ctx, null)).rejects.toBeInstanceOf(ValidationError);
+    await expect(JWSCertsService.createDfspExternalJWSCerts(ctx, undefined)).rejects.toBeInstanceOf(ValidationError);
+  }, 30000);
 
   it('should throw ValidationError when body is not an array or empty in createDfspExternalJWSCerts', async () => {
-    try {
-    await JWSCertsService.createDfspExternalJWSCerts(ctx, {});
-    assert.fail('Should have thrown ValidationError');
-    } catch (error) {
-    assert.instanceOf(error, ValidationError);
-    }
-
-    try {
-    await JWSCertsService.createDfspExternalJWSCerts(ctx, []);
-    assert.fail('Should have thrown ValidationError');
-    } catch (error) {
-    assert.instanceOf(error, ValidationError);
-    }
-  }).timeout(30000);
+    await expect(JWSCertsService.createDfspExternalJWSCerts(ctx, {})).rejects.toBeInstanceOf(ValidationError);
+    await expect(JWSCertsService.createDfspExternalJWSCerts(ctx, [])).rejects.toBeInstanceOf(ValidationError);
+  }, 30000);
 
   it('should get hub JWS certs', async () => {
     const body = { publicKey };
     await JWSCertsService.setHubJWSCerts(ctx, body);
     const hubKeyData = await JWSCertsService.getHubJWSCerts(ctx);
-    assert.equal(hubKeyData.dfspId, SWITCH_ID);
-    assert.equal(hubKeyData.publicKey, publicKey);
-    assert.equal(hubKeyData.validationState, 'VALID');
-  }).timeout(30000);
+    expect(hubKeyData.dfspId).toBe(SWITCH_ID);
+    expect(hubKeyData.publicKey).toBe(publicKey);
+    expect(hubKeyData.validationState).toBe('VALID');
+  }, 30000);
 
   it('should delete DFSP JWS certs', async () => {
     const body = { publicKey };
@@ -270,32 +241,26 @@ describe('JWSCertsService Tests', () => {
     await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
     await JWSCertsService.deleteDfspJWSCerts(ctx, dfspId);
 
-    try {
-      await JWSCertsService.getDfspJWSCerts(ctx, dfspId);
-      assert.fail('Should have thrown NotFoundError');
-    } catch (error) {
-      assert.instanceOf(error, NotFoundError);
-    }
+    await expect(JWSCertsService.getDfspJWSCerts(ctx, dfspId)).rejects.toBeInstanceOf(NotFoundError);
 
     await PkiService.deleteDFSP(ctx, dfspId).catch(() => {});
-  }).timeout(30000);
-
+  }, 30000);
 
   it('should get all DFSP JWS certs', async () => {
     const body = { publicKey };
     const dfsp = {
-    dfspId: 'DFSP_TEST',
-    name: 'DFSP'
+      dfspId: 'DFSP_TEST',
+      name: 'DFSP'
     };
     const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
     const dfspId = resultDfsp.id;
     await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
     const certs = await JWSCertsService.getAllDfspJWSCerts(ctx);
-    assert.isArray(certs);
-    assert.isNotEmpty(certs);
+    expect(Array.isArray(certs)).toBe(true);
+    expect(certs.length).toBeGreaterThan(0);
     await PkiService.deleteDFSP(ctx, dfspId);
-  }).timeout(30000);
-  
+  }, 30000);
+
 });
 
 describe('JWSCertsService - setHubJWSCerts', () => {
@@ -323,8 +288,8 @@ describe('JWSCertsService - setHubJWSCerts', () => {
 
     const result = await JWSCertsService.setHubJWSCerts(ctx, body);
 
-    assert(createDfspJWSCertsStub.calledOnceWith(ctx, switchId, body));
-    assert.equal(result.publicKey, body.publicKey);
+    expect(createDfspJWSCertsStub.calledOnceWith(ctx, switchId, body)).toBe(true);
+    expect(result.publicKey).toBe(body.publicKey);
   });
 
   it('should create DFSP for hub if not found and set JWS certs', async () => {
@@ -338,9 +303,9 @@ describe('JWSCertsService - setHubJWSCerts', () => {
 
     const result = await JWSCertsService.setHubJWSCerts(ctx, body);
 
-    assert(createDFSPStub.calledOnceWith(ctx, { dfspId: switchId, name: switchId }));
-    assert(createDfspJWSCertsStub.calledOnceWith(ctx, switchId, body));
-    assert.equal(result.publicKey, body.publicKey);
+    expect(createDFSPStub.calledOnceWith(ctx, { dfspId: switchId, name: switchId })).toBe(true);
+    expect(createDfspJWSCertsStub.calledOnceWith(ctx, switchId, body)).toBe(true);
+    expect(result.publicKey).toBe(body.publicKey);
   });
 
   it('should create DFSP when findByDfspId returns null (unexpected case)', async () => {
@@ -354,9 +319,9 @@ describe('JWSCertsService - setHubJWSCerts', () => {
 
     const result = await JWSCertsService.setHubJWSCerts(ctx, body);
 
-    assert(createDFSPStub.calledOnceWith(ctx, { dfspId: switchId, name: switchId }));
-    assert(createDfspJWSCertsStub.calledOnceWith(ctx, switchId, body));
-    assert.equal(result.publicKey, body.publicKey);
+    expect(createDFSPStub.calledOnceWith(ctx, { dfspId: switchId, name: switchId })).toBe(true);
+    expect(createDfspJWSCertsStub.calledOnceWith(ctx, switchId, body)).toBe(true);
+    expect(result.publicKey).toBe(body.publicKey);
   });
 
   it('should throw an error if findByDfspId throws unexpected error', async () => {
@@ -364,12 +329,7 @@ describe('JWSCertsService - setHubJWSCerts', () => {
 
     sinon.stub(DFSPModel, 'findByDfspId').rejects(new Error('Unexpected DB Error'));
 
-    try {
-      await JWSCertsService.setHubJWSCerts(ctx, body);
-      assert.fail('Should have thrown an error');
-    } catch (error) {
-      assert.equal(error.message, 'Unexpected DB Error');
-    }
+    await expect(JWSCertsService.setHubJWSCerts(ctx, body)).rejects.toThrow('Unexpected DB Error');
   });
 
   it('should throw an error if createDfspJWSCerts fails', async () => {
@@ -378,11 +338,6 @@ describe('JWSCertsService - setHubJWSCerts', () => {
     sinon.stub(DFSPModel, 'findByDfspId').resolves({ id: switchId });
     sinon.stub(JWSCertsService, 'createDfspJWSCerts').rejects(new Error('Test Error'));
 
-    try {
-      await JWSCertsService.setHubJWSCerts(ctx, body);
-      assert.fail('Should have thrown an error');
-    } catch (error) {
-      assert.equal(error.message, 'Test Error');
-    }
+    await expect(JWSCertsService.setHubJWSCerts(ctx, body)).rejects.toThrow('Test Error');
   });
 });

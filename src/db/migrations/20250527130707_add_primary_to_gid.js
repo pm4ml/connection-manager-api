@@ -25,11 +25,27 @@
  --------------
  ******/
 
-require('dotenv').config({ path: './.env.test' });
-
-module.exports = {
-  testMatch: ['<rootDir>/test/**/*.test.js'],
-  verbose: true,
-  clearMocks: true,
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+exports.up = async function(knex) {
+  return knex.schema.alterTable('gid', (table) => {
+    table
+      .specificType('pk', "ENUM('singleton')")
+      .primary()
+      .defaultTo('singleton');
+  })
+    .then(() => knex('gid').update({ pk: 'singleton' }));
 };
 
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+exports.down = function(knex) {
+  return knex.schema.alterTable('gid', (table) => {
+    table.dropPrimary();
+    table.dropColumn('pk');
+  });
+};

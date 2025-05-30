@@ -462,14 +462,11 @@ class VaultPKIEngine extends PKIEngine {
    * @returns { csr: String, key:  String, PEM-encoded. Encrypted ( see encryptKey ) }
    */
   async createCSR (csrParameters) {
-    // if (!csrParameters?.subject) {
-    //   throw new ValidationError('Invalid CAInitialInfo document: Missing subject');
-    // }
-    // this.validateCSR(csrParameters.subject);
+
     const keys = forge.pki.rsa.generateKeyPair(this.keyLength);
     const csr = forge.pki.createCertificationRequest();
     csr.publicKey = keys.publicKey;
-    
+
     if (csrParameters?.subject) {
       csr.setSubject(Object.entries(csrParameters.subject).map(([shortName, value]) => ({
         shortName,
@@ -485,7 +482,7 @@ class VaultPKIEngine extends PKIEngine {
           altNames: [
             ...dns ? dns.map(value => ({ type: VaultPKIEngine.DNS_TYPE, value })) : [],
             ...ips ? ips.map(ip => ({ type: VaultPKIEngine.IP_TYPE, ip })) : []
-          ]          
+          ]
         }]
       }]);
     }
@@ -607,16 +604,16 @@ class VaultPKIEngine extends PKIEngine {
       const certInfo = this.getCertInfo(serverCert);
       const notAfterDate = moment(certInfo.notAfter);
       const notBeforeDate = moment(certInfo.notBefore);
-  
+
       const validation = new Validation(code, true);
       validation.state = ValidationCodes.VALID_STATES.INVALID; // Default state
-  
+
       if (moment().isBetween(notBeforeDate, notAfterDate)) {
         validation.state = ValidationCodes.VALID_STATES.VALID; // Valid certificate
       } else {
         validation.message = `Certificate is not valid for the current date.`;
       }
-  
+
       return validation;
     } catch (error) {
       const validation = new Validation(
@@ -646,7 +643,7 @@ class VaultPKIEngine extends PKIEngine {
       validation.state = ValidationCodes.VALID_STATES.NOT_AVAILABLE; // Explicitly set state
       return validation;
     }
-  
+
     const cert = forge.pki.certificateFromPem(serverCert);
     const extKeyUsage = cert.getExtension('extKeyUsage');
     if (!extKeyUsage || !extKeyUsage.serverAuth) {
@@ -659,7 +656,7 @@ class VaultPKIEngine extends PKIEngine {
       validation.state = ValidationCodes.VALID_STATES.INVALID; // Explicitly set state
       return validation;
     }
-  
+
     const validation = new Validation(
       ValidationCodes.VALIDATION_CODES.CERTIFICATE_USAGE_SERVER.code,
       true,
@@ -1295,10 +1292,10 @@ class VaultPKIEngine extends PKIEngine {
     if (!csrPem) {
       throw new InvalidEntityError('Empty or null CSR');
     }
-  
+
     try {
       const csr = forge.pki.certificationRequestFromPem(csrPem);
-  
+
       return {
         subject: VaultPKIEngine._getSubjectInfo(csr.subject),
         extensions: VaultPKIEngine._getExtensionsInfo(csr.getAttribute({ name: 'extensionRequest' })),
@@ -1309,7 +1306,7 @@ class VaultPKIEngine extends PKIEngine {
       throw new InvalidEntityError('Invalid CSR: ' + err.message); // Wrap the error
     }
   }
-  
+
 
   /**
    * Returns an object with the Certificate contents and info
@@ -1321,10 +1318,10 @@ class VaultPKIEngine extends PKIEngine {
     if (!certPem) {
       throw new InvalidEntityError('Empty or null cert');
     }
-  
+
     try {
       const cert = forge.pki.certificateFromPem(certPem);
-  
+
       return {
         subject: VaultPKIEngine._getSubjectInfo(cert.subject),
         issuer: VaultPKIEngine._getSubjectInfo(cert.issuer),
@@ -1339,7 +1336,7 @@ class VaultPKIEngine extends PKIEngine {
       throw new InvalidEntityError('Invalid certificate: ' + err.message); // Wrap the error
     }
   }
-  
+
 
   validateCSR(csr) {
     const schema = Joi.object().keys({
@@ -1351,12 +1348,12 @@ class VaultPKIEngine extends PKIEngine {
       ST: Joi.string().description('State'),
       L: Joi.string().description('Location'),
     });
-  
+
     const result = schema.validate(csr);
     if (result.error) {
       throw new ValidationError('Invalid CAInitialInfo document: ' + result.error.message);
     }
-  }  
+  }
 }
 
 VaultPKIEngine.DNS_TYPE = 2;

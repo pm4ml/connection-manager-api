@@ -5,21 +5,23 @@
   "high": true,
   "critical": true,
   "allowlist": [
-    "GHSA-*",  // GitHub Security Advisory IDs
-    "GHSA-wm7h-9275-46v2",
-    "GHSA-hrpp-h998-j3pp",
-    "GHSA-p8p7-x288-28g6",
-    "GHSA-72xf-g2v4-qvf3",
-    "GHSA-67hx-6x53-jw92",
-    "GHSA-wf5p-g6vw-rhxx", // https://github.com/advisories/GHSA-wf5p-g6vw-rhxx
-    "GHSA-jchw-25xp-jwwc", // https://github.com/advisories/GHSA-jchw-25xp-jwwc
-    "GHSA-78xj-cgh5-2h22", // https://github.com/advisories/GHSA-78xj-cgh5-2h22
-    "GHSA-8hc4-vh64-cxmj", // https://github.com/advisories/GHSA-8hc4-vh64-cxmj
-    "GHSA-qwcr-r2fm-qrc7", // body-parser DOS vulnerability - no fix available yet
-    "GHSA-pppg-cpfq-h7wr", // JSONPath Plus Remote Code Execution (RCE) Vulnerability
-    "GHSA-hw8r-x6gr-5gjp", // JSONPath Plus allows Remote Code Execution
-    "GHSA-75v8-2h7p-7m2m", // https://github.com/advisories/GHSA-75v8-2h7p-7m2m
     "GHSA-44fp-w29j-9vj5", // https://github.com/advisories/GHSA-44fp-w29j-9vj5
-    "GHSA-4pg4-qvpc-4q3h" // https://github.com/advisories/GHSA-4pg4-qvpc-4q3h
+    "GHSA-4pg4-qvpc-4q3h", // https://github.com/advisories/GHSA-4pg4-qvpc-4q3h
+    "GHSA-72xf-g2v4-qvf3", // https://github.com/advisories/GHSA-72xf-g2v4-qvf3
+    "GHSA-hrpp-h998-j3pp", // https://github.com/advisories/GHSA-hrpp-h998-j3pp
+    "GHSA-p8p7-x288-28g6", // https://github.com/advisories/GHSA-p8p7-x288-28g6
+    "GHSA-qwcr-r2fm-qrc7", // https://github.com/advisories/GHSA-qwcr-r2fm-qrc7
+    "GHSA-wm7h-9275-46v2", // https://github.com/advisories/GHSA-wm7h-9275-46v2,
+    "GHSA-282f-qqgm-c34q", // https://github.com/advisories/GHSA-282f-qqgm-c34q
+    "GHSA-6vfc-qv3f-vr6c", // https://github.com/advisories/GHSA-6vfc-qv3f-vr6c
+    "GHSA-7fh5-64p2-3v2j", // https://github.com/advisories/GHSA-7fh5-64p2-3v2j
+    "GHSA-cgfm-xwp7-2cvr", // https://github.com/advisories/GHSA-cgfm-xwp7-2cvr
+    "GHSA-ghr5-ch3p-vcr6", // https://github.com/advisories/GHSA-ghr5-ch3p-vcr6
+    "GHSA-mjxr-4v3x-q3m4", // https://github.com/advisories/GHSA-mjxr-4v3x-q3m4
+    "GHSA-p9pc-299p-vxgp", // https://github.com/advisories/GHSA-p9pc-299p-vxgp
+    "GHSA-phwq-j96m-2c2q", // https://github.com/advisories/GHSA-phwq-j96m-2c2q
+    "GHSA-rjqq-98f6-6j3r", // https://github.com/advisories/GHSA-rjqq-98f6-6j3r
+    "GHSA-rm97-x556-q36h", // https://github.com/advisories/GHSA-rm97-x556-q36h
+    "GHSA-v88g-cgmw-v5xw" // https://github.com/advisories/GHSA-v88g-cgmw-v5xw
   ]
 }

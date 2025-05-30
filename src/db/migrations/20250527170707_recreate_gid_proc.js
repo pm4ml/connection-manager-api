@@ -25,11 +25,28 @@
  --------------
  ******/
 
-require('dotenv').config({ path: './.env.test' });
-
-module.exports = {
-  testMatch: ['<rootDir>/test/**/*.test.js'],
-  verbose: true,
-  clearMocks: true,
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+exports.up = async function(knex) {
+  await knex.raw(`DROP PROCEDURE IF EXISTS create_gid`);
+  return knex.raw(`
+    CREATE PROCEDURE create_gid()
+    BEGIN
+        SET @counter := 0;
+        UPDATE gid
+        SET id = (SELECT @counter := id + 1)
+        WHERE pk = 'singleton';
+        SELECT @counter as id;
+    END
+  `);
 };
 
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+exports.down = function(knex) {
+  return knex.raw(`DROP PROCEDURE IF EXISTS create_gid`);
+};

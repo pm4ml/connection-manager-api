@@ -25,11 +25,40 @@
  --------------
  ******/
 
-require('dotenv').config({ path: './.env.test' });
+const TABLE = 'dfsp_states_status';
 
-module.exports = {
-  testMatch: ['<rootDir>/test/**/*.test.js'],
-  verbose: true,
-  clearMocks: true,
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+exports.up = async function(knex) {
+  await knex.schema.dropTableIfExists(TABLE);
+  return knex.schema.createTable(TABLE, (table) => {
+    table.increments('id').primary();
+    table.string('dfspId', 512).notNullable();
+    [
+      'PEER_JWS',
+      'DFSP_JWS',
+      'DFSP_CA',
+      'DFSP_SERVER_CERT',
+      'DFSP_CLIENT_CERT',
+      'HUB_CA',
+      'HUB_CERT',
+      'HUB_CLIENT_CERT',
+      'ENDPOINT_CONFIG'
+    ].forEach(field => { table.json(field); });
+    table.unique(['dfspId']);
+    table.foreign('dfspId', 'FK_STATUS_DFSP_ID')
+      .references('dfsps.dfsp_id')
+      .onDelete('CASCADE')
+      .onUpdate('NO ACTION');
+  });
 };
 
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+exports.down = function(knex) {
+  return knex.schema.dropTableIfExists(TABLE);
+};
