@@ -23,12 +23,6 @@ ignore:
   - vulnerability: GHSA-72xf-g2v4-qvf3
     package:
       name: tough-cookie
-  - vulnerability: GHSA-phwq-j96m-2c2q
-    package:
-      name: ejs 2.7.4
-  - vulnerability: GHSA-cgfm-xwp7-2cvr
-    package:
-      name: sanitize-html 1.27.5
   - vulnerability: CVE-2025-23166
     package:
       name: node
