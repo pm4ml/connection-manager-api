@@ -107,7 +107,7 @@ class DfspWatcher {
         system: dfspId,
         code: PingStatusToError[pingStatus] || 'unknown',
         context: CONTEXT,
-        operation: `ping-${dfsp}`,
+        operation: `ping-${dfspId}`,
         step // or add here dfsp?
       };
       errorCounter.inc(errDetails);
