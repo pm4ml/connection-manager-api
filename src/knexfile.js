@@ -33,5 +33,5 @@ module.exports = {
   seeds: {
     directory: path.join(__dirname, '/db/seeds'),
   },
-  asyncStackTraces: true
+  asyncStackTraces: env.get('DATABASE_ASYNC_STACK_TRACES').default('false').asBool()
 };

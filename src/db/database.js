@@ -49,7 +49,7 @@ exports.waitForConnection = async () => {
     exitHook(callback => {
       exports.knex.destroy().finally(callback);
     });
-    
+
     console.log('Database connection attempt successful');
   }, {
     retries: Constants.DATABASE.DB_RETRIES,
