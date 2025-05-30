@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.10.4](https://github.com/pm4ml/connection-manager-api/compare/v2.10.3...v2.10.4) (2025-05-29)
+
+
+### Chore
+
+* reenable ci, int tests, func tests and switch to jest ([#116](https://github.com/pm4ml/connection-manager-api/issues/116)) ([0883109](https://github.com/pm4ml/connection-manager-api/commit/088310943db6e19c9e8805ec24e9dfa79a0c23ab))
+
 ### [2.10.3](https://github.com/pm4ml/connection-manager-api/compare/v2.10.2...v2.10.3) (2025-05-28)
 
 

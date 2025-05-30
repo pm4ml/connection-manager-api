@@ -27,5 +27,5 @@ exports.setupTestDB = async () => {
 };
 
 exports.tearDownTestDB = async () => {
-  // await db.knex.destroy();
+  await db.knex.destroy();
 };
