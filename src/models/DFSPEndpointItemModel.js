@@ -23,7 +23,6 @@ const DFSPModel = require('./DFSPModel'); // todo: think, how to avoid such deps
 
 const ENDPOINT_ITEMS_TABLE = 'dfsp_endpoint_items';
 
-const dbTable = db.knex.table(ENDPOINT_ITEMS_TABLE);
 const runQuery = async (queryFn, operation) => db.executeWithErrorCount(queryFn, operation);
 
 // todo: use BaseCrudModel
@@ -31,7 +30,7 @@ exports.findById = async (id) => {
   if (Array.isArray(id) && id.length === 1) {
     id = id[0];
   }
-  const rows = await runQuery(() => dbTable.where('id', id).select());
+  const rows = await runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE).where('id', id).select());
   if (rows.length === 0) {
     throw new NotFoundError('Item with id: ' + id);
   } else if (rows.length === 1) {
@@ -63,7 +62,7 @@ exports.findObjectById = async (id) => {
 
 exports.findObjectAll = async (dfspId) => {
   const id = await DFSPModel.findIdByDfspId(dfspId);
-  const rawObjects = await runQuery(() => dbTable.where('dfsp_id', id).select());
+  const rawObjects = await runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE).where('dfsp_id', id).select());
   const endpoints = Promise.all(rawObjects.map(async row => rowToObject(row)));
   return endpoints;
 };
@@ -77,18 +76,18 @@ exports.create = async (values) => {
     dfsp_id: id,
     direction: values.direction,
   };
-  return runQuery(() => dbTable.insert(record));
+  return runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE).insert(record), 'createDFSPEndpointItem');
 };
 
 exports.delete = async (id) => {
-  return runQuery(() => dbTable.where({ id }).del());
+  return runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE).where({ id }).del(), 'deleteDFSPEndpointItem');
 };
 
 /**
  * Returns a list of all Environment items with a specific state
  */
 exports.findAllEnvState = async (state) => {
-  const rawObjects = await runQuery(() => dbTable
+  const rawObjects = await runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE)
     .join('dfsps', `${ENDPOINT_ITEMS_TABLE}.dfsp_id`, '=', 'dfsps.id')
     .where(`${ENDPOINT_ITEMS_TABLE}.state`, state)
     .select(`${ENDPOINT_ITEMS_TABLE}.*`), 'findEndpointItemsJoinDfspsByState');
@@ -101,7 +100,7 @@ exports.findAllEnvState = async (state) => {
  */
 exports.findAllDfspState = async (dfspId, state) => {
   const id = await DFSPModel.findIdByDfspId(dfspId);
-  const rawObjects = await runQuery(() => dbTable
+  const rawObjects = await runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE)
     .where(`${ENDPOINT_ITEMS_TABLE}.dfsp_id`, id)
     .where(`${ENDPOINT_ITEMS_TABLE}.state`, state)
     .select(`${ENDPOINT_ITEMS_TABLE}.*`), 'findEndpointItemsByDfspIdAndState');
@@ -114,7 +113,7 @@ exports.findAllDfspState = async (dfspId, state) => {
  */
 exports.findObjectByDirectionType = async (direction, type, dfspId) => {
   const id = await DFSPModel.findIdByDfspId(dfspId);
-  const rawObjects = await runQuery(() => dbTable
+  const rawObjects = await runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE)
     .where(`${ENDPOINT_ITEMS_TABLE}.dfsp_id`, id)
     .where(`${ENDPOINT_ITEMS_TABLE}.direction`, direction)
     .where(`${ENDPOINT_ITEMS_TABLE}.type`, type)
@@ -127,7 +126,7 @@ exports.findObjectByDirectionType = async (direction, type, dfspId) => {
  * Gets a set of endpoints, parse the JSON in value, returning an Array of Objects
  */
 exports.findConfirmedByDirectionType = async (direction, type) => {
-  const rawObjects = await runQuery(() => dbTable
+  const rawObjects = await runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE)
     .where(`${ENDPOINT_ITEMS_TABLE}.direction`, direction)
     .where(`${ENDPOINT_ITEMS_TABLE}.type`, type)
     .where(`${ENDPOINT_ITEMS_TABLE}.state`, 'CONFIRMED')
@@ -137,7 +136,9 @@ exports.findConfirmedByDirectionType = async (direction, type) => {
 
 exports.update = async (dfspId, id, endpointItem) => {
   const dfspRawId = await DFSPModel.findIdByDfspId(dfspId);
-  const result = await runQuery(() => dbTable.where({ id, dfsp_id: dfspRawId }).update(endpointItem));
+  const result = await runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE)
+    .where({ id, dfsp_id: dfspRawId })
+    .update(endpointItem), 'updateDFSPEndpointItem');
   if (result === 1) {
     return exports.findObjectById(id);
   } else throw new Error(result);

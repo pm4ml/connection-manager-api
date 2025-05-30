@@ -1,18 +1,19 @@
+const mockKnex = {
+  table: jest.fn()
+};
+jest.mock('../../src/db/database', () => ({
+  knex: mockKnex,
+  executeWithErrorCount: jest.fn((queryFn) => queryFn(mockKnex))
+}));
+
 const DFSPModel = require('../../src/models/DFSPModel');
 const NotFoundError = require('../../src/errors/NotFoundError');
 const InternalError = require('../../src/errors/InternalError');
 const knex = require('../../src/db/database').knex;
 
-jest.mock('../../src/db/database', () => ({
-  knex: {
-    table: jest.fn()
-  }
-}));
-
 describe('DFSPModel', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.restoreAllMocks && jest.restoreAllMocks();
   });
 
   describe('findByDfspId', () => {

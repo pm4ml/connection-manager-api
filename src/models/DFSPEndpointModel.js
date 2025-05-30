@@ -24,7 +24,6 @@ const InternalError = require('../errors/InternalError');
 
 const ENDPOINT_TABLE = 'dfsp_endpoint';
 
-const dbTable = db.knex.table(ENDPOINT_TABLE);
 const runQuery = async (queryFn, operation) => db.executeWithErrorCount(queryFn, operation);
 
 /**
@@ -34,7 +33,9 @@ const findRawById = async (id) => {
   if (Array.isArray(id) && id.length === 1) {
     id = id[0];
   }
-  const rows = await runQuery(() => dbTable.where('id', id).select(), 'findRawById');
+  const rows = await runQuery(knex => knex.table(ENDPOINT_TABLE)
+    .where('id', id)
+    .select(), 'findRawById');
   if (rows.length === 0) {
     throw new NotFoundError('Item with id: ' + id);
   } else if (rows.length === 1) {
@@ -69,7 +70,9 @@ exports.findById = async (id) => {
 
 exports.findAll = async (dfspId) => {
   const validatedDfspId = await DFSPModel.findIdByDfspId(dfspId);
-  const rawObjects = await runQuery(() => dbTable.where('dfsp_id', validatedDfspId).select(), 'findEndpointsByDfspId');
+  const rawObjects = await runQuery(knex => knex.table(ENDPOINT_TABLE)
+    .where('dfsp_id', validatedDfspId)
+    .select(), 'findEndpointsByDfspId');
   const endpoints = Promise.all(rawObjects.map(row => rowToObject(row)));
   return endpoints;
 };
@@ -79,7 +82,7 @@ exports.findAll = async (dfspId) => {
  */
 exports.findAllByDirection = async (dfspId, direction) => {
   const id = await DFSPModel.findIdByDfspId(dfspId);
-  const rawObjects = await runQuery(() => dbTable
+  const rawObjects = await runQuery(knex => knex.table(ENDPOINT_TABLE)
     .where('dfsp_id', id)
     .where('direction', direction)
     .select(), 'findEndpointsByDfspIdAndDirection');
@@ -113,7 +116,7 @@ exports.findAllLatestByDirection = async (direction) => {
  */
 exports.findLastestByDirection = async (dfspId, direction) => {
   const validatedDfspId = await DFSPModel.findIdByDfspId(dfspId);
-  const rawObject = await runQuery(() => dbTable
+  const rawObject = await runQuery(knex => knex.table(ENDPOINT_TABLE)
     .where('dfsp_id', validatedDfspId)
     .where('direction', direction)
     .orderBy('id', 'desc')
@@ -133,12 +136,12 @@ exports.create = async (dfspId, state, direction, value) => {
     dfsp_id: validatedDfspId,
     direction,
   };
-  return runQuery(() => dbTable.insert(record), 'createEndpoint');
+  return runQuery(knex => knex.table(ENDPOINT_TABLE).insert(record), 'createEndpoint');
 };
 
 /**
  * Deletes an endpoint by id. Note: This should never be used except to cleanup test data.
  */
 exports.delete = async (id) => {
-  return runQuery(() => dbTable.where({ id }).del(), 'deleteEndpoint');
+  return runQuery(knex => knex.table(ENDPOINT_TABLE).where({ id }).del(), 'deleteEndpoint');
 };

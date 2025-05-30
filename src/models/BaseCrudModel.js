@@ -26,7 +26,6 @@ module.exports = class BaseCrudModel {
     }
     this.baseTable = baseTable;
     this.db = db;
-    this.dbTable = db.knex.table(baseTable);
   }
 
   async runQuery(queryFn, operation) {
@@ -34,7 +33,7 @@ module.exports = class BaseCrudModel {
   }
 
   async findAll () {
-    return this.runQuery(() => this.dbTable.select(), 'findAll');
+    return this.runQuery((knex) => knex.table(this.baseTable).select(), 'findAll');
   };
 
   async findById(id) {
@@ -56,7 +55,8 @@ module.exports = class BaseCrudModel {
    * @returns {id : Integer}
    */
   async create (values) {
-    const result = await this.runQuery(() => this.dbTable.insert(values), 'create');
+    const result = await this.runQuery((knex) => knex.table(this.baseTable)
+      .insert(values), 'create');
     if (result.length === 1) {
       return { id: result[0] };
     } else {
@@ -65,7 +65,7 @@ module.exports = class BaseCrudModel {
   };
 
   async delete (id) {
-    return this.runQuery(() => this.dbTable.where({ id }).del(), 'delete');
+    return this.runQuery((knex) => knex.table(this.baseTable).where({ id }).del(), 'delete');
   };
 
   /**
@@ -76,7 +76,9 @@ module.exports = class BaseCrudModel {
    * @returns {id : Integer}
    */
   async update (id, values) {
-    const result = await this.runQuery(() => this.dbTable.where({ id }).update(values), 'update');
+    const result = await this.runQuery((knex) => knex.table(this.baseTable)
+      .where({ id })
+      .update(values), 'update');
     if (result === 0) {
       throw new NotFoundError('object with id: ' + id);
     } else if (result === 1) {
@@ -107,6 +109,8 @@ module.exports = class BaseCrudModel {
   };
 
   async #rawFindById(id) {
-    return this.runQuery(() => this.dbTable.where({ id }).select(), 'rawFindById');
+    return this.runQuery((knex) => knex.table(this.baseTable)
+      .where({ id })
+      .select(), 'rawFindById');
   }
 };
