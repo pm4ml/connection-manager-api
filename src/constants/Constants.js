@@ -157,6 +157,7 @@ module.exports = {
       .get('DB_CONNECTION_RETRY_WAIT_MILLISECONDS')
       .default('1000')
       .asInt(),
+    DB_POOL_SIZE_MAX: env.get('DB_POOL_SIZE_MAX').default('10').asInt(),
   },
   switchFQDN: env.get('SWITCH_FQDN').default('switch.example.com').asString(),
   switchId: env.get('SWITCH_ID').required().asString(),
@@ -194,4 +195,5 @@ module.exports = {
   caCsrParameters: env.get('CA_CSR_PARAMETERS').asJsonConfig(),
 
   dfspWatcherEnabled: env.get('DFSP_WATCHER_ENABLED').default('false').asBool(),
+  CONTEXT: 'MCM',
 };

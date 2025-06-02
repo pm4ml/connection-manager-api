@@ -32,7 +32,6 @@ const { logger } = require('../log/logger');
 const DFSPModel = require('../models/DFSPModel');
 const defaultConfig = require('./config');
 const PingPongClient = require('./PingPongClient');
-const MetricsServer = require('./MetricsServer');
 
 /**
  * @param {Partial<DfspWatcherDeps>} deps
@@ -42,13 +41,12 @@ const createDeps = ({
   config = defaultConfig,
   dfspModel = DFSPModel,
   pingPongClient = createAxiosPingPongClient(config.get('pingPongServerUrl')),
-  metricsServer = createMetricsServer(),
 } = {}) => ({
   logger,
   config,
   dfspModel,
   pingPongClient,
-  metricsServer
+  metrics
 });
 
 /** @returns {PingPongClient} */
@@ -58,16 +56,6 @@ const createAxiosPingPongClient = (pingPongServerUrl) => {
     pingPongServerUrl,
     logger,
     httpClient
-  });
-};
-
-/** @returns {MetricsServer} */
-const createMetricsServer = () => {
-  const { metricsServerConfig: config } = defaultConfig.getProperties();
-  return new MetricsServer({
-    config,
-    logger,
-    metrics
   });
 };
 

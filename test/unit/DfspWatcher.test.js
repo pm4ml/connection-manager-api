@@ -27,7 +27,14 @@
 
 process.env.PING_PONG_SERVER_URL = 'ping-pong.url';
 
-console.log(process.env);
+let mockErrCountInc;
+jest.mock('@mojaloop/central-services-metrics', () => ({
+  getCounter() {
+    return {
+      inc: mockErrCountInc,
+    };
+  }
+}));
 
 const axios = require('axios');
 const AxiosMockAdapter = require('axios-mock-adapter');
@@ -47,6 +54,7 @@ const createMockDfspModel = ({
 describe('DfspWatcher Tests -->', () => {
   beforeEach(() => {
     mockAxios.reset();
+    mockErrCountInc = jest.fn();
   });
 
   test('should create DfspWatcher instance', () => {
@@ -118,10 +126,9 @@ describe('DfspWatcher Tests -->', () => {
         .reply(200, { pingStatus: PingStatus.NOT_REACHABLE });
       const dfspModel = createMockDfspModel();
       const watcher = createDfspWatcher({ dfspModel });
-      watcher.metricsServer.incrementErrorCounter = jest.fn();
 
       await watcher.processOneDfspPing('dfspId');
-      expect(watcher.metricsServer.incrementErrorCounter).toHaveBeenCalledTimes(1);
+      expect(mockErrCountInc).toHaveBeenCalledTimes(1);
     });
 
     test('should NOT increment errorCounter if response from ping-pong server is SUCCESS', async () => {
@@ -129,10 +136,9 @@ describe('DfspWatcher Tests -->', () => {
         .reply(200, { pingStatus: PingStatus.SUCCESS });
       const dfspModel = createMockDfspModel();
       const watcher = createDfspWatcher({ dfspModel });
-      watcher.metricsServer.incrementErrorCounter = jest.fn();
 
       await watcher.processOneDfspPing('dfspId');
-      expect(watcher.metricsServer.incrementErrorCounter).not.toHaveBeenCalled();
+      expect(mockErrCountInc).not.toHaveBeenCalled();
     });
   });
 });

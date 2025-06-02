@@ -34,7 +34,7 @@ const NotFoundError = require('./errors/NotFoundError');
 const CertManager = require('./pki_engine/CertManager');
 
 exports.connect = async () => {
-  await db.waitForConnection();
+  await db.connect();
   await executeSSLCustomLogic();
   // await pkiService.init(Constants.vault);
 

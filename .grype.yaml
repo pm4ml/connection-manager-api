@@ -23,12 +23,6 @@ ignore:
   - vulnerability: GHSA-72xf-g2v4-qvf3
     package:
       name: tough-cookie
-  - vulnerability: GHSA-4pg4-qvpc-4q3h
-    package:
-      name: multer 1.4.5-lts.2
-  - vulnerability: GHSA-44fp-w29j-9vj5
-    package:
-      name: multer 1.4.5-lts.2
   - vulnerability: CVE-2025-23166
     package:
       name: node
