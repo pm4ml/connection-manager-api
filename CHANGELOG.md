@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.11.0](https://github.com/pm4ml/connection-manager-api/compare/v2.11.0-snapshot.1...v2.11.0) (2025-06-02)
+
+
+### Features
+
+* **csi-1470:** updated deps ([f956050](https://github.com/pm4ml/connection-manager-api/commit/f9560507d4d6573cf78a0557f65baf9f19fef0d8))
+
+### [2.10.5](https://github.com/pm4ml/connection-manager-api/compare/v2.10.4...v2.10.5) (2025-05-30)
+
 ### [2.10.5](https://github.com/pm4ml/connection-manager-api/compare/v2.10.4...v2.10.5) (2025-05-30)
 
 ### [2.10.4-snapshot.10](https://github.com/pm4ml/connection-manager-api/compare/v2.10.4-snapshot.9...v2.10.4-snapshot.10) (2025-05-29)
