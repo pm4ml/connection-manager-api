@@ -3619,7 +3619,7 @@ components:
            $ref: "#/components/schemas/DfspStateStatus"
         ENDPOINT_CONFIG:
           $ref: "#/components/schemas/DfspStateStatus"
-        uploadPeerJWS:
+        UPLOAD_PEER_JWS:
           $ref: "#/components/schemas/DfspStateStatus"
       additionalProperties: false
     DfspStateStatus:
