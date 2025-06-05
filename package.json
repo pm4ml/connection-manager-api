@@ -1,6 +1,6 @@
 {
   "name": "@pm4ml/connection-manager-api",
-  "version": "2.11.1",
+  "version": "2.11.2-snapshot.0",
   "description": "ModusBox Connection Manager API",
   "license": "Apache-2.0",
   "author": "ModusBox",
@@ -96,7 +96,7 @@
     "dotenv": "^16.5.0",
     "env-var": "^7.5.0",
     "express-winston": "^4.2.0",
-    "form-data": "^4.0.2",
+    "form-data": "^4.0.3",
     "joi": "^17.13.3",
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^9.0.2",
