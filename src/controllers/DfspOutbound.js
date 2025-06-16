@@ -19,8 +19,10 @@
 
 const utils = require('../utils/writer.js');
 const DfspOutbound = require('../service/DfspOutboundService');
+const { getRequestData } = require('../utils/request.js');
 
-exports.createCSRAndDFSPOutboundEnrollment = (req, res, next, dfspId) => {
+exports.createCSRAndDFSPOutboundEnrollment = (req, res, next) => {
+  const { params: { dfspId } } = getRequestData(req);
   DfspOutbound.createCSRAndDFSPOutboundEnrollment(req.context, dfspId)
     .then(response => {
       utils.writeJson(res, response);
@@ -30,7 +32,8 @@ exports.createCSRAndDFSPOutboundEnrollment = (req, res, next, dfspId) => {
     });
 };
 
-exports.getDFSPOutboundEnrollments = (req, res, next, state, dfspId) => {
+exports.getDFSPOutboundEnrollments = (req, res, next) => {
+  const { params: { dfspId }, query: { state } } = getRequestData(req);
   DfspOutbound.getDFSPOutboundEnrollments(req.context, dfspId, state)
     .then(response => {
       utils.writeJson(res, response);
@@ -40,7 +43,8 @@ exports.getDFSPOutboundEnrollments = (req, res, next, state, dfspId) => {
     });
 };
 
-exports.getDFSPOutboundEnrollment = (req, res, next, dfspId, enId) => {
+exports.getDFSPOutboundEnrollment = (req, res, next) => {
+  const { params: { dfspId, enId } } = getRequestData(req);
   DfspOutbound.getDFSPOutboundEnrollment(req.context, dfspId, enId)
     .then(response => {
       utils.writeJson(res, response);
@@ -50,7 +54,8 @@ exports.getDFSPOutboundEnrollment = (req, res, next, dfspId, enId) => {
     });
 };
 
-exports.addDFSPOutboundEnrollmentCertificate = (req, res, next, body, dfspId, enId) => {
+exports.addDFSPOutboundEnrollmentCertificate = (req, res, next) => {
+  const { body, params: { dfspId, enId } } = getRequestData(req);
   DfspOutbound.addDFSPOutboundEnrollmentCertificate(req.context, dfspId, enId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -60,7 +65,8 @@ exports.addDFSPOutboundEnrollmentCertificate = (req, res, next, body, dfspId, en
     });
 };
 
-exports.validateDFSPOutboundEnrollmentCertificate = (req, res, next, dfspId, enId) => {
+exports.validateDFSPOutboundEnrollmentCertificate = (req, res, next) => {
+  const { params: { dfspId, enId } } = getRequestData(req);
   DfspOutbound.validateDFSPOutboundEnrollmentCertificate(req.context, dfspId, enId)
     .then(response => {
       utils.writeJson(res, response);

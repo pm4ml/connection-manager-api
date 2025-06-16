@@ -147,7 +147,7 @@ Variables:
 
 - Unit testing:
   - run `npm run backend:start` as a pre-requisite to `npm test`
-  - run `npm test`. The tests are implemented using `mocha`. If you need some test certificates, see the [test resources readme](./test/resources/README.md)
+  - run `npm test`. The tests are implemented using `jest`. If you need some test certificates, see the [test resources readme](./test/resources/README.md)
 - Smoke testing ( `zsh` script ): run the [cmd-line-tester.sh](./scripts/cmd-line-tester.sh) script from a tmp directory
 - swagger: see "running the server" below
 
@@ -164,5 +164,5 @@ Refer to [README](./test/functional-tests/README.md).
 
 The server includes a [Dockerfile](./Dockerfile).
 
-There's a set of scripts to build the image and tag it for a local minikube or other environments. Take a look at 
+There's a set of scripts to build the image and tag it for a local minikube or other environments. Take a look at
 [./docker-build.sh](./docker-build.sh)

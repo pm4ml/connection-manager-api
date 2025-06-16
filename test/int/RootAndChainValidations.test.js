@@ -15,37 +15,35 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const { setupTestDB, tearDownTestDB } = require('./test-database');
+const { setupTestDB, tearDownTestDB } = require('../int/test-database.js');
 
 const fs = require('fs');
 const path = require('path');
-const PkiService = require('../../src/service/PkiService');
-const { assert } = require('chai');
-const ROOT_CA = require('./Root_CA.js');
+const PkiService = require('../../src/service/PkiService.js');
+const ROOT_CA = require('../int/Root_CA.js');
 
-const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
-const { createInternalHubCA } = require('../../src/service/HubCAService');
-const DFSPModel = require('../../src/models/DFSPModel');
-const { createContext, destroyContext } = require('./context');
+const ValidationCodes = require('../../src/pki_engine/ValidationCodes.js');
+const { createInternalHubCA } = require('../../src/service/HubCAService.js');
+const DFSPModel = require('../../src/models/DFSPModel.js');
+const { createContext, destroyContext } = require('../int/context.js');
+const database = require('../../src/db/database.js');
 
 describe('DfspPkiService', () => {
   let ctx;
-  before(async function () {
-    this.timeout(10000);
+  beforeAll(async function () {
     await setupTestDB();
+    await database.knex('dfsps').del();
     ctx = await createContext();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await tearDownTestDB();
     destroyContext(ctx);
   });
 
   let dfspId = null;
   const DFSP_TEST_OUTBOUND = 'dfsp.outbound.io';
-  beforeEach('creating DFSP', async function () {
-    this.timeout(30000);
-
+  beforeEach(async function () {
     await createInternalHubCA(ctx, ROOT_CA);
 
     const dfsp = {
@@ -57,10 +55,11 @@ describe('DfspPkiService', () => {
 
     const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
     try { await ctx.pkiEngine.deleteAllDFSPData(dbDfspId); } catch (e) { }
-  });
+  }, 30000);
 
-  afterEach('tearing down ENV and DFSP', async () => {
+  afterEach(async () => {
     await PkiService.deleteDFSP(ctx, dfspId);
+    await database.knex('dfsps').del();
   });
 
   const ROOT_CA_PATH = './resources/digicert/digicert.global.root.pem';
@@ -76,17 +75,17 @@ describe('DfspPkiService', () => {
     const validationRootCertificate = result.validations.find((element) =>
       element.validationCode === ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code
     );
-    assert.equal(result.validationState, 'VALID');
-    assert.equal(validationRootCertificate.details, 'VALID(SELF_SIGNED)');
-  }).timeout(15000);
+    expect(result.validationState).toBe('VALID');
+    expect(validationRootCertificate.details).toBe('VALID(SELF_SIGNED)');
+  }, 15000);
 
   it('should not validate an intermediate certificate signed by a non publicly trusted root certificate', async () => {
     const body = {
       rootCertificate: fs.readFileSync(path.join(__dirname, SELF_SIGNED_INTERMEDIATE_PATH)).toString(),
     };
     const result = await PkiService.setDFSPca(ctx, dfspId, body);
-    assert.equal(result.validationState, 'INVALID');
-  }).timeout(15000);
+    expect(result.validationState).toBe('INVALID');
+  }, 15000);
 
   it('should validate an intermediate signed by a globally trusted CA', async () => {
     const body = {
@@ -98,9 +97,9 @@ describe('DfspPkiService', () => {
       element.validationCode === ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code
     );
 
-    assert.equal(validationIntermediateChainCertificate.result, 'VALID');
-    assert.equal(result.validationState, 'VALID');
-  }).timeout(15000);
+    expect(validationIntermediateChainCertificate.result).toBe('VALID');
+    expect(result.validationState).toBe('VALID');
+  }, 15000);
 
   it('should validate an intermediate signed by a self-signed root', async () => {
     const body = {
@@ -111,7 +110,7 @@ describe('DfspPkiService', () => {
     const validationRootCertificate = result.validations.find((element) =>
       element.validationCode === ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code
     );
-    assert.equal(result.validationState, 'VALID');
-    assert.equal(validationRootCertificate.details, 'VALID(SELF_SIGNED)');
-  }).timeout(15000);
-}).timeout(15000);
+    expect(result.validationState).toBe('VALID');
+    expect(validationRootCertificate.details).toBe('VALID(SELF_SIGNED)');
+  }, 15000);
+}, 15000);

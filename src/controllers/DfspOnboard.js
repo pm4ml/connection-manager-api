@@ -17,8 +17,10 @@
 
 const utils = require('../utils/writer.js');
 const DfspOnboardService = require('../service/DfspOnboardService');
+const { getRequestData } = require('../utils/request.js');
 
-exports.onboardDFSP = (req, res, next, dfspId) => {
+exports.onboardDFSP = (req, res, next) => {
+  const { params: { dfspId } } = getRequestData(req);
   DfspOnboardService.onboardDFSP(req.context, dfspId)
     .then(response => {
       utils.writeJson(res, response);

@@ -23,6 +23,9 @@ ignore:
   - vulnerability: GHSA-72xf-g2v4-qvf3
     package:
       name: tough-cookie
+  - vulnerability: CVE-2025-23166
+    package:
+      name: node
 
 # Set output format defaults
 output:

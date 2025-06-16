@@ -19,8 +19,10 @@
 
 const utils = require('../utils/writer.js');
 const ServerCertsService = require('../service/ServerCertsService');
+const { getRequestData } = require('../utils/request.js');
 
-exports.createDfspServerCerts = (req, res, next, body, dfspId) => {
+exports.createDfspServerCerts = (req, res, next) => {
+  const { body, params: { dfspId } } = getRequestData(req);
   ServerCertsService.createDfspServerCerts(req.context, dfspId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -30,7 +32,8 @@ exports.createDfspServerCerts = (req, res, next, body, dfspId) => {
     });
 };
 
-exports.updateDfspServerCerts = (req, res, next, body, dfspId) => {
+exports.updateDfspServerCerts = (req, res, next) => {
+  const { body, params: { dfspId } } = getRequestData(req);
   ServerCertsService.updateDfspServerCerts(req.context, dfspId, body)
     .then(response => {
       utils.writeJson(res, response);
@@ -40,7 +43,8 @@ exports.updateDfspServerCerts = (req, res, next, body, dfspId) => {
     });
 };
 
-exports.getDfspServerCerts = (req, res, next, dfspId) => {
+exports.getDfspServerCerts = (req, res, next) => {
+  const { params: { dfspId } } = getRequestData(req);
   ServerCertsService.getDfspServerCerts(req.context, dfspId)
     .then(response => {
       utils.writeJson(res, response);
@@ -60,7 +64,8 @@ exports.getAllDfspServerCerts = (req, res, next) => {
     });
 };
 
-exports.deleteDfspServerCerts = (req, res, next, dfspId) => {
+exports.deleteDfspServerCerts = (req, res, next) => {
+  const { params: { dfspId } } = getRequestData(req);
   ServerCertsService.deleteDfspServerCerts(req.context, dfspId)
     .then(response => {
       utils.writeJson(res, response);

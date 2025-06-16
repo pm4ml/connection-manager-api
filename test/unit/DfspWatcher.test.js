@@ -27,12 +27,19 @@
 
 process.env.PING_PONG_SERVER_URL = 'ping-pong.url';
 
-console.log(process.env);
+let mockErrCountInc;
+jest.mock('@mojaloop/central-services-metrics', () => ({
+  getCounter() {
+    return {
+      inc: mockErrCountInc,
+    };
+  }
+}));
 
 const axios = require('axios');
 const AxiosMockAdapter = require('axios-mock-adapter');
-const { createDfspWatcher, DfspWatcher } = require('./index');
-const { PingStatus } = require('./constants');
+const { createDfspWatcher, DfspWatcher } = require('../../src/dfsp-watcher/index');
+const { PingStatus } = require('../../src/dfsp-watcher/constants');
 
 const mockAxios = new AxiosMockAdapter(axios);
 
@@ -47,6 +54,7 @@ const createMockDfspModel = ({
 describe('DfspWatcher Tests -->', () => {
   beforeEach(() => {
     mockAxios.reset();
+    mockErrCountInc = jest.fn();
   });
 
   test('should create DfspWatcher instance', () => {
@@ -91,7 +99,7 @@ describe('DfspWatcher Tests -->', () => {
       expect(dfspModel.updatePingStatus).toHaveBeenCalledWith(dfspId, pingStatus);
     });
 
-    test('should update pingStatus to NOT_REACHABLE if http errorCode is received', async () => {
+    test('should update pingStatus to PING_ERROR if http errorCode is received', async () => {
       const dfspId = 'dfsp1';
       mockAxios.onPost()
         .reply(500);
@@ -99,10 +107,10 @@ describe('DfspWatcher Tests -->', () => {
       const watcher = createDfspWatcher({ dfspModel });
 
       await watcher.processOneDfspPing(dfspId);
-      expect(dfspModel.updatePingStatus).toHaveBeenCalledWith(dfspId, PingStatus.NOT_REACHABLE);
+      expect(dfspModel.updatePingStatus).toHaveBeenCalledWith(dfspId, PingStatus.PING_ERROR);
     });
 
-    test('should update pingStatus to NOT_REACHABLE in case network error', async () => {
+    test('should update pingStatus to PING_ERROR in case network error', async () => {
       const dfspId = 'dfsp1';
       mockAxios.onPost()
         .networkError();
@@ -110,9 +118,28 @@ describe('DfspWatcher Tests -->', () => {
       const watcher = createDfspWatcher({ dfspModel });
 
       await watcher.processOneDfspPing(dfspId);
-      expect(dfspModel.updatePingStatus).toHaveBeenCalledWith(dfspId, PingStatus.NOT_REACHABLE);
+      expect(dfspModel.updatePingStatus).toHaveBeenCalledWith(dfspId, PingStatus.PING_ERROR);
+    });
+
+    test('should increment errorCounter if response from ping-pong server is not SUCCESS', async () => {
+      mockAxios.onPost()
+        .reply(200, { pingStatus: PingStatus.NOT_REACHABLE });
+      const dfspModel = createMockDfspModel();
+      const watcher = createDfspWatcher({ dfspModel });
+
+      await watcher.processOneDfspPing('dfspId');
+      expect(mockErrCountInc).toHaveBeenCalledTimes(1);
+    });
+
+    test('should NOT increment errorCounter if response from ping-pong server is SUCCESS', async () => {
+      mockAxios.onPost()
+        .reply(200, { pingStatus: PingStatus.SUCCESS });
+      const dfspModel = createMockDfspModel();
+      const watcher = createDfspWatcher({ dfspModel });
+
+      await watcher.processOneDfspPing('dfspId');
+      expect(mockErrCountInc).not.toHaveBeenCalled();
     });
   });
-
 });
 

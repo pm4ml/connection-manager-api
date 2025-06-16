@@ -26,7 +26,6 @@
  ******/
 
 const convict = require('convict');
-const { name, version } = require('../../package.json');
 
 /** @type {import('convict').Config} */
 const config = convict({
@@ -43,29 +42,6 @@ const config = convict({
     default: null,
     env: 'PING_PONG_SERVER_URL',
   },
-
-  metricsServerConfig: {
-    port: {
-      doc: 'Port of metrics server',
-      format: 'port',
-      default: 9100,
-      env: 'METRICS_SERVER_PORT',
-    },
-    disabled: {
-      doc: 'Defines if metrics server is disabled',
-      format: Boolean,
-      default: false,
-      env: 'METRICS_SERVER_DISABLED',
-    },
-    instrumentationConfig: {
-      timeout: 5000,
-      prefix: 'mcm_api_',
-      defaultLabels: {
-        serviceName: name,
-        serviceVersion: version
-      }
-    }
-  }
 });
 
 config.validate({ allowed: 'strict' });

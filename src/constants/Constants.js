@@ -39,8 +39,8 @@ if (process.env.TEST) {
     AUTH_ENABLED: 'false',
     AUTH_2FA_ENABLED: 'false',
     VAULT_AUTH_METHOD: 'APP_ROLE',
-    VAULT_ROLE_ID_FILE: createTemp(randomUUID()),
-    VAULT_ROLE_SECRET_ID_FILE: createTemp(randomUUID()),
+    VAULT_ROLE_ID_FILE: process.env.TEST_INT ? 'docker/vault/tmp/role-id': createTemp(randomUUID()),
+    VAULT_ROLE_SECRET_ID_FILE: process.env.TEST_INT ? 'docker/vault/tmp/secret-id': createTemp(randomUUID()),
     VAULT_PKI_CLIENT_ROLE: 'example.com',
     VAULT_PKI_SERVER_ROLE: 'example.com'
   };
@@ -180,6 +180,7 @@ module.exports = {
       .get('DB_CONNECTION_RETRY_WAIT_MILLISECONDS')
       .default('1000')
       .asInt(),
+    DB_POOL_SIZE_MAX: env.get('DB_POOL_SIZE_MAX').default('10').asInt(),
   },
   switchFQDN: env.get('SWITCH_FQDN').default('switch.example.com').asString(),
   switchId: env.get('SWITCH_ID').required().asString(),
@@ -217,4 +218,5 @@ module.exports = {
   caCsrParameters: env.get('CA_CSR_PARAMETERS').asJsonConfig(),
 
   dfspWatcherEnabled: env.get('DFSP_WATCHER_ENABLED').default('false').asBool(),
+  CONTEXT: 'MCM',
 };

@@ -12,8 +12,7 @@
   "functions": 0,
   "statements": 0,
   "exclude": [
-    ".mocharc.js",
-    ".versionrc.js", 
+    ".versionrc.js",
     "commitlint.config.js",
     "eslint.config.js",
     "knexfile.js",

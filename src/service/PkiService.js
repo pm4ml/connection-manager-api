@@ -35,6 +35,7 @@ const keycloakService = require('./KeycloakService');
  * returns ObjectCreatedResponse
  **/
 exports.createDFSP = async (ctx, body) => {
+  console.log('Creating DFSP with body:', body);
   const regex = / /gi;
   const dfspIdNoSpaces = body.dfspId ? body.dfspId.replace(regex, '-') : null;
 
@@ -83,7 +84,7 @@ exports.createDFSPWithCSR = async (ctx, body) => {
  **/
 exports.getDFSPs = async ctx => {
   const rows = await DFSPModel.findAll();
-  return rows.map(r => dfspRowToObject(r));
+  return rows.map(r => exports.dfspRowToObject(r));
 };
 
 /**
@@ -103,7 +104,7 @@ exports.getDFSPById = async (ctx, dfspId) => {
   }
   try {
     const result = await DFSPModel.findByDfspId(dfspId);
-    return dfspRowToObject(result);
+    return exports.dfspRowToObject(result);
   } catch (error) {
     if (error instanceof NotFoundError) {
       throw new NotFoundError(`DFSP with id ${dfspId} not found`);
@@ -183,7 +184,7 @@ exports.setDFSPca = async (ctx, dfspId, body) => {
 
 exports.getDfspsByMonetaryZones = async (ctx, monetaryZoneId) => {
   const dfsps = await DFSPModel.getDfspsByMonetaryZones(monetaryZoneId);
-  return dfsps.map(r => dfspRowToObject(r));
+  return dfsps.map(r => exports.dfspRowToObject(r));
 };
 
 exports.getDFSPca = async (ctx, dfspId) => {
@@ -218,7 +219,7 @@ exports.deleteDFSPca = async (ctx, dfspId) => {
  *
  * @param {RowObject} row RowObject as returned by the DFSPModel or knex
  */
-const dfspRowToObject = (row) => {
+exports.dfspRowToObject = (row) => {
   return {
     id: row.dfsp_id,
     name: row.name,

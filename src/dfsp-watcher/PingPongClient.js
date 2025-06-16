@@ -89,9 +89,8 @@ class PingPongClient {
   /** @returns {PingPongResponse} */
   async #formatPingResponse(data) {
     if (!data) return {
-      pingStatus: PingStatus.NOT_REACHABLE,
-      errorInformation: { errorCode: '1001' }
-      // think, which errorCode to use in case of error on sending http request
+      pingStatus: PingStatus.PING_ERROR,
+      errorInformation: { errorCode: 'ping-conn-error' }
     };
 
     const { pingStatus, fspPutResponse } = data;
