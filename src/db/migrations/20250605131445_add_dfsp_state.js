@@ -32,30 +32,18 @@ const COLUMN = 'UPLOAD_PEER_JWS';
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.up = async function(knex) {
-  const exists = await knex.schema.hasTable(TABLE);
-  if (exists) {
-    const hasColumn = await knex.schema.hasColumn(TABLE, COLUMN);
-    if (!hasColumn) {
-      await knex.schema.alterTable(TABLE, (table) => {
-        table.json(COLUMN);
-      });
-    }
-  }
+exports.up = function(knex) {
+  return knex.schema.alterTable(TABLE, (table) => {
+    table.json(COLUMN);
+  });
 };
 
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.down = async function(knex) {
-  const exists = await knex.schema.hasTable(TABLE);
-  if (exists) {
-    const hasColumn = await knex.schema.hasColumn(TABLE, COLUMN);
-    if (hasColumn) {
-      await knex.schema.alterTable(TABLE, (table) => {
-        table.dropColumn(COLUMN);
-      });
-    }
-  }
+exports.down = function(knex) {
+  return knex.schema.alterTable(TABLE, (table) => {
+    table.dropColumn(COLUMN);
+  });
 };
