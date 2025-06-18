@@ -13,7 +13,7 @@
 
 'use strict';
 
-const KcAdminClient = require('@keycloak/keycloak-admin-client').default;
+const KcAdminClient = require('@keycloak/keycloak-admin-client');
 const Constants = require('../constants/Constants');
 const InternalError = require('../errors/InternalError');
 const formatValidator = require('../utils/formatValidator');
