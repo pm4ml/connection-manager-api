@@ -133,6 +133,7 @@ module.exports = {
 
   OPENID: {
     ENABLED: env.get('OPENID_ENABLED').default('false').asBool(),
+    AUDIENCE: env.get('OPENID_AUDIENCE').default('connection-manager-api').asString(),
     ALLOW_INSECURE: env.get('OPENID_ALLOW_INSECURE').default('false').asBool(),
     DISCOVERY_URL: env.get('OPENID_DISCOVERY_URL').asString(),
     CLIENT_ID: env.get('OPENID_CLIENT_ID').asString(),

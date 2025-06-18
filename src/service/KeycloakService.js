@@ -108,19 +108,48 @@ const assignToGroups = async (kcAdminClient, entityId, dfspId, entity = 'user') 
 const createClientConfig = (dfspId) => {
   return {
     clientId: dfspId,
-    name: dfspId,
+    name: `API Client for ${dfspId}`,
+    description: `OAuth client for DFSP ${dfspId} API integration`,
     enabled: true,
     clientAuthenticatorType: 'client-secret',
+    directAccessGrantsEnabled: false,
     redirectUris: ['*'],
     webOrigins: [],
-    standardFlowEnabled: true,
+    standardFlowEnabled: false,
     implicitFlowEnabled: false,
-    directAccessGrantsEnabled: true,
+    directAccessGrantsEnabled: false,
     serviceAccountsEnabled: true,
     publicClient: false,
     protocol: 'openid-connect',
-    attributes: {},
-    fullScopeAllowed: true,
+    attributes: {
+      'dfsp.id': dfspId,
+      'purpose': 'api-integration'
+    },
+    clientAuthenticatorType: 'client-secret',
+    protocolMappers: [
+      {
+        name: 'audience-mapper',
+        protocol: 'openid-connect',
+        protocolMapper: 'oidc-audience-mapper',
+        config: {
+          'included.custom.audience': 'connection-manager-api',
+          'id.token.claim': 'false',
+          'access.token.claim': 'true'
+        }
+      },
+      {
+        name: 'groups-mapper',
+        protocol: 'openid-connect',
+        protocolMapper: 'oidc-group-membership-mapper',
+        config: {
+          'claim.name': 'groups',
+          'full.path': 'true',
+          'id.token.claim': 'false',
+          'access.token.claim': 'true',
+          'userinfo.token.claim': 'false'
+        }
+      }
+    ]
   };
 };
 
@@ -213,6 +242,12 @@ const rollbackResources = async (kcAdminClient, dfspId, resources) => {
   return rollbackErrors;
 };
 
+
+/**
+ * Gets a Keycloak admin client instance
+ * @returns {Promise<Object>} Authenticated Keycloak admin client
+ */
+exports.getKeycloakAdminClient = getKeycloakAdminClient;
 
 /**
  * Creates all Keycloak resources for a DFSP

@@ -28,6 +28,8 @@ tags:
   description: JWS Certificates
 - name: Authentication
   description: Authentication endpoints
+- name: API-Credentials
+  description: API client credentials management
 paths:
   /auth/login:
     get:
@@ -186,6 +188,7 @@ paths:
       security:
       - OAuth2:
         - everyone
+        - pta
       x-swagger-router-controller: HubNetworkConfig
   /hub/endpoints/ingress/ips:
     get:
@@ -917,6 +920,7 @@ paths:
       security:
       - OAuth2:
         - everyone
+        - pta
       x-swagger-router-controller: Pki
     post:
       tags:
@@ -2458,6 +2462,85 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
       x-swagger-router-controller: DfspNetworkConfig
+  /dfsps/{dfspId}/credentials:
+    get:
+      tags:
+      - API-Credentials
+      summary: Retrieve API credentials for a DFSP
+      description: Returns the existing API client credentials for the specified DFSP
+      operationId: getCredentials
+      parameters:
+      - name: dfspId
+        in: path
+        description: DFSP identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiCredentials'
+        404:
+          description: Credentials not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        403:
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+      security:
+      - OAuth2:
+        - dfsp
+      x-swagger-router-controller: CredentialsController
+    post:
+      tags:
+      - API-Credentials
+      summary: Create API credentials for a DFSP
+      description: Creates new API client credentials for the specified DFSP, replacing any existing ones
+      operationId: createCredentials
+      parameters:
+      - name: dfspId
+        in: path
+        description: DFSP identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        201:
+          description: Credentials created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiCredentials'
+        403:
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+      security:
+      - OAuth2:
+        - dfsp
+      x-swagger-router-controller: CredentialsController
   /monetaryzones:
     get:
       tags:
@@ -3661,6 +3744,32 @@ components:
         - status
         - lastUpdated
       additionalProperties: false
+    ApiCredentials:
+      type: object
+      properties:
+        clientId:
+          type: string
+          description: OAuth client ID for API integration
+          example: api-dfsp1
+        clientSecret:
+          type: string
+          description: OAuth client secret
+          example: xxxxx-xxxxx-xxxxx-xxxxx
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when credentials were created
+          example: 2025-01-20T10:30:00.000Z
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when credentials were last updated
+          example: 2025-01-20T15:45:00.000Z
+      required:
+        - clientId
+        - clientSecret
+        - createdAt
+      description: API client credentials for OAuth integration
   securitySchemes:
     OAuth2:
       type: oauth2

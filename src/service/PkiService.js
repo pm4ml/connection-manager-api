@@ -82,9 +82,27 @@ exports.createDFSPWithCSR = async (ctx, body) => {
  *
  * returns DFSP[]
  **/
-exports.getDFSPs = async ctx => {
+exports.getDFSPs = async (ctx, user) => {
   const rows = await DFSPModel.findAll();
-  return rows.map(r => exports.dfspRowToObject(r));
+  const allDfsps = rows.map(r => exports.dfspRowToObject(r));
+  
+  if (!user?.roles) {
+    return allDfsps;
+  }
+
+  if (user.roles.includes('pta')) {
+    return allDfsps;
+  }
+
+  const dfspRoles = user.roles.filter(role => role.startsWith('Application/DFSP:'));
+  
+  if (dfspRoles.length === 0) {
+    return allDfsps;
+  }
+
+  return allDfsps.filter(dfsp => {
+    return dfsp.securityGroup && dfspRoles.includes(dfsp.securityGroup);
+  });
 };
 
 /**
@@ -182,9 +200,27 @@ exports.setDFSPca = async (ctx, dfspId, body) => {
   return values;
 };
 
-exports.getDfspsByMonetaryZones = async (ctx, monetaryZoneId) => {
+exports.getDfspsByMonetaryZones = async (ctx, monetaryZoneId, user) => {
   const dfsps = await DFSPModel.getDfspsByMonetaryZones(monetaryZoneId);
-  return dfsps.map(r => exports.dfspRowToObject(r));
+  const allDfsps = dfsps.map(r => exports.dfspRowToObject(r));
+
+  if (!user?.roles) {
+    return allDfsps;
+  }
+
+  if (user.roles.includes('pta')) {
+    return allDfsps;
+  }
+
+  const dfspRoles = user.roles.filter(role => role.startsWith('Application/DFSP:'));
+  
+  if (dfspRoles.length === 0) {
+    return allDfsps;
+  }
+
+  return allDfsps.filter(dfsp => {
+    return dfsp.securityGroup && dfspRoles.includes(dfsp.securityGroup);
+  });
 };
 
 exports.getDFSPca = async (ctx, dfspId) => {

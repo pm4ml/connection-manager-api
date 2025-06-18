@@ -27,7 +27,8 @@
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
         "http://localhost:3001/api/auth/callback",
-        "http://localhost:8081/*"
+        "http://localhost:8081/*",
+        "http://localhost:3000/*"
       ],
       "webOrigins": [
         "http://localhost:3001"

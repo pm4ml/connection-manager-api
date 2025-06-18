@@ -108,13 +108,16 @@ class VaultPKIEngine extends PKIEngine {
     if (isNaN(id)) throw new Error(`${name} is not a number`);
   }
 
-  async getSecret (key) {
+  async getSecret (key, defaultValue = null) {
     const path = `${this.mounts.kv}/${key}`;
     try {
       const { data } = await this.client.read(path);
       return data;
     } catch (e) {
       if (e.response && e.response.statusCode === 404) {
+        if (defaultValue) {
+          return defaultValue;
+        }
         throw new NotFoundError();
       }
       throw e;

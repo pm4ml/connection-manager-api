@@ -67,10 +67,6 @@ exports.createOAuth2Handler = () => {
       throw error;
     }
 
-    if (user.roles.includes('pta')) {
-      return true;
-    }
-
     if (!scopes.some(role => user.roles.includes(role))) {
       console.log(`API defined scopes: user ${JSON.stringify(user)} does not have the required roles ${JSON.stringify(scopes)}`);
       error = new Error(`user does not have the required roles ${scopes}`);
@@ -80,6 +76,10 @@ exports.createOAuth2Handler = () => {
     }
 
     if (/\/dfsps\/{dfspId}/.test(apiPath)) {
+      if (user.roles.includes('pta')) {
+        return true;
+      }
+
       const { dfspId } = req.openapi.pathParams;
       return PkiService.getDFSPById(req.context, dfspId)
         .then(dfsp => {

@@ -14,10 +14,12 @@
 'use strict';
 
 const client = require('openid-client');
+const { jwtVerify, createRemoteJWKSet } = require('jose');
 const Constants = require('../constants/Constants');
 
 // Cache for the OpenID configuration
 let oidcConfig = null;
+let jwksVerifier = null;
 
 /**
  * Initialize the OpenID configuration by performing discovery
@@ -43,6 +45,23 @@ async function getOidcConfig() {
     console.error('Failed to initialize OIDC configuration:', error);
     throw error;
   }
+}
+
+async function getJwtVerifier() {
+  if (jwksVerifier) {
+    return jwksVerifier;
+  }
+  const config = await getOidcConfig();
+  const metadata = config.serverMetadata();
+  jwksVerifier = createRemoteJWKSet(new URL(metadata.jwks_uri));
+  return async (token) => {
+    const { payload } = await jwtVerify(token, jwksVerifier, {
+      issuer: metadata.issuer,
+      audience: Constants.OPENID.AUDIENCE,
+      clockTolerance: 60
+    });
+    return payload;
+  };
 }
 
 /**
@@ -129,15 +148,20 @@ async function getLogoutUrl(idToken, returnTo) {
  * Extract roles from token claims
  */
 function extractRoles(claims) {
+  const {APPLICATION, MTA, PTA, DFSP, EVERYONE} = Constants.OPENID.GROUPS;
   const rolesMap = {
-    "Application/MTA": "mta",
-    "Application/PTA": "pta",
+    [`${APPLICATION}/${MTA}`]: MTA.toLowerCase(),
+    [`${APPLICATION}/${PTA}`]: PTA.toLowerCase(),
   };
+
+  let isDfsp = false;
+  const re = new RegExp(`^${APPLICATION}/${DFSP}:(.*)$`);
 
   const roles = claims.groups?.map(group => {
       // Convert group path to role name (e.g., "/admin" to "admin")
       const role = group.replace(/^\//, '');
-      if (/^Application\/DFSP:(.*)$/.test(role)) {
+      if (re.test(role)) {
+        isDfsp = true;
         return role;
       } else if (rolesMap[role]) {
         return rolesMap[role];
@@ -145,28 +169,25 @@ function extractRoles(claims) {
     })
       .filter(role => role);
 
-  return [...roles, Constants.OPENID.GROUPS.EVERYONE];
+  return [
+    ...roles,
+    ...(isDfsp ? [DFSP.toLowerCase()]: []),
+    EVERYONE.toLowerCase()
+  ];
 }
 
 /**
  * Validates a JWT access token against OIDC provider
  */
 async function validateToken(token) {
-  const config = await getOidcConfig();
-
   try {
-    const tokenSet = await config.client.validateAccessToken(token, {
-      audience: Constants.OPENID.CLIENT_ID,
-      clockTolerance: 60
-    });
-
-    const claims = tokenSet.claims();
-
+    const jwtVerifier = await getJwtVerifier();
+    const payload = await jwtVerifier(token);
     return {
-      id: claims.sub,
-      name: claims.name || claims.preferred_username,
-      email: claims.email,
-      roles: extractRoles(claims)
+      id: payload.sub,
+      name: payload.name || payload.preferred_username,
+      email: payload.email,
+      roles: extractRoles(payload)
     };
   } catch (error) {
     console.error('Token validation failed:', error);

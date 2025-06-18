@@ -127,10 +127,9 @@ exports.profile = async (req, res) => {
     }
 
     const userProfile = {
-      id: req.session.user.id,
       name: req.session.user.name,
       email: req.session.user.email,
-      roles: req.session.user.roles ? Object.keys(req.session.user.roles).filter(role => req.session.user.roles[role]) : []
+      roles: req.session.user.roles,
     };
 
     return res.json(userProfile);
