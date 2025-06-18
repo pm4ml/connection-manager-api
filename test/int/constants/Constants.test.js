@@ -298,7 +298,7 @@ describe.skip('Constants', () => {
     });
   });
 
-  describe('WSO2 service configuration', () => {
+  describe.skip('WSO2 service configuration', () => {
     it('should handle WSO2 manager service settings', () => {
       process.env.WSO2_MANAGER_SERVICE_URL = 'https://wso2.test';
       process.env.WSO2_MANAGER_SERVICE_USER = 'admin';

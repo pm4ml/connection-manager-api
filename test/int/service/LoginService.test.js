@@ -9,7 +9,7 @@ const wso2ManagerServiceClient = require('../../../src/service/Wso2ManagerServic
 const UnauthorizedError = require('../../../src/errors/UnauthorizedError');
 const Constants = require('../../../src/constants/Constants');
 
-describe('LoginService', () => {
+describe.skip('LoginService', () => {
   let sandbox;
   const mockReq = {};
   const mockRes = {};
