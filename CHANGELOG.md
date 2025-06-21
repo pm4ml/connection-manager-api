@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.12.0](https://github.com/pm4ml/connection-manager-api/compare/v2.11.1...v2.12.0) (2025-06-17)
+
+
+### Features
+
+* add support for UPLOAD_PEER_JWS state machine ([#127](https://github.com/pm4ml/connection-manager-api/issues/127)) ([2d8cd74](https://github.com/pm4ml/connection-manager-api/commit/2d8cd74191a65140f0a986f9a667c6d981be1e6c))
+
 ### [2.11.1](https://github.com/pm4ml/connection-manager-api/compare/v2.11.0...v2.11.1) (2025-06-02)
 
 ## [2.11.0](https://github.com/pm4ml/connection-manager-api/compare/v2.11.0-snapshot.1...v2.11.0) (2025-06-02)

@@ -3717,6 +3717,8 @@ components:
            $ref: "#/components/schemas/DfspStateStatus"
         ENDPOINT_CONFIG:
           $ref: "#/components/schemas/DfspStateStatus"
+        UPLOAD_PEER_JWS:
+          $ref: "#/components/schemas/DfspStateStatus"
       additionalProperties: false
     DfspStateStatus:
       title: State status

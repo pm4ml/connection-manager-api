@@ -136,28 +136,28 @@ services:
 #        condition: service_healthy
 
 
-  connection-manager-ui:
-    # This builds the image from a locally cloned repo
-    build:
-      context: ../../connection-manager-ui
-      dockerfile: Dockerfile
-      args:
-        - AUTH_ENABLED=TRUE
-        - REACT_APP_COMMIT=${REACT_APP_COMMIT:-unknown}
-        - REACT_APP_VERSION=${REACT_APP_VERSION:-unknown}
-    hostname: connection-manager-ui
-    environment:
-      - AUTH_ENABLED=TRUE
-      - API_BASE_URL=http://localhost:3001
-      - LOGIN_URL=http://localhost:3001/api/auth/login
-      - LOGOUT_URL=http://localhost:3001/api/auth/logout
-      - CHECK_SESSION_URL=http://localhost:3001/api/auth/profile
-    tty: true
-    stdin_open: true
-    ports:
-     - "8081:8080"
-    restart: always
-    # Uncomment when the API service is active
-    #depends_on:
-    #  connection-manager-api:
-    #    condition: service_started
+#  connection-manager-ui:
+#    # This builds the image from a locally cloned repo
+#    build:
+#      context: ../../connection-manager-ui
+#      dockerfile: Dockerfile
+#      args:
+#        - AUTH_ENABLED=TRUE
+#        - REACT_APP_COMMIT=${REACT_APP_COMMIT:-unknown}
+#        - REACT_APP_VERSION=${REACT_APP_VERSION:-unknown}
+#    hostname: connection-manager-ui
+#    environment:
+#      - AUTH_ENABLED=TRUE
+#      - API_BASE_URL=http://localhost:3001
+#      - LOGIN_URL=http://localhost:3001/api/auth/login
+#      - LOGOUT_URL=http://localhost:3001/api/auth/logout
+#      - CHECK_SESSION_URL=http://localhost:3001/api/auth/profile
+#    tty: true
+#    stdin_open: true
+#    ports:
+#     - "8081:8080"
+#    restart: always
+#    # Uncomment when the API service is active
+#    #depends_on:
+#    #  connection-manager-api:
+#    #    condition: service_started
