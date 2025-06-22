@@ -1,6 +1,6 @@
 configs:
   realm-template:
-    file: ./keycloak/dfsps-realm.json
+    file: ./docker/keycloak/dfsps-realm.json
 
 volumes:
   keycloak-import: {}
