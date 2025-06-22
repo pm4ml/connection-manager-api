@@ -298,18 +298,6 @@ describe.skip('Constants', () => {
     });
   });
 
-  describe.skip('WSO2 service configuration', () => {
-    it('should handle WSO2 manager service settings', () => {
-      process.env.WSO2_MANAGER_SERVICE_URL = 'https://wso2.test';
-      process.env.WSO2_MANAGER_SERVICE_USER = 'admin';
-      process.env.WSO2_MANAGER_SERVICE_PASSWORD = 'password';
-
-      expect(constants.AUTH_2FA.WSO2_MANAGER_SERVICE_URL).toBe('https://wso2.test');
-      expect(constants.AUTH_2FA.WSO2_MANAGER_SERVICE_USER).toBe('admin');
-      expect(constants.AUTH_2FA.WSO2_MANAGER_SERVICE_PASSWORD).toBe('password');
-    });
-  });
-
   describe('database retry configuration', () => {
     it('should have correct default retry values', () => {
       delete process.env.DB_CONNECTION_RETRY_WAIT_MILLISECONDS;
