@@ -51,7 +51,7 @@ exports.connect = async () => {
     openApiValidator: {
       validateSecurity: {
         handlers: {
-          OAuth2: Constants.OAUTH.AUTH_ENABLED ? AuthMiddleware.createOAuth2Handler() : () => true,
+          OAuth2: Constants.OPENID.ENABLED ? AuthMiddleware.createOAuth2Handler() : () => true,
         }
       }
     }

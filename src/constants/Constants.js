@@ -71,36 +71,6 @@ module.exports = {
 
   CLIENT_URL: env.get('CLIENT_URL').default('http://localhost:8081/').asString(),
 
-  OAUTH: {
-    AUTH_ENABLED: env.get('AUTH_ENABLED').default('false').asBool(),
-    APP_OAUTH_CLIENT_KEY: env.get('APP_OAUTH_CLIENT_KEY').asString(), // Configured in WSO2 IM Service Provider
-    APP_OAUTH_CLIENT_SECRET: env.get('APP_OAUTH_CLIENT_SECRET').asString(),
-    MTA_ROLE: env.get('MTA_ROLE').default('Application/MTA').asString(),
-    PTA_ROLE: env.get('PTA_ROLE').default('Application/PTA').asString(),
-    EVERYONE_ROLE: env
-      .get('EVERYONE_ROLE')
-      .default('Internal/everyone')
-      .asString(),
-    OAUTH2_ISSUER: env
-      .get('OAUTH2_ISSUER')
-      .default('https://WSO2_IM_SERVER:9443/oauth2/token')
-      .asString(),
-    OAUTH2_TOKEN_ISS: env.get('OAUTH2_TOKEN_ISS').asString(),
-    CERTIFICATE_FILE_NAME: env
-      .get('CERTIFICATE_FILE_NAME')
-      .default('resources/wso2carbon-publickey.cert')
-      .asString(),
-    EMBEDDED_CERTIFICATE: env.get('EMBEDDED_CERTIFICATE').asString(),
-    JWT_COOKIE_NAME: 'MCM-API_ACCESS_TOKEN',
-    RESET_PASSWORD_ISSUER: env.get('OAUTH_RESET_PASSWORD_ISSUER').asString(),
-    RESET_PASSWORD_AUTH_USER: env
-      .get('OAUTH_RESET_PASSWORD_AUTH_USER')
-      .asString(),
-    RESET_PASSWORD_AUTH_PASSWORD: env
-      .get('OAUTH_RESET_PASSWORD_AUTH_PASSWORD')
-      .asString(),
-  },
-
   KEYCLOAK: {
     ENABLED: env.get('KEYCLOAK_ENABLED').default('false').asBool(),
     BASE_URL: env.get('KEYCLOAK_BASE_URL').default('http://localhost:8080').asString(),

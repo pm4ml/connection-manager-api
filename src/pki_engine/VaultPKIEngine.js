@@ -670,10 +670,13 @@ class VaultPKIEngine extends PKIEngine {
   }
 
   splitCertificateChain (chain) {
-    // const certificateStartDelimiter = '-----BEGIN CERTIFICATE-----';
     const certificateEndDelimiter = '-----END CERTIFICATE-----';
-
     const beginCertRegex = /(?=-----BEGIN)/g;
+
+    // Add type check to ensure chain is a string
+    if (!chain || typeof chain !== 'string') {
+      return [];
+    }
 
     return chain.split(beginCertRegex)
       .filter(cert => cert.match(/BEGIN/g))
