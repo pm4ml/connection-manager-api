@@ -87,8 +87,8 @@ services:
       test: mysqladmin ping -h localhost
       timeout: 20s
       retries: 10
-      start_period: 40s
-      interval: 30s
+      start_period: 30s
+      interval: 15s
 
   vault-dev:
     image: hashicorp/vault:1.19
@@ -147,6 +147,7 @@ services:
     environment:
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+      - KC_HEALTH_ENABLED=true
     volumes:
       - keycloak-import:/opt/keycloak/data/import
     ports:
@@ -157,9 +158,9 @@ services:
       prepare-keycloak-realm:
         condition: service_completed_successfully
     healthcheck:
-      test: curl --fail http://localhost:8080/health/ready
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000;echo -e 'GET /health/ready HTTP/1.1\\r\\nhost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3;timeout 1 cat <&3 | grep -q UP"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
