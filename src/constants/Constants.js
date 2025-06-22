@@ -112,6 +112,7 @@ module.exports = {
   },
 
   OPENID: {
+    ENABLE_2FA: env.get('OPENID_ENABLE_2FA').default('false').asBool(),
     ENABLED: env.get('OPENID_ENABLED').default('false').asBool(),
     AUDIENCE: env.get('OPENID_AUDIENCE').default('connection-manager-api').asString(),
     ALLOW_INSECURE: env.get('OPENID_ALLOW_INSECURE').default('false').asBool(),
@@ -136,18 +137,6 @@ module.exports = {
   EXTRA_TLS: {
     EXTRA_CERTIFICATE_CHAIN_FILE_NAME: env.get('EXTRA_CERTIFICATE_CHAIN_FILE_NAME').asString(),
     EXTRA_ROOT_CERT_FILE_NAME: env.get('EXTRA_ROOT_CERT_FILE_NAME').asString(),
-  },
-
-  AUTH_2FA: {
-    AUTH_2FA_ENABLED: env.get('AUTH_2FA_ENABLED').default('false').asBool(),
-    TOTP_ADMIN_ISSUER: env.get('TOTP_ADMIN_ISSUER').asString(),
-    TOTP_ADMIN_AUTH_USER: env.get('TOTP_ADMIN_AUTH_USER').asString(),
-    TOTP_ADMIN_AUTH_PASSWORD: env.get('TOTP_ADMIN_AUTH_PASSWORD').asString(),
-    TOTP_LABEL: env.get('TOTP_LABEL').asString(),
-    TOTP_ISSUER: env.get('TOTP_ISSUER').default('MCM').asString(),
-    WSO2_MANAGER_SERVICE_URL: env.get('WSO2_MANAGER_SERVICE_URL').asString(),
-    WSO2_MANAGER_SERVICE_USER: env.get('WSO2_MANAGER_SERVICE_USER').asString(),
-    WSO2_MANAGER_SERVICE_PASSWORD: env.get('WSO2_MANAGER_SERVICE_PASSWORD').asString(),
   },
 
   DATABASE: {

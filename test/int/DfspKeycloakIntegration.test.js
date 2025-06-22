@@ -129,8 +129,8 @@ describe('DFSP Keycloak Integration Tests', () => {
 
   describe('Security Features', () => {
     it('should configure 2FA and secure API client settings', async () => {
-      const original2FA = Constants.AUTH_2FA.AUTH_2FA_ENABLED;
-      Constants.AUTH_2FA.AUTH_2FA_ENABLED = true;
+      const original2FA = Constants.OPENID.ENABLE_2FA;
+      Constants.OPENID.ENABLE_2FA = true;
 
       try {
         await KeycloakService.createDfspResources(testDfspId, testEmail);
@@ -151,7 +151,7 @@ describe('DFSP Keycloak Integration Tests', () => {
         const audienceMapper = protocolMappers.find(m => m.name === 'audience-mapper');
         expect(audienceMapper).toBeDefined();
       } finally {
-        Constants.AUTH_2FA.AUTH_2FA_ENABLED = original2FA;
+        Constants.OPENID.ENABLE_2FA = original2FA;
       }
     });
 

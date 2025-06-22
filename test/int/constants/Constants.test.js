@@ -281,23 +281,6 @@ describe.skip('Constants', () => {
     });
   });
 
-  describe('2FA configuration', () => {
-    it('should have correct default values', () => {
-      expect(constants.AUTH_2FA.AUTH_2FA_ENABLED).toBe(false);
-      expect(constants.AUTH_2FA.TOTP_ISSUER).toBe('MCM');
-    });
-
-    it('should use custom 2FA settings when provided', () => {
-      process.env.AUTH_2FA_ENABLED = 'true';
-      process.env.TOTP_ISSUER = 'CustomIssuer';
-      process.env.TOTP_LABEL = 'CustomLabel';
-
-      expect(constants.AUTH_2FA.AUTH_2FA_ENABLED).toBe(true);
-      expect(constants.AUTH_2FA.TOTP_ISSUER).toBe('CustomIssuer');
-      expect(constants.AUTH_2FA.TOTP_LABEL).toBe('CustomLabel');
-    });
-  });
-
   describe('database retry configuration', () => {
     it('should have correct default retry values', () => {
       delete process.env.DB_CONNECTION_RETRY_WAIT_MILLISECONDS;

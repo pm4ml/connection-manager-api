@@ -117,8 +117,8 @@ describe('KeycloakService Integration Tests', () => {
     });
 
     it('should configure 2FA when enabled', async () => {
-      const original2FAEnabled = Constants.AUTH_2FA.AUTH_2FA_ENABLED;
-      Constants.AUTH_2FA.AUTH_2FA_ENABLED = true;
+      const original2FAEnabled = Constants.OPENID.ENABLE_2FA;
+      Constants.OPENID.ENABLE_2FA = true;
 
       try {
         await KeycloakService.createDfspResources(testDfspId, testEmail);
@@ -127,7 +127,7 @@ describe('KeycloakService Integration Tests', () => {
         const users = allUsers.filter(u => !u.username.startsWith('service-account-'));
         expect(users[0].requiredActions).toContain('CONFIGURE_TOTP');
       } finally {
-        Constants.AUTH_2FA.AUTH_2FA_ENABLED = original2FAEnabled;
+        Constants.OPENID.ENABLE_2FA = original2FAEnabled;
       }
     });
 
