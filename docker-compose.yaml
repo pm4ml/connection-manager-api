@@ -43,10 +43,10 @@ services:
     environment:
       - DATABASE_HOST=connection-manager-db
       - DATABASE_PORT=3306
-      - DATABASE_USER=mcm
-      - DATABASE_PASSWORD=mcm
-      - DATABASE_SCHEMA=mcm
-      - MYSQL_ROOT_PASSWORD=modus123
+      - DATABASE_USER=${DBUSER:-mcm}
+      - DATABASE_PASSWORD=${DBPASS:-mcm}
+      - DATABASE_SCHEMA=${DBUSER:-mcm}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-modus123}
       - PORT=3001
       - SWITCH_ID=switch
       - VAULT_ENDPOINT=http://vault-dev:8233
@@ -79,7 +79,7 @@ services:
     volumes:
       - ./docker/sql-init/:/docker-entrypoint-initdb.d/
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-modus123}
       - MYSQL_USER=${DBUSER:-mcm}
       - MYSQL_PASSWORD=${DBPASS:-mcm}
       - MYSQL_DATABASE=${DBUSER:-mcm}
