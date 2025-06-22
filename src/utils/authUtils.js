@@ -13,9 +13,13 @@
 
 'use strict';
 
-const client = require('openid-client');
-const { jwtVerify, createRemoteJWKSet } = require('jose');
+// TODO: uncomment after TS migration
+// const client = require('openid-client');
+// const { jwtVerify, createRemoteJWKSet } = require('jose');
 const Constants = require('../constants/Constants');
+
+// TODO: remove after TS migration
+const requireEsm = require('./requireEsm');
 
 // Cache for the OpenID configuration
 let oidcConfig = null;
@@ -30,6 +34,7 @@ async function getOidcConfig() {
   }
 
   try {
+    const client = await requireEsm('openid-client');
     oidcConfig = await client.discovery(
       URL.parse(Constants.OPENID.DISCOVERY_URL),
       Constants.OPENID.CLIENT_ID,
@@ -52,6 +57,8 @@ async function getJwtVerifier() {
     return jwksVerifier;
   }
   const config = await getOidcConfig();
+  const client = await requireEsm('openid-client');
+  const { jwtVerify, createRemoteJWKSet } = await requireEsm('jose', false);
   const metadata = config.serverMetadata();
   jwksVerifier = createRemoteJWKSet(new URL(metadata.jwks_uri));
   return async (token) => {
@@ -69,6 +76,7 @@ async function getJwtVerifier() {
  */
 async function getAuthorizationUrl() {
   const config = await getOidcConfig();
+  const client = await requireEsm('openid-client');
 
   const codeVerifier = client.randomPKCECodeVerifier();
   const codeChallenge = await client.calculatePKCECodeChallenge(codeVerifier);
@@ -100,6 +108,7 @@ async function getAuthorizationUrl() {
  */
 async function handleLoginCallback(req, state, codeVerifier, nonce) {
   const config = await getOidcConfig();
+  const client = await requireEsm('openid-client');
 
   const currentUrl = new URL(
     `${req.protocol}://${req.get('host')}${req.originalUrl}`
@@ -132,6 +141,7 @@ async function handleLoginCallback(req, state, codeVerifier, nonce) {
  */
 async function getLogoutUrl(idToken, returnTo) {
   const config = await getOidcConfig();
+  const client = await requireEsm('openid-client');
 
   const logoutUrl = client.buildEndSessionUrl(
     config,

@@ -16,19 +16,11 @@
 const Constants = require('../constants/Constants');
 const InternalError = require('../errors/InternalError');
 const formatValidator = require('../utils/formatValidator');
-
-let cachedClient;
-
-async function getKeycloakClient() {
-  if (!cachedClient) {
-    cachedClient = await import('@keycloak/keycloak-admin-client');
-  }
-  return cachedClient;
-}
+const requireEsm = require('../utils/requireEsm');
 
 const getKeycloakAdminClient = async () => {
   try {
-    const KcAdminClient = await getKeycloakClient();
+    const { default: KcAdminClient } = await requireEsm('@keycloak/keycloak-admin-client');
     const kcAdminClient = new KcAdminClient({
       baseUrl: Constants.KEYCLOAK.BASE_URL,
       realmName: Constants.KEYCLOAK.DFSPS_REALM,

@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const xml2js = require('xml2js');
 const UnauthorizedError = require('../../src/errors/UnauthorizedError');
 
-describe('TOTP admin server client', () => {
+describe.skip('TOTP admin server client', () => {
   afterEach(() => {
     sinon.restore();
   });

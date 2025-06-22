@@ -6,6 +6,72 @@ volumes:
   keycloak-import: {}
 
 services:
+
+  connection-manager-ui:
+    # This builds the image from a locally cloned repo
+    build:
+      context: ../../connection-manager-ui
+      dockerfile: Dockerfile
+      args:
+        - AUTH_ENABLED=TRUE
+        - REACT_APP_COMMIT=${REACT_APP_COMMIT:-unknown}
+        - REACT_APP_VERSION=${REACT_APP_VERSION:-unknown}
+    hostname: connection-manager-ui
+    profiles:
+      - dev
+    environment:
+      - AUTH_ENABLED=TRUE
+      - API_BASE_URL=http://localhost:3001
+      - LOGIN_URL=http://localhost:3001/api/auth/login
+      - LOGOUT_URL=http://localhost:3001/api/auth/logout
+      - CHECK_SESSION_URL=http://localhost:3001/api/auth/profile
+    tty: true
+    stdin_open: true
+    ports:
+     - "8081:8080"
+    restart: always
+    depends_on:
+      connection-manager-api:
+        condition: service_started
+
+  connection-manager-api:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    profiles:
+      - functional
+    environment:
+      - DATABASE_HOST=connection-manager-db
+      - DATABASE_PORT=3306
+      - DATABASE_USER=mcm
+      - DATABASE_PASSWORD=mcm
+      - DATABASE_SCHEMA=mcm
+      - MYSQL_ROOT_PASSWORD=modus123
+      - PORT=3001
+      - SWITCH_ID=switch
+      - VAULT_ENDPOINT=http://vault-dev:8233
+      - VAULT_AUTH_METHOD=APP_ROLE
+      - VAULT_ROLE_ID_FILE=/vault/tmp/role-id
+      - VAULT_ROLE_SECRET_ID_FILE=/vault/tmp/secret-id
+      - VAULT_PKI_CLIENT_ROLE=example.com
+      - VAULT_PKI_SERVER_ROLE=example.com
+      - AUTH_ENABLED=false
+      - AUTH_2FA_ENABLED=false
+    volumes:
+      - ./vault/tmp:/vault/tmp
+    tty: true
+    stdin_open: true
+    ports:
+     - "3001:3001"
+    restart: always
+    depends_on:
+      connection-manager-db:
+        condition: service_healthy
+      vault-dev:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+
   connection-manager-db:
     image: mysql/mysql-server
     ports:
@@ -14,9 +80,9 @@ services:
       - ./docker/sql-init/:/docker-entrypoint-initdb.d/
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=mcm
-      - MYSQL_USER=mcm
-      - MYSQL_PASSWORD=mcm
+      - MYSQL_USER=${DBUSER:-mcm}
+      - MYSQL_PASSWORD=${DBPASS:-mcm}
+      - MYSQL_DATABASE=${DBUSER:-mcm}
     healthcheck:
       test: mysqladmin ping -h localhost
       timeout: 20s
@@ -110,7 +176,6 @@ services:
 #      - DATABASE_SCHEMA=mcm
 #      - MYSQL_ROOT_PASSWORD=modus123
 #      - PORT=3001
-#      - P12_PASS_PHRASE='SOME_S3C4R3_P@SS'
 #      - SWITCH_ID=switch
 #      - VAULT_ENDPOINT=http://vault-dev:8233
 #      - VAULT_AUTH_METHOD=APP_ROLE

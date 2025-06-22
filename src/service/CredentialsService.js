@@ -27,8 +27,13 @@ const createCredentials = async (context, dfspId) => {
     const credentialsPath = `${VAULT_PATH_PREFIX}/${dfspId}`;
     
     const kcAdminClient = await getKeycloakAdminClient();
-    const existingClient = await kcAdminClient.clients.find({ clientId: dfspId });
+    const existingClients = await kcAdminClient.clients.find({ clientId: dfspId });
 
+    if (!existingClients || existingClients.length === 0) {
+      throw new NotFoundError(`Client not found for DFSP ${dfspId}`);
+    }
+
+    const existingClient = existingClients[0];
     const secretResponse = await kcAdminClient.clients.generateNewClientSecret({
       id: existingClient.id
     });
@@ -72,6 +77,10 @@ const getCredentials = async (context, dfspId) => {
     const credentialsPath = `${VAULT_PATH_PREFIX}/${dfspId}`;
     const credentials = await context.pkiEngine.getSecret(credentialsPath);
 
+    if (!credentials) {
+      throw new NotFoundError('API credentials not found for this DFSP');
+    }
+
     logger.info('API credentials retrieved', {
       dfspId,
       action: 'FETCH_CREDENTIALS'
@@ -86,8 +95,14 @@ const getCredentials = async (context, dfspId) => {
 
   } catch (error) {
     if (error instanceof NotFoundError) {
+      throw error; // Re-throw NotFoundError as-is
+    }
+    
+    // Check if this is a "not found" type error from Vault
+    if (error.message && (error.message.includes('not found') || error.message.includes('does not exist'))) {
       throw new NotFoundError('API credentials not found for this DFSP');
     }
+    
     logger.error('Error retrieving API credentials:', {
       dfspId,
       error: error.message
