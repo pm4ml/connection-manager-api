@@ -28,7 +28,7 @@ services:
     tty: true
     stdin_open: true
     ports:
-     - "8081:8080"
+      - "8081:8080"
     restart: always
     depends_on:
       connection-manager-api:
@@ -36,7 +36,7 @@ services:
 
   connection-manager-api:
     build:
-      context: ./
+      context: .
       dockerfile: Dockerfile
     profiles:
       - functional
@@ -62,7 +62,7 @@ services:
     tty: true
     stdin_open: true
     ports:
-     - "3001:3001"
+      - "3001:3001"
     restart: always
     depends_on:
       connection-manager-db:
