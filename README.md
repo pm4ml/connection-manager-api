@@ -104,8 +104,8 @@ Variables:
 | **MCM API server configuration**
 |PORT|mcm API HTTP port|3001
 | **Authentication features**
-|AUTH_ENABLED|Enables support for OAuth2. 'TRUE' to enable| (disabled)
-|AUTH_2FA_ENABLED|Enables two-factor authentication 'TRUE' to enable| (disabled)
+|OPENID_ENABLED|Enables support for OAuth2. 'TRUE' to enable| (disabled)
+|OPENID_ENABLE_2FA|Enables two-factor authentication 'TRUE' to enable| (disabled)
 | **Session configuration**
 |SESSION_STORE_SECRET|Secret for encrypting session data|
 |SESSION_MAX_AGE|Session timeout in milliseconds|86400000 (24 hours)

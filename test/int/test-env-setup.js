@@ -29,10 +29,8 @@ process.env.KEYCLOAK_DFSPS_REALM = 'dfsps';
 process.env.KEYCLOAK_AUTO_CREATE_ACCOUNTS = 'true';
 
 // 2FA Authentication settings
-process.env.AUTH_ENABLED = 'true';
-process.env.AUTH_2FA_ENABLED = 'true';
-
 process.env.OPENID_ENABLED = 'true';
+process.env.OPENID_ENABLE_2FA = 'true';
 
 // Test OIDC provider settings
 process.env.OPENID_ALLOW_INSECURE = 'true';

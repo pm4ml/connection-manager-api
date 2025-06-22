@@ -55,8 +55,8 @@ services:
       - VAULT_ROLE_SECRET_ID_FILE=/vault/tmp/secret-id
       - VAULT_PKI_CLIENT_ROLE=example.com
       - VAULT_PKI_SERVER_ROLE=example.com
-      - AUTH_ENABLED=false
-      - AUTH_2FA_ENABLED=false
+      - OPENID_ENABLED=false
+      - OPENID_ENABLE_2FA=false
     volumes:
       - ./docker/vault/tmp:/vault/tmp
     tty: true

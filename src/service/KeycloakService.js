@@ -166,7 +166,7 @@ const createUserConfig = (dfspId, email) => {
     userConfig.requiredActions = ['UPDATE_PASSWORD'];
   }
 
-  if (Constants.OPENID.AUTH_2FA_ENABLED) {
+  if (Constants.OPENID.ENABLE_2FA) {
     if (!userConfig.requiredActions) {
       userConfig.requiredActions = [];
     }
