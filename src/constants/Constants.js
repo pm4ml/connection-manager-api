@@ -48,8 +48,8 @@ if (vaultAuthMethod === 'K8S') {
     appRole: {
       // Generated per: https://www.vaultproject.io/docs/auth/approle#via-the-cli-1
       // Or: https://github.com/kr1sp1n/node-vault/blob/70097269d35a58bb560b5290190093def96c87b1/example/auth_approle.js
-      roleId: env.get('VAULT_ROLE_ID_FILE').default('/vault/role-id').asTextFileContent(),
-      roleSecretId: env.get('VAULT_ROLE_SECRET_ID_FILE').default('/vault/role-secret-id').asTextFileContent(),
+      roleId: env.get('VAULT_ROLE_ID_FILE').default('docker/vault/tmp/role-id').asTextFileContent(),
+      roleSecretId: env.get('VAULT_ROLE_SECRET_ID_FILE').default('docker/vault/tmp/secret-id').asTextFileContent(),
     },
   };
 }
