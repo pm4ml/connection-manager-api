@@ -46,7 +46,7 @@ services:
       - DATABASE_USER=${DBUSER:-mcm}
       - DATABASE_PASSWORD=${DBPASS:-mcm}
       - DATABASE_SCHEMA=${DBUSER:-mcm}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-modus123}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-moja123}
       - PORT=3001
       - SWITCH_ID=switch
       - VAULT_ENDPOINT=http://vault-dev:8233
