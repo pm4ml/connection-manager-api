@@ -25,11 +25,16 @@
  --------------
  ******/
 
-const DfspNetworkConfigController = require('../../../src/controllers/DfspNetworkConfig');
+const DfspNetworkConfigController = require('#src/controllers/DfspNetworkConfig');
 const utils = require('../../../src/utils/writer.js');
+const DfspNetworkConfigService = require('../../../src/service/DfspNetworkConfigService');
 
 jest.mock('../../../src/utils/writer.js', () => ({
   writeJson: jest.fn()
+}));
+
+jest.mock('../../../src/service/DfspNetworkConfigService', () => ({
+  getAllDfspsStatesStatus: jest.fn()
 }));
 
 describe('DfspNetworkConfig Controller Unit Tests', () => {
@@ -51,41 +56,47 @@ describe('DfspNetworkConfig Controller Unit Tests', () => {
   });
 
   describe('handleGetDfspsStatesStatus', () => {
-    test('should not call next function for successful response', () => {
+    test('should call service and return response on success', async () => {
+      const mockResponse = {
+        dfsps: [
+          {
+            dfspId: 'test-dfsp',
+            pingStatus: 'SUCCESS',
+            lastUpdatedPingStatusAt: '2025-01-03T10:00:00.000Z',
+            statesStatus: { PEER_JWS: { status: 'completed' } }
+          }
+        ]
+      };
+      DfspNetworkConfigService.getAllDfspsStatesStatus.mockResolvedValue(mockResponse);
+
       DfspNetworkConfigController.handleGetDfspsStatesStatus(mockReq, mockRes, mockNext);
+
+      await new Promise(setImmediate);
+      expect(DfspNetworkConfigService.getAllDfspsStatesStatus).toHaveBeenCalledWith(mockReq.context);
+      expect(utils.writeJson).toHaveBeenCalledWith(mockRes, mockResponse);
       expect(mockNext).not.toHaveBeenCalled();
     });
 
-    test('should call utils.writeJson with response only (no status code)', () => {
-      DfspNetworkConfigController.handleGetDfspsStatesStatus(mockReq, mockRes, mockNext);
-      expect(utils.writeJson).toHaveBeenCalledWith(mockRes, expect.any(Object));
-      // Verify no status code was passed
-      const callArgs = utils.writeJson.mock.calls[0];
-      expect(callArgs.length).toBe(2); // res and response data only
-    });
+    test('should handle service errors', async () => {
+      const mockError = { status: 500, message: 'Database error' };
+      DfspNetworkConfigService.getAllDfspsStatesStatus.mockRejectedValue(mockError);
 
-    test('should return mock response with correct structure', () => {
       DfspNetworkConfigController.handleGetDfspsStatesStatus(mockReq, mockRes, mockNext);
 
-      expect(utils.writeJson).toHaveBeenCalledTimes(1);
-      const [res, responseData] = utils.writeJson.mock.calls[0];
-      expect(responseData).toBeDefined();
-      expect(responseData).toHaveProperty('dfsps');
-      expect(Array.isArray(responseData.dfsps)).toBe(true);
-      expect(responseData.dfsps.length).toBeGreaterThan(0);
+      await new Promise(setImmediate);
+      expect(DfspNetworkConfigService.getAllDfspsStatesStatus).toHaveBeenCalledWith(mockReq.context);
+      expect(utils.writeJson).toHaveBeenCalledWith(mockRes, mockError, mockError.status);
+      expect(mockNext).not.toHaveBeenCalled();
     });
 
-    // test('should include DFSP with null statesStatus', () => {
-    //   // Execute the controller method
-    //   DfspNetworkConfigController.handleGetDfspsStatesStatus(mockReq, mockRes, mockNext);
-    //
-    //   // Get the response data
-    //   const [res, responseData] = utils.writeJson.mock.calls[0];
-    //
-    //   // Find a DFSP with null statesStatus
-    //   const dfspWithNullStates = responseData.dfsps.find(dfsp => dfsp.statesStatus === null);
-    //   expect(dfspWithNullStates).toBeDefined();
-    //   expect(dfspWithNullStates.statesStatus).toBeNull();
-    // });
+    test('should pass correct context to service', async () => {
+      const mockResponse = { dfsps: [] };
+      DfspNetworkConfigService.getAllDfspsStatesStatus.mockResolvedValue(mockResponse);
+
+      DfspNetworkConfigController.handleGetDfspsStatesStatus(mockReq, mockRes, mockNext);
+
+      await new Promise(setImmediate);
+      expect(DfspNetworkConfigService.getAllDfspsStatesStatus).toHaveBeenCalledWith(mockReq.context);
+    });
   });
 });

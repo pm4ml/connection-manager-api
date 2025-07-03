@@ -15,8 +15,8 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const fs = require('fs');
 require('dotenv/config');
+const fs = require('fs');
 const { from } = require('env-var');
 
 function getFileContent (path) {
@@ -196,4 +196,16 @@ module.exports = {
 
   dfspWatcherEnabled: env.get('DFSP_WATCHER_ENABLED').default('false').asBool(),
   CONTEXT: 'MCM',
+  DFSP_STATES: [
+    'PEER_JWS',
+    'DFSP_JWS',
+    'DFSP_CA',
+    'DFSP_SERVER_CERT',
+    'DFSP_CLIENT_CERT',
+    'HUB_CA',
+    'HUB_CERT',
+    'HUB_CLIENT_CERT',
+    'ENDPOINT_CONFIG',
+    'UPLOAD_PEER_JWS'
+  ]
 };

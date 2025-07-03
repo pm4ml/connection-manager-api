@@ -144,5 +144,9 @@
   },
   "standardx": {
     "semistandard": true
+  },
+  "imports": {
+    "#src/*": "./src/*.js",
+    "#test/*": "./test/*.js"
   }
 }

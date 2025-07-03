@@ -25,31 +25,23 @@
  --------------
  ******/
 
-const { DFSP_STATES } = require('../../constants/Constants');
-const TABLE = 'dfsp_states_status';
+const { DFSP_STATES } = require('#src/constants/Constants');
 
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
-exports.up = async function(knex) {
-  await knex.schema.dropTableIfExists(TABLE);
-  return knex.schema.createTable(TABLE, (table) => {
-    table.increments('id').primary();
-    table.string('dfspId', 512).notNullable();
-    DFSP_STATES.forEach(field => { table.json(field); });
-    table.unique(['dfspId']);
-    table.foreign('dfspId', 'FK_STATUS_DFSP_ID')
-      .references('dfsps.dfsp_id')
-      .onDelete('CASCADE')
-      .onUpdate('NO ACTION');
-  });
+const mockDfspStatesStatusPayloadDto = ({
+  id = 123,
+  dfspId = `dfsp_${id}`,
+  state = null
+} = {}) => {
+  return {
+    id,
+    dfspId,
+    ...DFSP_STATES.reduce((acc, key) => ({ ...acc, [key]: state }), {})
+  };
 };
 
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
-exports.down = function(knex) {
-  return knex.schema.dropTableIfExists(TABLE);
+module.exports = {
+  mockDfspStatesStatusPayloadDto,
 };
+
+
+
