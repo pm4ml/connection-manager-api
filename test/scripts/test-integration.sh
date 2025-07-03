@@ -20,5 +20,5 @@ INTEGRATION_TEST_EXIT_CODE=0
 npm run test:int || INTEGRATION_TEST_EXIT_CODE="$?"
 
 echo "==> integration tests with exited with code: $INTEGRATION_TEST_EXIT_CODE"
-docker-compose down
+npm run backend:stop
 exit $INTEGRATION_TEST_EXIT_CODE

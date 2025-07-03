@@ -18,7 +18,7 @@
 'use strict';
 const { validateIPAddressInput, validatePorts, validateURLInput } = require('../utils/formatValidator');
 const { logger } = require('../log/logger');
-const { DFSP_STATES } = require('../constants/Constants');
+const { DFSP_STATES } = require('../constants/constValues');
 const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
 const PkiService = require('./PkiService');
@@ -513,7 +513,7 @@ exports.getAllDfspsStatesStatus = async (ctx) => {
   try {
     log.verbose('getAllDfspsStatesStatus...');
     const rawData = await DFSPModel.findAllWithStatesStatus();
-    
+
     const dfsps = rawData.map(row => {
       const statesStatus = {};
 
@@ -532,7 +532,7 @@ exports.getAllDfspsStatesStatus = async (ctx) => {
         statesStatus: hasAnyState ? statesStatus : null
       };
     });
-    
+
     log.info(`getAllDfspsStatesStatus returned ${dfsps.length} DFSPs`);
     return { dfsps };
   } catch (err) {

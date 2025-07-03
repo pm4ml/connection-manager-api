@@ -18,6 +18,7 @@
 require('dotenv/config');
 const fs = require('fs');
 const { from } = require('env-var');
+const constValues = require('./constValues');
 
 function getFileContent (path) {
   if (!fs.existsSync(path)) {
@@ -84,6 +85,7 @@ if (certManager.enabled) {
 }
 
 module.exports = {
+  ...constValues,
   getFileContent,
   SERVER: {
     PORT: env.get('PORT').default('3001').asPortNumber(),
@@ -195,17 +197,4 @@ module.exports = {
   caCsrParameters: env.get('CA_CSR_PARAMETERS').asJsonConfig(),
 
   dfspWatcherEnabled: env.get('DFSP_WATCHER_ENABLED').default('false').asBool(),
-  CONTEXT: 'MCM',
-  DFSP_STATES: [
-    'PEER_JWS',
-    'DFSP_JWS',
-    'DFSP_CA',
-    'DFSP_SERVER_CERT',
-    'DFSP_CLIENT_CERT',
-    'HUB_CA',
-    'HUB_CERT',
-    'HUB_CLIENT_CERT',
-    'ENDPOINT_CONFIG',
-    'UPLOAD_PEER_JWS'
-  ]
 };
