@@ -63,7 +63,13 @@ describe('DfspNetworkConfig Controller Unit Tests', () => {
             dfspId: 'test-dfsp',
             pingStatus: 'SUCCESS',
             lastUpdatedPingStatusAt: '2025-01-03T10:00:00.000Z',
-            statesStatus: { PEER_JWS: { status: 'completed' } }
+            statesStatus: [
+              {
+                state: 'PEER_JWS',
+                status: 'completed',
+                lastUpdated: '2025-01-03T10:00:00.000Z'
+              }
+            ]
           }
         ]
       };

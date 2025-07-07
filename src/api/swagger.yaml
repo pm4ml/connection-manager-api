@@ -3656,18 +3656,55 @@ components:
         UPLOAD_PEER_JWS:
           $ref: "#/components/schemas/DfspStateStatus"
       additionalProperties: false
+    DfspStatesStatusArray:
+      type: array
+      items:
+        type: object
+        properties:
+          state:
+            type: string
+            description: The state identifier
+            enum:
+              - PEER_JWS
+              - DFSP_JWS
+              - DFSP_CA
+              - DFSP_SERVER_CERT
+              - DFSP_CLIENT_CERT
+              - HUB_CA
+              - HUB_CERT
+              - HUB_CLIENT_CERT
+              - ENDPOINT_CONFIG
+              - UPLOAD_PEER_JWS
+          status:
+            $ref: '#/components/schemas/DfspStateStatusEnum'
+          stateDescription:
+            type: string
+            description: Describes the current state.
+          errorDescription:
+            type: string
+            description: Provides details in case of an error.
+          lastUpdated:
+            type: string
+            format: date-time
+            description: The date and time when the state was last updated
+        required:
+          - state
+          - status
+        additionalProperties: false
+    DfspStateStatusEnum:
+      type: string
+      description: Indicates the current status of the state.
+      enum:
+        - pending
+        - inProgress
+        - completed
+        - inError
     DfspStateStatus:
       title: State status
       type: object
       properties:
         status:
-          type: string
-          description: Indicates the current status of the state.
-          enum:
-            - pending
-            - inProgress
-            - completed
-            - inError
+          $ref: '#/components/schemas/DfspStateStatusEnum'
         stateDescription:
           type: string
           description: Describes the current state.
@@ -3712,7 +3749,7 @@ components:
           format: date-time
           description: The date and time when the ping status was last updated
         statesStatus:
-          $ref: '#/components/schemas/DfspStatesStatusPayload'
+          $ref: '#/components/schemas/DfspStatesStatusArray'
           description: Current state status information for the DFSP
       required:
         - dfspId

@@ -515,13 +515,15 @@ exports.getAllDfspsStatesStatus = async (ctx) => {
     const rawData = await DFSPModel.findAllWithStatesStatus();
 
     const dfsps = rawData.map(row => {
-      const statesStatus = {};
+      const statesStatus = [];
 
-      let hasAnyState = false;
       DFSP_STATES.forEach(key => {
         if (row[key]) {
-          statesStatus[key] = row[key];
-          hasAnyState = true;
+          statesStatus.push({
+            state: key,
+            ...row[key],
+            lastUpdated: row[key].lastUpdated || new Date().toISOString()
+          });
         }
       });
 
@@ -529,7 +531,7 @@ exports.getAllDfspsStatesStatus = async (ctx) => {
         dfspId: row.dfsp_id,
         pingStatus: row.pingStatus,
         lastUpdatedPingStatusAt: row.lastUpdatedPingStatusAt,
-        statesStatus: hasAnyState ? statesStatus : null
+        statesStatus
       };
     });
 

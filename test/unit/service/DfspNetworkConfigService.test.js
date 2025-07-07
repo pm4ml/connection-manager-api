@@ -57,7 +57,7 @@ describe('DfspNetworkConfigService Tests', () => {
           ...fixtures.mockDfspStatesStatusPayloadDto()
         }
       ];
-      mockRawData[0].PEER_JWS = { status: 'completed', stateDescription: 'Configured' }
+      mockRawData[0].PEER_JWS = { status: 'completed', stateDescription: 'Configured' };
 
       const expectedResult = {
         dfsps: [
@@ -65,15 +65,20 @@ describe('DfspNetworkConfigService Tests', () => {
             dfspId: 'dfsp1',
             pingStatus: 'SUCCESS',
             lastUpdatedPingStatusAt: new Date('2025-01-03T10:00:00.000Z'),
-            statesStatus: {
-              PEER_JWS: { status: 'completed', stateDescription: 'Configured' }
-            }
+            statesStatus: [
+              {
+                state: 'PEER_JWS',
+                status: 'completed',
+                stateDescription: 'Configured',
+                lastUpdated: expect.any(String)
+              }
+            ]
           },
           {
             dfspId: 'dfsp2',
             pingStatus: 'TIMED_OUT',
             lastUpdatedPingStatusAt: new Date('2025-01-03T11:00:00.000Z'),
-            statesStatus: null
+            statesStatus: []
           }
         ]
       };
