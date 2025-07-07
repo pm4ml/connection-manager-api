@@ -396,7 +396,7 @@ describe('MCM API Tests', () => {
       data.dfsps.forEach((_: any) => {
         expect(typeof _.dfspId).toBe('string');
         expect(_.pingStatus).toBeNull();
-        expect(_.statesStatus).toBeNull();
+        expect(_.statesStatus).toEqual([]);
       });
     })
   });
