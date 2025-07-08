@@ -150,6 +150,19 @@ exports.upsertStatesStatus = async (dfspId, statesJson) => {
   return result;
 };
 
+exports.findAllWithStatesStatus = async () => {
+  const data = await runQuery((knex) => knex.table(DFSP_TABLE)
+    .leftJoin('dfsp_states_status', 'dfsps.dfsp_id', 'dfsp_states_status.dfspId')
+    .select(
+      'dfsps.dfsp_id',
+      'dfsps.pingStatus',
+      'dfsps.lastUpdatedPingStatusAt',
+      'dfsp_states_status.*'
+    ), 'findAllWithStatesStatus');
+  log.debug(`findAllWithStatesStatus is done: `, { data });
+  return data;
+};
+
 const rowToObject = (dfsp) => {
   return {
     dfspId: dfsp.dfsp_id,

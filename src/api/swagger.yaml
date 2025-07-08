@@ -932,6 +932,40 @@ paths:
       security:
       - OAuth2:
         - pta
+  /dfsps/states-status:
+    get:
+      tags:
+      - dfsp-config
+      - ping
+      - status
+      summary: Get connectivity status for all DFSPs
+      description: |
+        Returns connectivity status including ping status and state status information for all DFSPs.
+        Combines data from dfsps table (pingStatus, lastUpdatedPingStatusAt) with dfsp_states_status table.
+      operationId: handleGetDfspsStatesStatus
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DfspsConnectivityStatusResponse'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+      security:
+      - OAuth2:
+        - everyone
+      x-swagger-router-controller: DfspNetworkConfig
   /dfsps/endpoints/unprocessed:
     get:
       tags:
@@ -3622,18 +3656,55 @@ components:
         UPLOAD_PEER_JWS:
           $ref: "#/components/schemas/DfspStateStatus"
       additionalProperties: false
+    DfspStatesStatusArray:
+      type: array
+      items:
+        type: object
+        properties:
+          state:
+            type: string
+            description: The state identifier
+            enum:
+              - PEER_JWS
+              - DFSP_JWS
+              - DFSP_CA
+              - DFSP_SERVER_CERT
+              - DFSP_CLIENT_CERT
+              - HUB_CA
+              - HUB_CERT
+              - HUB_CLIENT_CERT
+              - ENDPOINT_CONFIG
+              - UPLOAD_PEER_JWS
+          status:
+            $ref: '#/components/schemas/DfspStateStatusEnum'
+          stateDescription:
+            type: string
+            description: Describes the current state.
+          errorDescription:
+            type: string
+            description: Provides details in case of an error.
+          lastUpdated:
+            type: string
+            format: date-time
+            description: The date and time when the state was last updated
+        required:
+          - state
+          - status
+        additionalProperties: false
+    DfspStateStatusEnum:
+      type: string
+      description: Indicates the current status of the state.
+      enum:
+        - pending
+        - inProgress
+        - completed
+        - inError
     DfspStateStatus:
       title: State status
       type: object
       properties:
         status:
-          type: string
-          description: Indicates the current status of the state.
-          enum:
-            - pending
-            - inProgress
-            - completed
-            - inError
+          $ref: '#/components/schemas/DfspStateStatusEnum'
         stateDescription:
           type: string
           description: Describes the current state.
@@ -3647,6 +3718,43 @@ components:
       required:
         - status
         - lastUpdated
+      additionalProperties: false
+    DfspsConnectivityStatusResponse:
+      type: object
+      properties:
+        dfsps:
+          type: array
+          items:
+            $ref: '#/components/schemas/DfspConnectivityStatusItem'
+      required:
+        - dfsps
+      additionalProperties: false
+    DfspConnectivityStatusItem:
+      type: object
+      properties:
+        dfspId:
+          type: string
+          description: The DFSP identifier
+        pingStatus:
+          type: string
+          description: Current ping status of the DFSP
+          enum:
+            - SUCCESS
+            - NOT_REACHABLE
+            - JWS_FAILED
+            - TIMED_OUT
+            - PING_ERROR
+        lastUpdatedPingStatusAt:
+          type: string
+          format: date-time
+          description: The date and time when the ping status was last updated
+        statesStatus:
+          $ref: '#/components/schemas/DfspStatesStatusArray'
+          description: Current state status information for the DFSP
+      required:
+        - dfspId
+        # - pingStatus
+        # - lastUpdatedPingStatusAt
       additionalProperties: false
   securitySchemes:
     OAuth2:

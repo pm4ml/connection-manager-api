@@ -15,9 +15,10 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-const fs = require('fs');
 require('dotenv/config');
+const fs = require('fs');
 const { from } = require('env-var');
+const constValues = require('./constValues');
 
 function getFileContent (path) {
   if (!fs.existsSync(path)) {
@@ -84,6 +85,7 @@ if (certManager.enabled) {
 }
 
 module.exports = {
+  ...constValues,
   getFileContent,
   SERVER: {
     PORT: env.get('PORT').default('3001').asPortNumber(),
@@ -195,5 +197,4 @@ module.exports = {
   caCsrParameters: env.get('CA_CSR_PARAMETERS').asJsonConfig(),
 
   dfspWatcherEnabled: env.get('DFSP_WATCHER_ENABLED').default('false').asBool(),
-  CONTEXT: 'MCM',
 };
