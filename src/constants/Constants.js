@@ -81,6 +81,11 @@ module.exports = {
     AUTO_CREATE_ACCOUNTS: env.get('KEYCLOAK_AUTO_CREATE_ACCOUNTS').default('true').asBool(),
   },
 
+  KETO: {
+    ENABLED: env.get('ENABLE_KETO').default('false').asBool(),
+    WRITE_URL: env.get('KETO_WRITE_URL').default('http://localhost:4467').asString(),
+  },
+
   OPENID: {
     ENABLE_2FA: env.get('OPENID_ENABLE_2FA').default('false').asBool(),
     ENABLED: env.get('OPENID_ENABLED').default('false').asBool(),

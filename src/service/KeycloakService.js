@@ -30,6 +30,7 @@ const Constants = require('../constants/Constants');
 const InternalError = require('../errors/InternalError');
 const formatValidator = require('../utils/formatValidator');
 const requireEsm = require('../utils/requireEsm');
+const { KetoClient } = require('../utils/KetoClient');
 
 const getKeycloakAdminClient = async () => {
   try {
@@ -50,6 +51,14 @@ const getKeycloakAdminClient = async () => {
     console.error('Error creating Keycloak admin client:', error);
     throw new InternalError('Failed to connect to Keycloak server');
   }
+};
+
+let ketoClientCache = null;
+const getKetoClient = () => {
+  if (!ketoClientCache) {
+    ketoClientCache = new KetoClient(Constants.KETO.WRITE_URL);
+  }
+  return ketoClientCache;
 };
 
 
@@ -130,7 +139,6 @@ const createClientConfig = (dfspId) => {
     webOrigins: [],
     standardFlowEnabled: false,
     implicitFlowEnabled: false,
-    directAccessGrantsEnabled: false,
     serviceAccountsEnabled: true,
     publicClient: false,
     protocol: 'openid-connect',
@@ -138,7 +146,6 @@ const createClientConfig = (dfspId) => {
       'dfsp.id': dfspId,
       'purpose': 'api-integration'
     },
-    clientAuthenticatorType: 'client-secret',
     protocolMappers: [
       {
         name: 'audience-mapper',
@@ -276,6 +283,7 @@ exports.createDfspResources = async (dfspId, email) => {
   let userId = null;
   let clientId = null;
   let dfspGroup = null;
+  let dfspRole = null;
 
   try {
     dfspGroup = await createDfspGroup(kcAdminClient, dfspId);
@@ -294,6 +302,13 @@ exports.createDfspResources = async (dfspId, email) => {
 
     if (serviceAccount?.id) {
       await assignToGroups(kcAdminClient, serviceAccount.id, dfspId, 'service account');
+    }
+
+    if (Constants.ENABLE_KETO) {
+      const ketoClient = getKetoClient();
+      dfspRole = await ketoClient.createDfspRole(dfspId);
+      await ketoClient.assignUserToDfspRole(userId.id, dfspId);
+      await ketoClient.assignClientToDfspRole(clientId.id, dfspId);
     }
 
     await sendInvitationEmail(kcAdminClient, userId.id, email);
@@ -323,6 +338,12 @@ exports.deleteDfspResources = async (dfspId) => {
 
     if (clients?.length > 0) {
       const clientInternalId = clients[0].id;
+
+      if (Constants.ENABLE_KETO) {
+        const ketoClient = getKetoClient();
+        await ketoClient.removeClientFromDfspRole(clientInternalId, dfspId);
+      }
+
       await kcAdminClient.clients.del({
         id: clientInternalId,
       });
@@ -343,6 +364,12 @@ exports.deleteDfspResources = async (dfspId) => {
 
     if (users?.length > 0) {
       const userId = users[0].id;
+
+      if (Constants.ENABLE_KETO) {
+        const ketoClient = getKetoClient();
+        await ketoClient.removeUserFromDfspRole(userId, dfspId);
+      }
+
       await kcAdminClient.users.del({
         id: userId
       });
@@ -361,6 +388,11 @@ exports.deleteDfspResources = async (dfspId) => {
     const dfspGroup = subGroups.find(g => g.name === getDfspGroupName(dfspId));
 
     if (dfspGroup?.id) {
+      if (Constants.ENABLE_KETO) {
+        const ketoClient = getKetoClient();
+        await ketoClient.deleteDfspRole(dfspId);
+      }
+
       await kcAdminClient.groups.del({
         id: dfspGroup.id
       });

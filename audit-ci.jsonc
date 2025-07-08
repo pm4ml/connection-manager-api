@@ -25,6 +25,8 @@
     "GHSA-v88g-cgmw-v5xw", // https://github.com/advisories/GHSA-v88g-cgmw-v5xw
     "GHSA-72xf-g2v4-qvf3",
     "GHSA-hrpp-h998-j3pp",
-    "GHSA-p8p7-x288-28g6"
+    "GHSA-p8p7-x288-28g6",
+    "GHSA-jr5f-v2jv-69x6",
+    "GHSA-wf5p-g6vw-rhxx"
   ]
 }
