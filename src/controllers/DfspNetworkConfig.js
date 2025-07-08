@@ -327,3 +327,13 @@ exports.uploadDfspStatesStatus = (req, res) => {
       utils.writeJson(res, response, response.status);
     });
 };
+
+exports.handleGetDfspsStatesStatus = (req, res, next) => {
+  DfspNetworkConfig.getAllDfspsStatesStatus(req.context)
+    .then(response => {
+      utils.writeJson(res, response);
+    })
+    .catch(response => {
+      utils.writeJson(res, response, response.status);
+    });
+};

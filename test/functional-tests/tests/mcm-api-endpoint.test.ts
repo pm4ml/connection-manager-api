@@ -380,4 +380,24 @@ describe('MCM API Tests', () => {
       expect(createEndpointIngressResponse?.status).toBe(400);
     });
   });
+
+  describe('DFSPs states status endpoint Tests', () => {
+    test('should get proper response', async () => {
+      const { status, data } = await apiHelper.sendRequest({
+        method: MethodEnum.GET,
+        url:`${Config.mcmEndpoint}/dfsps/states-status`,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      expect(status).toBe(200);
+      expect(Array.isArray(data.dfsps)).toBe(true);
+      expect(data.dfsps.length).toBeGreaterThan(0);
+      data.dfsps.forEach((_: any) => {
+        expect(typeof _.dfspId).toBe('string');
+        expect(_.pingStatus).toBeNull();
+        expect(_.statesStatus).toEqual([]);
+      });
+    })
+  });
 });

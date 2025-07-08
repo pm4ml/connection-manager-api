@@ -18,6 +18,7 @@
 'use strict';
 const { validateIPAddressInput, validatePorts, validateURLInput } = require('../utils/formatValidator');
 const { logger } = require('../log/logger');
+const { DFSP_STATES } = require('../constants/constValues');
 const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
 const PkiService = require('./PkiService');
@@ -504,6 +505,40 @@ exports.uploadDfspStatesStatus = async (ctx, dfspId, body) => {
     return { code };
   } catch (err) {
     log.error(`error in uploadDfspStatesStatus: `, err);
+    throw err;
+  }
+};
+
+exports.getAllDfspsStatesStatus = async (ctx) => {
+  try {
+    log.verbose('getAllDfspsStatesStatus...');
+    const rawData = await DFSPModel.findAllWithStatesStatus();
+
+    const dfsps = rawData.map(row => {
+      const statesStatus = [];
+
+      DFSP_STATES.forEach(key => {
+        if (row[key]) {
+          statesStatus.push({
+            state: key,
+            ...row[key],
+            lastUpdated: row[key].lastUpdated || new Date().toISOString()
+          });
+        }
+      });
+
+      return {
+        dfspId: row.dfsp_id,
+        pingStatus: row.pingStatus,
+        lastUpdatedPingStatusAt: row.lastUpdatedPingStatusAt,
+        statesStatus
+      };
+    });
+
+    log.info(`getAllDfspsStatesStatus returned ${dfsps.length} DFSPs`);
+    return { dfsps };
+  } catch (err) {
+    log.error(`error in getAllDfspsStatesStatus: `, err);
     throw err;
   }
 };
