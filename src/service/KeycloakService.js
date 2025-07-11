@@ -308,7 +308,7 @@ exports.createDfspResources = async (dfspId, email) => {
       const ketoClient = getKetoClient();
       dfspRole = await ketoClient.createDfspRole(dfspId);
       await ketoClient.assignUserToDfspRole(userId.id, dfspId);
-      await ketoClient.assignClientToDfspRole(clientId.id, dfspId);
+      await ketoClient.assignUserToDfspRole(clientId.id, dfspId);
     }
 
     await sendInvitationEmail(kcAdminClient, userId.id, email);
@@ -341,7 +341,7 @@ exports.deleteDfspResources = async (dfspId) => {
 
       if (Constants.ENABLE_KETO) {
         const ketoClient = getKetoClient();
-        await ketoClient.removeClientFromDfspRole(clientInternalId, dfspId);
+        await ketoClient.removeUserFromDfspRole(clientInternalId, dfspId);
       }
 
       await kcAdminClient.clients.del({

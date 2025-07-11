@@ -39,12 +39,7 @@ class KetoClient {
 
   // Assign user to dfsp:{dfspId} role
   async assignUserToDfspRole(userId, dfspId) {
-    return await this.createRelationship('role', `dfsp:${dfspId}`, 'member', `user:${userId}`);
-  }
-
-  // Assign client to dfsp:{dfspId} role
-  async assignClientToDfspRole(clientId, dfspId) {
-    return await this.createRelationship('role', `dfsp:${dfspId}`, 'member', `client:${clientId}`);
+    return await this.createRelationship('role', `dfsp:${dfspId}`, 'member', userId);
   }
 
   // Remove user from dfsp:{dfspId} role
@@ -54,22 +49,7 @@ class KetoClient {
         namespace: 'role',
         object: `dfsp:${dfspId}`,
         relation: 'member',
-        subjectId: `user:${userId}`
-      });
-      return true;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  // Remove client from dfsp:{dfspId} role
-  async removeClientFromDfspRole(clientId, dfspId) {
-    try {
-      await this.client.deleteRelationships({
-        namespace: 'role',
-        object: `dfsp:${dfspId}`,
-        relation: 'member',
-        subjectId: `client:${clientId}`
+        subjectId: userId
       });
       return true;
     } catch (error) {
