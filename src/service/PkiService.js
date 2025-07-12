@@ -85,7 +85,7 @@ exports.createDFSPWithCSR = async (ctx, body) => {
 exports.getDFSPs = async (ctx, user) => {
   const rows = await DFSPModel.findAll();
   const allDfsps = rows.map(r => exports.dfspRowToObject(r));
-  
+
   if (!user?.roles) {
     return allDfsps;
   }
@@ -94,14 +94,14 @@ exports.getDFSPs = async (ctx, user) => {
     return allDfsps;
   }
 
-  const dfspRoles = user.roles.filter(role => role.startsWith('Application/DFSP:'));
-  
+  const dfspRoles = user.roles.filter(role => role.startsWith('Application/DFSP:') || role.startsWith('dfsp:'));
+
   if (dfspRoles.length === 0) {
     return allDfsps;
   }
 
   return allDfsps.filter(dfsp => {
-    return dfsp.securityGroup && dfspRoles.includes(dfsp.securityGroup);
+    return dfsp.securityGroup && dfspRoles.includes(dfsp.securityGroup) || dfspRoles.includes(`dfsp:${dfsp.dfspId}`);
   });
 };
 
@@ -213,7 +213,7 @@ exports.getDfspsByMonetaryZones = async (ctx, monetaryZoneId, user) => {
   }
 
   const dfspRoles = user.roles.filter(role => role.startsWith('Application/DFSP:'));
-  
+
   if (dfspRoles.length === 0) {
     return allDfsps;
   }

@@ -106,6 +106,18 @@ exports.connect = async () => {
 
     // Add authentication middleware for all clients
     middlewares.push(AuthMiddleware.createAuthMiddleware());
+  } else {
+    middlewares.push((req, res, next) => {
+      const roles = req.headers['x-roles'];
+      if (roles) {
+        try {
+          req.user = { roles: JSON.parse(roles) };
+        } catch (e) {
+          console.log("Error getting roles from request header: ", e);
+        }
+      }
+      next();
+    });
   }
 
   app.use(...middlewares);
