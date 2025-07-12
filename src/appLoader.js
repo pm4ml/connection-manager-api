@@ -113,7 +113,7 @@ exports.connect = async () => {
         try {
           req.user = { roles: JSON.parse(roles) };
         } catch (e) {
-          console.log("Error getting roles from request header: ", e);
+          console.log("Error getting roles from request header: ", e.message);
         }
       }
       next();
