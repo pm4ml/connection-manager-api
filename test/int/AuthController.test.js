@@ -265,11 +265,12 @@ describe('AuthController Integration Tests', () => {
       }
       
       // Create user with password included in creation
+      const testEmail = `${testDfspId.toLowerCase()}@example.com`;
       const userConfig = {
-        username: testDfspId.toLowerCase(),
+        username: testEmail,  // Use email as username
         enabled: true,
         emailVerified: true,
-        email: `${testDfspId.toLowerCase()}@example.com`,
+        email: testEmail,
         firstName: 'Test',
         lastName: 'User',
         credentials: [{
@@ -281,6 +282,24 @@ describe('AuthController Integration Tests', () => {
       };
       
       const userResult = await kcAdminClient.users.create(userConfig);
+      global.testUserId = typeof userResult === 'string' ? userResult : userResult.id;
+      
+      // Assign user to required groups (MTA and a DFSP group)
+      const applicationGroups = await kcAdminClient.groups.find();
+      const applicationGroup = applicationGroups.find(g => g.name === Constants.OPENID.GROUPS.APPLICATION);
+      
+      if (applicationGroup) {
+        const subGroups = await kcAdminClient.groups.listSubGroups({parentId: applicationGroup.id});
+        const mtaGroup = subGroups.find(g => g.name === Constants.OPENID.GROUPS.MTA);
+        
+        if (mtaGroup) {
+          await kcAdminClient.users.addToGroup({
+            id: global.testUserId,
+            groupId: mtaGroup.id
+          });
+        }
+      }
+      
       console.log('Successfully created test client and user for real Keycloak integration');
     });
 
@@ -288,9 +307,8 @@ describe('AuthController Integration Tests', () => {
       const kcAdminClient = await KeycloakService.getKeycloakAdminClient();
       
       // Clean up the test user
-      const users = await kcAdminClient.users.find({ username: testDfspId.toLowerCase() });
-      if (users.length > 0) {
-        await kcAdminClient.users.del({ id: users[0].id });
+      if (global.testUserId) {
+        await kcAdminClient.users.del({ id: global.testUserId });
       }
       
       // Clean up the test client
@@ -305,11 +323,13 @@ describe('AuthController Integration Tests', () => {
     it('should successfully authenticate with real Keycloak via direct grant', async () => {
       const tokenUrl = `${Constants.KEYCLOAK.BASE_URL}/realms/${Constants.KEYCLOAK.DFSPS_REALM}/protocol/openid-connect/token`;
       
+      const testEmail = `${testDfspId.toLowerCase()}@example.com`;
+      
       const tokenResponse = await axios.post(tokenUrl, new URLSearchParams({
         grant_type: 'password',
         client_id: global.testClientId,
         client_secret: global.testClientSecret,
-        username: testDfspId.toLowerCase(),
+        username: testEmail,  // Use email as username
         password: testPassword,
         scope: 'openid profile email'
       }), {
@@ -330,7 +350,7 @@ describe('AuthController Integration Tests', () => {
       );
 
       expect(idTokenPayload.sub).toBeDefined();
-      expect(idTokenPayload.preferred_username).toBe(testDfspId.toLowerCase());
+      expect(idTokenPayload.preferred_username).toBe(testEmail);
       expect(idTokenPayload.iss).toBe(`${Constants.KEYCLOAK.BASE_URL}/realms/${Constants.KEYCLOAK.DFSPS_REALM}`);
       expect(idTokenPayload.aud).toBe(global.testClientId);
       expect(idTokenPayload.exp).toBeGreaterThan(Math.floor(Date.now() / 1000));
@@ -345,7 +365,7 @@ describe('AuthController Integration Tests', () => {
 
       expect(userinfoResponse.status).toBe(200);
       expect(userinfoResponse.data.sub).toBe(idTokenPayload.sub);
-      expect(userinfoResponse.data.preferred_username).toBe(testDfspId.toLowerCase());
+      expect(userinfoResponse.data.preferred_username).toBe(testEmail);
 
       console.log('Successfully authenticated with real Keycloak and verified token validity');
     });
