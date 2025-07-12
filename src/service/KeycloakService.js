@@ -177,10 +177,15 @@ const createClientConfig = (dfspId) => {
 const createUserConfig = (email) => {
   const userConfig = {
     username: email,
-    email: email,
+    email,
     enabled: true,
     emailVerified: true,
+    requiredActions: ['UPDATE_PASSWORD', 'UPDATE_PROFILE'],
   };
+
+  if (Constants.OPENID.ENABLE_2FA) {
+    userConfig.requiredActions.push('CONFIGURE_TOTP');
+  }
 
   return userConfig;
 };

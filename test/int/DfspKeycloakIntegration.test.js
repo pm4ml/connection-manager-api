@@ -135,10 +135,10 @@ describe('DFSP Keycloak Integration Tests', () => {
       try {
         await KeycloakService.createDfspResources(testDfspId, testEmail);
 
-        // const allUsers = await kcAdminClient.users.find({ username: testEmail });
-        // const users = allUsers.filter(u => !u.username.startsWith('service-account-'));
-        // expect(users[0].requiredActions).toContain('CONFIGURE_TOTP');
-        // expect(users[0].requiredActions).toContain('UPDATE_PASSWORD');
+        const allUsers = await kcAdminClient.users.find({ username: testEmail });
+        const users = allUsers.filter(u => !u.username.startsWith('service-account-'));
+        expect(users[0].requiredActions).toContain('CONFIGURE_TOTP');
+        expect(users[0].requiredActions).toContain('UPDATE_PASSWORD');
 
         const clients = await kcAdminClient.clients.find({ clientId: testDfspId });
         const client = clients[0];
