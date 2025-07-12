@@ -306,7 +306,7 @@ exports.createDfspResources = async (dfspId, email) => {
 
     if (Constants.KETO.ENABLED) {
       const ketoClient = getKetoClient();
-      dfspRole = await ketoClient.createDfspRole(dfspId);
+      await ketoClient.createDfspRole(dfspId);
       await ketoClient.assignUserToDfspRole(userId.id, dfspId);
       await ketoClient.assignUserToDfspRole(clientId.id, dfspId);
     }
