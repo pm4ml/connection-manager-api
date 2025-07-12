@@ -75,3 +75,5 @@ class KetoClient {
     }
   }
 }
+
+module.exports = KetoClient;

@@ -30,7 +30,7 @@ const Constants = require('../constants/Constants');
 const InternalError = require('../errors/InternalError');
 const formatValidator = require('../utils/formatValidator');
 const requireEsm = require('../utils/requireEsm');
-const { KetoClient } = require('../utils/KetoClient');
+const KetoClient = require('../utils/KetoClient');
 
 const getKeycloakAdminClient = async () => {
   try {
