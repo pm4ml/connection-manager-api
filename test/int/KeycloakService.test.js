@@ -16,6 +16,7 @@ const { createContext, destroyContext } = require('./context');
 const KeycloakService = require('../../src/service/KeycloakService');
 const Constants = require('../../src/constants/Constants');
 const InternalError = require('../../src/errors/InternalError');
+const ValidationError = require('../../src/errors/ValidationError');
 
 describe('KeycloakService Integration Tests', () => {
   let context;
@@ -186,8 +187,7 @@ describe('KeycloakService Integration Tests', () => {
         await KeycloakService.createDfspResources(invalidDfspId, testEmail);
         throw new Error('Should have thrown error for invalid DFSP ID');
       } catch (error) {
-        // The error could be either validation error or conflict error
-        expect(error.message).toMatch(/error-username-invalid-character|Client .* already exists/);
+        expect(error).toBeInstanceOf(ValidationError);
       }
     });
   });
