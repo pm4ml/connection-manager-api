@@ -174,27 +174,13 @@ const createClientConfig = (dfspId) => {
 };
 
 
-const createUserConfig = (dfspId, email) => {
+const createUserConfig = (email) => {
   const userConfig = {
-    username: dfspId,
+    username: email,
+    email: email,
     enabled: true,
     emailVerified: true,
   };
-
-  if (email) {
-    userConfig.email = email;
-    userConfig.requiredActions = ['UPDATE_PASSWORD'];
-  }
-
-  if (Constants.OPENID.ENABLE_2FA) {
-    if (!userConfig.requiredActions) {
-      userConfig.requiredActions = [];
-    }
-
-    if (!userConfig.requiredActions.includes('CONFIGURE_TOTP')) {
-      userConfig.requiredActions.push('CONFIGURE_TOTP');
-    }
-  }
 
   return userConfig;
 };
@@ -203,9 +189,15 @@ const createUserConfig = (dfspId, email) => {
 const sendInvitationEmail = async (kcAdminClient, userId, email) => {
   if (!email) return;
 
+  const requiredActions = ['UPDATE_PASSWORD', 'UPDATE_PROFILE'];
+
+  if (Constants.OPENID.ENABLE_2FA) {
+    requiredActions.push('CONFIGURE_TOTP');
+  }
+
   await kcAdminClient.users.executeActionsEmail({
     id: userId,
-    actions: ['UPDATE_PASSWORD'],
+    actions: requiredActions,
     clientId: Constants.OPENID.CLIENT_ID,
     redirectUri: Constants.CLIENT_URL,
   });
@@ -283,12 +275,11 @@ exports.createDfspResources = async (dfspId, email) => {
   let userId = null;
   let clientId = null;
   let dfspGroup = null;
-  let dfspRole = null;
 
   try {
     dfspGroup = await createDfspGroup(kcAdminClient, dfspId);
 
-    const userToCreate = createUserConfig(dfspId, email);
+    const userToCreate = createUserConfig(email);
     userId = await kcAdminClient.users.create(userToCreate);
 
     await assignToGroups(kcAdminClient, userId.id, dfspId, 'user');
