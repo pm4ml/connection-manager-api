@@ -25,10 +25,9 @@ class KetoClient {
 
     try {
       await this.client.createRelationship({ createRelationshipBody: createBody });
-      return true;
     } catch (error) {
-      if (error.response?.status === 409) return true; // Already exists
-      throw error;
+      if (error.response?.status !== 409) // Already exists
+        throw error;
     }
   }
 
