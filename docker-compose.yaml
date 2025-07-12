@@ -73,7 +73,7 @@ services:
         condition: service_healthy
 
   connection-manager-db:
-    image: mysql/mysql-server
+    image: mysql:9
     ports:
       - "3306:3306"
     volumes:
@@ -142,7 +142,7 @@ services:
     restart: "no"
 
   keycloak:
-    image: keycloak/keycloak:26.1
+    image: keycloak/keycloak:26.3
     command: start-dev --import-realm
     environment:
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin

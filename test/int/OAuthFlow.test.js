@@ -122,7 +122,7 @@ describe('OAuth Utilities Integration Tests', () => {
     const testDfspId = 'OAUTH_ROLE_TEST_DFSP';
 
     beforeAll(async () => {
-      await KeycloakService.createDfspResources(testDfspId);
+      await KeycloakService.createDfspResources(testDfspId, 'oauth-test@example.com');
     });
 
     afterAll(async () => {
@@ -131,7 +131,7 @@ describe('OAuth Utilities Integration Tests', () => {
 
     it('should extract roles from real Keycloak groups', async () => {
       const kcAdminClient = await KeycloakService.getKeycloakAdminClient();
-      const allUsers = await kcAdminClient.users.find({ username: testDfspId.toLowerCase() });
+      const allUsers = await kcAdminClient.users.find({ username: 'oauth-test@example.com' });
       const users = allUsers.filter(u => !u.username.startsWith('service-account-'));
       
       const userGroups = await kcAdminClient.users.listGroups({ id: users[0].id });

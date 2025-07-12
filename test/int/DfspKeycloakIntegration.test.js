@@ -67,7 +67,7 @@ describe('DFSP Keycloak Integration Tests', () => {
       const clients = await kcAdminClient.clients.find({ clientId: testDfspId });
       expect(clients).toHaveLength(1);
       
-      const allUsers = await kcAdminClient.users.find({ username: testDfspId.toLowerCase() });
+      const allUsers = await kcAdminClient.users.find({ username: testEmail });
       const users = allUsers.filter(u => !u.username.startsWith('service-account-'));
       expect(users).toHaveLength(1);
       expect(users[0].email).toBe(testEmail);
@@ -83,7 +83,7 @@ describe('DFSP Keycloak Integration Tests', () => {
     });
 
     it('should handle DFSP deletion with complete cleanup', async () => {
-      await KeycloakService.createDfspResources(testDfspId);
+      await KeycloakService.createDfspResources(testDfspId, testEmail);
       await CredentialsService.createCredentials(context, testDfspId);
 
       let clients = await kcAdminClient.clients.find({ clientId: testDfspId });
@@ -104,7 +104,7 @@ describe('DFSP Keycloak Integration Tests', () => {
     });
 
     it('should handle concurrent DFSP operations', async () => {
-      await KeycloakService.createDfspResources(testDfspId);
+      await KeycloakService.createDfspResources(testDfspId, testEmail);
 
       const operations = [
         CredentialsService.createCredentials(context, testDfspId),
@@ -135,7 +135,7 @@ describe('DFSP Keycloak Integration Tests', () => {
       try {
         await KeycloakService.createDfspResources(testDfspId, testEmail);
 
-        const allUsers = await kcAdminClient.users.find({ username: testDfspId.toLowerCase() });
+        const allUsers = await kcAdminClient.users.find({ username: testEmail });
         const users = allUsers.filter(u => !u.username.startsWith('service-account-'));
         expect(users[0].requiredActions).toContain('CONFIGURE_TOTP');
         expect(users[0].requiredActions).toContain('UPDATE_PASSWORD');
@@ -156,9 +156,9 @@ describe('DFSP Keycloak Integration Tests', () => {
     });
 
     it('should enforce proper group membership', async () => {
-      await KeycloakService.createDfspResources(testDfspId);
+      await KeycloakService.createDfspResources(testDfspId, testEmail);
 
-      const allUsers = await kcAdminClient.users.find({ username: testDfspId.toLowerCase() });
+      const allUsers = await kcAdminClient.users.find({ username: testEmail });
       const users = allUsers.filter(u => !u.username.startsWith('service-account-'));
       const userGroups = await kcAdminClient.users.listGroups({ id: users[0].id });
       const userGroupNames = userGroups.map(g => g.name);
@@ -178,30 +178,30 @@ describe('DFSP Keycloak Integration Tests', () => {
   describe('Error Recovery', () => {
     it('should recover from partial failures with rollback', async () => {
       await kcAdminClient.users.create({
-        username: testDfspId.toLowerCase(),
+        username: testEmail,
         enabled: true
       });
 
       try {
-        await KeycloakService.createDfspResources(testDfspId);
+        await KeycloakService.createDfspResources(testDfspId, testEmail);
         fail('Should have failed due to user conflict');
       } catch (error) {
         const clients = await kcAdminClient.clients.find({ clientId: testDfspId });
         expect(clients).toHaveLength(0);
       }
 
-      const users = await kcAdminClient.users.find({ username: testDfspId.toLowerCase() });
+      const users = await kcAdminClient.users.find({ username: testEmail });
       if (users.length > 0) {
         await kcAdminClient.users.del({ id: users[0].id });
       }
 
-      await KeycloakService.createDfspResources(testDfspId);
+      await KeycloakService.createDfspResources(testDfspId, testEmail);
       const finalClients = await kcAdminClient.clients.find({ clientId: testDfspId });
       expect(finalClients).toHaveLength(1);
     });
 
     it('should handle service connectivity issues', async () => {
-      await KeycloakService.createDfspResources(testDfspId);
+      await KeycloakService.createDfspResources(testDfspId, testEmail);
 
       const originalSetSecret = context.pkiEngine.setSecret;
       context.pkiEngine.setSecret = jest.fn().mockRejectedValue(new Error('Vault connection failed'));
@@ -241,7 +241,7 @@ describe('DFSP Keycloak Integration Tests', () => {
       const dfspIds = [testDfspId, ...additionalDfspIds];
 
       const createPromises = dfspIds.map(dfspId => 
-        KeycloakService.createDfspResources(dfspId)
+        KeycloakService.createDfspResources(dfspId, `${dfspId.toLowerCase()}@example.com`)
       );
       await Promise.all(createPromises);
 

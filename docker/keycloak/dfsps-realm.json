@@ -1,6 +1,7 @@
 {
   "realm": "dfsps",
   "enabled": true,
+  "registrationEmailAsUsername": true,
   "clients": [
     {
       "clientId": "connection-manager-api-service",

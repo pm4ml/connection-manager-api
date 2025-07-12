@@ -2953,6 +2953,7 @@ components:
       required:
         - dfspId
         - name
+        - email
       example:
         dfspId: DFSP1
         name: DFSP 1

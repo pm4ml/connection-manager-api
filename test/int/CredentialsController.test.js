@@ -24,7 +24,7 @@ describe('Credentials Service Integration Tests', () => {
     context = await createContext();
     
     // Create test DFSP resources in Keycloak
-    await KeycloakService.createDfspResources(testDfspId);
+    await KeycloakService.createDfspResources(testDfspId, 'test-creds@example.com');
   });
 
   afterAll(async () => {

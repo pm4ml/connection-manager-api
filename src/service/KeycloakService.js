@@ -265,7 +265,7 @@ exports.getKeycloakAdminClient = getKeycloakAdminClient;
  * Creates all Keycloak resources for a DFSP
  *
  * @param {string} dfspId - The DFSP ID
- * @param {string} [email] - Optional DFSP admin/operator email
+ * @param {string} email - Required DFSP admin/operator email
  * @return {Object} Created resources information
  */
 exports.createDfspResources = async (dfspId, email) => {
@@ -348,25 +348,47 @@ exports.deleteDfspResources = async (dfspId) => {
   }
 
   try {
-    const users = await kcAdminClient.users.find({
-      username: dfspId,
-      max: 1
-    });
+    // Find users by group membership instead of username
+    const applicationGroup = await findApplicationGroup(kcAdminClient);
+    const subGroups = await kcAdminClient.groups.listSubGroups({parentId: applicationGroup.id});
+    const dfspGroup = subGroups.find(g => g.name === getDfspGroupName(dfspId));
 
-    if (users?.length > 0) {
-      const userId = users[0].id;
+    if (dfspGroup?.id) {
+      const groupMembers = await kcAdminClient.groups.listMembers({ id: dfspGroup.id });
+      const regularUsers = groupMembers.filter(u => !u.username.startsWith('service-account-'));
 
-      if (Constants.ENABLE_KETO) {
-        const ketoClient = getKetoClient();
-        await ketoClient.removeUserFromDfspRole(userId, dfspId);
+      for (const user of regularUsers) {
+        // First, remove user from this DFSP group
+        await kcAdminClient.users.delFromGroup({
+          id: user.id,
+          groupId: dfspGroup.id
+        });
+
+        if (Constants.ENABLE_KETO) {
+          const ketoClient = getKetoClient();
+          await ketoClient.removeUserFromDfspRole(user.id, dfspId);
+        }
+
+        // Check if user is still a member of any other DFSP groups
+        const userGroups = await kcAdminClient.users.listGroups({ id: user.id });
+        const userDfspGroups = userGroups.filter(g => g.name.startsWith(`${Constants.OPENID.GROUPS.DFSP}:`));
+
+        if (userDfspGroups.length === 0) {
+          // User has no other DFSP group memberships, safe to delete
+          await kcAdminClient.users.del({
+            id: user.id
+          });
+          console.log(`Deleted Keycloak user ${user.username} for DFSP ${dfspId}`);
+        } else {
+          console.log(`Removed user ${user.username} from DFSP ${dfspId} group, but kept user (still member of ${userDfspGroups.length} other DFSP groups)`);
+        }
       }
 
-      await kcAdminClient.users.del({
-        id: userId
-      });
-      console.log(`Deleted Keycloak user for DFSP ${dfspId}`);
+      if (regularUsers.length === 0) {
+        console.log(`No Keycloak users found for DFSP ${dfspId}`);
+      }
     } else {
-      console.log(`No Keycloak user found for DFSP ${dfspId}`);
+      console.log(`No DFSP group found for ${dfspId}, skipping user deletion`);
     }
   } catch (error) {
     console.error(`Error deleting Keycloak user for DFSP ${dfspId}:`, error);
