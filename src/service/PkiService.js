@@ -101,7 +101,7 @@ exports.getDFSPs = async (ctx, user) => {
   }
 
   return allDfsps.filter(dfsp => {
-    return dfsp.securityGroup && dfspRoles.includes(dfsp.securityGroup) || dfspRoles.includes(`dfsp:${dfsp.dfspId}`);
+    return dfsp.securityGroup && dfspRoles.includes(dfsp.securityGroup) || dfspRoles.includes(`dfsp:${dfsp.id}`);
   });
 };
 
