@@ -304,7 +304,7 @@ exports.createDfspResources = async (dfspId, email) => {
       const ketoClient = getKetoClient();
       await ketoClient.createDfspRole(dfspId);
       await ketoClient.assignUserToDfspRole(userId.id, dfspId);
-      await ketoClient.assignUserToDfspRole(clientId.id, dfspId);
+      await ketoClient.assignUserToDfspRole(serviceAccount.id, dfspId);
     }
 
     await sendInvitationEmail(kcAdminClient, userId.id, email);
@@ -333,15 +333,17 @@ exports.deleteDfspResources = async (dfspId) => {
     });
 
     if (clients?.length > 0) {
-      const clientInternalId = clients[0].id;
+      const serviceAccount = await kcAdminClient.clients.getServiceAccountUser({
+        id: clients[0].id
+      });
 
       if (Constants.ENABLE_KETO) {
         const ketoClient = getKetoClient();
-        await ketoClient.removeUserFromDfspRole(clientInternalId, dfspId);
+        await ketoClient.removeUserFromDfspRole(serviceAccount.id, dfspId);
       }
 
       await kcAdminClient.clients.del({
-        id: clientInternalId,
+        id: clients[0].id,
       });
       console.log(`Deleted Keycloak client for DFSP ${dfspId}`);
     } else {
