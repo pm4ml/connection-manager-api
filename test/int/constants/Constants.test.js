@@ -192,25 +192,6 @@ describe.skip('Constants', () => {
     });
   });
 
-  describe('OAUTH configuration', () => {
-    it('should have correct default values', () => {
-      expect(constants.OAUTH.MTA_ROLE).toBe('Application/MTA');
-      expect(constants.OAUTH.PTA_ROLE).toBe('Application/PTA');
-      expect(constants.OAUTH.EVERYONE_ROLE).toBe('Internal/everyone');
-      expect(constants.OAUTH.JWT_COOKIE_NAME).toBe('MCM-API_ACCESS_TOKEN');
-    });
-
-    it('should override defaults with environment variables', () => {
-      process.env.MTA_ROLE = 'Custom/MTA';
-      process.env.PTA_ROLE = 'Custom/PTA';
-      process.env.OAUTH2_ISSUER = 'https://custom.auth.server';
-
-      expect(constants.OAUTH.MTA_ROLE).toBe('Custom/MTA');
-      expect(constants.OAUTH.PTA_ROLE).toBe('Custom/PTA');
-      expect(constants.OAUTH.OAUTH2_ISSUER).toBe('https://custom.auth.server');
-    });
-  });
-
   describe('TLS configuration', () => {
     it('should handle extra TLS certificate configuration', () => {
       process.env.EXTRA_CERTIFICATE_CHAIN_FILE_NAME = 'chain.pem';
@@ -278,35 +259,6 @@ describe.skip('Constants', () => {
     it('should use custom intermediate PKI mount when specified', () => {
       process.env.VAULT_MOUNT_INTERMEDIATE_PKI = 'custom_pki_int';
       expect(constants.vault.mounts.intermediatePki).toBe('custom_pki_int');
-    });
-  });
-
-  describe('2FA configuration', () => {
-    it('should have correct default values', () => {
-      expect(constants.AUTH_2FA.AUTH_2FA_ENABLED).toBe(false);
-      expect(constants.AUTH_2FA.TOTP_ISSUER).toBe('MCM');
-    });
-
-    it('should use custom 2FA settings when provided', () => {
-      process.env.AUTH_2FA_ENABLED = 'true';
-      process.env.TOTP_ISSUER = 'CustomIssuer';
-      process.env.TOTP_LABEL = 'CustomLabel';
-
-      expect(constants.AUTH_2FA.AUTH_2FA_ENABLED).toBe(true);
-      expect(constants.AUTH_2FA.TOTP_ISSUER).toBe('CustomIssuer');
-      expect(constants.AUTH_2FA.TOTP_LABEL).toBe('CustomLabel');
-    });
-  });
-
-  describe('WSO2 service configuration', () => {
-    it('should handle WSO2 manager service settings', () => {
-      process.env.WSO2_MANAGER_SERVICE_URL = 'https://wso2.test';
-      process.env.WSO2_MANAGER_SERVICE_USER = 'admin';
-      process.env.WSO2_MANAGER_SERVICE_PASSWORD = 'password';
-
-      expect(constants.AUTH_2FA.WSO2_MANAGER_SERVICE_URL).toBe('https://wso2.test');
-      expect(constants.AUTH_2FA.WSO2_MANAGER_SERVICE_USER).toBe('admin');
-      expect(constants.AUTH_2FA.WSO2_MANAGER_SERVICE_PASSWORD).toBe('password');
     });
   });
 

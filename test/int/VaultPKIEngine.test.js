@@ -1036,7 +1036,7 @@ describe("PKIEngine", () => {
 
       expect(() => {
         ctx.pkiEngine.validateCertificateKeyLength(serverCert, keyLength, code);
-      }).toThrowError(/Empty or null cert/);
+      }).toThrow(/Empty or null cert/);
     });
 
     it("should return NOT_AVAILABLE if no certificate is provided", () => {
