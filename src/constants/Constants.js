@@ -160,6 +160,9 @@ module.exports = {
       .default('1000')
       .asInt(),
     DB_POOL_SIZE_MAX: env.get('DB_POOL_SIZE_MAX').default('10').asInt(),
+    DATABASE_SSL_ENABLED: env.get('DATABASE_SSL_ENABLED').default('false').asBool(),
+    DATABASE_SSL_VERIFY: env.get('DATABASE_SSL_VERIFY').default('false').asBool(),
+    DATABASE_SSL_CA: env.get('DATABASE_SSL_CA').default('').asString(),
   },
   switchFQDN: env.get('SWITCH_FQDN').default('switch.example.com').asString(),
   switchId: env.get('SWITCH_ID').required().asString(),
