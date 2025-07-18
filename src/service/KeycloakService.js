@@ -97,36 +97,6 @@ const createDfspGroup = async (kcAdminClient, dfspId) => {
   return dfspGroup;
 };
 
-
-/**
- * @param {*} kcAdminClient
- * @param {string} entityId
- * @param {*} dfspId
- * @param entity
- */
-const assignToGroups = async (kcAdminClient, entityId, dfspId, entity = 'user') => {
-  try {
-    const applicationGroup = await findApplicationGroup(kcAdminClient);
-    const subGroups = await kcAdminClient.groups.listSubGroups({parentId: applicationGroup.id});
-    const groupNames = [getDfspGroupName(dfspId)];
-
-    for (const name of groupNames) {
-      const group = subGroups.find(g => g.name === name);
-      if (!group) {
-        throw new Error(`${name} group not found`);
-      }
-      await kcAdminClient.users.addToGroup({
-        id: entityId,
-        groupId: group.id
-      });
-    }
-  } catch (error) {
-    console.warn(`Warning: Could not assign groups to ${entity} ${entityId}: ${error.message}`);
-    throw error;
-  }
-};
-
-
 const createClientConfig = (dfspId) => {
   return {
     clientId: dfspId,
@@ -287,7 +257,10 @@ exports.createDfspResources = async (dfspId, email) => {
     const userToCreate = createUserConfig(email);
     userId = await kcAdminClient.users.create(userToCreate);
 
-    await assignToGroups(kcAdminClient, userId.id, dfspId, 'user');
+    await kcAdminClient.users.addToGroup({
+      id: userId.id,
+      groupId: dfspGroup.id
+    });
 
     const clientToCreate = createClientConfig(dfspId);
     clientId = await kcAdminClient.clients.create(clientToCreate);
@@ -296,9 +269,10 @@ exports.createDfspResources = async (dfspId, email) => {
       id: clientId.id
     });
 
-    if (serviceAccount?.id) {
-      await assignToGroups(kcAdminClient, serviceAccount.id, dfspId, 'service account');
-    }
+    await kcAdminClient.users.addToGroup({
+      id: serviceAccount.id,
+      groupId: dfspGroup.id,
+    });
 
     if (Constants.KETO.ENABLED) {
       const ketoClient = getKetoClient();
