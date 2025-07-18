@@ -29,6 +29,10 @@ const knexOptions = {
     password: Constants.DATABASE.DATABASE_PASSWORD,
     database: Constants.DATABASE.DATABASE_SCHEMA,
     charset: 'utf8mb4',
+    ssl: Constants.DATABASE.DATABASE_SSL_ENABLED ? {
+      rejectUnauthorized: Constants.DATABASE.DATABASE_SSL_VERIFY,
+      ca: Constants.DATABASE.DATABASE_SSL_CA ? Constants.DATABASE.DATABASE_SSL_CA : undefined
+    } : undefined
   },
   pool: {
     min: 0,

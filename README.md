@@ -95,6 +95,9 @@ Variables:
 |DATABASE_USER|mysql user|mcm
 |DATABASE_PASSWORD|mysql password|mcm
 |DATABASE_SCHEMA|mysql schema|mcm
+|DATABASE_SSL_ENABLED|Enable SSL for MySQL connection|false
+|DATABASE_SSL_VERIFY|Verify server certificate when using SSL|false
+|DATABASE_SSL_CA|CA certificate string for MySQL SSL|''
 |DB_RETRIES|Times the initial connection to the DB will be retried|10,
 |DB_CONNECTION_RETRY_WAIT_MILLISECONDS|Pause between retries|5000,
 |RUN_MIGRATIONS|If true, run db schema migration at startup. Can always be true as the schema creation is idempotent|true,
