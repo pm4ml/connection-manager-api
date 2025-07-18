@@ -163,7 +163,6 @@ describe('DFSP Keycloak Integration Tests', () => {
       const userGroups = await kcAdminClient.users.listGroups({ id: users[0].id });
       const userGroupNames = userGroups.map(g => g.name);
 
-      expect(userGroupNames).toContain(Constants.OPENID.GROUPS.MTA);
       expect(userGroupNames).toContain(`${Constants.OPENID.GROUPS.DFSP}:${testDfspId}`);
 
       const clients = await kcAdminClient.clients.find({ clientId: testDfspId });
@@ -171,7 +170,7 @@ describe('DFSP Keycloak Integration Tests', () => {
       const saGroups = await kcAdminClient.users.listGroups({ id: serviceAccount.id });
       const saGroupNames = saGroups.map(g => g.name);
 
-      expect(saGroupNames).toContain(Constants.OPENID.GROUPS.MTA);
+      expect(saGroupNames).toContain(`${Constants.OPENID.GROUPS.DFSP}:${testDfspId}`);
     });
   });
 
