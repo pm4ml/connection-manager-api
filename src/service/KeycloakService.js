@@ -108,7 +108,7 @@ const assignToGroups = async (kcAdminClient, entityId, dfspId, entity = 'user') 
   try {
     const applicationGroup = await findApplicationGroup(kcAdminClient);
     const subGroups = await kcAdminClient.groups.listSubGroups({parentId: applicationGroup.id});
-    const groupNames = [Constants.OPENID.GROUPS.MTA, getDfspGroupName(dfspId)];
+    const groupNames = [getDfspGroupName(dfspId)];
 
     for (const name of groupNames) {
       const group = subGroups.find(g => g.name === name);
