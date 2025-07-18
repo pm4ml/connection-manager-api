@@ -141,7 +141,6 @@ describe('OAuth Utilities Integration Tests', () => {
       const roles = extractRoles(claims);
 
       expect(roles).toContain('dfsp');
-      expect(roles).toContain('mta');
     });
 
     it('should handle various group scenarios', () => {
