@@ -21,6 +21,10 @@ module.exports = {
     password: env.get('DATABASE_PASSWORD').default('mcm').asString(),
     database: env.get('DATABASE_SCHEMA').default('mcm').asString(),
     charset: 'utf8mb4',
+    ssl: env.get('DATABASE_SSL_ENABLED').default('false').asBool() ? {
+      rejectUnauthorized: env.get('DATABASE_SSL_VERIFY').default('true').asBool(),
+      ca: env.get('DATABASE_SSL_CA').default(undefined).asString()
+    } : undefined
   },
   pool: {
     min: 0,
