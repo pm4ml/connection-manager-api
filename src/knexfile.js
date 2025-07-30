@@ -23,7 +23,7 @@ module.exports = {
     charset: 'utf8mb4',
     ssl: env.get('DATABASE_SSL_ENABLED').default('false').asBool() ? {
       rejectUnauthorized: env.get('DATABASE_SSL_VERIFY').default('true').asBool(),
-      ca: env.get('DATABASE_SSL_CA').default(undefined).asString()
+      ca: env.get('DATABASE_SSL_CA').default('').asString()
     } : undefined
   },
   pool: {

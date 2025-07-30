@@ -26,6 +26,9 @@ ignore:
   - vulnerability: CVE-2025-23166
     package:
       name: node
+  - vulnerability: GHSA-fjxv-7rqg-78g4
+    package:
+      name: form-data
 
 # Set output format defaults
 output:
