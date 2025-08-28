@@ -26,6 +26,9 @@ ignore:
   - vulnerability: CVE-2025-23166
     package:
       name: node
+  - vulnerability: GHSA-fjxv-7rqg-78g4
+    package:
+      name: form-data
   - vulnerability: GHSA-jr5f-v2jv-69x6
     package:
       name: axios

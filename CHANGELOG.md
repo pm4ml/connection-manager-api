@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.14.1](https://github.com/pm4ml/connection-manager-api/compare/v2.14.0...v2.14.1) (2025-07-30)
+
+
+### Bug Fixes
+
+* dep ([48782b9](https://github.com/pm4ml/connection-manager-api/commit/48782b9776f8c0fc73132d62da8cc6c00fabb1e6))
+* dep issues ([39dd0c2](https://github.com/pm4ml/connection-manager-api/commit/39dd0c2fb102f415a697a3848c93e172c5bd5c6a))
+* issue with var format ([6ef13d5](https://github.com/pm4ml/connection-manager-api/commit/6ef13d57188ed22cd6b38a263c9d38a208bc804b))
+
+## [2.14.0](https://github.com/pm4ml/connection-manager-api/compare/v2.13.0...v2.14.0) (2025-07-18)
+
+
+### Features
+
+* enabled ssl in db config ([8b8652f](https://github.com/pm4ml/connection-manager-api/commit/8b8652f775bd7ff280af9739bdee315637cb737a))
+
+
+### Bug Fixes
+
+* audit ([361207e](https://github.com/pm4ml/connection-manager-api/commit/361207ebc86b05e9dfe156a9b6b0772c747bcd25))
+* int tests ([7fc6d29](https://github.com/pm4ml/connection-manager-api/commit/7fc6d2941fc0242be458eb1c437b7ac45cd2de01))
+
+
+### Chore
+
+* improvements ([3a8299a](https://github.com/pm4ml/connection-manager-api/commit/3a8299a146d59f131fff9e0a9c9aae41b5ce1f28))
+
 ## [2.13.0](https://github.com/pm4ml/connection-manager-api/compare/v2.13.0-snapshot.1...v2.13.0) (2025-07-08)
 
 
