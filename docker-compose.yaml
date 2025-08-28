@@ -75,7 +75,7 @@ services:
   connection-manager-db:
     image: mysql:9
     ports:
-      - "4306:3306"
+      - "3306:3306"
     volumes:
       - ./docker/sql-init/:/docker-entrypoint-initdb.d/
     environment:
@@ -99,7 +99,7 @@ services:
       VAULT_DEV_ROOT_TOKEN_ID: "myroot"
       VAULT_LOCAL_CONFIG: '{"backend": {"file": {"path": "/vault/file"}}, "default_lease_ttl": "168h", "max_lease_ttl": "720h"}'
     ports:
-      - "9233:8233"
+      - "8233:8233"
     volumes:
       - ./docker/vault/tmp:/vault/tmp
       - ./docker/vault/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
@@ -151,7 +151,7 @@ services:
     volumes:
       - keycloak-import:/opt/keycloak/data/import
     ports:
-      - "18080:8080"
+      - "8080:8080"
     depends_on:
       mailhog:
         condition: service_healthy
