@@ -44,7 +44,7 @@ exports.deleteDFSP = (req, res, next) => {
 };
 
 exports.getDFSPs = (req, res, next) => {
-  Pki.getDFSPs(req.context)
+  Pki.getDFSPs(req.context, req.user)
     .then(response => {
       utils.writeJson(res, response);
     })
@@ -88,7 +88,7 @@ exports.updateDFSP = (req, res, next) => {
 
 exports.getDfspsByMonetaryZones = (req, res, next) => {
   const { query: { monetaryZoneId } } = getRequestData(req);
-  Pki.getDfspsByMonetaryZones(req.context, monetaryZoneId)
+  Pki.getDfspsByMonetaryZones(req.context, monetaryZoneId, req.user)
     .then(response => {
       utils.writeJson(res, response);
     })

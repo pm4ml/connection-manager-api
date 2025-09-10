@@ -24,7 +24,7 @@ const whitelist = ['http://devint1-pkiadminweb.casahub.live', 'https://devint1-p
 exports.getCorsOptions = {
   credentials: true,
   origin: function (requestOrigin, callback) {
-    if (!Constants.OAUTH.AUTH_ENABLED) {
+    if (!Constants.OPENID.ENABLED) {
       logger.info(`cors origin callback: allowing ${requestOrigin} because Auth is not enabled`);
       callback(null, true);
       // requests from curl don't usually have the Origin header

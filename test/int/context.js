@@ -8,7 +8,7 @@ exports.createContext = async () => {
   });
   await pkiEngine.connect()
     .then(() => { console.log('VAULT is CONNECTED!'); })
-    .catch((err) => { console.log(`VAULT is NOT CONNECTED: ${err?.message}`, err); });
+    .catch((err) => { console.error(`VAULT is NOT CONNECTED: ${err?.message}`, err); });
   return {
     pkiEngine,
   };

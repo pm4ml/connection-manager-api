@@ -1,4 +1,6 @@
-# Authentication and Authorization with OAuth2 and WSO2
+# [OUTDATED] Authentication and Authorization with OAuth2 and WSO2
+
+> **IMPORTANT**: This document is outdated. Please refer to the current authentication documentation in [docs/authentication.md](./docs/authentication.md) which describes the OpenID Connect implementation with Keycloak.
 
 We're using OAuth2 to authenticate and authorize the access to the API.
 
@@ -24,7 +26,7 @@ security:
 ```
 
 
-So, we're using OAuth2 password flow or [Resource owner password credentials](https://swagger.io/docs/specification/authentication/oauth2/) which: _Requires logging in with a username and password. Since in that case the credentials will be a part of the request, this flow is suitable only for trusted clients (for example, official applications released by the API provider)._ On WSO2 is called [Resource Owner Password Credentials Grant](https://docs.wso2.com/display/IS570/Resource+Owner+Password+Credentials+Grant) which says that: _The resource owner password credentials grant type is suitable in cases where the resource owner has a trust relationship with the client (e.g., a service’s own mobile client) and in situations where the client can obtain the resource owner’s credentials. Instead of redirecting the user to the authorization server, the client itself will ask the user for the resource owner's username and password. The client will then send these credentials to the authorization server along with the client’s own credentials._
+So, we're using OAuth2 password flow or [Resource owner password credentials](https://swagger.io/docs/specification/authentication/oauth2/) which: _Requires logging in with a username and password. Since in that case the credentials will be a part of the request, this flow is suitable only for trusted clients (for example, official applications released by the API provider)._ On WSO2 is called [Resource Owner Password Credentials Grant](https://docs.wso2.com/display/IS570/Resource+Owner+Password+Credentials+Grant) which says that: _The resource owner password credentials grant type is suitable in cases where the resource owner has a trust relationship with the client (e.g., a service's own mobile client) and in situations where the client can obtain the resource owner's credentials. Instead of redirecting the user to the authorization server, the client itself will ask the user for the resource owner's username and password. The client will then send these credentials to the authorization server along with the client's own credentials._
 
 ## Auth Flow
 

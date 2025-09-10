@@ -42,13 +42,13 @@ describe('ServerCertsService', () => {
     await setupTestDB();
     ctx = await createContext();
     await createInternalHubCA(ctx, ROOT_CA, TTL_FOR_CA);
-  });
+  }, 30000);
 
   afterAll(async () => {
     await tearDownTestDB();
     await deleteHubCA(ctx);
     destroyContext(ctx);
-  });
+  }, 30000);
 
   describe('Hub Server Certificates', () => {
     it('should create a HubServerCerts entry', async () => {
@@ -218,4 +218,4 @@ describe('ServerCertsService', () => {
       await Promise.all(dfspIds.map(id => PkiService.deleteDFSP(ctx, id)));
     }, 30000);
   }, 30000);
-}, 30000);
+}, 60000);

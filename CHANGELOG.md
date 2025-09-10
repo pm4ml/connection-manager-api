@@ -2,6 +2,187 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.0.0](https://github.com/pm4ml/connection-manager-api/compare/v2.14.1...v3.0.0) (2025-09-10)
+
+
+### Bug Fixes
+
+* deps ([f1a30a5](https://github.com/pm4ml/connection-manager-api/commit/f1a30a532cd3c9998420134b445a23f72b6a757c))
+* docker compose ([35bef43](https://github.com/pm4ml/connection-manager-api/commit/35bef43b1dcca0d0ea649cdcf447f02c9a0ff05c))
+
+## [3.0.0-snapshot.25](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.24...v3.0.0-snapshot.25) (2025-07-18)
+
+
+### Bug Fixes
+
+* test ([fd5e43b](https://github.com/pm4ml/connection-manager-api/commit/fd5e43b7a30c2bcd0f34c67e6f7d43a87ab25aa7))
+
+## [3.0.0-snapshot.24](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.23...v3.0.0-snapshot.24) (2025-07-18)
+
+
+### Bug Fixes
+
+* keycloak group assignment ([20b2afe](https://github.com/pm4ml/connection-manager-api/commit/20b2afe4fb5d431d7dea264ed165f16dea7c0ca9))
+
+## [3.0.0-snapshot.23](https://github.com/pm4ml/connection-manager-api/compare/v2.14.0...v3.0.0-snapshot.23) (2025-07-18)
+
+
+### Bug Fixes
+
+* don't assign dfsp to MTA group ([1292b46](https://github.com/pm4ml/connection-manager-api/commit/1292b46b401cc79af98e7826af0e5c202fe1908b))
+* tests ([c26c50f](https://github.com/pm4ml/connection-manager-api/commit/c26c50f74a2a47b1fc096de5d8421ab5cb611bc5))
+
+
+### Chore
+
+* bump deps ([a1b2f91](https://github.com/pm4ml/connection-manager-api/commit/a1b2f91eb072572ff8794cc98ecd9e8da6196142))
+
+## [3.0.0-snapshot.22](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.21...v3.0.0-snapshot.22) (2025-07-15)
+
+
+### Bug Fixes
+
+* assigning keto client roles ([99fb231](https://github.com/pm4ml/connection-manager-api/commit/99fb2315cf04076572acf97a4390e268b773434d))
+
+## [3.0.0-snapshot.21](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.20...v3.0.0-snapshot.21) (2025-07-13)
+
+## [3.0.0-snapshot.20](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.19...v3.0.0-snapshot.20) (2025-07-13)
+
+## [3.0.0-snapshot.19](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.18...v3.0.0-snapshot.19) (2025-07-12)
+
+## [3.0.0-snapshot.18](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.17...v3.0.0-snapshot.18) (2025-07-12)
+
+
+### Features
+
+* extract user roles from request headers ([1058907](https://github.com/pm4ml/connection-manager-api/commit/1058907d27352ebee40073eabf34231bcc2609f9))
+
+## [3.0.0-snapshot.17](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.16...v3.0.0-snapshot.17) (2025-07-12)
+
+
+### Bug Fixes
+
+* import ([fdc5afe](https://github.com/pm4ml/connection-manager-api/commit/fdc5afecc4bd5f45b9ee5409e0a2c8c33b35c489))
+
+## [3.0.0-snapshot.16](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.15...v3.0.0-snapshot.16) (2025-07-12)
+
+## [3.0.0-snapshot.15](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.14...v3.0.0-snapshot.15) (2025-07-12)
+
+
+### Bug Fixes
+
+* tests ([7dcd5cc](https://github.com/pm4ml/connection-manager-api/commit/7dcd5cc4cab1887d42956bd89a0d282f7b857eb3))
+* tests ([38f4e8a](https://github.com/pm4ml/connection-manager-api/commit/38f4e8a3fb010a7799cf46749bf7d0073d1ee6ff))
+* tests ([026ae06](https://github.com/pm4ml/connection-manager-api/commit/026ae06a8dc8b3ca46c6133762f53509a80b9899))
+* tests ([81a81f0](https://github.com/pm4ml/connection-manager-api/commit/81a81f04704c2b3a9329043b9cd5d01c6e85f543))
+
+## [3.0.0-snapshot.14](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.13...v3.0.0-snapshot.14) (2025-07-12)
+
+
+### Bug Fixes
+
+* tests ([e2baf6a](https://github.com/pm4ml/connection-manager-api/commit/e2baf6a19a717b206a220e5b7f9f4b78becefc2f))
+
+## [3.0.0-snapshot.13](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.12...v3.0.0-snapshot.13) (2025-07-12)
+
+
+### Bug Fixes
+
+* user removal ([39d4cdc](https://github.com/pm4ml/connection-manager-api/commit/39d4cdc7e14ed74e8efd6b37cc8f5346932c428c))
+
+## [3.0.0-snapshot.12](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.11...v3.0.0-snapshot.12) (2025-07-12)
+
+## [3.0.0-snapshot.11](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.10...v3.0.0-snapshot.11) (2025-07-12)
+
+## [3.0.0-snapshot.10](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.9...v3.0.0-snapshot.10) (2025-07-12)
+
+
+### Bug Fixes
+
+* config ([e4add2b](https://github.com/pm4ml/connection-manager-api/commit/e4add2b506bf646a7c5a2cab9675af9de9d40ada))
+
+## [3.0.0-snapshot.9](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.8...v3.0.0-snapshot.9) (2025-07-11)
+
+
+### Bug Fixes
+
+* keto user id ([5b301a1](https://github.com/pm4ml/connection-manager-api/commit/5b301a111fe404a14ab7e8f1bb0277062aee543c))
+
+## [3.0.0-snapshot.8](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.7...v3.0.0-snapshot.8) (2025-07-08)
+
+
+### Features
+
+* add docker publish github workflow ([427c662](https://github.com/pm4ml/connection-manager-api/commit/427c6629749c82eda224fea4a1c9ee65ced5583b))
+
+## [3.0.0-snapshot.7](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.6...v3.0.0-snapshot.7) (2025-07-08)
+
+## [3.0.0-snapshot.6](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.5...v3.0.0-snapshot.6) (2025-07-08)
+
+
+### Bug Fixes
+
+* audit ([41757cb](https://github.com/pm4ml/connection-manager-api/commit/41757cbeebf86279260a910447f652ca24342fb7))
+* test ([25c8e87](https://github.com/pm4ml/connection-manager-api/commit/25c8e876a5bc2755ca7d9f8204ac2a7b977c94d5))
+* tests ([60b7b0c](https://github.com/pm4ml/connection-manager-api/commit/60b7b0c4fe931b865ff8c1c8a07ced144e37cfb7))
+
+## [3.0.0-snapshot.5](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.4...v3.0.0-snapshot.5) (2025-07-08)
+
+## [3.0.0-snapshot.4](https://github.com/pm4ml/connection-manager-api/compare/v2.13.0...v3.0.0-snapshot.4) (2025-07-08)
+
+
+### Features
+
+* add keto support ([9bad7fe](https://github.com/pm4ml/connection-manager-api/commit/9bad7fe2e64a762fd71a30b8d2f3b83e1a844997))
+
+## [3.0.0-snapshot.3](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0-snapshot.2...v3.0.0-snapshot.3) (2025-07-03)
+
+## [3.0.0-snapshot.2](https://github.com/pm4ml/connection-manager-api/compare/v2.12.0...v3.0.0-snapshot.2) (2025-07-03)
+
+
+### Features
+
+* add test cases ([948cf1e](https://github.com/pm4ml/connection-manager-api/commit/948cf1ef2311c7121e7d03dc6f66b91e04126749))
+* implement OpenID Connect authentication and session management ([7ef2757](https://github.com/pm4ml/connection-manager-api/commit/7ef27574c1529d916fee0a3ce96c06de5bdaccc8))
+* implement pm4ml credentials management ([1d8cc2e](https://github.com/pm4ml/connection-manager-api/commit/1d8cc2e8cea299fd88299b4979641a6da9cc2872))
+
+
+### Bug Fixes
+
+* debug ([35ef711](https://github.com/pm4ml/connection-manager-api/commit/35ef7110642baa90f2b6840478ea17d68772ce4e))
+* disable dfsp watcher by default ([a33b2a5](https://github.com/pm4ml/connection-manager-api/commit/a33b2a55e7f17521394c3c02789245c4e25cbf18))
+* docker envs ([5dda5a9](https://github.com/pm4ml/connection-manager-api/commit/5dda5a900bd485ef1f081796cbb5dc6a165c9503))
+* env ([4f12944](https://github.com/pm4ml/connection-manager-api/commit/4f12944b75df45768c523fc372bb640c74d4e260))
+* env ([435c527](https://github.com/pm4ml/connection-manager-api/commit/435c5279820b8f996ed6c3e917de820f90328ad8))
+* envs ([c5498fa](https://github.com/pm4ml/connection-manager-api/commit/c5498faf0d7fb412686fb03d7dfb8d0be00c47c1))
+* esm dep import ([c15bd14](https://github.com/pm4ml/connection-manager-api/commit/c15bd1485bbbf6a752dacc211b0fe8812e642aa3))
+* gitignore ([5feb5cb](https://github.com/pm4ml/connection-manager-api/commit/5feb5cb3f1cd992059d1da42d0292d7ce7ca7aa6))
+* health check ([ceded2d](https://github.com/pm4ml/connection-manager-api/commit/ceded2d8c81d1b4c2c03b7af8ad4a1f51e9a0fd4))
+* increase test timeout ([41a9d3e](https://github.com/pm4ml/connection-manager-api/commit/41a9d3e088fe72292091571e5378ebc02c562c24))
+* node ver ([af51f39](https://github.com/pm4ml/connection-manager-api/commit/af51f39fef4dc16f52814b37513b6e3433b382f4))
+* prev commit ([6a812e3](https://github.com/pm4ml/connection-manager-api/commit/6a812e3e8f7c8b8ae6a58f8910d880cd91be8ad4))
+* tests ([0da9c93](https://github.com/pm4ml/connection-manager-api/commit/0da9c932657f98b45d92ddc87f9b10d631a0179f))
+* timeout ([0463891](https://github.com/pm4ml/connection-manager-api/commit/046389194e3de5053918b21eac0b34fe944226a5))
+
+
+### Chore
+
+* add example env file ([03c1f02](https://github.com/pm4ml/connection-manager-api/commit/03c1f02111aae77d52a0bf8c1e92e0ff9b6dcd8e))
+* bump deps ([95532f9](https://github.com/pm4ml/connection-manager-api/commit/95532f99fbae3fd467f6d4af975ff324b6023165))
+* bump deps ([e739c3c](https://github.com/pm4ml/connection-manager-api/commit/e739c3c4e87ef5c96a613a476849fc9703e731f5))
+* cleanup ([f6001f9](https://github.com/pm4ml/connection-manager-api/commit/f6001f9263fda3a46309e7bf47a2b02cd024a50b))
+* cleanup ([d2b032d](https://github.com/pm4ml/connection-manager-api/commit/d2b032d19c6f3951f9bb1102b47cc2c9476265ea))
+* cleanup ([33e86f3](https://github.com/pm4ml/connection-manager-api/commit/33e86f30a5bfeffb5d353694e86d59363f9f6700))
+* cleanup ([597be0d](https://github.com/pm4ml/connection-manager-api/commit/597be0dc68d9cc04b2f25a604d7cd8a5e10e5d42))
+* cleanup ([c9f2644](https://github.com/pm4ml/connection-manager-api/commit/c9f26441c0da771f4128b9aeb558ab95abdb9b7d))
+* cleanup ([f69f46c](https://github.com/pm4ml/connection-manager-api/commit/f69f46c8b9a789df366b17825f0285d6eb111ba6))
+* cleanup ([1033324](https://github.com/pm4ml/connection-manager-api/commit/10333242c537be12063f44bbccf16b279b3d1199))
+* cleanup auth config ([e78b613](https://github.com/pm4ml/connection-manager-api/commit/e78b613fb2c738b3f7bf0fed8b5ef0cbecc16343))
+* fix cmd ([572a661](https://github.com/pm4ml/connection-manager-api/commit/572a661a09dde0e1ce1a20d422bf0e532f19638d))
+* fix format ([a771eee](https://github.com/pm4ml/connection-manager-api/commit/a771eee29215d064657910c4119a51a72f5f812b))
+* merge 'origin/main' into feat/keycloak ([6f054b1](https://github.com/pm4ml/connection-manager-api/commit/6f054b1b96ae826503f99cb37e7ac37a990b8392))
+* skip wso2 tests ([201ede2](https://github.com/pm4ml/connection-manager-api/commit/201ede247a6938a21458d378ba2657898b2175c5))
+
 ### [2.14.1](https://github.com/pm4ml/connection-manager-api/compare/v2.14.0...v2.14.1) (2025-07-30)
 
 
