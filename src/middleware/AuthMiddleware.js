@@ -49,7 +49,7 @@ exports.createAuthMiddleware = () => {
         try {
           req.user = await validateToken(token);
         } catch (tokenError) {
-          console.error('Token validation error:', tokenError);
+          logger.error('Token validation error:', tokenError);
         }
 
         return next();
@@ -59,7 +59,7 @@ exports.createAuthMiddleware = () => {
 
       next();
     } catch (error) {
-      console.error('Auth middleware error:', error);
+      logger.error('Auth middleware error:', error);
       next(error);
     }
   };

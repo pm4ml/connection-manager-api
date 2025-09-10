@@ -28,6 +28,7 @@
 
 const Constants = require('../constants/Constants');
 const { getAuthorizationUrl, handleLoginCallback, getLogoutUrl, extractRoles } = require('../utils/authUtils');
+const { logger } = require('../log/logger');
 
 /**
  * Initiates the login process by redirecting to the OpenID provider
@@ -50,7 +51,7 @@ exports.login = async (req, res) => {
 
     res.redirect(url);
   } catch (error) {
-    console.error('Login error:', error);
+    logger.error('Login error:', error);
     res.status(500).json({ error: 'Authentication failed' });
   }
 };
@@ -88,7 +89,7 @@ exports.callback = async (req, res) => {
 
     res.redirect(returnTo);
   } catch (error) {
-    console.error('Callback error:', error);
+    logger.error('Callback error:', error);
     res.status(500).json({ error: 'Authentication callback failed: ' + error.message });
   }
 };
@@ -118,7 +119,7 @@ exports.logout = async (req, res) => {
       res.redirect(logoutUrl);
     });
   } catch (error) {
-    console.error('Logout error:', error);
+    logger.error('Logout error:', error);
     // If there's an error, just destroy the session and redirect
     req.session.destroy(() => {
       res.redirect(req.query.return_to);
@@ -147,7 +148,7 @@ exports.profile = async (req, res) => {
 
     return res.json(userProfile);
   } catch (error) {
-    console.error('Profile error:', error);
+    logger.error('Profile error:', error);
     return res.status(500).json({ error: 'Failed to retrieve profile' });
   }
 };

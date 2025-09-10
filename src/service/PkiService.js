@@ -62,7 +62,7 @@ exports.createDFSP = async (ctx, body) => {
     await DFSPModel.createFxpSupportedCurrencies(body.dfspId, body.fxpCurrencies);
     return { id: body.dfspId };
   } catch (err) {
-    console.error(err);
+    log.error(err);
     throw new InternalError(err.message);
   }
 };
@@ -74,7 +74,7 @@ exports.createDFSPWithCSR = async (ctx, body) => {
     await createCSRAndDFSPOutboundEnrollment(ctx, body.dfspId, Constants.clientCsrParameters);
     return dfsp;
   } catch (err) {
-    console.error(err);
+    log.error(err);
     throw new InternalError(err.message);
   }
 };
