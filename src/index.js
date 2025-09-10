@@ -20,7 +20,7 @@ const Constants = require('./constants/Constants');
 const appLoader = require('./appLoader');
 const { createDFSP: defaultCreateDFSP } = require('./service/PkiService');
 const { createMetricsServer } = require('./mertics-server');
-
+const { logger } = require('./log/logger');
 const serverPort = Constants.SERVER.PORT;
 
 const run = async ({
@@ -29,18 +29,15 @@ const run = async ({
   createDFSP = defaultCreateDFSP,
   http = nodeHttp,
 } = {}) => {
-  console.log('connection-manager-api starting with constants:');
-  console.log(JSON.stringify(constants, null, 2));
-
-  console.log('connection-manager-api starting with process env:');
-  console.log(process.env);
+  logger.info('connection-manager-api starting with constants:', constants);
+  logger.info('connection-manager-api starting with process env:', process.env);
 
   const appConnected = await connect();
 
   // Start the server
   http.createServer(appConnected).listen(serverPort, function () {
-    console.log('Connection-Manager API server is listening on port %d...', serverPort);
-    console.log('Swagger-ui is available on http://localhost:%d/docs', serverPort);
+    logger.info('Connection-Manager API server is listening on port %d...', serverPort);
+    logger.info('Swagger-ui is available on http://localhost:%d/docs', serverPort);
   });
 
   const metricsServer = createMetricsServer();

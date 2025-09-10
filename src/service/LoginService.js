@@ -25,6 +25,8 @@ const BadRequestError = require('../errors/BadRequestError');
 const wso2TotpClient = require('./Wso2TotpClient');
 const wso2Client = require('./Wso2Client');
 const wso2ManagerServiceClient = require('./Wso2ManagerServiceClient');
+const { logger } = require('../log/logger');
+const log = logger.child({ component: 'LoginService' });
 
 const ENROLLED_2FA = '2fa-enrolled';
 const PASSWORD_RESET = 'askPassword';
@@ -75,7 +77,7 @@ exports.loginUser = async (ctx, body, req, res) => {
 
     return response;
   } catch (error) {
-    console.log('Error on LoginService.loginUser: ', error);
+    log.error('Error on LoginService.loginUser: ', error);
     if (error && error.statusCode === 400 && error.message.includes('Authentication failed')) {
       throw new UnauthorizedError(`Authentication failed for user ${username}`, error.error);
     }
@@ -102,7 +104,7 @@ const build2FAResponse = async (decodedIdToken, user) => {
   } else {
     // get shared secret
     const sharedSecret = await wso2TotpClient.retrieveSecretKey(user);
-    console.log('Successfully getting the secret key');
+    log.info('Successfully getting the secret key');
     response = {
       sharedSecret,
       issuer: Constants.AUTH_2FA.TOTP_ISSUER,
@@ -129,13 +131,13 @@ const buildJWTResponse = (decodedIdToken, accessToken, req, res) => {
         continue;
       }
       dfspId = groupMatchResult[1];
-      console.log('LoginService.loginUser found dfspId: ', dfspId);
+      log.info('LoginService.loginUser found dfspId: ', dfspId);
       break; // FIXME only returns the first ( there should be only one ). May report an error if there's more than one Application/DFSP group ?
     }
   }
 
   decodedIdToken.dfspId = dfspId;
-  console.log('LoginService.loginUser returning decodedIdToken: ', decodedIdToken);
+  log.info('LoginService.loginUser returning decodedIdToken: ', decodedIdToken);
 
   const cookies = new Cookies(req, res);
   const maxAge = 3600 * 1000; // ms
@@ -172,7 +174,7 @@ exports.login2step = async (ctx, username, password, generatedToken, req, res) =
 
     const decodedIdToken = jwt.decode(loginResponseObj.id_token);
 
-    console.log('decodedIdToken.2fa-enrolled::', decodedIdToken[ENROLLED_2FA]);
+    log.info('decodedIdToken.2fa-enrolled::', decodedIdToken[ENROLLED_2FA]);
     // Check with the token if the user is already enrolled or not
     await wso2TotpClient.validateTOTP(username, generatedToken);
     if (!(/true/i).test(decodedIdToken[ENROLLED_2FA])) {
@@ -182,7 +184,7 @@ exports.login2step = async (ctx, username, password, generatedToken, req, res) =
 
     return buildJWTResponse(decodedIdToken, loginResponseObj.access_token, req, res);
   } catch (error) {
-    console.log('Error on LoginService.login2step: ', error);
+    log.error('Error on LoginService.login2step: ', error);
     throw error;
   }
 };

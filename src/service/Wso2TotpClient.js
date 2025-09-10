@@ -21,6 +21,8 @@ const rp = require('request-promise-native');
 const parseString = require('xml2js').parseString;
 const UnauthorizedError = require('../errors/UnauthorizedError');
 const Constants = require('../constants/Constants');
+const { logger } = require('../log/logger');
+const log = logger.child({ component: 'Wso2TotpClient' });
 
 exports.retrieveSecretKey = async (username) => {
   const url = Constants.AUTH_2FA.TOTP_ADMIN_ISSUER + '/retrieveSecretKey';
@@ -74,7 +76,7 @@ exports.validateTOTP = async (username, verificationCode) => {
     const validateTotpResponse = await rp(options); // MP-757
     parseString(validateTotpResponse, (err, result) => {
       if (err) throw new UnauthorizedError('XML parse of the response failed');
-      console.log('Validate boolean :: ' + JSON.stringify(result['ns:validateTOTPResponse']['ns:return'][0]));
+      log.info('Validate boolean :: ', { validate: result['ns:validateTOTPResponse']['ns:return'][0] });
       const validate = result['ns:validateTOTPResponse']['ns:return'][0];
       if (!validate || validate === 'false') throw new UnauthorizedError('Verification code not validated');
       return validate;

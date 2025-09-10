@@ -26,6 +26,8 @@ const ValidationCodes = require('../pki_engine/ValidationCodes');
 const Constants = require('../constants/Constants');
 const { createCSRAndDFSPOutboundEnrollment } = require('./DfspOutboundService');
 const keycloakService = require('./KeycloakService');
+const { logger } = require('../log/logger');
+const log = logger.child({ component: 'PkiService' });
 
 /**
  * Create Keycloak accounts for a DFSP
@@ -49,7 +51,7 @@ async function createKeycloakAccountForDfsp(dfspId, email) {
     // Create a Keycloak client for the DFSP
     createdClient = await keycloakService.createDfspClient(dfspId);
 
-    console.log(`Successfully created Keycloak accounts for DFSP ${dfspId}`);
+    log.info(`Successfully created Keycloak accounts for DFSP ${dfspId}`);
   } catch (keycloakError) {
     // Clean up any partially created resources
     if (createdUser) {
@@ -72,7 +74,7 @@ async function createKeycloakAccountForDfsp(dfspId, email) {
  * returns ObjectCreatedResponse
  **/
 exports.createDFSP = async (ctx, body) => {
-  console.log('Creating DFSP with body:', body);
+  log.info('Creating DFSP with body:', body);
   const regex = / /gi;
   const dfspIdNoSpaces = body.dfspId ? body.dfspId.replace(regex, '-') : null;
 

@@ -23,6 +23,7 @@ const path = require('path');
 const util = require('util');
 const passport = require('passport');
 const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
+const { logger } = require('../log/logger');
 
 function cookieExtractor (req) {
   const cookies = new Cookies(req);
@@ -51,21 +52,21 @@ function createJwtStrategy (extraExtractors) {
   jwtStrategyOpts.jsonWebTokenOptions = {};
   let certContent;
   if (Constants.OAUTH.EMBEDDED_CERTIFICATE) {
-    console.log('Setting Token Issuer certificate from Constants.OAUTH.EMBEDDED_CERTIFICATE');
+    logger.info('Setting Token Issuer certificate from Constants.OAUTH.EMBEDDED_CERTIFICATE');
     certContent = Constants.OAUTH.EMBEDDED_CERTIFICATE;
   } else if (Constants.OAUTH.CERTIFICATE_FILE_NAME) {
-    console.log(`Setting Token Issuer certificate from Constants.OAUTH.CERTIFICATE_FILE_NAME: ${Constants.OAUTH.CERTIFICATE_FILE_NAME}`);
+    logger.info(`Setting Token Issuer certificate from Constants.OAUTH.CERTIFICATE_FILE_NAME: ${Constants.OAUTH.CERTIFICATE_FILE_NAME}`);
     if (Constants.OAUTH.CERTIFICATE_FILE_NAME.startsWith('/')) {
-      console.log('Token Issuer Constants.OAUTH.CERTIFICATE_FILE_NAME absolute path');
+      logger.info('Token Issuer Constants.OAUTH.CERTIFICATE_FILE_NAME absolute path');
       certContent = fs.readFileSync(Constants.OAUTH.CERTIFICATE_FILE_NAME, 'utf8');
     } else {
-      console.log('Token Issuer Constants.OAUTH.CERTIFICATE_FILE_NAME relative path');
+      logger.info('Token Issuer Constants.OAUTH.CERTIFICATE_FILE_NAME relative path');
       certContent = fs.readFileSync(path.join(__dirname, '..', Constants.OAUTH.CERTIFICATE_FILE_NAME), 'utf8');
     }
   } else {
     console.warn('No value specified for Constants.OAUTH.CERTIFICATE_FILE_NAME or Constants.OAUTH.EMBEDDED_CERTIFICATE. Auth will probably fail to validate the tokens');
   }
-  console.log(`Token Issuer loaded: ${certContent}`);
+  logger.info(`Token Issuer loaded: ${certContent}`);
 
   jwtStrategyOpts.secretOrKeyProvider = (request, rawJwtToken, done) => {
     done(null, certContent);
@@ -88,26 +89,26 @@ function createJwtStrategy (extraExtractors) {
 function verifyCallback (req, jwtPayload, done) {
   if (!jwtPayload.sub) {
     const message = 'Invalid Authentication info: no sub';
-    console.log(`OAuthHelper.verifyCallbak received ${jwtPayload}. Verification failed because ${message}`);
+    logger.info(`OAuthHelper.verifyCallback received ${jwtPayload}. Verification failed because ${message}`);
     return done(null, false, message);
   }
   if (!jwtPayload.iss) {
     const message = 'Invalid Authentication info: no iss';
-    console.log(`OAuthHelper.verifyCallbak received ${jwtPayload}. Verification failed because ${message}`);
+    logger.info(`OAuthHelper.verifyCallback received ${jwtPayload}. Verification failed because ${message}`);
     return done(null, false, message);
   }
   const issuer = jwtPayload.iss;
   if (issuer !== Constants.OAUTH.OAUTH2_ISSUER && issuer !== Constants.OAUTH.OAUTH2_TOKEN_ISS) {
     const message = `Invalid Authentication: wrong issuer ${issuer}, expecting: ${Constants.OAUTH.OAUTH2_ISSUER} or ${Constants.OAUTH.OAUTH2_TOKEN_ISS}`;
-    console.log(`OAuthHelper.verifyCallbak received ${jwtPayload}. Verification failed because ${message}`);
+    logger.info(`OAuthHelper.verifyCallback received ${jwtPayload}. Verification failed because ${message}`);
     return done(null, false, message);
   }
   if (!jwtPayload.groups) {
     const message = 'Invalid Authentication info: no groups';
-    console.log(`OAuthHelper.verifyCallbak received ${jwtPayload}. Verification failed because ${message}`);
+    logger.info(`OAuthHelper.verifyCallback received ${jwtPayload}. Verification failed because ${message}`);
     return done(null, false, message);
   }
-  console.log(`verifyCallback: user ${jwtPayload.sub} with roles ${jwtPayload.groups}`);
+  logger.info(`verifyCallback: user ${jwtPayload.sub} with roles ${jwtPayload.groups}`);
   const foundMTA = jwtPayload.groups.includes(Constants.OAUTH.MTA_ROLE);
   const foundPTA = jwtPayload.groups.includes(Constants.OAUTH.PTA_ROLE);
   const foundEveryone = jwtPayload.groups.includes(Constants.OAUTH.EVERYONE_ROLE);
@@ -122,7 +123,7 @@ function verifyCallback (req, jwtPayload, done) {
     roles[group] = true;
   }
   const authInfo = { roles };
-  console.log(`verifyCallback: returning authInfo: ${JSON.stringify(authInfo)} `);
+  logger.info(`verifyCallback: returning authInfo: `, authInfo);
   return done(null, client, authInfo);
 }
 
@@ -162,7 +163,7 @@ const createOAuth2Handler = () => {
     const apiPath = req.openapi?.openApiRoute;
     const originalUrl = req.originalUrl;
     let error = null;
-    console.log(`OAuthHelper.oauth2PermissionsVerifier: user ${util.inspect(authInfo.user)} authInfo:  ${util.inspect(authInfo)} originalUrl: ${originalUrl} apiPath: ${apiPath}`);
+    logger.info(`OAuthHelper.oauth2PermissionsVerifier: `, { user: authInfo.user, authInfo, originalUrl, apiPath });
 
     // Now check that the user has all the roles(scopes)
     let rolesOk = false;
@@ -172,7 +173,7 @@ const createOAuth2Handler = () => {
       }
     }
     if (!rolesOk) {
-      console.log(`API defined scopes: user ${JSON.stringify(user)} does not have the required roles ${JSON.stringify(scopes)}, it has authInfo ${JSON.stringify(authInfo)}`);
+      logger.info(`API defined scopes: user does not have the required roles, it has authInfo (See object)`, { user, scopes, authInfo });
       error = new Error(`user does not have the required roles ${scopes}`);
       error.statusCode = 403;
       error.headers = { 'X-AUTH-ERROR': error.message };
@@ -194,7 +195,7 @@ const createOAuth2Handler = () => {
           if (!dfsp.securityGroup || groups[dfsp.securityGroup]) {
             return true;
           } else {
-            console.log(`DFSP specific scopes: user ${JSON.stringify(user)} does not have the required roles ${JSON.stringify(dfsp.securityGroup)}, it has roles ${JSON.stringify(groups)}`);
+            logger.info(`DFSP specific scopes: user does not have the required roles, it has roles (See object)`, { user, dfspSecurityGroup: dfsp.securityGroup, groups });
             error = new Error(`user does not have the required role ${dfsp.securityGroup}`);
             error.statusCode = 403;
             error.headers = { 'X-AUTH-ERROR': error.message };

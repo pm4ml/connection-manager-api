@@ -103,7 +103,6 @@ exports.connect = async () => {
   const lastEntries = stack.splice(app._router.stack.length - middlewares.length);
   const firstEntries = stack.splice(0, 5);
   app._router.stack = [...firstEntries, ...lastEntries, ...stack];
-  // console.log(app._router.stack);
 
   return app;
 };

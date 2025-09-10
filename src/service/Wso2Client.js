@@ -20,6 +20,8 @@
 const rp = require('request-promise-native');
 const Constants = require('../constants/Constants');
 const UnauthorizedError = require('../errors/UnauthorizedError');
+const { logger } = require('../log/logger');
+const log = logger.child({ component: 'Wso2Client' });
 
 exports.getToken = async (username, password) => {
   const form = {
@@ -35,7 +37,7 @@ exports.getToken = async (username, password) => {
       .form(form)
       .auth(Constants.OAUTH.APP_OAUTH_CLIENT_KEY, Constants.OAUTH.APP_OAUTH_CLIENT_SECRET); // MP-757
 
-    console.log(`Wso2Client.getToken received ${loginResponse}`);
+    log.info(`Wso2Client.getToken received ${loginResponse}`);
     return JSON.parse(loginResponse);
   } catch (error) {
     if (error && error.statusCode === 400 && error.message.includes('Authentication failed')) {

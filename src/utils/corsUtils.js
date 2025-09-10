@@ -17,6 +17,7 @@
 
 'use strict';
 const Constants = require('../constants/Constants');
+const { logger } = require('../log/logger');
 
 const whitelist = ['http://devint1-pkiadminweb.casahub.live', 'https://devint1-pkiadminweb.casahub.live'];
 
@@ -24,17 +25,17 @@ exports.getCorsOptions = {
   credentials: true,
   origin: function (requestOrigin, callback) {
     if (!Constants.OAUTH.AUTH_ENABLED) {
-      console.log(`cors origin callback: allowing ${requestOrigin} because Auth is not enabled`);
+      logger.info(`cors origin callback: allowing ${requestOrigin} because Auth is not enabled`);
       callback(null, true);
       // requests from curl don't usually have the Origin header
     } else if (!requestOrigin) {
-      console.log(`cors origin callback: allowing ${requestOrigin} - No requestOrigin`);
+      logger.info(`cors origin callback: allowing ${requestOrigin} - No requestOrigin`);
       callback(null, true);
     } else if (requestOrigin.indexOf('localhost') !== -1 || whitelist.indexOf(requestOrigin) !== -1) {
-      console.log(`cors origin callback: allowing ${requestOrigin} - whitelisted or localhost`);
+      logger.info(`cors origin callback: allowing ${requestOrigin} - whitelisted or localhost`);
       callback(null, true);
     } else {
-      console.log(`cors origin callback: allowing ${requestOrigin} since we don't know where the UI is published`);
+      logger.info(`cors origin callback: allowing ${requestOrigin} since we don't know where the UI is published`);
       callback(null, true);
       // callback(new Error('Not allowed by CORS:  requestOrigin: ', requestOrigin));
     }
