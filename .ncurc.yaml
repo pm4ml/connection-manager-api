@@ -3,5 +3,6 @@ reject: [
   "chai", # Chai v.5 now only supports EcmaScript Modules (ESM) - no require('chi')
   "eslint", # Upgrade is breaking due to peer dependencies
   "eslint-plugin-promise", # Upgrade is breaking due to peer dependencies
-  "jest" # jest 30 is released but libraries that work with jest have not been updated to support it yet.
+  "jest", # jest 30 is released but libraries that work with jest have not been updated to support it yet.
+  "openid-client" # v6.7.1 now only supports EcmaScript Modules (ESM)
 ]
