@@ -108,13 +108,16 @@ class VaultPKIEngine extends PKIEngine {
     if (isNaN(id)) throw new Error(`${name} is not a number`);
   }
 
-  async getSecret (key) {
+  async getSecret (key, defaultValue = null) {
     const path = `${this.mounts.kv}/${key}`;
     try {
       const { data } = await this.client.read(path);
       return data;
     } catch (e) {
       if (e.response && e.response.statusCode === 404) {
+        if (defaultValue) {
+          return defaultValue;
+        }
         throw new NotFoundError();
       }
       throw e;
@@ -462,7 +465,6 @@ class VaultPKIEngine extends PKIEngine {
    * @returns { csr: String, key:  String, PEM-encoded. Encrypted ( see encryptKey ) }
    */
   async createCSR (csrParameters) {
-
     const keys = forge.pki.rsa.generateKeyPair(this.keyLength);
     const csr = forge.pki.createCertificationRequest();
     csr.publicKey = keys.publicKey;
@@ -668,10 +670,13 @@ class VaultPKIEngine extends PKIEngine {
   }
 
   splitCertificateChain (chain) {
-    // const certificateStartDelimiter = '-----BEGIN CERTIFICATE-----';
     const certificateEndDelimiter = '-----END CERTIFICATE-----';
-
     const beginCertRegex = /(?=-----BEGIN)/g;
+
+    // Add type check to ensure chain is a string
+    if (!chain || typeof chain !== 'string') {
+      return [];
+    }
 
     return chain.split(beginCertRegex)
       .filter(cert => cert.match(/BEGIN/g))
