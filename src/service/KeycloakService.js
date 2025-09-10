@@ -26,7 +26,6 @@
 
 'use strict';
 
-const { Issuer } = require('openid-client');
 const Constants = require('../constants/Constants');
 const InternalError = require('../errors/InternalError');
 const formatValidator = require('../utils/formatValidator');
