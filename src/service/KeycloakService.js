@@ -50,7 +50,7 @@ const getKeycloakAdminClient = async () => {
 
     return kcAdminClient;
   } catch (error) {
-    log.error('Error creating Keycloak OpenID client:', error);
+    log.error('Error creating Keycloak admin client:', error);
     throw new InternalError('Failed to connect to Keycloak server');
   }
 };
