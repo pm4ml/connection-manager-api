@@ -21,7 +21,7 @@ const cors = require('cors');
 const path = require('path');
 // const app = require('connect')();
 const oas3Tools = require('oas3-tools');
-const logger = require('./log/logger');
+const { createWinstonLogger, logger } = require('./log/logger');
 const AuthMiddleware = require('./middleware/AuthMiddleware');
 const SessionConfig = require('./oauth/SessionConfig');
 const HubCAService = require('./service/HubCAService');
@@ -96,7 +96,7 @@ exports.connect = async () => {
       next();
     },
     cors(corsUtils.getCorsOptions),
-    logger.createWinstonLogger()
+    createWinstonLogger()
   ];
 
   // Add authentication middleware if enabled

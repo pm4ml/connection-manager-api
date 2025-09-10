@@ -29,7 +29,7 @@
 const Constants = require('../constants/Constants');
 const { validateToken } = require('../utils/authUtils');
 const PkiService = require("../service/PkiService");
-const logger = require('../log/logger').logger;
+const { logger } = require('../log/logger');
 
 /**
  * Middleware to handle authentication for both browser and machine clients
