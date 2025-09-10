@@ -37,7 +37,7 @@ const log = logger.child({ component: 'PkiService' });
  * returns ObjectCreatedResponse
  **/
 exports.createDFSP = async (ctx, body) => {
-  console.log('Creating DFSP with body:', body);
+  log.info('Creating DFSP with body:', body);
   const regex = / /gi;
   const dfspIdNoSpaces = body.dfspId ? body.dfspId.replace(regex, '-') : null;
 

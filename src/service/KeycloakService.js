@@ -92,7 +92,7 @@ const createDfspGroup = async (kcAdminClient, dfspId) => {
       name: dfspGroupName,
     });
     dfspGroup.preExisting = false;
-    console.log(`Created DFSP group ${dfspGroupName}`);
+    log.info(`Created DFSP group ${dfspGroupName}`);
   } else {
     dfspGroup.preExisting = true;
   }
@@ -180,7 +180,7 @@ const sendInvitationEmail = async (kcAdminClient, userId, email) => {
     redirectUri: Constants.CLIENT_URL,
   });
 
-  console.log(`Sent invitation email to ${email}`);
+  log.info(`Sent invitation email to ${email}`);
 };
 
 
@@ -200,7 +200,7 @@ const rollbackResources = async (kcAdminClient, dfspId, resources) => {
   if (clientId) {
     try {
       await kcAdminClient.clients.del({ id: clientId });
-      console.log(`Rolled back: Deleted client for DFSP ${dfspId}`);
+      log.info(`Rolled back: Deleted client for DFSP ${dfspId}`);
     } catch (err) {
       rollbackErrors.push({ type: 'client', message: err.message });
     }
@@ -209,7 +209,7 @@ const rollbackResources = async (kcAdminClient, dfspId, resources) => {
   if (userId) {
     try {
       await kcAdminClient.users.del({ id: userId });
-      console.log(`Rolled back: Deleted user for DFSP ${dfspId}`);
+      log.info(`Rolled back: Deleted user for DFSP ${dfspId}`);
     } catch (err) {
       rollbackErrors.push({ type: 'user', message: err.message });
     }
@@ -219,7 +219,7 @@ const rollbackResources = async (kcAdminClient, dfspId, resources) => {
   if (dfspGroup && !dfspGroup.preExisting) {
     try {
       await kcAdminClient.groups.del({ id: dfspGroup.id });
-      console.log(`Rolled back: Deleted group for DFSP ${dfspId}`);
+      log.info(`Rolled back: Deleted group for DFSP ${dfspId}`);
     } catch (err) {
       rollbackErrors.push({ type: 'group', message: err.message });
     }
@@ -286,9 +286,9 @@ exports.createDfspResources = async (dfspId, email) => {
 
     await sendInvitationEmail(kcAdminClient, userId.id, email);
 
-    console.log(`Successfully created all Keycloak resources for DFSP ${dfspId}`);
+    log.info(`Successfully created all Keycloak resources for DFSP ${dfspId}`);
   } catch (error) {
-    console.error(`Error creating Keycloak resources for DFSP ${dfspId}:`, error);
+    log.error(`Error creating Keycloak resources for DFSP ${dfspId}:`, error);
     await rollbackResources(kcAdminClient, dfspId, { clientId, userId, dfspGroup });
     throw new InternalError(`Failed to create Keycloak resources for DFSP ${dfspId}: ${error.message}`);
   }
@@ -322,9 +322,9 @@ exports.deleteDfspResources = async (dfspId) => {
       await kcAdminClient.clients.del({
         id: clients[0].id,
       });
-      console.log(`Deleted Keycloak client for DFSP ${dfspId}`);
+      log.info(`Deleted Keycloak client for DFSP ${dfspId}`);
     } else {
-      console.log(`No Keycloak client found for DFSP ${dfspId}`);
+      log.info(`No Keycloak client found for DFSP ${dfspId}`);
     }
   } catch (error) {
     console.error(`Error deleting Keycloak client for DFSP ${dfspId}:`, error);
@@ -362,17 +362,17 @@ exports.deleteDfspResources = async (dfspId) => {
           await kcAdminClient.users.del({
             id: user.id
           });
-          console.log(`Deleted Keycloak user ${user.username} for DFSP ${dfspId}`);
+          log.info(`Deleted Keycloak user ${user.username} for DFSP ${dfspId}`);
         } else {
-          console.log(`Removed user ${user.username} from DFSP ${dfspId} group, but kept user (still member of ${userDfspGroups.length} other DFSP groups)`);
+          log.info(`Removed user ${user.username} from DFSP ${dfspId} group, but kept user (still member of ${userDfspGroups.length} other DFSP groups)`);
         }
       }
 
       if (regularUsers.length === 0) {
-        console.log(`No Keycloak users found for DFSP ${dfspId}`);
+        log.info(`No Keycloak users found for DFSP ${dfspId}`);
       }
     } else {
-      console.log(`No DFSP group found for ${dfspId}, skipping user deletion`);
+      log.info(`No DFSP group found for ${dfspId}, skipping user deletion`);
     }
   } catch (error) {
     console.error(`Error deleting Keycloak user for DFSP ${dfspId}:`, error);
@@ -393,9 +393,9 @@ exports.deleteDfspResources = async (dfspId) => {
       await kcAdminClient.groups.del({
         id: dfspGroup.id
       });
-      console.log(`Deleted Keycloak group for DFSP ${dfspId}`);
+      log.info(`Deleted Keycloak group for DFSP ${dfspId}`);
     } else {
-      console.log(`No Keycloak group found for DFSP ${dfspId}`);
+      log.info(`No Keycloak group found for DFSP ${dfspId}`);
     }
   } catch (error) {
     console.error(`Error deleting Keycloak group for DFSP ${dfspId}:`, error);
