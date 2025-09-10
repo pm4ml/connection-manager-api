@@ -2,6 +2,7 @@ const sinon = require('sinon');
 const rp = require('request-promise-native');
 const Wso2Client = require('../../../src/service/Wso2Client');
 const UnauthorizedError = require('../../../src/errors/UnauthorizedError');
+const logger = require('../../../src/log/logger').logger;
 
 describe('Wso2Client', () => {
     afterEach(() => {
@@ -81,7 +82,7 @@ describe('Wso2Client', () => {
       const password = 'testpassword';
       const tokenResponse = JSON.stringify({ access_token: 'testtoken' });
 
-      const consoleLogSpy = sinon.spy(console, 'log');
+      const logStub = sinon.stub(logger, 'info');
       const postStub = sinon.stub(rp, 'post').returns({
         form: () => ({
           auth: () => Promise.resolve(tokenResponse)
@@ -90,9 +91,9 @@ describe('Wso2Client', () => {
 
       await Wso2Client.getToken(username, password);
 
-      expect(consoleLogSpy.calledWith(`Wso2Client.getToken received ${tokenResponse}`)).toBe(true);
+      expect(logStub.calledWith(`Wso2Client.getToken received ${tokenResponse}`)).toBe(true);
 
-      consoleLogSpy.restore();
+      logStub.restore();
       postStub.restore();
     });
 
