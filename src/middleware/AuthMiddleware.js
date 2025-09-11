@@ -29,6 +29,7 @@
 const Constants = require('../constants/Constants');
 const { validateToken } = require('../utils/authUtils');
 const PkiService = require("../service/PkiService");
+const { logger } = require('../log/logger');
 
 /**
  * Middleware to handle authentication for both browser and machine clients
@@ -48,7 +49,7 @@ exports.createAuthMiddleware = () => {
         try {
           req.user = await validateToken(token);
         } catch (tokenError) {
-          console.error('Token validation error:', tokenError);
+          logger.error('Token validation error:', tokenError);
         }
 
         return next();
@@ -58,7 +59,7 @@ exports.createAuthMiddleware = () => {
 
       next();
     } catch (error) {
-      console.error('Auth middleware error:', error);
+      logger.error('Auth middleware error:', error);
       next(error);
     }
   };
@@ -81,7 +82,7 @@ exports.createOAuth2Handler = () => {
     }
 
     if (!scopes.some(role => user.roles.includes(role))) {
-      console.log(`API defined scopes: user ${JSON.stringify(user)} does not have the required roles ${JSON.stringify(scopes)}`);
+      logger.info(`API defined scopes: user does not have the required roles (See object)`, { user, scopes});
       error = new Error(`user does not have the required roles ${scopes}`);
       error.statusCode = 403;
       error.headers = { 'X-AUTH-ERROR': error.message };
@@ -99,7 +100,7 @@ exports.createOAuth2Handler = () => {
           if (!dfsp.securityGroup || user.roles.includes(dfsp.securityGroup)) {
             return true;
           } else {
-            console.log(`DFSP specific scopes: user ${JSON.stringify(user)} does not have the required role ${dfsp.securityGroup}`);
+            logger.info(`DFSP specific scopes: user does not have the required role`, { user, securityGroup: dfsp.securityGroup });
             error = new Error(`user does not have the required role ${dfsp.securityGroup}`);
             error.statusCode = 403;
             error.headers = { 'X-AUTH-ERROR': error.message };

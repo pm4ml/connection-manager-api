@@ -30,6 +30,7 @@
 // const client = require('openid-client');
 // const { jwtVerify, createRemoteJWKSet } = require('jose');
 const Constants = require('../constants/Constants');
+const { logger } = require('../log/logger');
 
 // TODO: remove after TS migration
 const requireEsm = require('./requireEsm');
@@ -60,7 +61,7 @@ async function getOidcConfig() {
 
     return oidcConfig;
   } catch (error) {
-    console.error('Failed to initialize OIDC configuration:', error);
+    logger.error('Failed to initialize OIDC configuration:', error);
     throw error;
   }
 }
@@ -213,7 +214,7 @@ async function validateToken(token) {
       roles: extractRoles(payload)
     };
   } catch (error) {
-    console.error('Token validation failed:', error);
+    logger.error('Token validation failed:', error);
     throw error;
   }
 }

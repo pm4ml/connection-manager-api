@@ -21,7 +21,7 @@ const cors = require('cors');
 const path = require('path');
 // const app = require('connect')();
 const oas3Tools = require('oas3-tools');
-const logger = require('./log/logger');
+const { createWinstonLogger, logger } = require('./log/logger');
 const AuthMiddleware = require('./middleware/AuthMiddleware');
 const SessionConfig = require('./oauth/SessionConfig');
 const HubCAService = require('./service/HubCAService');
@@ -96,7 +96,7 @@ exports.connect = async () => {
       next();
     },
     cors(corsUtils.getCorsOptions),
-    logger.createWinstonLogger()
+    createWinstonLogger()
   ];
 
   // Add authentication middleware if enabled
@@ -113,7 +113,7 @@ exports.connect = async () => {
         try {
           req.user = { roles: JSON.parse(roles) };
         } catch (e) {
-          console.log("Error getting roles from request header: ", e.message);
+          logger.error("Error getting roles from request header: ", e);
         }
       }
       next();
@@ -125,7 +125,6 @@ exports.connect = async () => {
   const lastEntries = stack.splice(app._router.stack.length - middlewares.length);
   const firstEntries = stack.splice(0, 5);
   app._router.stack = [...firstEntries, ...lastEntries, ...stack];
-  // console.log(app._router.stack);
 
   return app;
 };

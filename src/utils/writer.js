@@ -18,6 +18,7 @@
 const BaseError = require('../errors/BaseError');
 const ErrorCategory = require('../errors/ErrorCategory');
 const ApiResponse = require('../response/ApiResponse');
+const { logger } = require('../log/logger');
 
 const ResponsePayload = function (code, payload) {
   this.code = code;
@@ -56,7 +57,7 @@ const writeJson = exports.writeJson = function (response, arg1, arg2) {
   }
 
   if (arg1 && arg1 instanceof Error) {
-    console.error(arg1);
+    logger.error(arg1);
     code = 500;
     payload = {
       payload: arg1.payload || arg1.name,

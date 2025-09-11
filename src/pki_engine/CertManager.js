@@ -8,11 +8,13 @@
  *       Yevhen Kyriukha <yevhen.kyriukha@modusbox.com>                   *
  ************************************************************************* */
 
+const { logger } = require('../log/logger');
+
 class CertManager {
   k8s;
   kc;
   k8sApi;
-  
+
   constructor (config) {
     this.logger = config.logger;
     this.serverCertSecretName = config.serverCertSecretName;
@@ -48,8 +50,8 @@ class CertManager {
     };
 
     return this.k8sApi.patchNamespacedSecret(this.serverCertSecretName, this.serverCertSecretNamespace, patch, undefined, undefined, undefined, undefined, options)
-      .then(() => { console.log('Server cert renewal successful'); })
-      .catch((err) => { console.log('Error renewing server cert: ', err?.body || err?.message); });
+      .then(() => { logger.info('Server cert renewal successful'); })
+      .catch((err) => { logger.error('Error renewing server cert: ', err); });
   }
 }
 

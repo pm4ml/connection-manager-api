@@ -26,6 +26,8 @@ const ValidationCodes = require('../pki_engine/ValidationCodes');
 const Constants = require('../constants/Constants');
 const { createCSRAndDFSPOutboundEnrollment } = require('./DfspOutboundService');
 const keycloakService = require('./KeycloakService');
+const { logger } = require('../log/logger');
+const log = logger.child({ component: 'PkiService' });
 
 /**
  * Creates an entry to store DFSP related info
@@ -35,7 +37,7 @@ const keycloakService = require('./KeycloakService');
  * returns ObjectCreatedResponse
  **/
 exports.createDFSP = async (ctx, body) => {
-  console.log('Creating DFSP with body:', body);
+  log.info('Creating DFSP with body:', body);
   const regex = / /gi;
   const dfspIdNoSpaces = body.dfspId ? body.dfspId.replace(regex, '-') : null;
 
@@ -60,7 +62,7 @@ exports.createDFSP = async (ctx, body) => {
     await DFSPModel.createFxpSupportedCurrencies(body.dfspId, body.fxpCurrencies);
     return { id: body.dfspId };
   } catch (err) {
-    console.error(err);
+    log.error(err);
     throw new InternalError(err.message);
   }
 };
@@ -72,7 +74,7 @@ exports.createDFSPWithCSR = async (ctx, body) => {
     await createCSRAndDFSPOutboundEnrollment(ctx, body.dfspId, Constants.clientCsrParameters);
     return dfsp;
   } catch (err) {
-    console.error(err);
+    log.error(err);
     throw new InternalError(err.message);
   }
 };
