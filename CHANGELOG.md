@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.1](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0...v3.0.1) (2025-09-11)
+
+
+### Chore
+
+* address new logs ([90de1d1](https://github.com/pm4ml/connection-manager-api/commit/90de1d19003825032d261e5f958a22211541fe86))
+* bump dep ([5308b4f](https://github.com/pm4ml/connection-manager-api/commit/5308b4fca56e2380f7c566308ed3c17ce9835292))
+* fix ([0815f99](https://github.com/pm4ml/connection-manager-api/commit/0815f997d0ca9455f92d50b4c62f0c7d0a74a138))
+* fix ([1f4f935](https://github.com/pm4ml/connection-manager-api/commit/1f4f935a4278d0cc0d126949d798bd53060e96d7))
+* fix ([24fdab6](https://github.com/pm4ml/connection-manager-api/commit/24fdab6ed1c42bbdc529590b8ddb52fd90daf278))
+* int tests ([90b918b](https://github.com/pm4ml/connection-manager-api/commit/90b918b7335db0d3beda73f412b29a8d2769629b))
+* lock ([a7eaa2b](https://github.com/pm4ml/connection-manager-api/commit/a7eaa2b847cd6523dbc0dfbabaca9ec612b1c129))
+* lock ([06482cc](https://github.com/pm4ml/connection-manager-api/commit/06482cc0c0999e5a99c54d15cde3e8b87cd5ff96))
+* lock ([71a9dca](https://github.com/pm4ml/connection-manager-api/commit/71a9dcaff0254c855e58a3d212ce310fbf1769b1))
+* update logging ([a5417de](https://github.com/pm4ml/connection-manager-api/commit/a5417dea955f3cbb05deb41c027e29379088060a))
+
 ## [3.0.0](https://github.com/pm4ml/connection-manager-api/compare/v2.14.1...v3.0.0) (2025-09-10)
 
 
