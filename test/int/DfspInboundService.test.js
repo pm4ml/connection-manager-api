@@ -86,6 +86,13 @@ describe('DfspInboundService', () => {
       expect(certifiedEnrollment.state).toBe('CERT_SIGNED');
     });
 
+    it('should not create a new enrollment if it exists', async () => {
+      await DfspInboundService.createDFSPInboundEnrollment(ctx, dfspId, { clientCSR: csr });
+      await DfspInboundService.createDFSPInboundEnrollment(ctx, dfspId, { clientCSR: csr });
+      const enrollments = await DfspInboundService.getDFSPInboundEnrollments(ctx, dfspId);
+      expect(enrollments.length).toBe(1);
+    });
+
     it('should create an enrollment from a CSR with correct validations', async () => {
       const csr = fs.readFileSync(path.join(__dirname, 'resources/modusbox/hub-tls-client.csr'), 'utf8');
       const enrollmentResult = await DfspInboundService.createDFSPInboundEnrollment(ctx, dfspId, { clientCSR: csr });

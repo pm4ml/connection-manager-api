@@ -28,6 +28,7 @@
     "GHSA-hrpp-h998-j3pp",
     "GHSA-p8p7-x288-28g6",
     "GHSA-jr5f-v2jv-69x6",
+    "GHSA-4hjh-wcwx-xvwj", // @ory/keto-client>axios https://github.com/advisories/GHSA-4hjh-wcwx-xvwj
     "GHSA-wf5p-g6vw-rhxx"
   ]
 }

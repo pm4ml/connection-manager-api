@@ -24,6 +24,8 @@ const CAType = require('../models/CAType');
 const Constants = require('../constants/Constants');
 const { createID } = require('../models/GID');
 const DFSPModel = require('../models/DFSPModel');
+const { logger } = require('../log/logger');
+const log = logger.child({ component: 'DfspInboundService' });
 
 /**
  * Create DFSP Inbound enrollment ( DFSP API )
@@ -36,6 +38,15 @@ const DFSPModel = require('../models/DFSPModel');
 exports.createDFSPInboundEnrollment = async (ctx, dfspId, body) => {
   const { pkiEngine } = ctx;
   await PkiService.validateDfsp(ctx, dfspId);
+
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
+  const existingEnrollment = (await pkiEngine.getDFSPInboundEnrollments(dbDfspId)).find(
+    existingEnrollment => existingEnrollment.state === 'CSR_LOADED' && body.csr === existingEnrollment.csr
+  );
+  if (existingEnrollment) {
+    log.warn(`An enrollment with state CSR_LOADED already exists for the DFSP ${dfspId}`);
+    return existingEnrollment;
+  }
 
   let csrInfo;
   try {
@@ -60,7 +71,6 @@ exports.createDFSPInboundEnrollment = async (ctx, dfspId, body) => {
     validationState
   };
 
-  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   await pkiEngine.setDFSPInboundEnrollment(dbDfspId, values.id, values);
   return values;
 };
