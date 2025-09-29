@@ -37,8 +37,11 @@ const log = logger.child({ component: 'DfspInboundService' });
  **/
 exports.createDFSPInboundEnrollment = async (ctx, dfspId, body) => {
   const { pkiEngine } = ctx;
-  const existingEnrollment = (await pkiEngine.getDFSPInboundEnrollments(ctx, dfspId)).find(
-    existingEnrollment => existingEnrollment.state === 'CSR_LOADED' && body.csr === existingEnrollment.csr
+  await PkiService.validateDfsp(ctx, dfspId);
+
+  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
+  const existingEnrollment = (await pkiEngine.getDFSPInboundEnrollments(dbDfspId)).find(
+    existingEnrollment => existingEnrollment.state === 'CSR_LOADED' && body.clientCSR === existingEnrollment.csr
   );
   if (existingEnrollment) {
     log.warn(`An enrollment with state CSR_LOADED already exists for the DFSP ${dfspId}`);
@@ -68,7 +71,6 @@ exports.createDFSPInboundEnrollment = async (ctx, dfspId, body) => {
     validationState
   };
 
-  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   await pkiEngine.setDFSPInboundEnrollment(dbDfspId, values.id, values);
   return values;
 };
