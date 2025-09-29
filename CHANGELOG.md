@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.2](https://github.com/pm4ml/connection-manager-api/compare/v3.0.1...v3.0.2) (2025-09-29)
+
+
+### Bug Fixes
+
+* check for existing DFSP inbound enrollment ([#141](https://github.com/pm4ml/connection-manager-api/issues/141)) ([00c1c20](https://github.com/pm4ml/connection-manager-api/commit/00c1c20e8fc9039726df918147752161a69bbcf4))
+
 ### [3.0.1](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0...v3.0.1) (2025-09-11)
 
 
