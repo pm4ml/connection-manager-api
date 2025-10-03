@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.3](https://github.com/pm4ml/connection-manager-api/compare/v3.0.2...v3.0.3) (2025-10-03)
+
+
+### Bug Fixes
+
+* **csi-1851:** ignored some grype vulnerabilities ([c50c4b2](https://github.com/pm4ml/connection-manager-api/commit/c50c4b2c65ed2111494c421569723c9fbcc5e70b))
+* **csi-1851:** log constants and process.env with debug level ([713c174](https://github.com/pm4ml/connection-manager-api/commit/713c1742e4d74485dca12ecb13f7135dc7454dad))
+
 ### [3.0.2](https://github.com/pm4ml/connection-manager-api/compare/v3.0.1...v3.0.2) (2025-09-29)
 
 
