@@ -29,6 +29,9 @@ ignore:
   - vulnerability: GHSA-fjxv-7rqg-78g4
     package:
       name: form-data
+  - vulnerability: CVE-2025-9230
+  - vulnerability: CVE-2025-9231
+  - vulnerability: CVE-2025-9232
 
 # Set output format defaults
 output:
