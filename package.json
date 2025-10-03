@@ -1,6 +1,6 @@
 {
   "name": "@pm4ml/connection-manager-api",
-  "version": "2.14.2-storage-cluster.0",
+  "version": "2.14.2-storage-cluster.1",
   "description": "ModusBox Connection Manager API",
   "license": "Apache-2.0",
   "author": "ModusBox",
