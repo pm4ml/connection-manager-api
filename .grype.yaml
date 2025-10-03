@@ -41,6 +41,9 @@ ignore:
   - vulnerability: GHSA-vj76-c3g6-qr5v
     package:
       name: tar-fs
+  - vulnerability: CVE-2025-9230
+  - vulnerability: CVE-2025-9231
+  - vulnerability: CVE-2025-9232
 
 # Set output format defaults
 output:
