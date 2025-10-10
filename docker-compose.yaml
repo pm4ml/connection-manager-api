@@ -32,9 +32,31 @@ services:
     restart: always
     depends_on:
       connection-manager-api:
-        condition: service_started
+        condition: service_healthy
+
+  connection-manager-migration:
+    image: infitx/connection-manager-api:local
+    pull_policy: if_not_present
+    build:
+      context: .
+      dockerfile: Dockerfile
+    profiles:
+      - functional
+    environment:
+      - DATABASE_HOST=connection-manager-db
+      - DATABASE_PORT=3306
+      - DATABASE_USER=${DBUSER:-mcm}
+      - DATABASE_PASSWORD=${DBPASS:-mcm}
+      - DATABASE_SCHEMA=${DBUSER:-mcm}
+    depends_on:
+      connection-manager-db:
+        condition: service_healthy
+    command: npm run migrate
+    restart: "no"
 
   connection-manager-api:
+    image: infitx/connection-manager-api:local
+    pull_policy: if_not_present
     build:
       context: .
       dockerfile: Dockerfile
@@ -65,12 +87,18 @@ services:
       - "3001:3001"
     restart: always
     depends_on:
-      connection-manager-db:
-        condition: service_healthy
       vault-dev:
         condition: service_healthy
       keycloak:
         condition: service_healthy
+      connection-manager-migration:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:3001/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
 
   connection-manager-db:
     image: mysql:9
@@ -84,11 +112,10 @@ services:
       - MYSQL_PASSWORD=${DBPASS:-mcm}
       - MYSQL_DATABASE=${DBUSER:-mcm}
     healthcheck:
-      test: mysqladmin ping -h localhost
-      timeout: 20s
-      retries: 10
-      start_period: 30s
-      interval: 15s
+      test: ["CMD-SHELL", "mysql -h localhost -u$$MYSQL_USER -p$$MYSQL_PASSWORD -e 'SELECT 1'"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   vault-dev:
     image: hashicorp/vault:1.19
