@@ -94,7 +94,7 @@ services:
       connection-manager-migration:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:3001/health"]
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:3001/api/health"]
       interval: 5s
       timeout: 3s
       retries: 3
