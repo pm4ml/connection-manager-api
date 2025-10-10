@@ -108,7 +108,7 @@ services:
       - MYSQL_PASSWORD=${DBPASS:-mcm}
       - MYSQL_DATABASE=${DBUSER:-mcm}
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DBUSER:-mcm}", "-p${DBPASS:-mcm}"]
+      test: ["CMD-SHELL", "mysql -h localhost -u$$MYSQL_USER -p$$MYSQL_PASSWORD -e 'SELECT 1'"]
       interval: 5s
       timeout: 3s
       retries: 20
