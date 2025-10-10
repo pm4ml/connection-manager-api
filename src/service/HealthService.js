@@ -3,13 +3,14 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-const { knex } = require('../db/database');
 const { respondWithCode } = require('../utils/writer');
 
-exports.getHealth = async () => {
+exports.getHealth = async (ctx) => {
+  const { db } = ctx;
+
   try {
     // Perform a simple database query to verify connectivity
-    await knex.raw('SELECT 1');
+    await db.raw('SELECT 1');
 
     return {
       status: 'healthy',

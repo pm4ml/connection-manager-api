@@ -5,11 +5,11 @@
 
 'use strict';
 
-const utils = require('../utils/writer.js');
+const utils = require('../utils/writer');
 const HealthService = require('../service/HealthService');
 
 module.exports.getHealth = function getHealth (req, res) {
-  HealthService.getHealth()
+  HealthService.getHealth(req.context)
     .then(function (response) {
       utils.writeJson(res, response);
     })
