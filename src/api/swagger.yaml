@@ -30,6 +30,8 @@ tags:
   description: Authentication endpoints
 - name: API-Credentials
   description: API client credentials management
+- name: Health
+  description: Health check endpoints
 paths:
   /auth/login:
     get:
@@ -169,6 +171,49 @@ paths:
       security:
       - OAuth2: [everyone]
       x-swagger-router-controller: AuthController
+
+  /health:
+    get:
+      tags:
+      - Health
+      summary: Health check endpoint that verifies service and database connectivity
+      operationId: getHealth
+      responses:
+        200:
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  timestamp:
+                    type: string
+                    format: date-time
+                  database:
+                    type: string
+                    example: connected
+        503:
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: unhealthy
+                  timestamp:
+                    type: string
+                    format: date-time
+                  database:
+                    type: string
+                    example: disconnected
+                  error:
+                    type: string
+      x-swagger-router-controller: HealthController
 
   /hub/endpoints:
     get:
