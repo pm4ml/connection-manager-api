@@ -2,7 +2,7 @@
 set -eo pipefail
 
 npm ci
-npm run backend:start-functional
+npm run backend:start
 
 cd ./test/functional-tests
 
