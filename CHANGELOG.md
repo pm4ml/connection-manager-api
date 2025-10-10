@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.0](https://github.com/pm4ml/connection-manager-api/compare/v3.0.3...v3.1.0) (2025-10-10)
+
+
+### Features
+
+* add health checks and automated db migration ([b92c519](https://github.com/pm4ml/connection-manager-api/commit/b92c519b17afd6b5c0fd7caaa9b6af5a821d3984))
+
+
+### Bug Fixes
+
+* docker profile usage ([ae2c207](https://github.com/pm4ml/connection-manager-api/commit/ae2c207b2c013c1090c18bb303c38d3c117ebbfd))
+* update health check path to /api/health ([3d4c22e](https://github.com/pm4ml/connection-manager-api/commit/3d4c22eca787e9c9e3bbbf23323473d2be2049d1))
+* use imported docker image ([648216b](https://github.com/pm4ml/connection-manager-api/commit/648216b6389e61ce53a1a256ec504022f2ca1e90))
+* use SELECT query for db health check instead of ping ([dc78a67](https://github.com/pm4ml/connection-manager-api/commit/dc78a6751580a3d52341df305ce3720b2565f98a))
+
+
+### Refactor
+
+* use dependency injection for database in health check ([296da19](https://github.com/pm4ml/connection-manager-api/commit/296da195a32ca87c176b00632aafacd0f7daf857))
+
+
+### Chore
+
+* bump ci version ([630b75f](https://github.com/pm4ml/connection-manager-api/commit/630b75f33d5b1c3749f300198960396f050a913b))
+* bump deps ([4ef8626](https://github.com/pm4ml/connection-manager-api/commit/4ef8626afc76f73a7b42d213554338ce276c75b1))
+* cleanup ([60a065c](https://github.com/pm4ml/connection-manager-api/commit/60a065c7975ce2dc6c7189c4cfa77534e39f92ba))
+* update copyright headers in health files ([b93d901](https://github.com/pm4ml/connection-manager-api/commit/b93d90160a2daa61e3db8639d9f367e876ecba27))
+
 ### [3.0.3](https://github.com/pm4ml/connection-manager-api/compare/v3.0.2...v3.0.3) (2025-10-03)
 
 
