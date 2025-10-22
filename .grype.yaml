@@ -35,6 +35,9 @@ ignore:
   - vulnerability: GHSA-wf5p-g6vw-rhxx
     package:
       name: axios
+  - vulnerability: GHSA-4hjh-wcwx-xvwj
+    package:
+      name: axios
 
 # Set output format defaults
 output:

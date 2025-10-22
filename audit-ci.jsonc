@@ -5,29 +5,16 @@
   "high": true,
   "critical": true,
   "allowlist": [
-    "GHSA-44fp-w29j-9vj5", // https://github.com/advisories/GHSA-44fp-w29j-9vj5
-    "GHSA-4pg4-qvpc-4q3h", // https://github.com/advisories/GHSA-4pg4-qvpc-4q3h
     "GHSA-72xf-g2v4-qvf3", // https://github.com/advisories/GHSA-72xf-g2v4-qvf3
     "GHSA-hrpp-h998-j3pp", // https://github.com/advisories/GHSA-hrpp-h998-j3pp
     "GHSA-p8p7-x288-28g6", // https://github.com/advisories/GHSA-p8p7-x288-28g6
     "GHSA-qwcr-r2fm-qrc7", // https://github.com/advisories/GHSA-qwcr-r2fm-qrc7
-    "GHSA-wm7h-9275-46v2", // https://github.com/advisories/GHSA-wm7h-9275-46v2,
-    "GHSA-282f-qqgm-c34q", // https://github.com/advisories/GHSA-282f-qqgm-c34q
-    "GHSA-6vfc-qv3f-vr6c", // https://github.com/advisories/GHSA-6vfc-qv3f-vr6c
-    "GHSA-7fh5-64p2-3v2j", // https://github.com/advisories/GHSA-7fh5-64p2-3v2j
-    "GHSA-cgfm-xwp7-2cvr", // https://github.com/advisories/GHSA-cgfm-xwp7-2cvr
-    "GHSA-ghr5-ch3p-vcr6", // https://github.com/advisories/GHSA-ghr5-ch3p-vcr6
-    "GHSA-mjxr-4v3x-q3m4", // https://github.com/advisories/GHSA-mjxr-4v3x-q3m4
-    "GHSA-p9pc-299p-vxgp", // https://github.com/advisories/GHSA-p9pc-299p-vxgp
-    "GHSA-phwq-j96m-2c2q", // https://github.com/advisories/GHSA-phwq-j96m-2c2q
-    "GHSA-rjqq-98f6-6j3r", // https://github.com/advisories/GHSA-rjqq-98f6-6j3r
-    "GHSA-rm97-x556-q36h", // https://github.com/advisories/GHSA-rm97-x556-q36h
     "GHSA-fjxv-7rqg-78g4", // https://github.com/advisories/GHSA-fjxv-7rqg-78g4
-    "GHSA-v88g-cgmw-v5xw", // https://github.com/advisories/GHSA-v88g-cgmw-v5xw
     "GHSA-72xf-g2v4-qvf3",
     "GHSA-hrpp-h998-j3pp",
     "GHSA-p8p7-x288-28g6",
     "GHSA-jr5f-v2jv-69x6",
-    "GHSA-wf5p-g6vw-rhxx"
+    "GHSA-wf5p-g6vw-rhxx",
+    "GHSA-4hjh-wcwx-xvwj"
   ]
 }
