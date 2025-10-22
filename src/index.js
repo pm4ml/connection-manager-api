@@ -29,8 +29,8 @@ const run = async ({
   createDFSP = defaultCreateDFSP,
   http = nodeHttp,
 } = {}) => {
-  logger.info('connection-manager-api starting with constants:', constants);
-  logger.info('connection-manager-api starting with process env:', process.env);
+  logger.debug('connection-manager-api starting with constants:', constants);
+  logger.debug('connection-manager-api starting with process env:', process.env);
 
   const appConnected = await connect();
 

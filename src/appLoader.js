@@ -92,6 +92,7 @@ exports.connect = async () => {
       req.context = {
         pkiEngine,
         certManager,
+        db: db.knex,
       };
       next();
     },

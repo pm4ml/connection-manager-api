@@ -2,6 +2,65 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.0](https://github.com/pm4ml/connection-manager-api/compare/v3.0.3...v3.1.0) (2025-10-10)
+
+
+### Features
+
+* add health checks and automated db migration ([b92c519](https://github.com/pm4ml/connection-manager-api/commit/b92c519b17afd6b5c0fd7caaa9b6af5a821d3984))
+
+
+### Bug Fixes
+
+* docker profile usage ([ae2c207](https://github.com/pm4ml/connection-manager-api/commit/ae2c207b2c013c1090c18bb303c38d3c117ebbfd))
+* update health check path to /api/health ([3d4c22e](https://github.com/pm4ml/connection-manager-api/commit/3d4c22eca787e9c9e3bbbf23323473d2be2049d1))
+* use imported docker image ([648216b](https://github.com/pm4ml/connection-manager-api/commit/648216b6389e61ce53a1a256ec504022f2ca1e90))
+* use SELECT query for db health check instead of ping ([dc78a67](https://github.com/pm4ml/connection-manager-api/commit/dc78a6751580a3d52341df305ce3720b2565f98a))
+
+
+### Refactor
+
+* use dependency injection for database in health check ([296da19](https://github.com/pm4ml/connection-manager-api/commit/296da195a32ca87c176b00632aafacd0f7daf857))
+
+
+### Chore
+
+* bump ci version ([630b75f](https://github.com/pm4ml/connection-manager-api/commit/630b75f33d5b1c3749f300198960396f050a913b))
+* bump deps ([4ef8626](https://github.com/pm4ml/connection-manager-api/commit/4ef8626afc76f73a7b42d213554338ce276c75b1))
+* cleanup ([60a065c](https://github.com/pm4ml/connection-manager-api/commit/60a065c7975ce2dc6c7189c4cfa77534e39f92ba))
+* update copyright headers in health files ([b93d901](https://github.com/pm4ml/connection-manager-api/commit/b93d90160a2daa61e3db8639d9f367e876ecba27))
+
+### [3.0.3](https://github.com/pm4ml/connection-manager-api/compare/v3.0.2...v3.0.3) (2025-10-03)
+
+
+### Bug Fixes
+
+* **csi-1851:** ignored some grype vulnerabilities ([c50c4b2](https://github.com/pm4ml/connection-manager-api/commit/c50c4b2c65ed2111494c421569723c9fbcc5e70b))
+* **csi-1851:** log constants and process.env with debug level ([713c174](https://github.com/pm4ml/connection-manager-api/commit/713c1742e4d74485dca12ecb13f7135dc7454dad))
+
+### [3.0.2](https://github.com/pm4ml/connection-manager-api/compare/v3.0.1...v3.0.2) (2025-09-29)
+
+
+### Bug Fixes
+
+* check for existing DFSP inbound enrollment ([#141](https://github.com/pm4ml/connection-manager-api/issues/141)) ([00c1c20](https://github.com/pm4ml/connection-manager-api/commit/00c1c20e8fc9039726df918147752161a69bbcf4))
+
+### [3.0.1](https://github.com/pm4ml/connection-manager-api/compare/v3.0.0...v3.0.1) (2025-09-11)
+
+
+### Chore
+
+* address new logs ([90de1d1](https://github.com/pm4ml/connection-manager-api/commit/90de1d19003825032d261e5f958a22211541fe86))
+* bump dep ([5308b4f](https://github.com/pm4ml/connection-manager-api/commit/5308b4fca56e2380f7c566308ed3c17ce9835292))
+* fix ([0815f99](https://github.com/pm4ml/connection-manager-api/commit/0815f997d0ca9455f92d50b4c62f0c7d0a74a138))
+* fix ([1f4f935](https://github.com/pm4ml/connection-manager-api/commit/1f4f935a4278d0cc0d126949d798bd53060e96d7))
+* fix ([24fdab6](https://github.com/pm4ml/connection-manager-api/commit/24fdab6ed1c42bbdc529590b8ddb52fd90daf278))
+* int tests ([90b918b](https://github.com/pm4ml/connection-manager-api/commit/90b918b7335db0d3beda73f412b29a8d2769629b))
+* lock ([a7eaa2b](https://github.com/pm4ml/connection-manager-api/commit/a7eaa2b847cd6523dbc0dfbabaca9ec612b1c129))
+* lock ([06482cc](https://github.com/pm4ml/connection-manager-api/commit/06482cc0c0999e5a99c54d15cde3e8b87cd5ff96))
+* lock ([71a9dca](https://github.com/pm4ml/connection-manager-api/commit/71a9dcaff0254c855e58a3d212ce310fbf1769b1))
+* update logging ([a5417de](https://github.com/pm4ml/connection-manager-api/commit/a5417dea955f3cbb05deb41c027e29379088060a))
+
 ## [3.0.0](https://github.com/pm4ml/connection-manager-api/compare/v2.14.1...v3.0.0) (2025-09-10)
 
 
