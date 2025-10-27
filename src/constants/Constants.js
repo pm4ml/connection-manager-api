@@ -71,6 +71,9 @@ module.exports = {
     PORT: env.get('PORT').default('3001').asPortNumber(),
   },
 
+  // If set to true, enables logging of request metadata using Winston.
+  // Note: Enabling this may expose sensitive headers in logs.
+  WINSTON_REQUEST_META_DATA: env.get('WINSTON_REQUEST_META_DATA').default('false').asBool(),
   CLIENT_URL: env.get('CLIENT_URL').default('http://localhost:8081/').asString(),
 
   KEYCLOAK: {
