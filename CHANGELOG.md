@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.1.1](https://github.com/pm4ml/connection-manager-api/compare/v3.1.0...v3.1.1) (2025-10-27)
+
+
+### Bug Fixes
+
+* add config for winston meta data ([#146](https://github.com/pm4ml/connection-manager-api/issues/146)) ([7aa190b](https://github.com/pm4ml/connection-manager-api/commit/7aa190b38bdfb62eea4fec073a44d047cc04bec0))
+
 ## [3.1.0](https://github.com/pm4ml/connection-manager-api/compare/v3.0.3...v3.1.0) (2025-10-10)
 
 
