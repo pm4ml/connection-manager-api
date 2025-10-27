@@ -64,8 +64,8 @@ describe('JWSCertsService Tests', () => {
         dfspId: 'DFSP_TEST',
         name: 'DFSP'
       };
-      const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
-      dfspId = resultDfsp.id;
+      await PkiService.createDFSP(ctx, dfsp);
+      dfspId = dfsp.dfspId;
       const result = await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
       expect(result.publicKey).toBe(publicKey);
       const certs = await JWSCertsService.getAllDfspJWSCerts(ctx);
@@ -101,8 +101,8 @@ describe('JWSCertsService Tests', () => {
         dfspId: 'DFSP_TEST',
         name: 'DFSP'
       };
-      const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
-      dfspId = resultDfsp.id;
+      await PkiService.createDFSP(ctx, dfsp);
+      dfspId = dfsp.dfspId;
       await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
       await JWSCertsService.deleteDfspJWSCerts(ctx, dfspId);
       await expect(JWSCertsService.getDfspJWSCerts(ctx, dfspId)).rejects.toBeInstanceOf(NotFoundError);

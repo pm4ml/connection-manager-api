@@ -140,7 +140,6 @@ class VaultPKIEngine extends PKIEngine {
   }
 
   async deleteAllDFSPData (dfspId) {
-    this.validateId(dfspId, 'dfspId');
     return Promise.all([
       this.deleteAllDFSPOutboundEnrollments(dfspId),
       this.deleteAllDFSPInboundEnrollments(dfspId),
@@ -233,7 +232,6 @@ class VaultPKIEngine extends PKIEngine {
 
   // region DFSP JWS
   async setDFSPJWSCerts (dfspId, value) {
-    this.validateId(dfspId, 'dfspId');
     return this.setSecret(`${vaultPaths.JWS_CERTS}/${dfspId}`, value);
   }
 
@@ -242,7 +240,6 @@ class VaultPKIEngine extends PKIEngine {
   }
 
   async getDFSPJWSCerts (dfspId) {
-    this.validateId(dfspId, 'dfspId');
     return this.getSecret(`${vaultPaths.JWS_CERTS}/${dfspId}`);
   }
 
@@ -259,7 +256,6 @@ class VaultPKIEngine extends PKIEngine {
   }
 
   async deleteDFSPJWSCerts (dfspId) {
-    this.validateId(dfspId, 'dfspId');
     return this.deleteSecret(`${vaultPaths.JWS_CERTS}/${dfspId}`);
   }
   // endregion

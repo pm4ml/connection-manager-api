@@ -39,8 +39,8 @@ exports.createDfspJWSCerts = async (ctx, dfspId, body) => {
     validations,
     validationState,
   };
-  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
-  await pkiEngine.setDFSPJWSCerts(dbDfspId, jwsData);
+  await DFSPModel.findIdByDfspId(dfspId);
+  await pkiEngine.setDFSPJWSCerts(dfspId, jwsData);
   return jwsData;
 };
 
@@ -56,7 +56,8 @@ exports.createDfspExternalJWSCerts = async (ctx, body, sourceDfspId) => {
 
   const { pkiEngine } = ctx;
   const result = [];
-  for(let i = 0; i < externalDfspList.length; i++) {
+
+  for (let i = 0; i < externalDfspList.length; i++) {
     const dfspJwsItem = externalDfspList[i];
     const { dfspId, publicKey } = dfspJwsItem;
     const { validations, validationState } = pkiEngine.validateJWSCertificate(publicKey);
@@ -104,8 +105,7 @@ exports.setHubJWSCerts = async (ctx, body) => {
 exports.getDfspJWSCerts = async (ctx, dfspId) => {
   await PkiService.validateDfsp(ctx, dfspId);
   const { pkiEngine } = ctx;
-  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
-  return pkiEngine.getDFSPJWSCerts(dbDfspId);
+  return pkiEngine.getDFSPJWSCerts(dfspId);
 };
 
 exports.getHubJWSCerts = async (ctx) => {
@@ -115,8 +115,7 @@ exports.getHubJWSCerts = async (ctx) => {
 exports.deleteDfspJWSCerts = async (ctx, dfspId) => {
   await PkiService.validateDfsp(ctx, dfspId);
   const { pkiEngine } = ctx;
-  const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
-  await pkiEngine.deleteDFSPJWSCerts(dbDfspId);
+  await pkiEngine.deleteDFSPJWSCerts(dfspId);
 };
 
 exports.getAllDfspJWSCerts = async (ctx) => {
