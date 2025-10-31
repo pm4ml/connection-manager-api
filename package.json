@@ -52,6 +52,9 @@
     "backend:restart": "npm run backend:stop && npm run backend:start"
   },
   "keywords": [
+    "MCM",
+    "connection-manager",
+    "pm4ml",
     "swagger"
   ],
   "overrides": {

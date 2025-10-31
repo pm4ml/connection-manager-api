@@ -1,6 +1,10 @@
 #!/bin/bash
 set -eo pipefail
 
+if [ ! -f .env ]; then
+  cp .env-example .env
+fi
+
 npm ci
 npm run backend:start-functional
 
