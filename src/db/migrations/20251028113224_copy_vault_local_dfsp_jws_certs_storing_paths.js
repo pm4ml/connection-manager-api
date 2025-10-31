@@ -45,9 +45,9 @@ exports.up = async function(knex) {
     // Query all DFSPs from database
     const dfsps = await knex('dfsps').select('id', 'dfsp_id');
     const dfspMap = new Map(dfsps.map(d => [String(d.id), d.dfsp_id]));
-    logger.verbose(`📊 Found ${dfsps.length} DFSPs in database`);
+    logger.info(`📊 Found ${dfsps.length} DFSPs in database: `, { DFSPs: Object.fromEntries(dfspMap) });
 
-    // List all JWS certificate keys in Vault
+    // List numeric JWS certificate keys in Vault
     const allKeys = await pkiEngine.listSecrets(vaultPaths.JWS_CERTS);
     const numericKeys = allKeys.filter(key => /^\d+$/.test(key));
     if (numericKeys.length === 0) {
@@ -81,14 +81,14 @@ exports.up = async function(knex) {
 
         logger.verbose(`✅ Migrated: dbId ${dbId} → dfspId ${dfspId}`);
         migrated++;
-        // Note: Old numeric keys are kept as backup (per user decision)
+        // Note: Old numeric keys are kept as backup
       } catch (error) {
         logger.warn(`❌ Error migrating dbId ${dbId}: `, error);
         errors++;
       }
     }
 
-    logger.info(`migration completed: `, { migrated, skipped, errors });
+    logger.info(`migration completed: `, { errors, migrated, skipped });
     if (errors > 0) {
       throw new Error(`Migration completed with ${errors} error(s)`);
     }
@@ -98,8 +98,8 @@ exports.up = async function(knex) {
     throw error;
   } finally {
     if (pkiEngine) {
-      pkiEngine?.disconnect();
-      logger.info('🔌 Vault disconnected');
+      pkiEngine.disconnect();
+      logger.info('vault disconnected');
     }
   }
 };
@@ -109,5 +109,5 @@ exports.up = async function(knex) {
  * @returns { Promise<void> }
  */
 exports.down = async function(knex) {
-  logger.warn('⚠️  Rollback not supported for Vault migration');
+  logger.warn('⚠️  Rollback not supported for JWS Vault Migration');
 };
