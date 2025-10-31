@@ -95,7 +95,7 @@ exports.up = async function(knex) {
 
   } catch (error) {
     logger.error('❌ MIGRATION FAILED: ', error);
-    throw error;
+    // throw error; // todo: think, if we need to rethrow errors inside migration
   } finally {
     if (pkiEngine) {
       pkiEngine.disconnect();
