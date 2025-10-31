@@ -2,7 +2,7 @@
 set -eo pipefail
 
 if [ ! -f .env ]; then
-  cp .env-example .env
+  cp .env-func .env
 fi
 
 npm ci
