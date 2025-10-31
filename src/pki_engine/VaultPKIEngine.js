@@ -10,30 +10,18 @@
 
 const vault = require('node-vault');
 const forge = require('node-forge');
-const Validation = require('./Validation');
-const ValidationCodes = require('./ValidationCodes');
-const moment = require('moment');
-const CAType = require('../models/CAType');
-const PKIEngine = require('./PKIEngine');
-const InvalidEntityError = require('../errors/InvalidEntityError');
-const NotFoundError = require('../errors/NotFoundError');
 const tls = require('tls');
 const Joi = require('joi');
-const ValidationError = require('../errors/ValidationError');
-const util = require('util');
+const moment = require('moment');
 
-// TODO: find and link document containing rules on allowable paths
-const vaultPaths = {
-  HUB_SERVER_CERT: 'hub-server-cert',
-  DFSP_SERVER_CERT: 'dfsp-server-cert',
-  JWS_CERTS: 'dfsp-jws-certs',
-  EXTERNAL_JWS_CERTS: 'dfsp-external-jws-certs',
-  HUB_ENDPOINTS: 'hub-endpoints',
-  DFSP_CA: 'dfsp-ca',
-  HUB_CA_DETAILS: 'hub-ca-details',
-  DFSP_OUTBOUND_ENROLLMENT: 'dfsp-outbound-enrollment',
-  DFSP_INBOUND_ENROLLMENT: 'dfsp-inbound-enrollment',
-};
+const PKIEngine = require('./PKIEngine');
+const Validation = require('./Validation');
+const ValidationCodes = require('./ValidationCodes');
+const CAType = require('../models/CAType');
+const InvalidEntityError = require('../errors/InvalidEntityError');
+const NotFoundError = require('../errors/NotFoundError');
+const ValidationError = require('../errors/ValidationError');
+const { vaultPaths } = require('../constants/Constants');
 
 const VALID_SIGNED = 'VALID(SIGNED)';
 const VALID_SELF_SIGNED = 'VALID(SELF_SIGNED)';
