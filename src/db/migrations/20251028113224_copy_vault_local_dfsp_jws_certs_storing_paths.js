@@ -62,7 +62,6 @@ exports.up = async function(knex) {
     for (const dbId of numericKeys) {
       try {
         const dfspId = dfspMap.get(dbId);
-
         if (!dfspId) {
           logger.warn(`⚠️  Skipping dbId ${dbId}: No DFSP found in database`);
           skipped++;
@@ -84,7 +83,7 @@ exports.up = async function(knex) {
         migrated++;
         // Note: Old numeric keys are kept as backup (per user decision)
       } catch (error) {
-        logger.warn(`❌ Error migrating dbId ${dbId}:`, error.message);
+        logger.warn(`❌ Error migrating dbId ${dbId}: `, error);
         errors++;
       }
     }
@@ -98,7 +97,6 @@ exports.up = async function(knex) {
     logger.error('❌ MIGRATION FAILED: ', error);
     throw error;
   } finally {
-    // Disconnect from Vault
     if (pkiEngine) {
       pkiEngine?.disconnect();
       logger.info('🔌 Vault disconnected');

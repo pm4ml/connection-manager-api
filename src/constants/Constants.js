@@ -16,15 +16,20 @@
  ******************************************************************************/
 
 require('dotenv/config');
-const fs = require('fs');
+const fs = require('node:fs');
+const pathModule = require('node:path');
 const { from } = require('env-var');
 const constValues = require('./constValues');
 
 function getFileContent (path) {
-  if (!fs.existsSync(path)) {
-    throw new Error(`File ${path} doesn't exist`);
+  const resolvedPath = path.startsWith('/')
+    ? path
+    : pathModule.resolve(__dirname, '../..', path);
+
+  if (!fs.existsSync(resolvedPath)) {
+    throw new Error(`File ${resolvedPath} doesn't exist`);
   }
-  return fs.readFileSync(path);
+  return fs.readFileSync(resolvedPath);
 }
 
 if (process.env.TEST) {

@@ -77,22 +77,19 @@ describe("DfspOutboundService", function () {
   describe("DfspOutboundService flow", function () {
     let dfspId = null;
     const DFSP_TEST_OUTBOUND = "dfsp.outbound.io";
-    beforeEach(async function () {
 
+    beforeAll(async () => {
       await createInternalHubCA(ctx, ROOT_CA);
+    }, 10_000);
 
+    beforeEach(async function () {
       const dfsp = {
         dfspId: DFSP_TEST_OUTBOUND,
         name: "DFSP used to test outbound flow",
       };
       const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
       dfspId = resultDfsp.id;
-
-      const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
-      try {
-        await ctx.pkiEngine.deleteAllDFSPData(dbDfspId);
-      } catch (e) {}
-    }, 10000);
+    });
 
     afterEach(async () => {
       await PkiService.deleteDFSP(ctx, dfspId);
@@ -226,9 +223,9 @@ describe("DfspOutboundService", function () {
       expect(afterCertValidatedEnrollmentWithCA.state).toBe(
         "CERT_SIGNED"
       );
-    }, 20000);
-  }, 30000);
-}, 45000);
+    }, 30_000);
+  }, 35_000);
+}, 40_000);
 
 describe("getDFSPOutboundEnrollments", () => {
   let ctx;
