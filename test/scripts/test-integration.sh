@@ -13,7 +13,7 @@ source "${SCRIPT_DIR}/env.sh"
 
 echo "Running in CI environment..."
 if [ ! -f .env ]; then
-  cp .env-example .env
+  cp ./test/.env-func  .env
 fi
 npm run backend:start
 
