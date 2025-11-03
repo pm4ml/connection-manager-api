@@ -12,9 +12,6 @@ echo "Starting coverage tests..."
 source "${SCRIPT_DIR}/env.sh"
 
 echo "Running in CI environment..."
-if [ ! -f .env ]; then
-  cp ./test/.env-func  .env
-fi
 npm run backend:start
 
 # Run coverage tests with NYC
