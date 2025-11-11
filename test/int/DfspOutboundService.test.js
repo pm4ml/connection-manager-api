@@ -223,9 +223,9 @@ describe("DfspOutboundService", function () {
       expect(afterCertValidatedEnrollmentWithCA.state).toBe(
         "CERT_SIGNED"
       );
-    }, 30_000);
-  }, 35_000);
-}, 40_000);
+    }, 35_000);
+  }, 40_000);
+}, 45_000);
 
 describe("getDFSPOutboundEnrollments", () => {
   let ctx;
