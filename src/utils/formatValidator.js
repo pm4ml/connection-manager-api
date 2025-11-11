@@ -82,5 +82,11 @@ exports.validateDfspIdForKeycloak = (dfspId) => {
   if (!dfspId || dfspId.length < 3 || dfspId.length > 255) {
     throw new ValidationError(`DFSP ID must be between 3 and 255 characters for Keycloak compatibility`);
   }
+
+  const invalidChars = /[!@#$%^&*()+=\[\]{};':"\\|,.<>?~`]/;
+  if (invalidChars.test(dfspId)) {
+    throw new ValidationError(`DFSP ID contains invalid characters. Only alphanumeric characters, hyphens, and underscores are allowed.`);
+  }
+
   return true;
 };

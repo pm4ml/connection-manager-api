@@ -15,6 +15,7 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 const Constants = require('../constants/Constants');
+const { logger } = require('../log/logger');
 
 const tls = require('tls');
 const fs = require('fs');
@@ -38,37 +39,37 @@ const addCertsToContextFromFile = (context, filePath) => {
 let origCreateSecureContext = null;
 
 const enableCustomRootCAs = () => {
-  console.log('Enabling custom root CAs and certificate chain option');
+  logger.info('Enabling custom root CAs and certificate chain option');
   if (origCreateSecureContext) {
-    console.log('Custom root CAs was already enabled');
+    logger.info('Custom root CAs was already enabled');
     return;
   }
   origCreateSecureContext = tls.createSecureContext;
 
   if (Constants.EXTRA_TLS.EXTRA_CERTIFICATE_CHAIN_FILE_NAME) {
-    console.log(`Will load certificate chain from ${Constants.EXTRA_TLS.EXTRA_CERTIFICATE_CHAIN_FILE_NAME}`);
+    logger.info(`Will load certificate chain from ${Constants.EXTRA_TLS.EXTRA_CERTIFICATE_CHAIN_FILE_NAME}`);
   } else {
-    console.log(`Not loading certificate chain as it wasn't specified at Constants.EXTRA_TLS.EXTRA_CERTIFICATE_CHAIN_FILE_NAME: ${Constants.EXTRA_TLS.EXTRA_CERTIFICATE_CHAIN_FILE_NAME}`);
+    logger.info(`Not loading certificate chain as it wasn't specified at Constants.EXTRA_TLS.EXTRA_CERTIFICATE_CHAIN_FILE_NAME: ${Constants.EXTRA_TLS.EXTRA_CERTIFICATE_CHAIN_FILE_NAME}`);
   }
   if (Constants.EXTRA_TLS.EXTRA_ROOT_CERT_FILE_NAME) {
-    console.log(`Will load certificate root from ${Constants.EXTRA_TLS.EXTRA_ROOT_CERT_FILE_NAME}`);
+    logger.info(`Will load certificate root from ${Constants.EXTRA_TLS.EXTRA_ROOT_CERT_FILE_NAME}`);
   } else {
-    console.log(`Not loading certificate root as it wasn't specified at Constants.EXTRA_TLS.EXTRA_ROOT_CERT_FILE_NAME: ${Constants.EXTRA_TLS.EXTRA_ROOT_CERT_FILE_NAME}`);
+    logger.info(`Not loading certificate root as it wasn't specified at Constants.EXTRA_TLS.EXTRA_ROOT_CERT_FILE_NAME: ${Constants.EXTRA_TLS.EXTRA_ROOT_CERT_FILE_NAME}`);
   }
 
   tls.createSecureContext = options => {
     const context = origCreateSecureContext(options);
     if (Constants.EXTRA_TLS.EXTRA_CERTIFICATE_CHAIN_FILE_NAME) {
-      console.log(`Loading certificate chain from ${Constants.EXTRA_TLS.EXTRA_CERTIFICATE_CHAIN_FILE_NAME}`);
+      logger.info(`Loading certificate chain from ${Constants.EXTRA_TLS.EXTRA_CERTIFICATE_CHAIN_FILE_NAME}`);
       addCertsToContextFromFile(context, Constants.EXTRA_TLS.EXTRA_CERTIFICATE_CHAIN_FILE_NAME);
     } else {
-      console.log(`Not loading certificate chain as it wasn't specified at Constants.EXTRA_TLS.EXTRA_CERTIFICATE_CHAIN_FILE_NAME: ${Constants.EXTRA_TLS.EXTRA_CERTIFICATE_CHAIN_FILE_NAME}`);
+      logger.info(`Not loading certificate chain as it wasn't specified at Constants.EXTRA_TLS.EXTRA_CERTIFICATE_CHAIN_FILE_NAME: ${Constants.EXTRA_TLS.EXTRA_CERTIFICATE_CHAIN_FILE_NAME}`);
     }
     if (Constants.EXTRA_TLS.EXTRA_ROOT_CERT_FILE_NAME) {
-      console.log(`Loading certificate root from ${Constants.EXTRA_TLS.EXTRA_ROOT_CERT_FILE_NAME}`);
+      logger.info(`Loading certificate root from ${Constants.EXTRA_TLS.EXTRA_ROOT_CERT_FILE_NAME}`);
       addCertsToContextFromFile(context, Constants.EXTRA_TLS.EXTRA_ROOT_CERT_FILE_NAME);
     } else {
-      console.log(`Not loading certificate root as it wasn't specified at Constants.EXTRA_TLS.EXTRA_ROOT_CERT_FILE_NAME: ${Constants.EXTRA_TLS.EXTRA_ROOT_CERT_FILE_NAME}`);
+      logger.info(`Not loading certificate root as it wasn't specified at Constants.EXTRA_TLS.EXTRA_ROOT_CERT_FILE_NAME: ${Constants.EXTRA_TLS.EXTRA_ROOT_CERT_FILE_NAME}`);
     }
     return context;
   };

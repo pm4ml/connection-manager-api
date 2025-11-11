@@ -20,6 +20,7 @@
 const winston = require('winston');
 const expressWinston = require('express-winston');
 const { loggerFactory } = require('@mojaloop/central-services-logger/src/contextLogger');
+const Constants = require('../constants/Constants');
 
 const createWinstonLogger = () => {
   return expressWinston.logger({
@@ -30,7 +31,7 @@ const createWinstonLogger = () => {
     //   winston.format.colorize(),
     //   winston.format.json()
     // ),
-    meta: true,
+    meta: Constants.WINSTON_REQUEST_META_DATA,
     msg: 'HTTP {{req.method}} {{req.url}}',
     expressFormat: true,
     colorize: false,

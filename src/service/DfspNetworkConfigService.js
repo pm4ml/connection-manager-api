@@ -128,37 +128,24 @@ exports.getDfspStatus = async (ctx, dfspId) => {
 
     // ENDPOINTS
     endpoints = await DFSPEndpointItemModel.findObjectAll(dfspId);
-    console.log('endpoints:');
-    console.log(endpoints);
-    console.log('endpoints stringify:');
-    console.log(JSON.stringify(endpoints));
+
+    log.debug('endpoints:', endpoints);
 
     // CSR
     // csrexchout = await DfspOutboundEnrollmentModel.findAllDfsp(dfspId);
-    //  console.log('csrexchout:');
-    //  console.log(csrexchout);
-    //  console.log('csrexchout stringify:');
-    //  console.log(JSON.stringify(csrexchout));
+    //  log.debug('csrexchout:', csrexchout);
     //
     //  csrexchin = await DfspInboundEnrollmentModel.findAllDfsp(dfspId);
-    //  console.log('csrexchin:');
-    //  console.log(csrexchin);
-    //  console.log('csrexchin stringify:');
-    //  console.log(JSON.stringify(csrexchin));
+    //  log.debug('csrexchin:', csrexchin);
 
     // SERVER_CERTIFICATES_EXCHANGE
     // servercerts = await DfspServerCertsModel.findDfspId(dfspId);
-    //  console.log('servercerts:');
-    //  console.log(servercerts);
-    //  console.log('servercerts stringify:');
-    //  console.log(JSON.stringify(servercerts));
+    //  log.debug('servercerts:', servercerts);
 
     // JWS_CERTIFICATES
     //  jwscerts = await DfspJWSCertsModel.findDfspId(dfspId);
-    //  console.log('jwscerts:');
-    //  console.log(jwscerts);
-    //  console.log('jwscerts stringify:');
-    //  console.log(JSON.stringify(jwscerts));
+    //  log.debug('jwscerts:', jwscerts);
+
   } catch (error) {
     if (error instanceof NotFoundError) {
       throw new NotFoundError(`Status for environment: dfsp: ${dfspId} not found`);

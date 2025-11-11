@@ -25,6 +25,8 @@
  --------------
  ******/
 
+require('../test-env-setup');
+
 jest.mock('#src/db/database', () => ({
   executeWithErrorCount: jest.fn()
 }));

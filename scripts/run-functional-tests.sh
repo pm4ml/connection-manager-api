@@ -6,7 +6,7 @@ if [ ! -f .env ]; then
 fi
 
 npm ci
-npm run backend:start-functional
+npm run backend:start
 
 cd ./test/functional-tests
 

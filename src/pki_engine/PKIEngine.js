@@ -19,6 +19,7 @@ const { getValidationConfig } = require('./ValidationsConfiguration');
 const ValidationCodes = require('./ValidationCodes');
 const Validation = require('./Validation');
 const forge = require('node-forge');
+const { logger } = require('../log/logger');
 
 /**
  * PKI Engine interface
@@ -155,7 +156,7 @@ class PKIEngine {
           validations.push(this.verifyIntermediateChain(rootCertificate, intermediateChain, ValidationCodes.VALIDATION_CODES.VERIFY_CHAIN_CERTIFICATES.code));
           break;
         default:
-          console.log(`Validation not yet implemented: ${validationCode}`);
+          logger.info(`Validation not yet implemented: ${validationCode}`);
           break;
       }
     }
@@ -204,7 +205,7 @@ class PKIEngine {
           validations.push(this.verifyCertificateChainPublicKeyMatchPrivateKey(rootCertificate + intermediateChain, key, ValidationCodes.VALIDATION_CODES.CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH.code));
           break;
         default:
-          console.log(`Validation not yet implemented: ${validationCode}`);
+          logger.info(`Validation not yet implemented: ${validationCode}`);
           break;
       }
     }
@@ -336,7 +337,7 @@ class PKIEngine {
           validations.push(this.verifyCertificateSignedByDFSPCA(enrollment.certificate, enrollment.dfspCA, ValidationCodes.VALIDATION_CODES.CERTIFICATE_SIGNED_BY_DFSP_CA.code));
           break;
         default:
-          console.log(`Validation not yet implemented: ${validationCode}`);
+          logger.info(`Validation not yet implemented: ${validationCode}`);
           break;
       }
     }
