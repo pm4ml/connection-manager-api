@@ -36,7 +36,7 @@ services:
 
   connection-manager-migration:
     image: infitx/connection-manager-api:local
-    pull_policy: if_not_present
+    pull_policy: missing
     build:
       context: .
       dockerfile: Dockerfile
@@ -56,7 +56,7 @@ services:
 
   connection-manager-api:
     image: infitx/connection-manager-api:local
-    pull_policy: if_not_present
+    pull_policy: missing
     build:
       context: .
       dockerfile: Dockerfile
