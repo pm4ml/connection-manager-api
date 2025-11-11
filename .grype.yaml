@@ -29,6 +29,18 @@ ignore:
   - vulnerability: GHSA-fjxv-7rqg-78g4
     package:
       name: form-data
+  - vulnerability: GHSA-jr5f-v2jv-69x6
+    package:
+      name: axios
+  - vulnerability: GHSA-wf5p-g6vw-rhxx
+    package:
+      name: axios
+  - vulnerability: GHSA-4hjh-wcwx-xvwj
+    package:
+      name: axios
+  - vulnerability: GHSA-vj76-c3g6-qr5v
+    package:
+      name: tar-fs
   - vulnerability: CVE-2025-9230
   - vulnerability: CVE-2025-9231
   - vulnerability: CVE-2025-9232

@@ -1,56 +1,124 @@
+configs:
+  realm-template:
+    file: ./docker/keycloak/dfsps-realm.json
+
+volumes:
+  keycloak-import: {}
+
 services:
 
-  connection-manager-api:
+  connection-manager-ui:
+    # This builds the image from a locally cloned repo
+    build:
+      context: ../connection-manager-ui
+      dockerfile: Dockerfile
+      args:
+        - AUTH_ENABLED=TRUE
+        - REACT_APP_COMMIT=${REACT_APP_COMMIT:-unknown}
+        - REACT_APP_VERSION=${REACT_APP_VERSION:-unknown}
+    hostname: connection-manager-ui
+    profiles:
+      - dev
+    environment:
+      - AUTH_ENABLED=TRUE
+      - API_BASE_URL=http://localhost:3001
+      - LOGIN_URL=http://localhost:3001/api/auth/login
+      - LOGOUT_URL=http://localhost:3001/api/auth/logout
+      - CHECK_SESSION_URL=http://localhost:3001/api/auth/profile
+    tty: true
+    stdin_open: true
+    ports:
+      - "8081:8080"
+    restart: always
+    depends_on:
+      connection-manager-api:
+        condition: service_healthy
+
+  connection-manager-migration:
+    image: infitx/connection-manager-api:local
+    pull_policy: if_not_present
     build:
       context: .
       dockerfile: Dockerfile
     profiles:
       - functional
-    depends_on:
-      connection-manager-db:
-        condition: service_healthy
-      vault-dev:
-        condition: service_healthy
-    volumes:
-      - ./docker/vault/tmp:/vault/tmp
     environment:
-      - PORT=3001
       - DATABASE_HOST=connection-manager-db
       - DATABASE_PORT=3306
       - DATABASE_USER=${DBUSER:-mcm}
       - DATABASE_PASSWORD=${DBPASS:-mcm}
       - DATABASE_SCHEMA=${DBUSER:-mcm}
-      - AUTH_ENABLED=false
-      - VAULT_AUTH_METHOD=APP_ROLE
+    depends_on:
+      connection-manager-db:
+        condition: service_healthy
+    command: npm run migrate
+    restart: "no"
+
+  connection-manager-api:
+    image: infitx/connection-manager-api:local
+    pull_policy: if_not_present
+    build:
+      context: .
+      dockerfile: Dockerfile
+    profiles:
+      - functional
+    environment:
+      - DATABASE_HOST=connection-manager-db
+      - DATABASE_PORT=3306
+      - DATABASE_USER=${DBUSER:-mcm}
+      - DATABASE_PASSWORD=${DBPASS:-mcm}
+      - DATABASE_SCHEMA=${DBUSER:-mcm}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-moja123}
+      - PORT=3001
+      - SWITCH_ID=switch
       - VAULT_ENDPOINT=http://vault-dev:8233
+      - VAULT_AUTH_METHOD=APP_ROLE
       - VAULT_ROLE_ID_FILE=/vault/tmp/role-id
       - VAULT_ROLE_SECRET_ID_FILE=/vault/tmp/secret-id
-      - VAULT_PKI_SERVER_ROLE=example.com
       - VAULT_PKI_CLIENT_ROLE=example.com
-      - SWITCH_ID=switch
+      - VAULT_PKI_SERVER_ROLE=example.com
+      - OPENID_ENABLED=false
+      - OPENID_ENABLE_2FA=false
+    volumes:
+      - ./docker/vault/tmp:/vault/tmp
+    tty: true
+    stdin_open: true
     ports:
       - "3001:3001"
+    restart: always
+    depends_on:
+      vault-dev:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      connection-manager-migration:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:3001/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
 
   connection-manager-db:
-    image: mysql/mysql-server
+    image: mysql:9
     ports:
       - "3306:3306"
     volumes:
       - ./docker/sql-init/:/docker-entrypoint-initdb.d/
     environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-modus123}
       - MYSQL_USER=${DBUSER:-mcm}
       - MYSQL_PASSWORD=${DBPASS:-mcm}
       - MYSQL_DATABASE=${DBUSER:-mcm}
-      - MYSQL_ALLOW_EMPTY_PASSWORD=true
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
-      start_period: 40s
-      interval: 30s
+      test: ["CMD-SHELL", "mysql -h localhost -u$$MYSQL_USER -p$$MYSQL_PASSWORD -e 'SELECT 1'"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   vault-dev:
-    image: vault:1.2.1
+    image: hashicorp/vault:1.19
     restart: always
     environment:
       VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8233
@@ -65,6 +133,61 @@ services:
     cap_add:
       - IPC_LOCK
     healthcheck:
-      test: ["CMD-SHELL", "test -f /tmp/service_started"]
+      test: test -f /tmp/service_started
       timeout: 1s
       retries: 20
+
+  # MailHog for email testing
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    healthcheck:
+      test: wget --spider --quiet http://localhost:8025
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  prepare-keycloak-realm:
+    image: steinbrueckri/envsubst
+    working_dir: /work
+    configs:
+      - source: realm-template
+        target: /template/dfsps-realm.json.template
+        mode: 0444
+    volumes:
+      - keycloak-import:/work            # writeable volume shared with Keycloak
+    env_file:
+      - ./docker/keycloak/dfsp-realm.env
+    entrypoint: |
+      sh -c '
+        echo "Rendering realm import ..."
+        envsubst < /template/dfsps-realm.json.template > /work/dfsps-realm.json
+      '
+    restart: "no"
+
+  keycloak:
+    image: keycloak/keycloak:26.3
+    command: start-dev --import-realm
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+      - KC_HEALTH_ENABLED=true
+    volumes:
+      - keycloak-import:/opt/keycloak/data/import
+    ports:
+      - "8080:8080"
+    depends_on:
+      mailhog:
+        condition: service_healthy
+      prepare-keycloak-realm:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000;echo -e 'GET /health/ready HTTP/1.1\\r\\nhost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3;timeout 1 cat <&3 | grep -q UP"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+

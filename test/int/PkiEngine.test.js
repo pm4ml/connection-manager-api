@@ -25,6 +25,7 @@ const Constants = require('../../src/constants/Constants');
 const VaultPKIEngine = require('../../src/pki_engine/VaultPKIEngine');
 const ValidationsConfiguration = require('../../src/pki_engine/ValidationsConfiguration');
 const vaultPKIEngine = new VaultPKIEngine(Constants.vault);
+const logger = require("../../src/log/logger").logger;
 
 describe('verify CSRInfo subject is the same of the CertInfo', () => {
   it('should validate a CSRinfo subject is equals Certinfo subject', async () => {
@@ -589,9 +590,9 @@ describe('PKIEngine', () => {
       });
 
       it('should log a message for unimplemented validation codes', () => {
-        const consoleLogStub = sinon.stub(console, 'log');
+        const logStub = sinon.stub(logger, 'info');
         const result = pkiEngine.performCAValidations(['UNIMPLEMENTED_CODE'], 'intermediateChain', 'rootCertificate', 'key');
-        expect(consoleLogStub.calledOnceWith('Validation not yet implemented: UNIMPLEMENTED_CODE')).toEqual(true);
+        expect(logStub.calledOnceWith('Validation not yet implemented: UNIMPLEMENTED_CODE')).toEqual(true);
         expect(result.validationState).toEqual(ValidationCodes.VALID_STATES.VALID);
       });
      });
@@ -705,18 +706,18 @@ describe('PKIEngine', () => {
   });
 
   it('should log a message for unimplemented validation codes', () => {
-      const consoleLogStub = sinon.stub(console, 'log');
+      const logStub = sinon.stub(logger, 'info');
       const validationCode = 'UNIMPLEMENTED_CODE';
       const result = pkiEngine.performCAValidations([validationCode], 'intermediateChain', 'rootCertificate', 'key');
 
-      expect(consoleLogStub.calledOnceWith(`Validation not yet implemented: ${validationCode}`)).toEqual(true);
+      expect(logStub.calledOnceWith(`Validation not yet implemented: ${validationCode}`)).toEqual(true);
       expect(result.validationState).toEqual(ValidationCodes.VALID_STATES.VALID);
 
-      consoleLogStub.restore();
+      logStub.restore();
     });
 //07/02/2025
     it('should handle multiple validation codes', () => {
-      const consoleLogStub = sinon.stub(console, 'log');
+      const logStub = sinon.stub(logger, 'info');
       const verifyRootCertificateStub = sinon.stub(pkiEngine, 'verifyRootCertificate').returns(new Validation(ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code, true, ValidationCodes.VALID_STATES.VALID));
       const validationCodes = [
         ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code,
@@ -725,11 +726,11 @@ describe('PKIEngine', () => {
       const result = pkiEngine.performCAValidations(validationCodes, 'intermediateChain', 'rootCertificate', 'key');
 
       expect(verifyRootCertificateStub.calledOnceWith('rootCertificate', ValidationCodes.VALIDATION_CODES.VERIFY_ROOT_CERTIFICATE.code)).toEqual(true);
-      expect(consoleLogStub.calledOnceWith('Validation not yet implemented: UNIMPLEMENTED_CODE')).toEqual(true);
+      expect(logStub.calledOnceWith('Validation not yet implemented: UNIMPLEMENTED_CODE')).toEqual(true);
       expect(result.validationState).toEqual(ValidationCodes.VALID_STATES.VALID);
 
       verifyRootCertificateStub.restore();
-      consoleLogStub.restore();
+      logStub.restore();
     });
 
     it('should handle an empty array of validation codes', () => {
@@ -738,7 +739,7 @@ describe('PKIEngine', () => {
     });
 
     it('should handle null values for parameters', () => {
-      const consoleLogStub = sinon.stub(console, 'log');
+      const logStub = sinon.stub(logger, 'info');
 
       // Call the function with null parameters
       const result = pkiEngine.performCAValidations(null, null, null, null);
@@ -750,7 +751,7 @@ describe('PKIEngine', () => {
       expect(Array.isArray(result.validations)).toBe(true);
       expect(result).toHaveProperty('validationState');
 
-      consoleLogStub.restore();
+      logStub.restore();
     });
 
     it.skip('should handle undefined values for parameters', () => {
@@ -908,17 +909,17 @@ describe('PKIEngine', () => {
 
 //07/02/2025
 it('should log a message for an unimplemented validation code', () => {
-  const consoleLogStub = sinon.stub(console, 'log');
+  const logStub = sinon.stub(logger, 'info');
 
   const result = pkiEngine.performCAValidations(['UNKNOWN_CODE'], 'intermediateChain', 'rootCertificate', 'key');
 
-  expect(consoleLogStub.calledOnceWith('Validation not yet implemented: UNKNOWN_CODE')).toEqual(true);
+  expect(logStub.calledOnceWith('Validation not yet implemented: UNKNOWN_CODE')).toEqual(true);
 
   expect(typeof result).toBe('object');
   expect(Array.isArray(result.validations)).toBe(true);
   expect(result).toHaveProperty('validationState');
 
-  consoleLogStub.restore();
+  logStub.restore();
 });
 describe('performEnrollmentValidations', () => {
 
@@ -951,12 +952,12 @@ describe('performEnrollmentValidations', () => {
   });
 
   it('should log a message for an unknown validation code', () => {
-    const consoleLogStub = sinon.stub(console, 'log');
+    const logStub = sinon.stub(logger, 'info');
 
     const enrollment = { csr: 'test-csr', certificate: 'test-cert' };
     pkiEngine.performEnrollmentValidations(['UNKNOWN_CODE'], enrollment);
 
-    expect(consoleLogStub.calledOnceWith('Validation not yet implemented: UNKNOWN_CODE')).toEqual(true);
+    expect(logStub.calledOnceWith('Validation not yet implemented: UNKNOWN_CODE')).toEqual(true);
   });
 
   it('should handle null values for enrollment', () => {
@@ -977,7 +978,7 @@ describe('performEnrollmentValidations', () => {
   });
 
 it('should log message for unimplemented validation code', () => {
-  const consoleLogStub = sinon.stub(console, 'log');
+  const logStub = sinon.stub(logger, 'info');
   const unknownValidationCode = 'UNKNOWN_VALIDATION_CODE';
 
   const result = pkiEngine.performCertificateValidations(
@@ -987,11 +988,11 @@ it('should log message for unimplemented validation code', () => {
     'dummy-root-cert'
   );
 
-  expect(consoleLogStub.calledOnceWith(`Validation not yet implemented: ${unknownValidationCode}`)).toEqual(true);
+  expect(logStub.calledOnceWith(`Validation not yet implemented: ${unknownValidationCode}`)).toEqual(true);
 
   expect(result.validationState).toEqual(ValidationCodes.VALID_STATES.VALID);
 
-  consoleLogStub.restore();
+  logStub.restore();
 });
 
 it('should validate certificate key length 2048 when CERTIFICATE_PUBLIC_KEY_LENGTH_2048 code is passed', () => {

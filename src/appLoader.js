@@ -21,8 +21,9 @@ const cors = require('cors');
 const path = require('path');
 // const app = require('connect')();
 const oas3Tools = require('oas3-tools');
-const logger = require('./log/logger');
-const OAuthHelper = require('./oauth/OAuthHelper');
+const { createWinstonLogger, logger } = require('./log/logger');
+const AuthMiddleware = require('./middleware/AuthMiddleware');
+const SessionConfig = require('./oauth/SessionConfig');
 const HubCAService = require('./service/HubCAService');
 
 const db = require('./db/database');
@@ -50,7 +51,7 @@ exports.connect = async () => {
     openApiValidator: {
       validateSecurity: {
         handlers: {
-          OAuth2: Constants.OAUTH.AUTH_ENABLED ? OAuthHelper.createOAuth2Handler() : () => true,
+          OAuth2: Constants.OPENID.ENABLED ? AuthMiddleware.createOAuth2Handler() : () => true,
         }
       }
     }
@@ -91,19 +92,40 @@ exports.connect = async () => {
       req.context = {
         pkiEngine,
         certManager,
+        db: db.knex,
       };
       next();
     },
     cors(corsUtils.getCorsOptions),
-    logger.createWinstonLogger()
+    createWinstonLogger()
   ];
+
+  // Add authentication middleware if enabled
+  if (Constants.OPENID.ENABLED) {
+    // Add session middleware for browser clients
+    middlewares.push(SessionConfig.createSessionMiddleware());
+
+    // Add authentication middleware for all clients
+    middlewares.push(AuthMiddleware.createAuthMiddleware());
+  } else {
+    middlewares.push((req, res, next) => {
+      const roles = req.headers['x-roles'];
+      if (roles) {
+        try {
+          req.user = { roles: JSON.parse(roles) };
+        } catch (e) {
+          logger.error("Error getting roles from request header: ", e);
+        }
+      }
+      next();
+    });
+  }
 
   app.use(...middlewares);
   const stack = app._router.stack;
   const lastEntries = stack.splice(app._router.stack.length - middlewares.length);
   const firstEntries = stack.splice(0, 5);
   app._router.stack = [...firstEntries, ...lastEntries, ...stack];
-  // console.log(app._router.stack);
 
   return app;
 };

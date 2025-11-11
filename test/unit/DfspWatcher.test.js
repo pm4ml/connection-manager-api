@@ -25,6 +25,8 @@
  --------------
  ******/
 
+require('./test-env-setup');
+
 process.env.PING_PONG_SERVER_URL = 'ping-pong.url';
 
 let mockErrCountInc;
