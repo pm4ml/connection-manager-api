@@ -199,7 +199,7 @@ services:
 
   volume_explorer:
     image: alpine
-    command: cp -r /vault/creds/. /creds/
+    command: sh -c 'cp -r /vault/creds/. /creds/ && tail -f /dev/null'
     volumes:
       - vault-creds:/vault/creds:ro
       - ./docker/vault/tmp:/creds:rw
