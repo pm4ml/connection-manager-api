@@ -209,6 +209,7 @@ services:
     restart: "no"
     profiles:
       - dev
+      - functional
 
   # MailHog for email testing
   mailhog:
