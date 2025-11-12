@@ -83,7 +83,7 @@ exports.connect = async () => {
       throw e;
     }
   }
-  if (!rootCA) {
+  if (!rootCA?.rootCertificate) {
     await HubCAService.createInternalHubCA(ctx, Constants.caCsrParameters);
   }
 

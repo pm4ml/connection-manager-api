@@ -28,11 +28,15 @@
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
         "http://localhost:3001/api/auth/callback",
-        "http://localhost:8081/*",
-        "http://localhost:3000/*"
+        "http://localhost:3000/*",
+        "http://mcm.localhost/api/auth/callback",
+        "http://mcm.localhost:*/api/auth/callback"
       ],
       "webOrigins": [
-        "http://localhost:3001"
+        "http://localhost:3001",
+        "http://localhost:3000",
+        "http://mcm.localhost",
+        "http://mcm.localhost:*"
       ],
       "publicClient": false,
       "protocol": "openid-connect",

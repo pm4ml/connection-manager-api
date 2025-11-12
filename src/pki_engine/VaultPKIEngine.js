@@ -92,7 +92,9 @@ class VaultPKIEngine extends PKIEngine {
     });
 
     const tokenRefreshMs = (creds.auth.lease_duration - 10) * 1000;
-    this.reconnectTimer = setTimeout(this.connect.bind(this), tokenRefreshMs);
+    const MAX_TIMEOUT = 2147483647;
+    const safeTimeout = Math.min(tokenRefreshMs, MAX_TIMEOUT);
+    this.reconnectTimer = setTimeout(this.connect.bind(this), safeTimeout);
   }
 
   disconnect () {
