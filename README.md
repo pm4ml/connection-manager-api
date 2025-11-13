@@ -29,7 +29,7 @@ The system uses OpenID Connect authentication, which is a provider-agnostic appr
 |OPENID_DISCOVERY_URL|OpenID Connect discovery URL|
 |OPENID_CLIENT_ID|Client ID for OpenID authentication|
 |OPENID_CLIENT_SECRET|Client secret for OpenID authentication|
-|OPENID_REDIRECT_URI|Redirect URI for OpenID authentication|http://localhost:3001/api/auth/callback
+|OPENID_REDIRECT_URI|Redirect URI for OpenID authentication|http://mcm.localhost/api/auth/callback
 |OPENID_JWT_COOKIE_NAME|Cookie name for storing the JWT token|MCM-API_ACCESS_TOKEN
 |OPENID_EVERYONE_ROLE|Role assigned to all authenticated users|everyone
 |OPENID_MTA_ROLE|DFSP Admin role mapping for OpenID|mta
@@ -49,7 +49,7 @@ P12_PASS_PHRASE="choose your own password" npm start
 
 The default config requires a `mysql` db running on the default port.
 
-Once running, you can access the [Swagger UI interface](http://localhost:3001/docs)
+Once running, you can access the [Swagger UI interface](http://mcm.localhost/api/docs)
 
 ## Running the server + db + web UI locally while developing
 
@@ -118,7 +118,7 @@ See [.env-example](./.env-example) for all available configuration options.
 :---|:---|:---
 | **MCM API server configuration**
 |PORT|MCM API HTTP port|3001
-|CLIENT_URL|MCM UI URL|http://localhost:8081/
+|CLIENT_URL|MCM UI URL|http://mcm.localhost
 |SWITCH_ID|Switch identifier (required)|
 |SWITCH_FQDN|Switch FQDN|switch.example.com
 | **Docker Compose configuration**
@@ -130,7 +130,7 @@ See [.env-example](./.env-example) for all available configuration options.
 |OPENID_DISCOVERY_URL|OpenID Connect discovery URL|
 |OPENID_CLIENT_ID|Client ID for OpenID authentication|
 |OPENID_CLIENT_SECRET|Client secret for OpenID authentication|
-|LOGIN_CALLBACK|OAuth callback URL|http://localhost:3001/api/auth/callback
+|LOGIN_CALLBACK|OAuth callback URL|http://mcm.localhost/api/auth/callback
 |OPENID_AUDIENCE|JWT audience claim|connection-manager-api
 |OPENID_JWT_COOKIE_NAME|Cookie name for JWT token|MCM-API_ACCESS_TOKEN
 | **OpenID Connect groups/roles**
@@ -177,8 +177,8 @@ See [.env-example](./.env-example) for all available configuration options.
 |EXTRA_ROOT_CERT_FILE_NAME|Extra trusted server root certificate file name|
 | **Keycloak Integration**
 |KEYCLOAK_ENABLED|Enable Keycloak integration for DFSP account creation|false
-|KEYCLOAK_BASE_URL|Base URL of the Keycloak server|http://localhost:8080
-|KEYCLOAK_DISCOVERY_URL|OpenID Connect discovery URL for Keycloak|http://localhost:8080/realms/dfsps/.well-known/openid-configuration
+|KEYCLOAK_BASE_URL|Base URL of the Keycloak server|http://keycloak.mcm.localhost
+|KEYCLOAK_DISCOVERY_URL|OpenID Connect discovery URL for Keycloak|http://keycloak.mcm.localhost/realms/dfsps/.well-known/openid-configuration
 |KEYCLOAK_ADMIN_CLIENT_ID|Client ID for Keycloak admin operations|connection-manager-client
 |KEYCLOAK_ADMIN_CLIENT_SECRET|Client secret for Keycloak admin operations|
 |KEYCLOAK_DFSPS_REALM|Keycloak realm for DFSP accounts|dfsps

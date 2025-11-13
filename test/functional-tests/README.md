@@ -4,7 +4,7 @@
 
 | Environment Variable    | Description                             | Default                   |
 | ----------------------- | --------------------------------------- | ------------------------- |
-| APP_ENDPOINT            | Endpoint for MCM API                    | http://localhost:3001/api |
+| APP_ENDPOINT            | Endpoint for MCM API                    | http://mcm.localhost/api |
 | OAUTH2_ISSUER           | Endpoint for Oauth Token Issuer Service | n/a                       |
 | APP_OAUTH_CLIENT_KEY    | OAuth Client-credential ID              | n/a                       |
 | APP_OAUTH_CLIENT_SECRET | OAuth Client-credential Secret          | n/a                       |
