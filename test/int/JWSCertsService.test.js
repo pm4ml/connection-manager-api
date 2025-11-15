@@ -28,6 +28,7 @@ const { createContext, destroyContext } = require('../int/context');
 const sinon = require('sinon');
 const ValidationError = require('../../src/errors/ValidationError');
 const database = require('../../src/db/database');
+const { logger } = require('../../src/log/logger');
 
 //const ctx = { pkiEngine: { validateJWSCertificate: sinon.stub(), setDFSPJWSCerts: sinon.stub(), getDFSPJWSCerts: sinon.stub(), deleteDFSPJWSCerts: sinon.stub(), getAllDFSPJWSCerts: sinon.stub() }};
 
@@ -69,10 +70,10 @@ describe('JWSCertsService Tests', () => {
       const result = await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
       expect(result.publicKey).toBe(publicKey);
       const certs = await JWSCertsService.getAllDfspJWSCerts(ctx);
-      console.log(certs);
+      logger.debug(certs);
       await PkiService.deleteDFSP(ctx, dfspId);
       const certs2 = await JWSCertsService.getAllDfspJWSCerts(ctx);
-      console.log(certs2);
+      logger.debug(certs2);
     }, 30000);
 
     it('should set a hub JWSCerts', async () => {
@@ -81,13 +82,13 @@ describe('JWSCertsService Tests', () => {
       expect(result.publicKey).toBe(publicKey);
 
       const hubKeyData = await JWSCertsService.getHubJWSCerts(ctx);
-      console.log(hubKeyData);
+      logger.debug(hubKeyData);
       expect(hubKeyData.dfspId).toBe(SWITCH_ID);
       expect(hubKeyData.publicKey).toBe(publicKey);
       expect(hubKeyData.validationState).toBe('VALID');
 
       const allKeysData = await JWSCertsService.getAllDfspJWSCerts(ctx);
-      console.log(allKeysData);
+      logger.debug(allKeysData);
       const hubKey = allKeysData.find(k => k.dfspId === SWITCH_ID);
       expect(hubKey).toBeDefined();
 
@@ -131,14 +132,14 @@ describe('JWSCertsService Tests', () => {
           dfspIds.push(dfspId);
           await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
         } catch (error) {
-          console.error(`Error creating DFSP ${dfspId}:`, error);
+          logger.error(`Error creating DFSP ${dfspId}:`, error);
         }
       }
 
       const certs = await JWSCertsService.getAllDfspJWSCerts(ctx);
       const retrievedDfspIds = certs.map(cert => cert.dfspId);
 
-      console.log("Retrieved DFSP IDs:", retrievedDfspIds);
+      logger.debug("Retrieved DFSP IDs:", retrievedDfspIds);
 
       dfspIds.forEach(dfspId => {
         expect(retrievedDfspIds).toContain(dfspId);

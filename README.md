@@ -76,7 +76,7 @@ The stack includes Traefik for local DNS routing. All services are accessible vi
 | MCM API | http://mcm.localhost/api | API Server |
 | Vault UI | http://vault.mcm.localhost | Vault UI |
 | Keycloak | http://keycloak.mcm.localhost | Keycloak Admin Console |
-| MailHog | http://mailhog.mcm.localhost | Email Testing UI |
+| Mailpit | http://mailpit.mcm.localhost | Email Testing UI |
 | Traefik Dashboard | http://localhost:8090 | Traefik Dashboard |
 
 ### Customizing Configuration

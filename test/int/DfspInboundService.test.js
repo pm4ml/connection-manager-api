@@ -28,7 +28,7 @@ const { createInternalHubCA, deleteHubCA } = require('../../src/service/HubCASer
 const { createContext, destroyContext } = require('../int/context');
 const sinon = require('sinon');
 
-const TTL_FOR_CA = '200h';
+const TTL_FOR_CA = '8760h';
 
 describe('DfspInboundService', () => {
   let ctx;

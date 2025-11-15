@@ -23,6 +23,7 @@ const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
 const ValidationError = require('../../src/errors/ValidationError');
 const moment = require('moment');
 const { createContext, destroyContext } = require('../int/context');
+const { logger } = require('../../src/log/logger');
 
 describe('ctx.pkiEngine', () => {
   let ctx;
@@ -72,7 +73,7 @@ describe('ctx.pkiEngine', () => {
 
       const cert = fs.readFileSync(path.join(__dirname, 'resources/modusbox/expired/expired.pem'), 'utf8');
       const validation = ctx.pkiEngine.validateCertificateValidity(cert);
-      console.log(validation);
+      logger.debug(validation);
       expect(validation.state === ValidationCodes.VALID_STATES.INVALID).toBe(true);
       expect(validation.message).toBe('Certificate is not valid for the current date.');
     }, 15000);

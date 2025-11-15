@@ -22,12 +22,12 @@
  * 
  ************************************************************************* */
 
-require('dotenv').config();
-const env = require('env-var');
+import 'dotenv/config';
+import env from 'env-var';
 
-module.exports = {
-  mcmEndpoint: env.get('APP_ENDPOINT').default('http://mcm.localhost/api').asString(),
-  oauth2Issuer: env.get('OAUTH2_ISSUER').asString(),
-  oauthClientKey: env.get('APP_OAUTH_CLIENT_KEY').asString(),
-  oauthClientSecret: env.get('APP_OAUTH_CLIENT_SECRET').asString()
+export default {
+  mcmEndpoint: env.get('APP_ENDPOINT').default('http://mcm.localhost/api').required().asString(),
+  username: env.get('APP_OAUTH_USERNAME').required().asString(),
+  password: env.get('APP_OAUTH_PASSWORD').required().asString(),
+  mailpitEndpoint: env.get('MAILPIT_ENDPOINT').required().asString()
 };

@@ -87,8 +87,11 @@ exports.createDfspExternalJWSCerts = async (ctx, body, sourceDfspId) => {
 exports.setHubJWSCerts = async (ctx, body) => {
   const switchData = await DFSPModel.findByDfspId(switchId)
     .catch(err => {
+      if (err instanceof NotFoundError) {
+        log.debug('Hub DFSP not found, will create it');
+        return null;
+      }
       log.error('Error on getting hub DFSP', err);
-      if (err instanceof NotFoundError) return null;
       throw err;
     });
   // (?) think, if it's better to create DFSP for hub on service start

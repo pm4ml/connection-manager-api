@@ -6,7 +6,7 @@ volumes:
   keycloak-import: {}
   vault-data: {}
   vault-creds: {}
-  mailhog-data: {}
+  mailpit-data: {}
 
 services:
 
@@ -25,7 +25,10 @@ services:
     networks:
       default:
         aliases:
+          - ${COMPOSE_DOMAIN:-mcm.localhost}
+          - vault.${COMPOSE_DOMAIN:-mcm.localhost}
           - keycloak.${COMPOSE_DOMAIN:-mcm.localhost}
+          - mailpit.${COMPOSE_DOMAIN:-mcm.localhost}
     restart: always
 
   connection-manager-ui:
@@ -211,14 +214,14 @@ services:
       - dev
       - functional
 
-  # MailHog for email testing
-  mailhog:
-    image: mailhog/mailhog
+  # Mailpit for email testing
+  mailpit:
+    image: axllent/mailpit:latest
     labels:
-      - "traefik.http.routers.mailhog.rule=Host(`mailhog.${COMPOSE_DOMAIN:-mcm.localhost}`)"
-      - "traefik.http.services.mailhog.loadbalancer.server.port=8025"
+      - "traefik.http.routers.mailpit.rule=Host(`mailpit.${COMPOSE_DOMAIN:-mcm.localhost}`)"
+      - "traefik.http.services.mailpit.loadbalancer.server.port=8025"
     healthcheck:
-      test: wget --spider --quiet http://localhost:8025
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8025/api/v1/info"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -257,7 +260,7 @@ services:
     volumes:
       - keycloak-import:/opt/keycloak/data/import
     depends_on:
-      mailhog:
+      mailpit:
         condition: service_healthy
       prepare-keycloak-realm:
         condition: service_completed_successfully

@@ -34,7 +34,7 @@ const AMAZON_SERVER_CERT_PATH = 'resources/amazon.com/www.amazon.com.pem';
 const GOOGLE_CHAIN_PATH = 'resources/google.com/google.chain.pem';
 const GOOGLE_SERVER_CERT_PATH = 'resources/google.com/google.com.pem';
 
-const TTL_FOR_CA = '200h';
+const TTL_FOR_CA = '8760h';
 
 describe('ServerCertsService', () => {
   let ctx;

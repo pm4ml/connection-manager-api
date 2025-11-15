@@ -20,6 +20,7 @@ const AuthController = require('../../src/controllers/AuthController');
 const Constants = require('../../src/constants/Constants');
 const { createSessionMiddleware } = require('../../src/oauth/SessionConfig');
 const KeycloakService = require('../../src/service/KeycloakService');
+const { logger } = require('../../src/log/logger');
 
 describe('AuthController Integration Tests', () => {
   let app;
@@ -83,7 +84,7 @@ describe('AuthController Integration Tests', () => {
       expect(redirectUri).toBeDefined();
       expect(redirectUri).toContain('/auth/callback');
 
-      console.log('Successfully initiated OAuth login with all required parameters');
+      logger.info('Successfully initiated OAuth login with all required parameters');
     });
 
     it('should handle multiple concurrent login initiations successfully', async () => {
@@ -123,7 +124,7 @@ describe('AuthController Integration Tests', () => {
       const uniqueStates = new Set(states);
       expect(uniqueStates.size).toBe(3); // All states should be unique
 
-      console.log('Successfully handled concurrent OAuth login initiations');
+      logger.info('Successfully handled concurrent OAuth login initiations');
     });
 
     it('should maintain session state for OAuth flow', async () => {
@@ -152,7 +153,7 @@ describe('AuthController Integration Tests', () => {
       expect(originalState).toBeDefined();
       expect(secondState).toBeDefined();
 
-      console.log('Successfully verified OAuth session state management');
+      logger.info('Successfully verified OAuth session state management');
     });
 
     it('should generate secure PKCE parameters', async () => {
@@ -185,7 +186,7 @@ describe('AuthController Integration Tests', () => {
       expect(state).toMatch(/^[A-Za-z0-9_-]+$/);
       expect(nonce).toMatch(/^[A-Za-z0-9_-]+$/);
 
-      console.log('Successfully verified secure PKCE parameter generation');
+      logger.info('Successfully verified secure PKCE parameter generation');
     });
   });
 
@@ -200,7 +201,7 @@ describe('AuthController Integration Tests', () => {
       expect(response.status).toBe(302);
       expect(response.headers.location).toBe(returnTo);
 
-      console.log('Successfully handled logout without session');
+      logger.info('Successfully handled logout without session');
     });
 
     it('should handle logout with missing return_to parameter', async () => {
@@ -210,7 +211,7 @@ describe('AuthController Integration Tests', () => {
       // Should have a default redirect location
       expect(response.headers.location).toBeDefined();
 
-      console.log('Successfully handled logout with default redirect');
+      logger.info('Successfully handled logout with default redirect');
     });
 
     it('should clear session state on logout', async () => {
@@ -229,7 +230,7 @@ describe('AuthController Integration Tests', () => {
       expect(profileResponse.status).toBe(401);
       expect(profileResponse.body.error).toBe('Not authenticated');
 
-      console.log('Successfully cleared session on logout');
+      logger.info('Successfully cleared session on logout');
     });
   });
 
@@ -300,7 +301,7 @@ describe('AuthController Integration Tests', () => {
         }
       }
       
-      console.log('Successfully created test client and user for real Keycloak integration');
+      logger.info('Successfully created test client and user for real Keycloak integration');
     });
 
     afterAll(async () => {
@@ -317,7 +318,7 @@ describe('AuthController Integration Tests', () => {
         await kcAdminClient.clients.del({ id: clients[0].id });
       }
       
-      console.log('Successfully cleaned up test user and client');
+      logger.info('Successfully cleaned up test user and client');
     });
 
     it('should successfully authenticate with real Keycloak via direct grant', async () => {
@@ -367,7 +368,7 @@ describe('AuthController Integration Tests', () => {
       expect(userinfoResponse.data.sub).toBe(idTokenPayload.sub);
       expect(userinfoResponse.data.preferred_username).toBe(testEmail);
 
-      console.log('Successfully authenticated with real Keycloak and verified token validity');
+      logger.info('Successfully authenticated with real Keycloak and verified token validity');
     });
 
     it('should validate Keycloak infrastructure is properly configured', async () => {
@@ -408,7 +409,7 @@ describe('AuthController Integration Tests', () => {
       expect(discoveryResponse.data.grant_types_supported).toContain('authorization_code');
       expect(discoveryResponse.data.code_challenge_methods_supported).toContain('S256');
 
-      console.log('Keycloak infrastructure is properly configured and all endpoints accessible');
+      logger.info('Keycloak infrastructure is properly configured and all endpoints accessible');
     });
   });
 

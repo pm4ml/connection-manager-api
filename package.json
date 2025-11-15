@@ -82,7 +82,7 @@
   },
   "dependencies": {
     "@hapi/hapi": "21.4.4",
-    "@keycloak/keycloak-admin-client": "^26.4.4",
+    "@keycloak/keycloak-admin-client": "^26.4.5",
     "@kubernetes/client-node": "^1.4.0",
     "@mojaloop/central-services-logger": "11.10.1",
     "@mojaloop/central-services-metrics": "12.8.1",
@@ -103,7 +103,7 @@
     "express-winston": "^4.2.0",
     "form-data": "^4.0.4",
     "joi": "^18.0.1",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.1.1",
     "jsonwebtoken": "^9.0.2",
     "knex": "^3.1.0",
     "moment": "^2.30.1",

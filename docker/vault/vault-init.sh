@@ -76,7 +76,7 @@ vault_api POST /v1/sys/mounts/pki/tune '{"max_lease_ttl": "97600h"}' > /dev/null
 
 # Configure PKI
 vault_api POST /v1/pki/config/urls '{"issuing_certificates": "http://127.0.0.1:8233/v1/pki/ca", "crl_distribution_points": "http://127.0.0.1:8233/v1/pki/crl"}' > /dev/null
-vault_api POST /v1/pki/roles/example.com '{"allowed_domains": "example.com", "allow_subdomains": true, "allow_any_name": true, "allow_localhost": true, "enforce_hostnames": false, "max_ttl": "4000h", "key_type": "rsa", "key_bits": 4096}' > /dev/null
+vault_api POST /v1/pki/roles/example.com '{"allowed_domains": "example.com", "allow_subdomains": true, "allow_any_name": true, "allow_localhost": true, "enforce_hostnames": false, "max_ttl": "4000h", "key_type": "rsa"}' > /dev/null
 
 # Create policy
 POLICY=$(cat <<'EOF'
@@ -103,6 +103,6 @@ vault_api POST /v1/auth/approle/role/my-role '{"policies": ["test-policy"], "tok
 # Enable and configure pki_int
 vault_api POST /v1/sys/mounts/pki_int '{"type": "pki"}' > /dev/null
 vault_api POST /v1/sys/mounts/pki_int/tune '{"max_lease_ttl": "87600h"}' > /dev/null
-vault_api POST /v1/pki_int/roles/example.com '{"allowed_domains": "example.com", "allow_subdomains": true, "allow_any_name": true, "allow_localhost": true, "enforce_hostnames": false, "max_ttl": "4000h", "ttl": "4000h", "key_type": "rsa", "key_bits": 4096}' > /dev/null
+vault_api POST /v1/pki_int/roles/example.com '{"allowed_domains": "example.com", "allow_subdomains": true, "allow_any_name": true, "allow_localhost": true, "enforce_hostnames": false, "max_ttl": "4000h", "ttl": "4000h", "key_type": "rsa"}' > /dev/null
 
 echo "Vault configuration complete!"

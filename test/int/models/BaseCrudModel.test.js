@@ -1,5 +1,6 @@
 const BaseCrudModel = require('../../../src/models/BaseCrudModel');
-const { knex } = require('../../../src/db/database');
+const db = require('../../../src/db/database');
+const { knex } = db;
 const NotFoundError = require('../../../src/errors/NotFoundError');
 const InternalError = require('../../../src/errors/InternalError');
 
@@ -8,6 +9,7 @@ describe('BaseCrudModel', () => {
   let model;
 
   beforeAll(async () => {
+    await db.connect();
     try {
       await knex.schema.createTable(TEST_TABLE, (table) => {
         table.increments('id');
@@ -62,7 +64,9 @@ describe('BaseCrudModel', () => {
       const tableMock = jest.spyOn(knex, 'table').mockReturnValue({
         insert: jest.fn().mockResolvedValue([1, 2])
       });
+
       await expect(model.create({ name: 'test' })).rejects.toBeInstanceOf(InternalError);
+
       tableMock.mockRestore();
     });
   });
@@ -74,7 +78,9 @@ describe('BaseCrudModel', () => {
           update: jest.fn().mockResolvedValue(2)
         })
       });
+
       await expect(model.update(1, { name: 'updated' })).rejects.toBeInstanceOf(InternalError);
+
       tableMock.mockRestore();
     });
   });
@@ -129,18 +135,18 @@ describe('BaseCrudModel', () => {
     });
 
     it('should throw InternalError if more than one row created', async () => {
-      const insertMock = jest.spyOn(knex, 'table').mockReturnValue({
+      const tableMock = jest.spyOn(knex, 'table').mockReturnValue({
         insert: jest.fn().mockResolvedValue([1, 2])
       });
       await expect(model.create({ name: 'test' })).rejects.toBeInstanceOf(InternalError);
-      insertMock.mockRestore();
+      tableMock.mockRestore();
     });
 
     it('should throw InternalError if more than one row updated', async () => {
       const tableMock = jest.spyOn(knex, 'table').mockReturnValue({
-      where: jest.fn().mockReturnValue({
-        update: jest.fn().mockResolvedValue(2)
-      })
+        where: jest.fn().mockReturnValue({
+          update: jest.fn().mockResolvedValue(2)
+        })
       });
       await expect(model.update(1, { name: 'updated' })).rejects.toBeInstanceOf(InternalError);
       tableMock.mockRestore();
@@ -180,7 +186,7 @@ describe('BaseCrudModel', () => {
   describe('miscellaneous', () => {
     it('should return the inserted ID when one row is created', async () => {
       const tableMock = jest.spyOn(knex, 'table').mockReturnValue({
-      insert: jest.fn().mockResolvedValue([1])
+        insert: jest.fn().mockResolvedValue([1])
       });
       const result = await model.create({ name: 'test' });
       expect(result).toEqual({ id: 1 });

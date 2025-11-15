@@ -51,5 +51,4 @@ process.env.CLIENT_URL = 'http://mcm.localhost/';
 
 // Session configuration
 process.env.SESSION_SECRET = 'test-session-secret-for-integration-tests';
-
-console.log('Integration test environment configured'); 
+ 
