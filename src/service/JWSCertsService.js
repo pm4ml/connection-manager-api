@@ -100,6 +100,7 @@ exports.setHubJWSCerts = async (ctx, body) => {
     await PkiService.createDFSPWithCSR(ctx, {
       dfspId: switchId,
       name: switchId,
+      email: `${switchId}@hub.local`,
     });
   }
 

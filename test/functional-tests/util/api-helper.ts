@@ -23,7 +23,6 @@
  **************************************************************************/
 
 import { CookieJar } from 'tough-cookie';
-import { logger } from '../../../src/log/logger';
 
 export type HeaderType = { [key:string]:string; };
 
@@ -219,7 +218,7 @@ const performLogin = async (loginConfig: LoginConfig): Promise<void> => {
       }
     }
   } catch (error) {
-    logger.error('Login failed:', error);
+    console.error('Login failed:', error);
     throw error;
   }
 };
@@ -255,7 +254,7 @@ const fetchOAuthToken = async (oauthConfig: OAuthConfig): Promise<string> => {
 
     return data.access_token;
   } catch (error) {
-    logger.error('OAuth token fetch failed:', error);
+    console.error('OAuth token fetch failed:', error);
     throw error;
   }
 };

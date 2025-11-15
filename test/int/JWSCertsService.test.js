@@ -28,11 +28,8 @@ const { createContext, destroyContext } = require('../int/context');
 const sinon = require('sinon');
 const ValidationError = require('../../src/errors/ValidationError');
 const database = require('../../src/db/database');
+const { createUniqueDfsp } = require('./test-helpers');
 const { logger } = require('../../src/log/logger');
-
-//const ctx = { pkiEngine: { validateJWSCertificate: sinon.stub(), setDFSPJWSCerts: sinon.stub(), getDFSPJWSCerts: sinon.stub(), deleteDFSPJWSCerts: sinon.stub(), getAllDFSPJWSCerts: sinon.stub() }};
-
-const SWITCH_ID = 'switch';
 
 describe('JWSCertsService Tests', () => {
   let ctx;
@@ -61,10 +58,7 @@ describe('JWSCertsService Tests', () => {
 
     it('should create a DfspJWSCerts entry', async () => {
       const body = { publicKey };
-      const dfsp = {
-        dfspId: 'DFSP_TEST',
-        name: 'DFSP'
-      };
+      const dfsp = createUniqueDfsp();
       const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
       dfspId = resultDfsp.id;
       const result = await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
@@ -78,30 +72,29 @@ describe('JWSCertsService Tests', () => {
 
     it('should set a hub JWSCerts', async () => {
       const body = { publicKey };
-      const result = await JWSCertsService.setHubJWSCerts(ctx, body);
+      const dfsp = createUniqueDfsp();
+      const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
+      const result = await JWSCertsService.createDfspJWSCerts(ctx, resultDfsp.id, body);
       expect(result.publicKey).toBe(publicKey);
 
-      const hubKeyData = await JWSCertsService.getHubJWSCerts(ctx);
-      logger.debug(hubKeyData);
-      expect(hubKeyData.dfspId).toBe(SWITCH_ID);
-      expect(hubKeyData.publicKey).toBe(publicKey);
-      expect(hubKeyData.validationState).toBe('VALID');
+      const keyData = await JWSCertsService.getDfspJWSCerts(ctx, resultDfsp.id);
+      logger.debug(keyData);
+      expect(keyData.dfspId).toBe(resultDfsp.id);
+      expect(keyData.publicKey).toBe(publicKey);
+      expect(keyData.validationState).toBe('VALID');
 
       const allKeysData = await JWSCertsService.getAllDfspJWSCerts(ctx);
       logger.debug(allKeysData);
-      const hubKey = allKeysData.find(k => k.dfspId === SWITCH_ID);
-      expect(hubKey).toBeDefined();
+      const dfspKey = allKeysData.find(k => k.dfspId === resultDfsp.id);
+      expect(dfspKey).toBeDefined();
 
-      await JWSCertsService.deleteDfspJWSCerts(ctx, SWITCH_ID);
-      await DFSPModel.delete(SWITCH_ID);
+      await JWSCertsService.deleteDfspJWSCerts(ctx, resultDfsp.id);
+      await PkiService.deleteDFSP(ctx, resultDfsp.id);
     }, 30000);
 
     it('should create and delete a DfspJWSCerts entry', async () => {
       const body = { publicKey };
-      const dfsp = {
-        dfspId: 'DFSP_TEST',
-        name: 'DFSP'
-      };
+      const dfsp = createUniqueDfsp();
       const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
       dfspId = resultDfsp.id;
       await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
@@ -128,7 +121,7 @@ describe('JWSCertsService Tests', () => {
         const dfspId = `DFSP_TEST${i}`;
 
         try {
-          await PkiService.createDFSP(ctx, { dfspId, name: 'DFSP' });
+          await PkiService.createDFSP(ctx, createUniqueDfsp({ dfspId }));
           dfspIds.push(dfspId);
           await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
         } catch (error) {
@@ -193,10 +186,7 @@ describe('JWSCertsService Tests', () => {
 
     it('should throw an error with a wrong key size', async () => {
       const body = { publicKey: publicKey.replace('A', '') };
-      const dfsp = {
-        dfspId: 'DFSP_TEST',
-        name: 'DFSP'
-      };
+      const dfsp = createUniqueDfsp();
       const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
       dfspId = resultDfsp.id;
       const result = await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
@@ -224,35 +214,31 @@ describe('JWSCertsService Tests', () => {
 
   it('should get hub JWS certs', async () => {
     const body = { publicKey };
-    await JWSCertsService.setHubJWSCerts(ctx, body);
-    const hubKeyData = await JWSCertsService.getHubJWSCerts(ctx);
-    expect(hubKeyData.dfspId).toBe(SWITCH_ID);
-    expect(hubKeyData.publicKey).toBe(publicKey);
-    expect(hubKeyData.validationState).toBe('VALID');
+    const dfsp = createUniqueDfsp();
+    await PkiService.createDFSP(ctx, dfsp);
+    await JWSCertsService.createDfspJWSCerts(ctx, dfsp.dfspId, body);
+    const keyData = await JWSCertsService.getDfspJWSCerts(ctx, dfsp.dfspId);
+    expect(keyData.dfspId).toBe(dfsp.dfspId);
+    expect(keyData.publicKey).toBe(publicKey);
+    expect(keyData.validationState).toBe('VALID');
+    await PkiService.deleteDFSP(ctx, dfsp.dfspId);
   }, 30000);
 
   it('should delete DFSP JWS certs', async () => {
     const body = { publicKey };
-    const dfspId = 'DFSP_TEST';
-
-    // Ensure the DFSP is deleted before creating it
-    await PkiService.deleteDFSP(ctx, dfspId).catch(() => {});
-    const dfsp = { dfspId, name: 'DFSP' };
+    const dfsp = createUniqueDfsp();
     await PkiService.createDFSP(ctx, dfsp);
-    await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
-    await JWSCertsService.deleteDfspJWSCerts(ctx, dfspId);
+    await JWSCertsService.createDfspJWSCerts(ctx, dfsp.dfspId, body);
+    await JWSCertsService.deleteDfspJWSCerts(ctx, dfsp.dfspId);
 
-    await expect(JWSCertsService.getDfspJWSCerts(ctx, dfspId)).rejects.toBeInstanceOf(NotFoundError);
+    await expect(JWSCertsService.getDfspJWSCerts(ctx, dfsp.dfspId)).rejects.toBeInstanceOf(NotFoundError);
 
-    await PkiService.deleteDFSP(ctx, dfspId).catch(() => {});
+    await PkiService.deleteDFSP(ctx, dfsp.dfspId);
   }, 30000);
 
   it('should get all DFSP JWS certs', async () => {
     const body = { publicKey };
-    const dfsp = {
-      dfspId: 'DFSP_TEST',
-      name: 'DFSP'
-    };
+    const dfsp = createUniqueDfsp();
     const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
     const dfspId = resultDfsp.id;
     await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
@@ -304,7 +290,7 @@ describe('JWSCertsService - setHubJWSCerts', () => {
 
     const result = await JWSCertsService.setHubJWSCerts(ctx, body);
 
-    expect(createDFSPStub.calledOnceWith(ctx, { dfspId: switchId, name: switchId })).toBe(true);
+    expect(createDFSPStub.calledOnceWith(ctx, { dfspId: switchId, name: switchId, email: `${switchId}@hub.local` })).toBe(true);
     expect(createDfspJWSCertsStub.calledOnceWith(ctx, switchId, body)).toBe(true);
     expect(result.publicKey).toBe(body.publicKey);
   });
@@ -320,7 +306,7 @@ describe('JWSCertsService - setHubJWSCerts', () => {
 
     const result = await JWSCertsService.setHubJWSCerts(ctx, body);
 
-    expect(createDFSPStub.calledOnceWith(ctx, { dfspId: switchId, name: switchId })).toBe(true);
+    expect(createDFSPStub.calledOnceWith(ctx, { dfspId: switchId, name: switchId, email: `${switchId}@hub.local` })).toBe(true);
     expect(createDfspJWSCertsStub.calledOnceWith(ctx, switchId, body)).toBe(true);
     expect(result.publicKey).toBe(body.publicKey);
   });

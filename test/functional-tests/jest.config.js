@@ -6,5 +6,6 @@ module.exports = {
     customExportConditions: ['node', 'node-addons'],
   },
   collectCoverage: false,
-  clearMocks: true
+  clearMocks: true,
+  setupFiles: ['<rootDir>/test-env-setup.js']
 };
