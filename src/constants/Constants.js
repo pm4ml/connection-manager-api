@@ -112,6 +112,7 @@ module.exports = {
 
   SESSION_STORE: {
     SECRET: env.get('SESSION_STORE_SECRET').default('connection_manager_session_secret').asString(),
+    COOKIE_SAME_SITE_STRICT: env.get('SESSION_COOKIE_SAME_SITE_STRICT').default('true').asBool(),
   },
 
   EXTRA_TLS: {

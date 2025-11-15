@@ -21,6 +21,7 @@ const tls = require('tls');
 const Joi = require('joi');
 const ValidationError = require('../errors/ValidationError');
 const util = require('util');
+const { logger } = require('../log/logger');
 
 // TODO: find and link document containing rules on allowable paths
 const vaultPaths = {
@@ -92,7 +93,9 @@ class VaultPKIEngine extends PKIEngine {
     });
 
     const tokenRefreshMs = (creds.auth.lease_duration - 10) * 1000;
-    this.reconnectTimer = setTimeout(this.connect.bind(this), tokenRefreshMs);
+    const MAX_TIMEOUT = 2147483647;
+    const safeTimeout = Math.min(tokenRefreshMs, MAX_TIMEOUT);
+    this.reconnectTimer = setTimeout(this.connect.bind(this), safeTimeout);
   }
 
   disconnect () {
@@ -1208,7 +1211,7 @@ class VaultPKIEngine extends PKIEngine {
       return new Validation(code, true, ValidationCodes.VALID_STATES.VALID,
         `The root certificate is valid with ${state} state.`, state);
     } catch (e) {
-      console.trace(e, rootCertificate);
+      logger.debug('Root certificate validation failed', { error: e.message, certificate: rootCertificate });
       return new Validation(code, true, ValidationCodes.VALID_STATES.INVALID,
         'The root certificate must be valid and be self-signed or signed by a global root.');
     }

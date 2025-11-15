@@ -81,14 +81,8 @@ exports.createOAuth2Handler = () => {
       throw error;
     }
 
-    if (!scopes.some(role => user.roles.includes(role))) {
-      logger.info(`API defined scopes: user does not have the required roles (See object)`, { user, scopes});
-      error = new Error(`user does not have the required roles ${scopes}`);
-      error.statusCode = 403;
-      error.headers = { 'X-AUTH-ERROR': error.message };
-      throw error;
-    }
-
+    // Check DFSP-specific paths FIRST, before checking general scopes
+    // This allows DFSP users to access their own resources without needing admin roles
     if (/\/dfsps\/{dfspId}/.test(apiPath)) {
       if (user.roles.includes('pta')) {
         return true;
@@ -114,6 +108,16 @@ exports.createOAuth2Handler = () => {
           throw error;
         });
     }
+
+    // General scope check for non-DFSP-specific endpoints
+    if (!scopes.some(role => user.roles.includes(role))) {
+      logger.info(`API defined scopes: user does not have the required roles (See object)`, { user, scopes});
+      error = new Error(`user does not have the required roles ${scopes}`);
+      error.statusCode = 403;
+      error.headers = { 'X-AUTH-ERROR': error.message };
+      throw error;
+    }
+
     return true;
   };
 };

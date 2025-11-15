@@ -22,6 +22,7 @@ const NotFoundError = require('../../src/errors/NotFoundError');
 const { createInternalHubCA, getHubCA } = require('../../src/service/HubCAService');
 const { createContext, destroyContext } = require('../int/context');
 const database = require('../../src/db/database');
+const { createUniqueDfsp } = require('./test-helpers');
 
 const ROOT_CA = {
   CN: 'hub.modusbox.org',
@@ -111,10 +112,7 @@ describe('PkiService', () => {
     });
 
     it('should create a DFSP and delete it', async () => {
-      const dfsp = {
-        dfspId: 'DFSP_B',
-        name: 'DFSP_B_description'
-      };
+      const dfsp = createUniqueDfsp();
       const result = await PkiService.createDFSP(ctx, dfsp);
       expect(result).toHaveProperty('id');
       expect(result.id).not.toBeNull();
@@ -124,27 +122,16 @@ describe('PkiService', () => {
       expect(deleted).toBe(1);
     });
 
-    it('should create a DFSP with an space and use dashed for the security group', async () => {
-      const dfsp = {
-        dfspId: 'MTN CI',
-        name: 'DFSP_B_description',
-      };
-      const result = await PkiService.createDFSP(ctx, dfsp);
-      expect(result).toHaveProperty('id');
-      expect(result.id).not.toBeNull();
-      const saved = await PkiService.getDFSPById(ctx, result.id);
-      expect(saved.name).toBe(dfsp.name);
-      expect(saved.securityGroup).toBe('Application/DFSP:MTN-CI');
-      const deleted = await PkiService.deleteDFSP(ctx, result.id);
-      expect(deleted).toBe(1);
+    it('should reject a DFSP ID with spaces', async () => {
+      const baseDfsp = createUniqueDfsp();
+      const dfspIdWithSpace = `${baseDfsp.dfspId.slice(0, 5)} ${baseDfsp.dfspId.slice(5)}`;
+      const dfsp = { ...baseDfsp, dfspId: dfspIdWithSpace };
+
+      await expect(PkiService.createDFSP(ctx, dfsp)).rejects.toThrow();
     });
 
     it('should create a DFSP with MZ', async () => {
-      const dfsp = {
-        dfspId: 'dfsp1',
-        name: 'dfsp1',
-        monetaryZoneId: 'EUR'
-      };
+      const dfsp = createUniqueDfsp({ monetaryZoneId: 'EUR' });
       const result = await PkiService.createDFSP(ctx, dfsp);
       expect(result).toHaveProperty('id');
       expect(result.id).not.toBeNull();
@@ -156,10 +143,7 @@ describe('PkiService', () => {
     });
 
     it('should create a DFSP without MZ and then add it', async () => {
-      const dfsp = {
-        dfspId: 'dfsp1',
-        name: 'dfsp1'
-      };
+      const dfsp = createUniqueDfsp();
 
       await PkiService.createDFSP(ctx, dfsp);
 
@@ -177,11 +161,7 @@ describe('PkiService', () => {
     });
 
     it('should create a DFSP with MZ and then remove it', async () => {
-      const dfsp = {
-        dfspId: 'dfsp1',
-        name: 'dfsp1',
-        monetaryZoneId: 'EUR'
-      };
+      const dfsp = createUniqueDfsp({ monetaryZoneId: 'EUR' });
       await PkiService.createDFSP(ctx, dfsp);
 
       // remove the mz
@@ -207,14 +187,8 @@ describe('PkiService', () => {
     });
 
     it('should get all DFSPs', async () => {
-      const dfsp1 = {
-        dfspId: 'dfsp1',
-        name: 'dfsp1'
-      };
-      const dfsp2 = {
-        dfspId: 'dfsp2',
-        name: 'dfsp2'
-      };
+      const dfsp1 = createUniqueDfsp();
+      const dfsp2 = createUniqueDfsp();
 
       await PkiService.createDFSP(ctx, dfsp1);
       await PkiService.createDFSP(ctx, dfsp2);
@@ -225,16 +199,8 @@ describe('PkiService', () => {
     });
 
     it('should get DFSPs by monetary zone', async () => {
-      const dfsp1 = {
-        dfspId: 'dfsp1',
-        name: 'dfsp1',
-        monetaryZoneId: 'EUR'
-      };
-      const dfsp2 = {
-        dfspId: 'dfsp2',
-        name: 'dfsp2',
-        monetaryZoneId: 'USD'
-      };
+      const dfsp1 = createUniqueDfsp({ monetaryZoneId: 'EUR' });
+      const dfsp2 = createUniqueDfsp({ monetaryZoneId: 'USD' });
 
       await PkiService.createDFSP(ctx, dfsp1);
       await PkiService.createDFSP(ctx, dfsp2);
@@ -246,10 +212,7 @@ describe('PkiService', () => {
     });
 
     it('should create a DFSP with CSR and delete it', async () => {
-      const dfsp = {
-        dfspId: 'DFSP_C',
-        name: 'DFSP_C_description'
-      };
+      const dfsp = createUniqueDfsp();
       const result = await PkiService.createDFSPWithCSR(ctx, dfsp);
       expect(result).toHaveProperty('id');
       expect(result.id).not.toBeNull();

@@ -486,6 +486,14 @@ exports.deleteDFSPIngressUrlEndpoint = async (ctx, dfspId, epId) => {
 exports.uploadDfspStatesStatus = async (ctx, dfspId, body) => {
   try {
     log.verbose('uploadDfspStatesStatus...', { dfspId, body });
+
+    const dfsp = await DFSPModel.findByDfspId(dfspId);
+    if (!dfsp) {
+      const error = new Error(`DFSP '${dfspId}' not found`);
+      error.status = 404;
+      throw error;
+    }
+
     const upsertResult = await DFSPModel.upsertStatesStatus(dfspId, body);
     const code = upsertResult[0]?.affectedRows || 0; // 1 - insert, 2 - update
     log.info(`uploadDfspStatesStatus is done:`, { code, dfspId });
