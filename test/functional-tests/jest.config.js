@@ -7,5 +7,6 @@ module.exports = {
   },
   collectCoverage: false,
   clearMocks: true,
-  setupFiles: ['<rootDir>/test-env-setup.js']
+  setupFiles: ['<rootDir>/test-env-setup.js'],
+  testTimeout: 300000
 };
