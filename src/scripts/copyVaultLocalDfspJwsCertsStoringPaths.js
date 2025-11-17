@@ -25,6 +25,7 @@
  --------------
  ******/
 
+const db = require('#src/db/database');
 const PKIEngine = require('#src/pki_engine/VaultPKIEngine');
 const { vault: vaultConfig, vaultPaths } = require('#src/constants/Constants');
 const { logger } = require('#src/log/logger');
@@ -92,11 +93,8 @@ const copyVaultSecretsToDfspIdPath = async (dfspDbMap, pkiEngine) => {
 };
 
 
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
-exports.up = async function(knex) {
+/** @param { import("knex").Knex } knex */
+const migrateUp = async (knex) => {
   logger.info('starting JWS Vault Migration: dbId → dfspId');
   let pkiEngine;
 
@@ -118,9 +116,6 @@ exports.up = async function(knex) {
     if (errors > 0) {
       throw new Error(`Migration finished with ${errors} error(s)`);
     }
-  } catch (err) {
-    logger.error('❌ MIGRATION FAILED: ', err);
-    throw err; // todo: think, if we need to rethrow errors inside migration
   } finally {
     if (pkiEngine) {
       pkiEngine.disconnect();
@@ -129,10 +124,32 @@ exports.up = async function(knex) {
   }
 };
 
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
-exports.down = async function(knex) {
+const migrateDown = async () => {
   logger.warn('⚠️  Rollback not supported for JWS Vault Migration');
 };
+
+const run = async () => {
+  const migrationFn = process.argv[2] === '--down' ? migrateDown : migrateUp;
+  let exitCode = 0;
+
+  try {
+    await db.connect();
+    await migrationFn(db.knex);
+  } catch (err) {
+    logger.error(`❌ Vault ${migrationFn?.name} failed due to error: `, err);
+    exitCode = 1;
+  } finally {
+    await db.disconnect();
+    process.exit(exitCode);
+  }
+};
+
+if (require.main === module) {
+  run();
+} else {
+  module.exports = {
+    migrateUp,
+    migrateDown,
+    run
+  };
+}
