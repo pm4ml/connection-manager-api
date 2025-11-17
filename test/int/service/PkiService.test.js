@@ -90,24 +90,111 @@ describe('PkiService', () => {
   });
 
   describe('getDFSPs', () => {
-    it('should return all DFSPs', async () => {
+    it('should return all DFSPs when no user is provided', async () => {
       const ctx = {};
       const dfspRows = [
-      { dfsp_id: 'dfsp1', name: 'DFSP 1', monetaryZoneId: 'USD', isProxy: false, security_group: 'Group1' },
-      { dfsp_id: 'dfsp2', name: 'DFSP 2', monetaryZoneId: 'EUR', isProxy: true, security_group: 'Group2' }
+        { dfsp_id: 'dfsp1', name: 'DFSP 1', monetaryZoneId: 'USD', isProxy: false, security_group: 'Application/DFSP:dfsp1' },
+        { dfsp_id: 'dfsp2', name: 'DFSP 2', monetaryZoneId: 'EUR', isProxy: true, security_group: 'Application/DFSP:dfsp2' }
       ];
 
       jest.spyOn(DFSPModel, 'findAll').mockResolvedValue(dfspRows);
       jest.spyOn(PkiService, 'dfspRowToObject').mockImplementation(row => ({
-      id: row.dfsp_id,
-      name: row.name,
-      monetaryZoneId: row.monetaryZoneId,
-      isProxy: row.isProxy,
-      securityGroup: row.security_group
+        id: row.dfsp_id,
+        name: row.name,
+        monetaryZoneId: row.monetaryZoneId,
+        isProxy: row.isProxy,
+        securityGroup: row.security_group
       }));
 
       const result = await PkiService.getDFSPs(ctx);
       expect(result).toEqual(dfspRows.map(PkiService.dfspRowToObject));
+    });
+
+    it('should return all DFSPs when user has pta role', async () => {
+      const ctx = {};
+      const user = { roles: ['pta', 'everyone'] };
+      const dfspRows = [
+        { dfsp_id: 'dfsp1', name: 'DFSP 1', monetaryZoneId: 'USD', isProxy: false, security_group: 'Application/DFSP:dfsp1' },
+        { dfsp_id: 'dfsp2', name: 'DFSP 2', monetaryZoneId: 'EUR', isProxy: true, security_group: 'Application/DFSP:dfsp2' }
+      ];
+
+      jest.spyOn(DFSPModel, 'findAll').mockResolvedValue(dfspRows);
+      jest.spyOn(PkiService, 'dfspRowToObject').mockImplementation(row => ({
+        id: row.dfsp_id,
+        name: row.name,
+        monetaryZoneId: row.monetaryZoneId,
+        isProxy: row.isProxy,
+        securityGroup: row.security_group
+      }));
+
+      const result = await PkiService.getDFSPs(ctx, user);
+      expect(result).toEqual(dfspRows.map(PkiService.dfspRowToObject));
+    });
+
+    it('should return filtered DFSPs when user has specific DFSP roles', async () => {
+      const ctx = {};
+      const user = { roles: ['Application/DFSP:dfsp1', 'everyone'] };
+      const dfspRows = [
+        { dfsp_id: 'dfsp1', name: 'DFSP 1', monetaryZoneId: 'USD', isProxy: false, security_group: 'Application/DFSP:dfsp1' },
+        { dfsp_id: 'dfsp2', name: 'DFSP 2', monetaryZoneId: 'EUR', isProxy: true, security_group: 'Application/DFSP:dfsp2' }
+      ];
+
+      jest.spyOn(DFSPModel, 'findAll').mockResolvedValue(dfspRows);
+      jest.spyOn(PkiService, 'dfspRowToObject').mockImplementation(row => ({
+        id: row.dfsp_id,
+        name: row.name,
+        monetaryZoneId: row.monetaryZoneId,
+        isProxy: row.isProxy,
+        securityGroup: row.security_group
+      }));
+
+      const result = await PkiService.getDFSPs(ctx, user);
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('dfsp1');
+    });
+
+    it('should return all DFSPs when user has no DFSP-specific roles', async () => {
+      const ctx = {};
+      const user = { roles: ['mta', 'everyone'] };
+      const dfspRows = [
+        { dfsp_id: 'dfsp1', name: 'DFSP 1', monetaryZoneId: 'USD', isProxy: false, security_group: 'Application/DFSP:dfsp1' },
+        { dfsp_id: 'dfsp2', name: 'DFSP 2', monetaryZoneId: 'EUR', isProxy: true, security_group: 'Application/DFSP:dfsp2' }
+      ];
+
+      jest.spyOn(DFSPModel, 'findAll').mockResolvedValue(dfspRows);
+      jest.spyOn(PkiService, 'dfspRowToObject').mockImplementation(row => ({
+        id: row.dfsp_id,
+        name: row.name,
+        monetaryZoneId: row.monetaryZoneId,
+        isProxy: row.isProxy,
+        securityGroup: row.security_group
+      }));
+
+      const result = await PkiService.getDFSPs(ctx, user);
+      expect(result).toEqual(dfspRows.map(PkiService.dfspRowToObject));
+    });
+
+    it('should return multiple DFSPs when user has multiple DFSP roles', async () => {
+      const ctx = {};
+      const user = { roles: ['Application/DFSP:dfsp1', 'Application/DFSP:dfsp3', 'everyone'] };
+      const dfspRows = [
+        { dfsp_id: 'dfsp1', name: 'DFSP 1', monetaryZoneId: 'USD', isProxy: false, security_group: 'Application/DFSP:dfsp1' },
+        { dfsp_id: 'dfsp2', name: 'DFSP 2', monetaryZoneId: 'EUR', isProxy: true, security_group: 'Application/DFSP:dfsp2' },
+        { dfsp_id: 'dfsp3', name: 'DFSP 3', monetaryZoneId: 'USD', isProxy: false, security_group: 'Application/DFSP:dfsp3' }
+      ];
+
+      jest.spyOn(DFSPModel, 'findAll').mockResolvedValue(dfspRows);
+      jest.spyOn(PkiService, 'dfspRowToObject').mockImplementation(row => ({
+        id: row.dfsp_id,
+        name: row.name,
+        monetaryZoneId: row.monetaryZoneId,
+        isProxy: row.isProxy,
+        securityGroup: row.security_group
+      }));
+
+      const result = await PkiService.getDFSPs(ctx, user);
+      expect(result).toHaveLength(2);
+      expect(result.map(r => r.id)).toEqual(['dfsp1', 'dfsp3']);
     });
   });
 
@@ -276,18 +363,49 @@ describe('PkiService', () => {
   });
 
   describe('getDfspsByMonetaryZones', () => {
-    it('should return DFSPs by monetary zone', async () => {
+    it('should return DFSPs by monetary zone when no user is provided', async () => {
       const ctx = {};
       const monetaryZoneId = 'USD';
       const dfspRows = [
-        { dfsp_id: 'dfsp1', name: 'DFSP 1', monetaryZoneId: 'USD', isProxy: false, security_group: 'Group1' },
-        { dfsp_id: 'dfsp2', name: 'DFSP 2', monetaryZoneId: 'USD', isProxy: true, security_group: 'Group2' }
+        { dfsp_id: 'dfsp1', name: 'DFSP 1', monetaryZoneId: 'USD', isProxy: false, security_group: 'Application/DFSP:dfsp1' },
+        { dfsp_id: 'dfsp2', name: 'DFSP 2', monetaryZoneId: 'USD', isProxy: true, security_group: 'Application/DFSP:dfsp2' }
       ];
 
       DFSPModel.getDfspsByMonetaryZones.mockResolvedValue(dfspRows);
 
       const result = await PkiService.getDfspsByMonetaryZones(ctx, monetaryZoneId);
       expect(result).toEqual(dfspRows.map(PkiService.dfspRowToObject));
+    });
+
+    it('should return all DFSPs by monetary zone when user has pta role', async () => {
+      const ctx = {};
+      const user = { roles: ['pta', 'everyone'] };
+      const monetaryZoneId = 'USD';
+      const dfspRows = [
+        { dfsp_id: 'dfsp1', name: 'DFSP 1', monetaryZoneId: 'USD', isProxy: false, security_group: 'Application/DFSP:dfsp1' },
+        { dfsp_id: 'dfsp2', name: 'DFSP 2', monetaryZoneId: 'USD', isProxy: true, security_group: 'Application/DFSP:dfsp2' }
+      ];
+
+      DFSPModel.getDfspsByMonetaryZones.mockResolvedValue(dfspRows);
+
+      const result = await PkiService.getDfspsByMonetaryZones(ctx, monetaryZoneId, user);
+      expect(result).toEqual(dfspRows.map(PkiService.dfspRowToObject));
+    });
+
+    it('should return filtered DFSPs by monetary zone when user has specific DFSP roles', async () => {
+      const ctx = {};
+      const user = { roles: ['Application/DFSP:dfsp1', 'everyone'] };
+      const monetaryZoneId = 'USD';
+      const dfspRows = [
+        { dfsp_id: 'dfsp1', name: 'DFSP 1', monetaryZoneId: 'USD', isProxy: false, security_group: 'Application/DFSP:dfsp1' },
+        { dfsp_id: 'dfsp2', name: 'DFSP 2', monetaryZoneId: 'USD', isProxy: true, security_group: 'Application/DFSP:dfsp2' }
+      ];
+
+      DFSPModel.getDfspsByMonetaryZones.mockResolvedValue(dfspRows);
+
+      const result = await PkiService.getDfspsByMonetaryZones(ctx, monetaryZoneId, user);
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('dfsp1');
     });
   });
 });

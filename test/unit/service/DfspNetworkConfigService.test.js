@@ -25,6 +25,8 @@
  --------------
  ******/
 
+require('../test-env-setup');
+
 jest.mock('#src/models/DFSPModel');
 
 const DfspNetworkConfigService = require('#src/service/DfspNetworkConfigService');

@@ -2,12 +2,14 @@ const tls = require("tls");
 const fs = require("fs");
 const Constants = require("../../../src/constants/Constants");
 const { enableCustomRootCAs } = require("../../../src/utils/tlsUtils");
+const logger = require("../../../src/log/logger").logger;
 
 describe("tlsUtils", () => {
   let readFileSyncMock;
   let createSecureContextMock;
   let addCACertMock;
   let origCreateSecureContext;
+  let loggerInfoMock;
 
   beforeEach(() => {
     readFileSyncMock = jest.spyOn(fs, "readFileSync");
@@ -20,6 +22,7 @@ describe("tlsUtils", () => {
         },
       }));
     origCreateSecureContext = tls.createSecureContext;
+    loggerInfoMock = jest.spyOn(logger, "info").mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -28,7 +31,6 @@ describe("tlsUtils", () => {
 
   describe("enableCustomRootCAs", () => {
     it("should restore original createSecureContext after enabling custom root CAs", () => {
-      global.console = { log: jest.fn() };
       Constants.EXTRA_TLS = {
         EXTRA_CERTIFICATE_CHAIN_FILE_NAME: "chain.pem",
         EXTRA_ROOT_CERT_FILE_NAME: "root.pem",
@@ -41,7 +43,6 @@ describe("tlsUtils", () => {
         if (file === "root.pem") {
           return "-----BEGIN CERTIFICATE-----\nroot\n-----END CERTIFICATE-----";
         }
-        // Always return a valid string for any other file
         return "";
       });
 
@@ -49,11 +50,9 @@ describe("tlsUtils", () => {
       tls.createSecureContext = origCreateSecureContext;
 
       expect(tls.createSecureContext).toBe(origCreateSecureContext);
-      global.console.log.mockRestore();
     });
 
     it("should log appropriate messages when custom root CAs are already enabled", () => {
-      global.console = { log: jest.fn() };
       Constants.EXTRA_TLS = {
         EXTRA_CERTIFICATE_CHAIN_FILE_NAME: "chain.pem",
         EXTRA_ROOT_CERT_FILE_NAME: "root.pem",
@@ -71,9 +70,7 @@ describe("tlsUtils", () => {
       enableCustomRootCAs();
       enableCustomRootCAs(); // Call it again
 
-      expect(global.console.log).toHaveBeenCalledWith("Custom root CAs was already enabled");
-
-      global.console.log.mockRestore();
+      expect(loggerInfoMock).toHaveBeenCalledWith("Custom root CAs was already enabled");
     });
   });
 });

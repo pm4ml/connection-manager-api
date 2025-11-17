@@ -32,26 +32,6 @@ function getFileContent (path) {
   return fs.readFileSync(resolvedPath);
 }
 
-if (process.env.TEST) {
-  const tmp = require('tmp');
-  const { randomUUID } = require('node:crypto');
-  const createTemp = (content) => {
-    const tempFile = tmp.fileSync({ discardDescriptor: true, keep: false });
-    fs.writeFileSync(tempFile.name, content);
-    return tempFile.name;
-  };
-  process.env = {
-    ...process.env,
-    AUTH_ENABLED: 'false',
-    AUTH_2FA_ENABLED: 'false',
-    VAULT_AUTH_METHOD: 'APP_ROLE',
-    VAULT_ROLE_ID_FILE: process.env.TEST_INT ? 'docker/vault/tmp/role-id': createTemp(randomUUID()),
-    VAULT_ROLE_SECRET_ID_FILE: process.env.TEST_INT ? 'docker/vault/tmp/secret-id': createTemp(randomUUID()),
-    VAULT_PKI_CLIENT_ROLE: 'example.com',
-    VAULT_PKI_SERVER_ROLE: 'example.com'
-  };
-}
-
 const env = from(process.env, {
   asFileContent: (path) => getFileContent(path),
   asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
@@ -74,8 +54,8 @@ if (vaultAuthMethod === 'K8S') {
     appRole: {
       // Generated per: https://www.vaultproject.io/docs/auth/approle#via-the-cli-1
       // Or: https://github.com/kr1sp1n/node-vault/blob/70097269d35a58bb560b5290190093def96c87b1/example/auth_approle.js
-      roleId: env.get('VAULT_ROLE_ID_FILE').default('/vault/role-id').asTextFileContent(),
-      roleSecretId: env.get('VAULT_ROLE_SECRET_ID_FILE').default('/vault/role-secret-id').asTextFileContent(),
+      roleId: env.get('VAULT_ROLE_ID_FILE').default('docker/vault/tmp/role-id').asTextFileContent(),
+      roleSecretId: env.get('VAULT_ROLE_SECRET_ID_FILE').default('docker/vault/tmp/secret-id').asTextFileContent(),
     },
   };
 }
@@ -96,35 +76,10 @@ module.exports = {
     PORT: env.get('PORT').default('3001').asPortNumber(),
   },
 
-  OAUTH: {
-    AUTH_ENABLED: env.get('AUTH_ENABLED').default('false').asBool(),
-    APP_OAUTH_CLIENT_KEY: env.get('APP_OAUTH_CLIENT_KEY').asString(), // Configured in WSO2 IM Service Provider
-    APP_OAUTH_CLIENT_SECRET: env.get('APP_OAUTH_CLIENT_SECRET').asString(),
-    MTA_ROLE: env.get('MTA_ROLE').default('Application/MTA').asString(),
-    PTA_ROLE: env.get('PTA_ROLE').default('Application/PTA').asString(),
-    EVERYONE_ROLE: env
-      .get('EVERYONE_ROLE')
-      .default('Internal/everyone')
-      .asString(),
-    OAUTH2_ISSUER: env
-      .get('OAUTH2_ISSUER')
-      .default('https://WSO2_IM_SERVER:9443/oauth2/token')
-      .asString(),
-    OAUTH2_TOKEN_ISS: env.get('OAUTH2_TOKEN_ISS').asString(),
-    CERTIFICATE_FILE_NAME: env
-      .get('CERTIFICATE_FILE_NAME')
-      .default('resources/wso2carbon-publickey.cert')
-      .asString(),
-    EMBEDDED_CERTIFICATE: env.get('EMBEDDED_CERTIFICATE').asString(),
-    JWT_COOKIE_NAME: 'MCM-API_ACCESS_TOKEN',
-    RESET_PASSWORD_ISSUER: env.get('OAUTH_RESET_PASSWORD_ISSUER').asString(),
-    RESET_PASSWORD_AUTH_USER: env
-      .get('OAUTH_RESET_PASSWORD_AUTH_USER')
-      .asString(),
-    RESET_PASSWORD_AUTH_PASSWORD: env
-      .get('OAUTH_RESET_PASSWORD_AUTH_PASSWORD')
-      .asString(),
-  },
+  // If set to true, enables logging of request metadata using Winston.
+  // Note: Enabling this may expose sensitive headers in logs.
+  WINSTON_REQUEST_META_DATA: env.get('WINSTON_REQUEST_META_DATA').default('false').asBool(),
+  CLIENT_URL: env.get('CLIENT_URL').default('http://localhost:8081/').asString(),
 
   KEYCLOAK: {
     ENABLED: env.get('KEYCLOAK_ENABLED').default('false').asBool(),
@@ -136,21 +91,37 @@ module.exports = {
     AUTO_CREATE_ACCOUNTS: env.get('KEYCLOAK_AUTO_CREATE_ACCOUNTS').default('true').asBool(),
   },
 
+  KETO: {
+    ENABLED: env.get('ENABLE_KETO').default('false').asBool(),
+    WRITE_URL: env.get('KETO_WRITE_URL').default('http://localhost:4467').asString(),
+  },
+
+  OPENID: {
+    ENABLE_2FA: env.get('OPENID_ENABLE_2FA').default('false').asBool(),
+    ENABLED: env.get('OPENID_ENABLED').default('false').asBool(),
+    AUDIENCE: env.get('OPENID_AUDIENCE').default('connection-manager-api').asString(),
+    ALLOW_INSECURE: env.get('OPENID_ALLOW_INSECURE').default('false').asBool(),
+    DISCOVERY_URL: env.get('OPENID_DISCOVERY_URL').asString(),
+    CLIENT_ID: env.get('OPENID_CLIENT_ID').asString(),
+    CLIENT_SECRET: env.get('OPENID_CLIENT_SECRET').asString(),
+    CALLBACK: env.get('LOGIN_CALLBACK').default('http://localhost:3001/api/auth/callback').asString(),
+    JWT_COOKIE_NAME: env.get('OPENID_JWT_COOKIE_NAME').default('MCM-API_ACCESS_TOKEN').asString(),
+    GROUPS: {
+      APPLICATION: env.get('OPENID_APPLICATION_GROUP').default('Application').asString(),
+      EVERYONE: env.get('OPENID_EVERYONE_GROUP').default('everyone').asString(),
+      MTA: env.get('OPENID_MTA_GROUP').default('MTA').asString(),
+      PTA: env.get('OPENID_PTA_GROUP').default('PTA').asString(),
+      DFSP: env.get('OPENID_DFSP_GROUP').default('DFSP').asString()
+    }
+  },
+
+  SESSION_STORE: {
+    SECRET: env.get('SESSION_STORE_SECRET').default('connection_manager_session_secret').asString(),
+  },
+
   EXTRA_TLS: {
     EXTRA_CERTIFICATE_CHAIN_FILE_NAME: env.get('EXTRA_CERTIFICATE_CHAIN_FILE_NAME').asString(),
     EXTRA_ROOT_CERT_FILE_NAME: env.get('EXTRA_ROOT_CERT_FILE_NAME').asString(),
-  },
-
-  AUTH_2FA: {
-    AUTH_2FA_ENABLED: env.get('AUTH_2FA_ENABLED').default('false').asBool(),
-    TOTP_ADMIN_ISSUER: env.get('TOTP_ADMIN_ISSUER').asString(),
-    TOTP_ADMIN_AUTH_USER: env.get('TOTP_ADMIN_AUTH_USER').asString(),
-    TOTP_ADMIN_AUTH_PASSWORD: env.get('TOTP_ADMIN_AUTH_PASSWORD').asString(),
-    TOTP_LABEL: env.get('TOTP_LABEL').asString(),
-    TOTP_ISSUER: env.get('TOTP_ISSUER').default('MCM').asString(),
-    WSO2_MANAGER_SERVICE_URL: env.get('WSO2_MANAGER_SERVICE_URL').asString(),
-    WSO2_MANAGER_SERVICE_USER: env.get('WSO2_MANAGER_SERVICE_USER').asString(),
-    WSO2_MANAGER_SERVICE_PASSWORD: env.get('WSO2_MANAGER_SERVICE_PASSWORD').asString(),
   },
 
   DATABASE: {

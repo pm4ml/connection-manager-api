@@ -62,7 +62,8 @@ exports.deleteDfspServerCerts = async (ctx, dfspId) => {
 exports.getAllDfspServerCerts = async (ctx) => {
   const { pkiEngine } = ctx;
   const allDfsps = await DFSPModel.findAll();
-  return Promise.all(allDfsps.map(({ id }) => pkiEngine.getDFSPServerCerts(id)));
+  const certs = await Promise.allSettled(allDfsps.map(({ id }) => pkiEngine.getDFSPServerCerts(id)));
+  return certs.filter(({ status }) => status === 'fulfilled').map(({ value }) => value);
 };
 
 /**
