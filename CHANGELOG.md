@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.1.2](https://github.com/mojaloop/connection-manager-api/compare/v3.1.2-snapshot.2...v3.1.2) (2025-11-19)
+
 ### [3.1.1](https://github.com/pm4ml/connection-manager-api/compare/v3.1.0...v3.1.1) (2025-10-27)
 
 
