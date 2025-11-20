@@ -25,11 +25,20 @@
  --------------
  ******/
 
-require('dotenv').config({ path: './.env.test' });
-
 module.exports = {
-  testMatch: ['<rootDir>/test/**/*.test.js'],
-  verbose: true,
+  verbose: process.env.JEST_VERBOSE === 'true',
   clearMocks: true,
+  projects: [
+    {
+      displayName: 'unit',
+      testMatch: ['<rootDir>/test/unit/**/*.test.js'],
+      setupFiles: ['<rootDir>/test/unit/test-env-setup.js'],
+    },
+    {
+      displayName: 'integration',
+      testMatch: ['<rootDir>/test/int/**/*.test.js'],
+      setupFiles: ['<rootDir>/test/int/test-env-setup.js'],
+    },
+  ],
 };
 
