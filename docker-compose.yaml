@@ -53,7 +53,7 @@ services:
         condition: service_healthy
 
   connection-manager-migration:
-    image: infitx/connection-manager-api:local
+    image: mojaloop/connection-manager-api:local
     pull_policy: if_not_present
     build:
       context: .
@@ -73,7 +73,7 @@ services:
     restart: "no"
 
   connection-manager-api:
-    image: infitx/connection-manager-api:local
+    image: mojaloop/connection-manager-api:local
     pull_policy: if_not_present
     build:
       context: .
