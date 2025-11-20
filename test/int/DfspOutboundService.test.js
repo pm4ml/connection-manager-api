@@ -28,6 +28,7 @@ const sinon = require("sinon");
 const ValidationCodes = require("../../src/pki_engine/ValidationCodes");
 const { createInternalHubCA } = require("../../src/service/HubCAService");
 const { createContext, destroyContext } = require("./context");
+const { createUniqueDfsp } = require('./test-helpers');
 
 // Sign CSR and return certificate ( what the DFSP would do )
 const createCertFromCSR = (csrPem) => {
@@ -81,10 +82,7 @@ describe("DfspOutboundService", function () {
 
       await createInternalHubCA(ctx, ROOT_CA);
 
-      const dfsp = {
-        dfspId: DFSP_TEST_OUTBOUND,
-        name: "DFSP used to test outbound flow",
-      };
+      const dfsp = createUniqueDfsp();
       const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
       dfspId = resultDfsp.id;
 
