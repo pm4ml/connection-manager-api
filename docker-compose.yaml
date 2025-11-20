@@ -137,14 +137,14 @@ services:
       timeout: 1s
       retries: 20
 
-  # MailHog for email testing
-  mailhog:
-    image: mailhog/mailhog
+  # Mailpit for email testing
+  mailpit:
+    image: axllent/mailpit:latest
     ports:
       - "1025:1025"  # SMTP server
       - "8025:8025"  # Web UI
     healthcheck:
-      test: wget --spider --quiet http://localhost:8025
+      test: wget --spider --quiet http://localhost:8025/api/v1/info
       interval: 10s
       timeout: 5s
       retries: 3

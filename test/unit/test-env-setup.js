@@ -1,3 +1,7 @@
+// Unit test environment setup
+// This file is loaded automatically by jest.config.js projects[unit].setupFiles
+// Unit tests should mock dependencies, but need minimal env for module loading
+
 const tmp = require('tmp');
 const { randomUUID } = require('node:crypto');
 const fs = require('fs');
@@ -8,5 +12,11 @@ const createTemp = (content) => {
   return tempFile.name;
 };
 
+// Required by Constants.js (loaded when importing most modules)
+process.env.VAULT_AUTH_METHOD = 'APP_ROLE';
 process.env.VAULT_ROLE_ID_FILE = createTemp(randomUUID());
 process.env.VAULT_ROLE_SECRET_ID_FILE = createTemp(randomUUID());
+process.env.VAULT_PKI_CLIENT_ROLE = 'example.com';
+process.env.VAULT_PKI_SERVER_ROLE = 'example.com';
+process.env.SWITCH_ID = 'switch';
+process.env.LOG_LEVEL = 'warn';
