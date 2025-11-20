@@ -27,7 +27,8 @@ const DFSPEndpointModel = require('../../src/models/DFSPEndpointModel');
 const DFSPModel = require('../../src/models/DFSPModel');
 const DFSPEndpointItemModel = require('../../src/models/DFSPEndpointItemModel');
 validateModule = require('../../src/service/DfspNetworkConfigService');
-const { getDFSPIngressIpEndpoint } = require('../../src/service/DfspNetworkConfigService');  // Replace with actual service path
+const { getDFSPIngressIpEndpoint } = require('../../src/service/DfspNetworkConfigService');
+const { createUniqueDfsp } = require('./test-helpers');
 
 const { validateDirectionType } = require('../../src/service/DfspNetworkConfigService');
 
@@ -324,10 +325,7 @@ describe.skip('DfspNetworkConfigService creating endpoint items', () => {
     destroyContext(ctx);
   });
   beforeEach(async () => {
-    const dfsp = {
-      dfspId: 'DFSP_TEST_B',
-      name: 'DFSP_TEST_B_description'
-    };
+    const dfsp = createUniqueDfsp();
     const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
     dfspId = resultDfsp.id;
   });

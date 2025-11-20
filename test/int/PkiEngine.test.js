@@ -35,7 +35,7 @@ describe('verify CSRInfo subject is the same of the CertInfo', () => {
 
     const csrInfo = new CSRInfo(csrSubject);
     const certInfo = new CertInfo(certSubject);
-    console.log(vaultPKIEngine.compareSubjectBetweenCSRandCert(csrInfo, certInfo));
+    logger.debug(vaultPKIEngine.compareSubjectBetweenCSRandCert(csrInfo, certInfo));
     expect(vaultPKIEngine.compareSubjectBetweenCSRandCert(csrInfo, certInfo).valid).toBe(true);
   });
 
@@ -602,7 +602,7 @@ describe('PKIEngine', () => {
       const enrollment = { csr: 'some-csr' };
       const result = pkiEngine.performCAValidations([ValidationCodes.VALIDATION_CODES.CSR_CERT_SAME_CN.code], enrollment, 'rootCertificate', 'key');
 
-      console.log('Called with:', verifyCertificateCSRSameCNStub.args);
+      logger.debug('Called with:', verifyCertificateCSRSameCNStub.args);
 
       expect(verifyCertificateCSRSameCNStub.calledOnceWith(ValidationCodes.VALIDATION_CODES.CSR_CERT_SAME_CN.code, enrollment)).toEqual(true);
       expect(result.validationState).toEqual(ValidationCodes.VALID_STATES.VALID);
@@ -745,7 +745,7 @@ describe('PKIEngine', () => {
       const result = pkiEngine.performCAValidations(null, null, null, null);
 
       // Log the result to inspect it
-      console.log('Function Output:', result);
+      logger.debug('Function Output:', result);
 
       expect(typeof result).toBe('object');
       expect(Array.isArray(result.validations)).toBe(true);
@@ -860,7 +860,7 @@ describe('PKIEngine', () => {
       const code = 'some-code';
 
       const result = pkiEngine.verifyCertificateCSRSameCN(code, enrollment);
-      console.log('Result:', result);
+      logger.debug('Result:', result);
       expect(result).toEqual({ valid: false, reason: `csr subject O: Example Organization is not equals cert subject O: undefined` });
     });
 

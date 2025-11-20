@@ -18,9 +18,9 @@
   "scripts": {
     "prepare": "husky || true",
     "test": "TEST=true TEST_INT=true SWITCH_ID=switch node --experimental-vm-modules node_modules/.bin/jest --forceExit --runInBand",
-    "test:int": "echo 'WARNING: Run \"npm run backend:start\" before executing...\n' && TEST=true TEST_INT=true SWITCH_ID=switch node --experimental-vm-modules node_modules/.bin/jest --forceExit --runInBand --testMatch '**/test/int/**/*.test.js'",
-    "test-self-signed-server": "TEST_START_SELF_SIGNED_SERVER=true jest --testMatch '**/test/int/**/*self.test.js'",
-    "test:unit": "jest --testMatch '**/test/unit/**/*.test.js'",
+    "test:int": "echo 'WARNING: Run \"npm run backend:start\" before executing...\n' && node --experimental-vm-modules node_modules/.bin/jest --forceExit --runInBand --selectProjects=integration",
+    "test-self-signed-server": "TEST_START_SELF_SIGNED_SERVER=true jest --selectProjects=integration --testMatch '**/test/int/**/*self.test.js'",
+    "test:unit": "jest --selectProjects=unit",
     "test:xunit": "npm run test:unit",
     "test-with-coverage": "./docker compose up -d --wait vault-dev && nyc --reporter=text jest --timeout 20000 --colors -exit ; docker compose down -v",
     "test:coverage": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.test nyc --clean jest --require dotenv/config --testMatch '**/test/**/*.test.js' --timeout 20000",

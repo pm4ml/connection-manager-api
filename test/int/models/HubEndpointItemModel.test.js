@@ -1,11 +1,16 @@
 const sinon = require('sinon');
-const { knex } = require('../../../src/db/database');
+const db = require('../../../src/db/database');
+const { knex } = db;
 const HubEndpointItemModel = require('../../../src/models/HubEndpointItemModel');
 const NotFoundError = require('../../../src/errors/NotFoundError');
 const InternalError = require('../../../src/errors/InternalError');
 
 describe('HubEndpointItemModel', () => {
     let sandbox;
+
+    beforeAll(async () => {
+        await db.connect();
+    });
 
     beforeEach(() => {
         sandbox = sinon.createSandbox();
