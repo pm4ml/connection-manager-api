@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.1.4](https://github.com/mojaloop/connection-manager-api/compare/v3.1.3...v3.1.4) (2025-11-20)
+
+
+### Bug Fixes
+
+* support intermediateChain as array in server certificates ([c7ef8e4](https://github.com/mojaloop/connection-manager-api/commit/c7ef8e4f358e11d538ff02ad88e10a7a247ab986))
+
 ### [3.1.3](https://github.com/mojaloop/connection-manager-api/compare/v3.1.2...v3.1.3) (2025-11-20)
 
 
