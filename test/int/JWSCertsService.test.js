@@ -16,7 +16,7 @@
  ******************************************************************************/
 
 const forge = require('node-forge');
-const { switchId } = require('../../src/constants/Constants');
+const { switchId, switchEmail } = require('../../src/constants/Constants');
 const JWSCertsService = require('../../src/service/JWSCertsService');
 const ExternalDFSPModel = require('../../src/models/ExternalDFSPModel');
 const PkiService = require('../../src/service/PkiService');
@@ -303,7 +303,7 @@ describe('JWSCertsService - setHubJWSCerts', () => {
 
     const result = await JWSCertsService.setHubJWSCerts(ctx, body);
 
-    expect(createDFSPStub.calledOnceWith(ctx, { dfspId: switchId, name: switchId })).toBe(true);
+    expect(createDFSPStub.calledOnceWith(ctx, { dfspId: switchId, name: switchId, email: switchEmail })).toBe(true);
     expect(createDfspJWSCertsStub.calledOnceWith(ctx, switchId, body)).toBe(true);
     expect(result.publicKey).toBe(body.publicKey);
   });
@@ -319,7 +319,7 @@ describe('JWSCertsService - setHubJWSCerts', () => {
 
     const result = await JWSCertsService.setHubJWSCerts(ctx, body);
 
-    expect(createDFSPStub.calledOnceWith(ctx, { dfspId: switchId, name: switchId })).toBe(true);
+    expect(createDFSPStub.calledOnceWith(ctx, { dfspId: switchId, name: switchId, email: switchEmail })).toBe(true);
     expect(createDfspJWSCertsStub.calledOnceWith(ctx, switchId, body)).toBe(true);
     expect(result.publicKey).toBe(body.publicKey);
   });

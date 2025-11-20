@@ -21,7 +21,7 @@ const ExternalDFSPModel = require('../models/ExternalDFSPModel');
 const PkiService = require('./PkiService');
 const NotFoundError = require('../errors/NotFoundError');
 const ValidationError = require('../errors/ValidationError');
-const { switchId } = require('../constants/Constants');
+const { switchId, switchEmail } = require('../constants/Constants');
 const { logger } = require('../log/logger');
 const log = logger.child({ component: 'JWSCertsService' });
 
@@ -87,8 +87,11 @@ exports.createDfspExternalJWSCerts = async (ctx, body, sourceDfspId) => {
 exports.setHubJWSCerts = async (ctx, body) => {
   const switchData = await DFSPModel.findByDfspId(switchId)
     .catch(err => {
+      if (err instanceof NotFoundError) {
+        log.debug('Hub DFSP not found, will create it');
+        return null;
+      }
       log.error('Error on getting hub DFSP', err);
-      if (err instanceof NotFoundError) return null;
       throw err;
     });
   // (?) think, if it's better to create DFSP for hub on service start
@@ -97,6 +100,7 @@ exports.setHubJWSCerts = async (ctx, body) => {
     await PkiService.createDFSPWithCSR(ctx, {
       dfspId: switchId,
       name: switchId,
+      email: switchEmail,
     });
   }
 
