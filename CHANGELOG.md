@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.1.4](https://github.com/mojaloop/connection-manager-api/compare/v3.1.3...v3.1.4) (2025-11-20)
+
+
+### Bug Fixes
+
+* support intermediateChain as array in server certificates ([c7ef8e4](https://github.com/mojaloop/connection-manager-api/commit/c7ef8e4f358e11d538ff02ad88e10a7a247ab986))
+
+### [3.1.3](https://github.com/mojaloop/connection-manager-api/compare/v3.1.2...v3.1.3) (2025-11-20)
+
+
+### Bug Fixes
+
+* cleanup ([666d153](https://github.com/mojaloop/connection-manager-api/commit/666d153160dd51c33d3dca75619279c106126a55))
+* improve auth middleware and session configuration ([46ddc24](https://github.com/mojaloop/connection-manager-api/commit/46ddc247a9f54eebbc5ca9d87a2e72e9c88a3e11))
+* increase timeout ([50cbd60](https://github.com/mojaloop/connection-manager-api/commit/50cbd6052498a67a7ab3cb5d448485bb2dd46fcf))
+* increase timeout ([c596845](https://github.com/mojaloop/connection-manager-api/commit/c596845ee70bf7dc07952951f2abb114421a36c8))
+* resolve Keycloak pagination issues with max:-1 parameter ([f4ed7b6](https://github.com/mojaloop/connection-manager-api/commit/f4ed7b665e89baa23710b1d8af1174285dec4e7b))
+
 ### [3.1.2](https://github.com/mojaloop/connection-manager-api/compare/v3.1.2-snapshot.2...v3.1.2) (2025-11-19)
 
 ### [3.1.1](https://github.com/pm4ml/connection-manager-api/compare/v3.1.0...v3.1.1) (2025-10-27)

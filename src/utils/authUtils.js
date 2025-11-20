@@ -79,11 +79,10 @@ async function getJwtVerifier() {
   const jwksResponse = await fetch(metadata.jwks_uri);
   const jwks = await jwksResponse.json();
 
-  const filteredJwks = {
+  // Filter JWKs to only include signature keys, excluding encryption keys (e.g., RSA-OAEP)
+  const localJWKSet = createLocalJWKSet({
     keys: jwks.keys.filter(key => key.use === 'sig' || (!key.use && key.alg && !key.alg.includes('OAEP')))
-  };
-
-  const localJWKSet = createLocalJWKSet(filteredJwks);
+  });
 
   jwksVerifier = async (token) => {
     const { payload } = await jwtVerify(token, localJWKSet, {
