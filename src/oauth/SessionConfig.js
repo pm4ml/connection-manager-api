@@ -74,7 +74,7 @@ const sessionOptions = {
   cookie: {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'Strict',
+    sameSite: Constants.SESSION_STORE.COOKIE_SAME_SITE_STRICT ? 'Strict' : 'Lax',
     maxAge: SESSION_TIMEOUT_MS
   }
 };

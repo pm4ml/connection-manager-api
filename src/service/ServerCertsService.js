@@ -27,11 +27,20 @@ exports.createDfspServerCerts = async (ctx, dfspId, body) => {
   }
   await PkiService.validateDfsp(ctx, dfspId);
   const { pkiEngine } = ctx;
-  const { validations, validationState } = await pkiEngine.validateServerCertificate(body.serverCertificate, body.intermediateChain, body.rootCertificate);
+
+  // Normalize intermediateChain: convert array to string if needed
+  const normalizedBody = {
+    ...body,
+    intermediateChain: Array.isArray(body.intermediateChain)
+      ? body.intermediateChain.join('\n')
+      : body.intermediateChain,
+  };
+
+  const { validations, validationState } = await pkiEngine.validateServerCertificate(normalizedBody.serverCertificate, normalizedBody.intermediateChain, normalizedBody.rootCertificate);
 
   const certData = {
     dfspId,
-    ...formatBody(body, pkiEngine),
+    ...formatBody(normalizedBody, pkiEngine),
     validations,
     validationState,
   };
@@ -109,11 +118,16 @@ exports.deleteHubServerCerts = async (ctx) => {
 };
 
 const formatBody = (body, pkiEngine) => {
+  // Normalize intermediateChain: convert array to string if needed
+  const intermediateChain = Array.isArray(body.intermediateChain)
+    ? body.intermediateChain.join('\n')
+    : body.intermediateChain;
+
   return {
     rootCertificate: body.rootCertificate,
     rootCertificateInfo: body.rootCertificate && pkiEngine.getCertInfo(body.rootCertificate),
-    intermediateChain: body.intermediateChain,
-    intermediateChainInfo: PkiService.splitChainIntermediateCertificateInfo(body.intermediateChain, pkiEngine),
+    intermediateChain,
+    intermediateChainInfo: PkiService.splitChainIntermediateCertificateInfo(intermediateChain, pkiEngine),
     serverCertificate: body.serverCertificate,
     serverCertificateInfo: body.serverCertificate && pkiEngine.getCertInfo(body.serverCertificate),
   };

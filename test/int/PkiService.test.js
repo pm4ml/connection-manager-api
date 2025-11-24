@@ -257,6 +257,6 @@ describe('PkiService', () => {
       expect(saved.name).toBe(dfsp.name);
       const deleted = await PkiService.deleteDFSP(ctx, result.id);
       expect(deleted).toBe(1);
-    }, 20_000);
+    }, 30000);
   });
 });

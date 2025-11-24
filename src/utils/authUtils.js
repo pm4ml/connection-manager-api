@@ -70,19 +70,30 @@ async function getJwtVerifier() {
   if (jwksVerifier) {
     return jwksVerifier;
   }
+
   const config = await getOidcConfig();
   const client = await requireEsm('openid-client');
-  const { jwtVerify, createRemoteJWKSet } = await requireEsm('jose', false);
+  const { jwtVerify, createLocalJWKSet } = await requireEsm('jose', false);
   const metadata = config.serverMetadata();
-  jwksVerifier = createRemoteJWKSet(new URL(metadata.jwks_uri));
-  return async (token) => {
-    const { payload } = await jwtVerify(token, jwksVerifier, {
+
+  const jwksResponse = await fetch(metadata.jwks_uri);
+  const jwks = await jwksResponse.json();
+
+  // Filter JWKs to only include signature keys, excluding encryption keys (e.g., RSA-OAEP)
+  const localJWKSet = createLocalJWKSet({
+    keys: jwks.keys.filter(key => key.use === 'sig' || (!key.use && key.alg && !key.alg.includes('OAEP')))
+  });
+
+  jwksVerifier = async (token) => {
+    const { payload } = await jwtVerify(token, localJWKSet, {
       issuer: metadata.issuer,
       audience: Constants.OPENID.AUDIENCE,
       clockTolerance: 60
     });
     return payload;
   };
+
+  return jwksVerifier;
 }
 
 /**

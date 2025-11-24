@@ -69,7 +69,7 @@ const getDfspGroupName = (dfspId) => `${Constants.OPENID.GROUPS.DFSP}:${dfspId}`
 
 
 const findApplicationGroup = async (kcAdminClient) => {
-  const groups = await kcAdminClient.groups.find();
+  const groups = await kcAdminClient.groups.find({ max: -1 });
   const applicationGroup = groups.find(g => g.name === Constants.OPENID.GROUPS.APPLICATION);
 
   if (!applicationGroup?.id) {
@@ -84,7 +84,10 @@ const createDfspGroup = async (kcAdminClient, dfspId) => {
   const applicationGroup = await findApplicationGroup(kcAdminClient);
   const dfspGroupName = getDfspGroupName(dfspId);
 
-  const subGroups = await kcAdminClient.groups.listSubGroups({parentId: applicationGroup.id});
+  const subGroups = await kcAdminClient.groups.listSubGroups({
+    parentId: applicationGroup.id,
+    max: -1
+  });
   let dfspGroup = subGroups.find(g => g.name === dfspGroupName);
 
   if (!dfspGroup) {
@@ -337,11 +340,17 @@ exports.deleteDfspResources = async (dfspId) => {
   try {
     // Find users by group membership instead of username
     const applicationGroup = await findApplicationGroup(kcAdminClient);
-    const subGroups = await kcAdminClient.groups.listSubGroups({parentId: applicationGroup.id});
+    const subGroups = await kcAdminClient.groups.listSubGroups({
+      parentId: applicationGroup.id,
+      max: -1
+    });
     const dfspGroup = subGroups.find(g => g.name === getDfspGroupName(dfspId));
 
     if (dfspGroup?.id) {
-      const groupMembers = await kcAdminClient.groups.listMembers({ id: dfspGroup.id });
+      const groupMembers = await kcAdminClient.groups.listMembers({
+        id: dfspGroup.id,
+        max: -1
+      });
       const regularUsers = groupMembers.filter(u => !u.username.startsWith('service-account-'));
 
       for (const user of regularUsers) {
@@ -357,7 +366,10 @@ exports.deleteDfspResources = async (dfspId) => {
         }
 
         // Check if user is still a member of any other DFSP groups
-        const userGroups = await kcAdminClient.users.listGroups({ id: user.id });
+        const userGroups = await kcAdminClient.users.listGroups({
+          id: user.id,
+          max: -1
+        });
         const userDfspGroups = userGroups.filter(g => g.name.startsWith(`${Constants.OPENID.GROUPS.DFSP}:`));
 
         if (userDfspGroups.length === 0) {
@@ -384,7 +396,10 @@ exports.deleteDfspResources = async (dfspId) => {
 
   try {
     const applicationGroup = await findApplicationGroup(kcAdminClient);
-    const subGroups = await kcAdminClient.groups.listSubGroups({parentId: applicationGroup.id});
+    const subGroups = await kcAdminClient.groups.listSubGroups({
+      parentId: applicationGroup.id,
+      max: -1
+    });
     const dfspGroup = subGroups.find(g => g.name === getDfspGroupName(dfspId));
 
     if (dfspGroup?.id) {

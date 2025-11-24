@@ -44,6 +44,7 @@ paths:
         in: query
         description: URL to redirect to after successful authentication
         required: true
+        allowReserved: true
         schema:
           type: string
       responses:
@@ -115,6 +116,7 @@ paths:
         in: query
         description: URL to redirect to after logout
         required: true
+        allowReserved: true
         schema:
           type: string
       responses:
@@ -756,6 +758,7 @@ paths:
       - OAuth2:
         - mta
         - pta
+        - dfsp
       x-swagger-router-controller: HubCAController
     post:
       tags:
@@ -914,6 +917,7 @@ paths:
       - OAuth2:
         - mta
         - pta
+        - dfsp
       x-swagger-router-controller: JWSCerts
   /external-dfsps/jwscerts:
     post:
@@ -2879,8 +2883,12 @@ components:
           type: string
           description: PEM-encoded root CA certificate
         intermediateChain:
-          type: string
-          description: PEM-encoded intermediate chain certificats
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          description: PEM-encoded intermediate chain certificates (string or array of strings)
         serverCertificate:
           type: string
           description: PEM-encoded server certificate

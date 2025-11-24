@@ -117,6 +117,7 @@ module.exports = {
 
   SESSION_STORE: {
     SECRET: env.get('SESSION_STORE_SECRET').default('connection_manager_session_secret').asString(),
+    COOKIE_SAME_SITE_STRICT: env.get('SESSION_COOKIE_SAME_SITE_STRICT').default('true').asBool(),
   },
 
   EXTRA_TLS: {
@@ -142,6 +143,7 @@ module.exports = {
   },
   switchFQDN: env.get('SWITCH_FQDN').default('switch.example.com').asString(),
   switchId: env.get('SWITCH_ID').required().asString(),
+  switchEmail: env.get('SWITCH_EMAIL').default('switch@hub.local').asString(),
 
   vault: {
     endpoint: env.get('VAULT_ENDPOINT').default('http://127.0.0.1:8233').asString(),

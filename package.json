@@ -1,7 +1,7 @@
 {
-  "name": "@pm4ml/connection-manager-api",
+  "name": "@mojaloop/connection-manager-api",
   "version": "3.2.0-storage-cluster.0",
-  "description": "ModusBox Connection Manager API",
+  "description": "Mojaloop Connection Manager API",
   "license": "Apache-2.0",
   "author": "ModusBox",
   "contributors": [
