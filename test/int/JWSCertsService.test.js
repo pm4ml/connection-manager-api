@@ -26,8 +26,10 @@ const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
 const DFSPModel = require('../../src/models/DFSPModel');
 const ValidationError = require('../../src/errors/ValidationError');
 const database = require('../../src/db/database');
-const { createUniqueDfsp } = require('./test-helpers');
 const { logger } = require('../../src/log/logger');
+const { setupTestDB, tearDownTestDB } = require('../int/test-database');
+const { createContext, destroyContext } = require('../int/context');
+const { createUniqueDfsp } = require('./test-helpers');
 
 describe('JWSCertsService Tests', () => {
   let ctx;
