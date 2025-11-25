@@ -10,8 +10,10 @@ echo "Starting coverage tests..."
 
 # Ensure environment is test
 source "${SCRIPT_DIR}/env.sh"
+if [ ! -f .env ]; then
+  cp ./test/.env-int  .env
+fi
 
-# Running in CI
 echo "Running in CI environment..."
 npm run backend:start
 
