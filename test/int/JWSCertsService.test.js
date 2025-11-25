@@ -15,6 +15,7 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
+const sinon = require('sinon');
 const forge = require('node-forge');
 const { switchId } = require('../../src/constants/Constants');
 const JWSCertsService = require('../../src/service/JWSCertsService');
@@ -23,9 +24,6 @@ const PkiService = require('../../src/service/PkiService');
 const NotFoundError = require('../../src/errors/NotFoundError');
 const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
 const DFSPModel = require('../../src/models/DFSPModel');
-const { setupTestDB, tearDownTestDB } = require('../int/test-database');
-const { createContext, destroyContext } = require('../int/context');
-const sinon = require('sinon');
 const ValidationError = require('../../src/errors/ValidationError');
 const database = require('../../src/db/database');
 const { createUniqueDfsp } = require('./test-helpers');
@@ -35,17 +33,17 @@ describe('JWSCertsService Tests', () => {
   let ctx;
   let publicKey;
 
-  beforeEach(async () => {
-    // Reset the database before each test
-    await database.knex('dfsps').del();
-  });
-
   beforeAll(async () => {
     await setupTestDB();
     await database.knex('dfsps').del();
     ctx = await createContext();
     const keypair = forge.rsa.generateKeyPair({ bits: 2048 });
     publicKey = forge.pki.publicKeyToPem(keypair.publicKey, 72);
+  });
+
+  beforeEach(async () => {
+    // Reset the database before each test
+    await database.knex('dfsps').del();
   });
 
   afterAll(async () => {
@@ -59,8 +57,8 @@ describe('JWSCertsService Tests', () => {
     it('should create a DfspJWSCerts entry', async () => {
       const body = { publicKey };
       const dfsp = createUniqueDfsp();
-      const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
-      dfspId = resultDfsp.id;
+      await PkiService.createDFSP(ctx, dfsp);
+      dfspId = dfsp.dfspId;
       const result = await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
       expect(result.publicKey).toBe(publicKey);
       const certs = await JWSCertsService.getAllDfspJWSCerts(ctx);
@@ -95,8 +93,8 @@ describe('JWSCertsService Tests', () => {
     it('should create and delete a DfspJWSCerts entry', async () => {
       const body = { publicKey };
       const dfsp = createUniqueDfsp();
-      const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
-      dfspId = resultDfsp.id;
+      await PkiService.createDFSP(ctx, dfsp);
+      dfspId = dfsp.dfspId;
       await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
       await JWSCertsService.deleteDfspJWSCerts(ctx, dfspId);
       await expect(JWSCertsService.getDfspJWSCerts(ctx, dfspId)).rejects.toBeInstanceOf(NotFoundError);

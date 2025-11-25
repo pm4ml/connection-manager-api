@@ -16,15 +16,20 @@
  ******************************************************************************/
 
 require('dotenv/config');
-const fs = require('fs');
+const fs = require('node:fs');
+const pathModule = require('node:path');
 const { from } = require('env-var');
 const constValues = require('./constValues');
 
 function getFileContent (path) {
-  if (!fs.existsSync(path)) {
-    throw new Error(`File ${path} doesn't exist`);
+  const resolvedPath = path.startsWith('/')
+    ? path
+    : pathModule.resolve(__dirname, '../..', path); // .env file is in the root
+
+  if (!fs.existsSync(resolvedPath)) {
+    throw new Error(`File ${resolvedPath} doesn't exist`);
   }
-  return fs.readFileSync(path);
+  return fs.readFileSync(resolvedPath);
 }
 
 const env = from(process.env, {
@@ -83,7 +88,7 @@ module.exports = {
     ADMIN_CLIENT_ID: env.get('KEYCLOAK_ADMIN_CLIENT_ID').default('connection-manager-client').asString(),
     ADMIN_CLIENT_SECRET: env.get('KEYCLOAK_ADMIN_CLIENT_SECRET').asString(),
     DFSPS_REALM: env.get('KEYCLOAK_DFSPS_REALM').default('dfsps').asString(),
-    AUTO_CREATE_ACCOUNTS: env.get('KEYCLOAK_AUTO_CREATE_ACCOUNTS').default('true').asBool(),
+    AUTO_CREATE_ACCOUNTS: env.get('KEYCLOAK_AUTO_CREATE_ACCOUNTS').default('false').asBool(),
   },
 
   KETO: {
