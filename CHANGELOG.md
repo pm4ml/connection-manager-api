@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.2.0](https://github.com/mojaloop/connection-manager-api/compare/v3.2.0-storage-cluster.3...v3.2.0) (2025-11-25)
+
 ### [3.1.5](https://github.com/mojaloop/connection-manager-api/compare/v3.1.4...v3.1.5) (2025-11-20)
 
 
