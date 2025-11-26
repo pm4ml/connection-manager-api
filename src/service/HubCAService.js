@@ -86,7 +86,7 @@ exports.createExternalHubCA = async (ctx, body) => {
   if (certManager) {
     await certManager.renewServerCert();
     if (hubJwsCertManager) {
-      await hubJwsCertManager.renewHubJWSCert();
+      await hubJwsCertManager.renewServerCert();
     }
   }
   return info;
