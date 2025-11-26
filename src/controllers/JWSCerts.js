@@ -69,7 +69,9 @@ exports.rotateHubJWSCerts = (req, res, next) => {
       utils.writeJson(res, response);
     })
     .catch(response => {
-      utils.writeJson(res, response, response.status);
+      const statusCode = response.status || 500;
+      const errorPayload = { error: response.message || 'An error occurred' };
+      utils.writeJson(res, errorPayload, statusCode);
     });
 };
 
