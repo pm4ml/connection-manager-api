@@ -26,6 +26,7 @@ const ROOT_CA = require('../int/Root_CA');
 const { createInternalHubCA, deleteHubCA } = require('../../src/service/HubCAService');
 const { createContext, destroyContext } = require('../int/context');
 const Constants = require('../../src/constants/Constants');
+const { createUniqueDfsp } = require('./test-helpers');
 
 const AMAZON_ROOT_CA_PATH = 'resources/amazon.com/RootCA.pem';
 const AMAZON_CHAIN_PATH = 'resources/amazon.com/amazon.chain.pem';
@@ -34,7 +35,7 @@ const AMAZON_SERVER_CERT_PATH = 'resources/amazon.com/www.amazon.com.pem';
 const GOOGLE_CHAIN_PATH = 'resources/google.com/google.chain.pem';
 const GOOGLE_SERVER_CERT_PATH = 'resources/google.com/google.com.pem';
 
-const TTL_FOR_CA = '200h';
+const TTL_FOR_CA = '8760h';
 
 describe('ServerCertsService', () => {
   let ctx;
@@ -90,10 +91,7 @@ describe('ServerCertsService', () => {
         intermediateChain: fs.readFileSync(path.join(__dirname, GOOGLE_CHAIN_PATH)).toString(),
         serverCertificate: fs.readFileSync(path.join(__dirname, GOOGLE_SERVER_CERT_PATH)).toString(),
       };
-      const dfsp = {
-        dfspId: 'DFSP_TEST',
-        name: 'DFSP'
-      };
+      const dfsp = createUniqueDfsp();
       const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
       dfspId = resultDfsp.id;
       const result = await ServerCertsService.createDfspServerCerts(ctx, dfspId, body);
@@ -109,10 +107,7 @@ describe('ServerCertsService', () => {
         intermediateChain: fs.readFileSync(path.join(__dirname, GOOGLE_CHAIN_PATH)).toString(),
         serverCertificate: fs.readFileSync(path.join(__dirname, GOOGLE_SERVER_CERT_PATH)).toString(),
       };
-      const dfsp = {
-        dfspId: 'DFSP_TEST',
-        name: 'DFSP'
-      };
+      const dfsp = createUniqueDfsp();
       const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
       dfspId = resultDfsp.id;
       const result = await ServerCertsService.createDfspServerCerts(ctx, dfspId, body);
@@ -133,10 +128,7 @@ describe('ServerCertsService', () => {
         intermediateChain: fs.readFileSync(path.join(__dirname, GOOGLE_CHAIN_PATH)).toString(),
         serverCertificate: fs.readFileSync(path.join(__dirname, GOOGLE_SERVER_CERT_PATH)).toString(),
       };
-      const dfsp = {
-        dfspId: 'DFSP_TEST',
-        name: 'DFSP'
-      };
+      const dfsp = createUniqueDfsp();
       const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
       dfspId = resultDfsp.id;
       const result = await ServerCertsService.createDfspServerCerts(ctx, dfspId, body);
@@ -165,10 +157,7 @@ describe('ServerCertsService', () => {
       const N_DFSPS = 20;
       const dfspIds = [];
       for (let i = 0; i < N_DFSPS; i++) {
-        const dfsp = {
-          dfspId: 'DFSP_TEST' + i,
-          name: 'DFSP'
-        };
+        const dfsp = createUniqueDfsp();
         const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
         const eachId = resultDfsp.id;
         dfspIds.push(eachId);
@@ -196,10 +185,7 @@ describe('ServerCertsService', () => {
       const N_DFSPS = 20;
       const dfspIds = [];
       for (let i = 0; i < N_DFSPS; i++) {
-        const dfsp = {
-          dfspId: 'DFSP_TEST' + i,
-          name: 'DFSP'
-        };
+        const dfsp = createUniqueDfsp();
         const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
         const eachId = resultDfsp.id;
         dfspIds.push(eachId);
