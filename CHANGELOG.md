@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.2.1](https://github.com/mojaloop/connection-manager-api/compare/v3.2.0...v3.2.1) (2025-11-26)
+
+
+### Bug Fixes
+
+* cleanup ([7330e33](https://github.com/mojaloop/connection-manager-api/commit/7330e331353179f59582697596232306e3b07204))
+* improve integration tests and add test helpers ([61fb2cb](https://github.com/mojaloop/connection-manager-api/commit/61fb2cb90035a14f9cd95a4b96d3101276d2952b))
+
+## [3.2.0](https://github.com/mojaloop/connection-manager-api/compare/v3.2.0-storage-cluster.3...v3.2.0) (2025-11-25)
+
 ### [3.1.5](https://github.com/mojaloop/connection-manager-api/compare/v3.1.4...v3.1.5) (2025-11-20)
 
 
