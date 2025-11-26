@@ -66,9 +66,21 @@ services:
       - DATABASE_USER=${DBUSER:-mcm}
       - DATABASE_PASSWORD=${DBPASS:-mcm}
       - DATABASE_SCHEMA=${DBUSER:-mcm}
+        # FIXME: move Vault out migration scripts
+      - VAULT_ENDPOINT=http://vault:8233
+      - VAULT_AUTH_METHOD=APP_ROLE
+      - VAULT_ROLE_ID_FILE=/vault/role-id
+      - VAULT_ROLE_SECRET_ID_FILE=/vault/secret-id
+      - VAULT_PKI_CLIENT_ROLE=example.com
+      - VAULT_PKI_SERVER_ROLE=example.com
+      - SWITCH_ID=switch
     depends_on:
       connection-manager-db:
         condition: service_healthy
+      vault-init:
+        condition: service_completed_successfully
+    volumes:
+      - vault-creds:/vault
     command: npm run migrate
     restart: "no"
 
