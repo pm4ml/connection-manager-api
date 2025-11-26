@@ -115,7 +115,7 @@ services:
       - OPENID_CLIENT_SECRET=dfsps456
       - OPENID_AUDIENCE=connection-manager-api
       - LOGIN_CALLBACK=http://${COMPOSE_DOMAIN:-mcm.localhost}/api/auth/callback
-      - KEYCLOAK_ENABLED=true
+      - KEYCLOAK_ENABLED=false
       - KEYCLOAK_AUTO_CREATE_ACCOUNTS=true
       - KEYCLOAK_BASE_URL=http://keycloak.${COMPOSE_DOMAIN:-mcm.localhost}
       - KEYCLOAK_DISCOVERY_URL=http://keycloak.${COMPOSE_DOMAIN:-mcm.localhost}/realms/dfsps/.well-known/openid-configuration
