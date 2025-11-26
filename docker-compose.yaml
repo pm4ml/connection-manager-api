@@ -32,7 +32,7 @@ services:
     restart: always
 
   connection-manager-ui:
-    image: ghcr.io/pm4ml/connection-manager-ui
+    image: mojaloop/connection-manager-ui
     hostname: connection-manager-ui
     profiles:
       - dev
@@ -107,7 +107,7 @@ services:
       - VAULT_ROLE_SECRET_ID_FILE=/vault/secret-id
       - VAULT_PKI_CLIENT_ROLE=example.com
       - VAULT_PKI_SERVER_ROLE=example.com
-      - OPENID_ENABLED=true
+      - OPENID_ENABLED=false
       - OPENID_ENABLE_2FA=false
       - OPENID_ALLOW_INSECURE=true
       - OPENID_DISCOVERY_URL=http://keycloak.${COMPOSE_DOMAIN:-mcm.localhost}/realms/dfsps
