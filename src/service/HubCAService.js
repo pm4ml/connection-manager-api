@@ -53,7 +53,7 @@ exports.createInternalHubCA = async (ctx, body, ttl) => {
   if (certManager) {
     await certManager.renewServerCert();
     if (hubJwsCertManager) {
-      await hubJwsCertManager.renewHubJWSCert();
+      await hubJwsCertManager.renewServerCert();
     }
   }
 

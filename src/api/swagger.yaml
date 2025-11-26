@@ -897,7 +897,7 @@ paths:
       tags:
         - JWS-certificates-configuration
       summary: Rotate Hub JWS certificate
-      description: Rotates the Hub JWS certificate and returns the new certificate.
+      description: Triggers rotation of the Hub JWS certificate.
       operationId: rotateHubJWSCerts
       responses:
         200:
