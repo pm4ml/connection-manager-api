@@ -67,7 +67,12 @@ exports.connect = async () => {
 
   let certManager, hubJwsCertManager;
   if (Constants.certManager.enabled) {
-    const { serverCertSecretName, serverCertSecretNamespace } = Constants.certManager;
+    const {
+      serverCertSecretName,
+      serverCertSecretNamespace,
+      jwsHubCertSecretName,
+      jwsHubCertSecretNamespace
+    } = Constants.certManager;
 
     certManager = new CertManager({
       serverCertSecretName,
@@ -76,11 +81,10 @@ exports.connect = async () => {
     });
     await certManager.initK8s();
 
-    const { jwsHubCertSecretName, jwsHubCertSecretNamespace } = Constants.certManager;
     if (jwsHubCertSecretName && jwsHubCertSecretNamespace) {
       hubJwsCertManager = new CertManager({
-        secretName: jwsHubCertSecretName,
-        secretNamespace: jwsHubCertSecretNamespace,
+        serverCertSecretName: jwsHubCertSecretName,
+        serverCertSecretNamespace: jwsHubCertSecretNamespace,
         logger,
       });
       await hubJwsCertManager.initK8s();
