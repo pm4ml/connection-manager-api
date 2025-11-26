@@ -69,7 +69,7 @@ exports.rotateHubJWSCerts = (req, res, next) => {
       utils.writeJson(res, response);
     })
     .catch(response => {
-      utils.writeJson(res, response, response.status);
+      utils.writeJson(res, response);
     });
 };
 
