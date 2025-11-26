@@ -69,6 +69,7 @@ exports.rotateHubJWSCerts = (req, res, next) => {
       utils.writeJson(res, response);
     })
     .catch(response => {
+      // Transform error to match Swagger 500 response schema: { error: string }
       const statusCode = response.status || 500;
       const errorPayload = { error: response.message || 'An error occurred' };
       utils.writeJson(res, errorPayload, statusCode);
