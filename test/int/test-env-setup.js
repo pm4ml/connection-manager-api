@@ -10,7 +10,7 @@ process.env.DATABASE_PORT = '3306';
 process.env.DATABASE_USER = 'mcm';
 process.env.DATABASE_PASSWORD = 'mcm';
 process.env.DATABASE_SCHEMA = 'mcm';
-process.env.VAULT_ENDPOINT = 'http://localhost:8233';
+process.env.VAULT_ENDPOINT = 'http://vault.mcm.localhost';
 process.env.VAULT_AUTH_METHOD = 'APP_ROLE';
 process.env.VAULT_ROLE_ID_FILE = './docker/vault/tmp/role-id';
 process.env.VAULT_ROLE_SECRET_ID_FILE = './docker/vault/tmp/secret-id';
@@ -21,8 +21,8 @@ process.env.SWITCH_ID = 'switch';
 
 // Keycloak integration settings
 process.env.KEYCLOAK_ENABLED = 'true';
-process.env.KEYCLOAK_BASE_URL = 'http://localhost:8080';
-process.env.KEYCLOAK_DISCOVERY_URL = 'http://localhost:8080/realms/dfsps/.well-known/openid-configuration';
+process.env.KEYCLOAK_BASE_URL = 'http://keycloak.mcm.localhost';
+process.env.KEYCLOAK_DISCOVERY_URL = 'http://keycloak.mcm.localhost/realms/dfsps/.well-known/openid-configuration';
 process.env.KEYCLOAK_ADMIN_CLIENT_ID = 'connection-manager-api-service';
 process.env.KEYCLOAK_ADMIN_CLIENT_SECRET = 'dfsps123';
 process.env.KEYCLOAK_DFSPS_REALM = 'dfsps';
@@ -34,7 +34,7 @@ process.env.OPENID_ENABLE_2FA = 'true';
 
 // Test OIDC provider settings
 process.env.OPENID_ALLOW_INSECURE = 'true';
-process.env.OPENID_DISCOVERY_URL = 'http://localhost:8080/realms/dfsps/.well-known/openid-configuration';
+process.env.OPENID_DISCOVERY_URL = 'http://keycloak.mcm.localhost/realms/dfsps/.well-known/openid-configuration';
 process.env.OPENID_CLIENT_ID = 'connection-manager-auth-client';
 process.env.OPENID_CLIENT_SECRET = 'dfsps456';
 process.env.OPENID_REDIRECT_URI = 'http://localhost:3001/api/auth/callback';
