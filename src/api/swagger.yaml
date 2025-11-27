@@ -892,6 +892,7 @@ paths:
             - mta
             - pta
       x-swagger-router-controller: JWSCerts
+      x-codegen-request-body-name: body
   /hub/jwscerts/rotate:
     put:
       tags:
