@@ -111,6 +111,15 @@ exports.setHubJWSCerts = async (ctx, body) => {
   return exports.createDfspJWSCerts(ctx, switchId, body);
 };
 
+exports.rotateHubJWSCerts = async (ctx) => {
+  const { hubJwsCertManager } = ctx;
+  if (!hubJwsCertManager) {
+    throw new Error('Hub JWS CertManager is not configured');
+  }
+  await hubJwsCertManager.renewServerCert();
+  return { message: 'Hub JWS certificate rotation triggered' };
+};
+
 exports.getDfspJWSCerts = async (ctx, dfspId) => {
   await PkiService.validateDfsp(ctx, dfspId);
   const { pkiEngine } = ctx;

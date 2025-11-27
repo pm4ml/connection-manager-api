@@ -67,6 +67,8 @@ const certManager = {
 if (certManager.enabled) {
   certManager.serverCertSecretName = env.get('CERT_MANAGER_SERVER_CERT_SECRET_NAME').asString();
   certManager.serverCertSecretNamespace = env.get('CERT_MANAGER_SERVER_CERT_SECRET_NAMESPACE').asString();
+  certManager.jwsHubCertSecretName = env.get('CERT_MANAGER_JWS_HUB_CERT_SECRET_NAME').asString();
+  certManager.jwsHubCertSecretNamespace = env.get('CERT_MANAGER_JWS_HUB_CERT_SECRET_NAMESPACE').asString();
 }
 
 module.exports = {
