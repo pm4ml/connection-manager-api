@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.3.0](https://github.com/mojaloop/connection-manager-api/compare/v3.2.1...v3.3.0) (2025-11-27)
+
+
+### Features
+
+* add endpoint to rotate switch jws in certmanager ([#164](https://github.com/mojaloop/connection-manager-api/issues/164)) ([3498b10](https://github.com/mojaloop/connection-manager-api/commit/3498b10df04b8d37b5c2a5abb6e60995ba97355c)), closes [#167](https://github.com/mojaloop/connection-manager-api/issues/167)
+
 ### [3.2.1](https://github.com/mojaloop/connection-manager-api/compare/v3.2.0...v3.2.1) (2025-11-26)
 
 
