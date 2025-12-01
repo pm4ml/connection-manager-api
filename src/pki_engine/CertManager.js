@@ -46,7 +46,7 @@ class CertManager {
       }
     ];
     const options = {
-      headers: { 'Content-type': this.k8s.PatchUtils.PATCH_FORMAT_JSON_PATCH },
+      headers: { 'Content-type': this.k8s.PatchStrategy.JsonPatch },
     };
 
     return this.k8sApi.patchNamespacedSecret(this.serverCertSecretName, this.serverCertSecretNamespace, patch, undefined, undefined, undefined, undefined, options)
