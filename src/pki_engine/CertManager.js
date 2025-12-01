@@ -23,8 +23,6 @@ class CertManager {
     if (!this.logger || !this.serverCertSecretName || !this.serverCertSecretNamespace) {
       throw new Error('Missing one of the props: logger, serverCertSecretName, serverCertSecretNamespace');
     }
-
-
   }
 
   async initK8s () {
@@ -49,9 +47,26 @@ class CertManager {
       headers: { 'Content-type': this.k8s.PatchStrategy.JsonPatch },
     };
 
-    return this.k8sApi.patchNamespacedSecret(this.serverCertSecretName, this.serverCertSecretNamespace, patch, undefined, undefined, undefined, undefined, options)
-      .then(() => { logger.info('Server cert renewal successful'); })
-      .catch((err) => { logger.error('Error renewing server cert: ', err); });
+    this.logger.debug({
+      message: 'Renewing cert',
+      patch,
+      options,
+      name: this.serverCertSecretName,
+      namespace: this.serverCertSecretNamespace
+    });
+
+    return this.k8sApi.patchNamespacedSecret(
+      this.serverCertSecretName,
+      this.serverCertSecretNamespace,
+      patch,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      options
+    )
+      .then(() => { this.logger.info('Server cert renewal successful'); })
+      .catch((err) => { this.logger.error('Error renewing server cert: ', err); });
   }
 }
 
