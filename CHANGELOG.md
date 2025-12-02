@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.3.2](https://github.com/mojaloop/connection-manager-api/compare/v3.3.1...v3.3.2) (2025-12-02)
+
+
+### Chore
+
+* add logging for cert manager ([#170](https://github.com/mojaloop/connection-manager-api/issues/170)) ([454dff4](https://github.com/mojaloop/connection-manager-api/commit/454dff4c771f5cef2945d90a7b472aa2f070f279))
+* fix audit ([#171](https://github.com/mojaloop/connection-manager-api/issues/171)) ([00159e0](https://github.com/mojaloop/connection-manager-api/commit/00159e096b5f7503028bdac6d16974cad52c7998))
+
 ### [3.3.1](https://github.com/mojaloop/connection-manager-api/compare/v3.3.0...v3.3.1) (2025-12-01)
 
 
