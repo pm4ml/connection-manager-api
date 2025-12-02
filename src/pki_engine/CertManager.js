@@ -47,8 +47,7 @@ class CertManager {
       headers: { 'Content-type': this.k8s.PatchStrategy.JsonPatch },
     };
 
-    this.logger.debug({
-      message: 'Renewing cert',
+    this.logger.debug('Renewing server cert with patch: ', {
       patch,
       options,
       name: this.serverCertSecretName,
