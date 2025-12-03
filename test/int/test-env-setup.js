@@ -37,7 +37,7 @@ process.env.OPENID_ALLOW_INSECURE = 'true';
 process.env.OPENID_DISCOVERY_URL = 'http://keycloak.mcm.localhost/realms/dfsps/.well-known/openid-configuration';
 process.env.OPENID_CLIENT_ID = 'connection-manager-auth-client';
 process.env.OPENID_CLIENT_SECRET = 'dfsps456';
-process.env.OPENID_REDIRECT_URI = 'http://localhost:3001/api/auth/callback';
+process.env.OPENID_REDIRECT_URI = 'http://mcm.localhost/api/auth/callback';
 
 // Cookie and role settings
 process.env.OPENID_JWT_COOKIE_NAME = 'MCM-API_ACCESS_TOKEN';
@@ -47,9 +47,10 @@ process.env.OPENID_PTA_ROLE = 'pta';
 
 process.env.DFSP_WATCHER_ENABLED = 'false';
 
-process.env.CLIENT_URL = 'http://localhost:3000/';
+process.env.CLIENT_URL = 'http://mcm.localhost/';
 
 // Session configuration
 process.env.SESSION_SECRET = 'test-session-secret-for-integration-tests';
 
-console.log('Integration test environment configured'); 
+console.log('Integration test environment configured');
+
