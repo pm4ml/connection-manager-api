@@ -29,11 +29,16 @@ require('./test-env-setup');
 
 process.env.PING_PONG_SERVER_URL = 'ping-pong.url';
 
-let mockErrCountInc;
+let mockErrCountInc, mockGaugeSet;
 jest.mock('@mojaloop/central-services-metrics', () => ({
   getCounter() {
     return {
       inc: mockErrCountInc,
+    };
+  },
+  getGauge() {
+    return {
+      set: mockGaugeSet,
     };
   }
 }));
@@ -57,6 +62,7 @@ describe('DfspWatcher Tests -->', () => {
   beforeEach(() => {
     mockAxios.reset();
     mockErrCountInc = jest.fn();
+    mockGaugeSet = jest.fn();
   });
 
   test('should create DfspWatcher instance', () => {
@@ -74,6 +80,10 @@ describe('DfspWatcher Tests -->', () => {
     await watcher.start();
     await watcher.stopWatching();
     expect(dfspModel.updatePingStatus).toHaveBeenCalledTimes(2);
+
+    // Assert gauge set for each DFSP and each status
+    expect(mockGaugeSet).toHaveBeenCalledWith({ state: PingStatus.SUCCESS, dfsp: 'dfsp1' }, 1);
+    expect(mockGaugeSet).toHaveBeenCalledWith({ state: PingStatus.SUCCESS, dfsp: 'dfsp2' }, 1);
   });
 
   test('should ping all watched dfsps', async () => {
@@ -86,6 +96,10 @@ describe('DfspWatcher Tests -->', () => {
 
     await watcher.pingWatchedDfsps();
     expect(dfspModel.updatePingStatus).toHaveBeenCalledTimes(2);
+
+    // Assert gauge set for each DFSP and each status
+    expect(mockGaugeSet).toHaveBeenCalledWith({ state: PingStatus.SUCCESS, dfsp: 'dfsp1' }, 1);
+    expect(mockGaugeSet).toHaveBeenCalledWith({ state: PingStatus.SUCCESS, dfsp: 'dfsp2' }, 1);
   });
 
   describe('processOneDfspWatch method Tests', () => {
@@ -99,6 +113,14 @@ describe('DfspWatcher Tests -->', () => {
 
       await watcher.processOneDfspPing(dfspId);
       expect(dfspModel.updatePingStatus).toHaveBeenCalledWith(dfspId, pingStatus);
+
+      // Assert gauge set for all statuses, only SUCCESS is 1
+      Object.values(PingStatus).forEach(status => {
+        expect(mockGaugeSet).toHaveBeenCalledWith(
+          { state: status, dfsp: dfspId },
+          status === pingStatus ? 1 : 0
+        );
+      });
     });
 
     test('should update pingStatus to PING_ERROR if http errorCode is received', async () => {
@@ -110,6 +132,14 @@ describe('DfspWatcher Tests -->', () => {
 
       await watcher.processOneDfspPing(dfspId);
       expect(dfspModel.updatePingStatus).toHaveBeenCalledWith(dfspId, PingStatus.PING_ERROR);
+
+      // Assert gauge set for all statuses, only PING_ERROR is 1
+      Object.values(PingStatus).forEach(status => {
+        expect(mockGaugeSet).toHaveBeenCalledWith(
+          { state: status, dfsp: dfspId },
+          status === PingStatus.PING_ERROR ? 1 : 0
+        );
+      });
     });
 
     test('should update pingStatus to PING_ERROR in case network error', async () => {
@@ -121,6 +151,14 @@ describe('DfspWatcher Tests -->', () => {
 
       await watcher.processOneDfspPing(dfspId);
       expect(dfspModel.updatePingStatus).toHaveBeenCalledWith(dfspId, PingStatus.PING_ERROR);
+
+      // Assert gauge set for all statuses, only PING_ERROR is 1
+      Object.values(PingStatus).forEach(status => {
+        expect(mockGaugeSet).toHaveBeenCalledWith(
+          { state: status, dfsp: dfspId },
+          status === PingStatus.PING_ERROR ? 1 : 0
+        );
+      });
     });
 
     test('should increment errorCounter if response from ping-pong server is not SUCCESS', async () => {
@@ -131,6 +169,14 @@ describe('DfspWatcher Tests -->', () => {
 
       await watcher.processOneDfspPing('dfspId');
       expect(mockErrCountInc).toHaveBeenCalledTimes(1);
+
+      // Assert gauge set for all statuses, only NOT_REACHABLE is 1
+      Object.values(PingStatus).forEach(status => {
+        expect(mockGaugeSet).toHaveBeenCalledWith(
+          { state: status, dfsp: 'dfspId' },
+          status === PingStatus.NOT_REACHABLE ? 1 : 0
+        );
+      });
     });
 
     test('should NOT increment errorCounter if response from ping-pong server is SUCCESS', async () => {
@@ -141,6 +187,14 @@ describe('DfspWatcher Tests -->', () => {
 
       await watcher.processOneDfspPing('dfspId');
       expect(mockErrCountInc).not.toHaveBeenCalled();
+
+      // Assert gauge set for all statuses, only SUCCESS is 1
+      Object.values(PingStatus).forEach(status => {
+        expect(mockGaugeSet).toHaveBeenCalledWith(
+          { state: status, dfsp: 'dfspId' },
+          status === PingStatus.SUCCESS ? 1 : 0
+        );
+      });
     });
   });
 });
