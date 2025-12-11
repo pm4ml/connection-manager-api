@@ -26,7 +26,7 @@
  ******/
 
 const { ulid } = require('ulid');
-const { CONTEXT} = require('../constants/Constants');
+const { CONTEXT } = require('../constants/Constants');
 const { PingStatus, PingStatusToError, PingStep } = require('./constants');
 
 /**
@@ -48,6 +48,14 @@ class DfspWatcher {
     this.dfspModel = deps.dfspModel;
     this.pingPongClient = deps.pingPongClient;
     this.metrics = deps.metrics;
+
+    // Create a gauge metric for DFSP status
+    // The getGauge method in metrics.ts expects: (name: string, help?: string, labelNames?: string[])
+    this.dfspStatusGauge = this.metrics.getGauge(
+      'dfsp_status_state',
+      'Current DFSP status state (1=SUCCESS, 0=OTHER)',
+      ['state', 'dfsp']
+    );
   }
 
   async start() {
@@ -82,6 +90,10 @@ class DfspWatcher {
     const requestId = this.#generateRequestId();
     const { pingStatus, errorInformation } = await this.pingPongClient.sendPingRequest(dfspId, requestId);
     const isUpdated = await this.dfspModel.updatePingStatus(dfspId, pingStatus);
+
+    // Set Prometheus gauge for DFSP status
+    this.#setDfspStatusGauge(dfspId, pingStatus);
+
     if (pingStatus !== PingStatus.SUCCESS) this.#incrementErrorCounter(dfspId, pingStatus);
     this.log.verbose(`processOneDfspPing is done:`, { dfspId, isUpdated, requestId, pingStatus, errorInformation });
     return { pingStatus, dfspId };
@@ -121,6 +133,13 @@ class DfspWatcher {
     const requestId = ulid();
     this.log.debug(`generated requestId:`, { requestId });
     return requestId;
+  }
+
+  #setDfspStatusGauge(dfspId, pingStatus) {
+    // Set all possible states to 0, then set the current state to 1
+    Object.values(PingStatus).forEach(status => {
+      this.dfspStatusGauge.set({ state: status, dfsp: dfspId }, status === pingStatus ? 1 : 0);
+    });
   }
 }
 
