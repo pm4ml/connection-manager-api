@@ -54,6 +54,12 @@ class DfspWatcher {
       'DFSP status indicator (enum value of current status)',
       ['dfsp']
     );
+
+    this.dfspPingLatencyHistogram = this.metrics.getHistogram(
+      'dfsp_ping_latency_seconds',
+      'DFSP ping latency in seconds',
+      ['dfsp', 'success']
+    );
   }
 
   async start() {
@@ -86,7 +92,10 @@ class DfspWatcher {
 
   async processOneDfspPing(dfspId) {
     const requestId = this.#generateRequestId();
+    const histTimerEnd = this.dfspPingLatencyHistogram.startTimer({ dfsp: dfspId });
     const { pingStatus, errorInformation } = await this.pingPongClient.sendPingRequest(dfspId, requestId);
+    const success = !errorInformation;
+    histTimerEnd({ success });
     const isUpdated = await this.dfspModel.updatePingStatus(dfspId, pingStatus);
 
     // Set Prometheus gauge for DFSP status using enum number

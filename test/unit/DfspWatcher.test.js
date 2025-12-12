@@ -29,19 +29,26 @@ require('./test-env-setup');
 
 process.env.PING_PONG_SERVER_URL = 'ping-pong.url';
 
-let mockErrCountInc, mockGaugeSet;
-jest.mock('@mojaloop/central-services-metrics', () => ({
-  getCounter() {
-    return {
-      inc: mockErrCountInc,
-    };
-  },
-  getGauge() {
-    return {
-      set: mockGaugeSet,
-    };
-  }
-}));
+let mockErrCountInc, mockGaugeSet, mockHistogramStartTimer;
+jest.mock('@mojaloop/central-services-metrics', () => {
+  return {
+    getCounter() {
+      return {
+        inc: mockErrCountInc,
+      };
+    },
+    getGauge() {
+      return {
+        set: mockGaugeSet,
+      };
+    },
+    getHistogram() {
+      return {
+        startTimer: (...args) => mockHistogramStartTimer(...args),
+      };
+    }
+  };
+});
 
 const axios = require('axios');
 const AxiosMockAdapter = require('axios-mock-adapter');
@@ -63,6 +70,7 @@ describe('DfspWatcher Tests -->', () => {
     mockAxios.reset();
     mockErrCountInc = jest.fn();
     mockGaugeSet = jest.fn();
+    mockHistogramStartTimer = jest.fn(() => jest.fn());
   });
 
   test('should create DfspWatcher instance', () => {
@@ -188,6 +196,46 @@ describe('DfspWatcher Tests -->', () => {
         { dfsp: 'dfspId' },
         PingStatusNumber.SUCCESS
       );
+    });
+
+    test('should record histogram timer with correct labels for success', async () => {
+      const dfspId = 'dfsp1';
+      const pingStatus = PingStatus.SUCCESS;
+      const mockEnd = jest.fn();
+      mockHistogramStartTimer.mockReturnValueOnce(mockEnd);
+
+      mockAxios.onPost().reply(200, { pingStatus });
+      const dfspModel = createMockDfspModel();
+      const watcher = createDfspWatcher({ dfspModel });
+
+      await watcher.processOneDfspPing(dfspId);
+
+      expect(mockHistogramStartTimer).toHaveBeenCalledWith({ dfsp: dfspId });
+      expect(mockEnd).toHaveBeenCalledWith({ success: true });
+    });
+
+    test('should record histogram timer with correct labels for failure', async () => {
+      const dfspId = 'dfsp1';
+      const mockEnd = jest.fn();
+      mockHistogramStartTimer.mockReturnValueOnce(mockEnd);
+
+      // Mock the pingPongClient to return errorInformation with success: false
+      const dfspModel = createMockDfspModel();
+      const watcher = createDfspWatcher({ dfspModel });
+
+      // Patch the pingPongClient.sendPingRequest to return errorInformation
+      watcher.pingPongClient.sendPingRequest = jest.fn().mockResolvedValue({
+        pingStatus: PingStatus.PING_ERROR,
+        errorInformation: {
+          pingStatus: PingStatus.PING_ERROR,
+          errorInformation: { errorCode: 'ping-conn-error' }
+        }
+      });
+
+      await watcher.processOneDfspPing(dfspId);
+
+      expect(mockHistogramStartTimer).toHaveBeenCalledWith({ dfsp: dfspId });
+      expect(mockEnd).toHaveBeenCalledWith({ success: false });
     });
   });
 });
