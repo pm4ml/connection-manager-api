@@ -27,7 +27,7 @@
 
 const { ulid } = require('ulid');
 const { CONTEXT } = require('../constants/Constants');
-const { PingStatus, PingStatusToError, PingStep } = require('./constants');
+const { PingStatus, PingStatusNumber, PingStatusToError, PingStep } = require('./constants');
 
 /**
  * @typedef {Object} DfspWatcherDeps
@@ -49,15 +49,11 @@ class DfspWatcher {
     this.pingPongClient = deps.pingPongClient;
     this.metrics = deps.metrics;
 
-    // Create a gauge metric for DFSP status
-    // The getGauge method in metrics.ts expects: (name: string, help?: string, labelNames?: string[])
     this.dfspStatusGauge = this.metrics.getGauge(
       'dfsp_status_state',
-      'DFSP status indicator (1=current status, 0=not current status)',
-      ['state', 'dfsp']
+      'DFSP status indicator (enum value of current status)',
+      ['dfsp']
     );
-    // Track previous status per DFSP to minimize unnecessary metric updates
-    this.dfspPreviousStatus = {};
   }
 
   async start() {
@@ -93,7 +89,7 @@ class DfspWatcher {
     const { pingStatus, errorInformation } = await this.pingPongClient.sendPingRequest(dfspId, requestId);
     const isUpdated = await this.dfspModel.updatePingStatus(dfspId, pingStatus);
 
-    // Set Prometheus gauge for DFSP status
+    // Set Prometheus gauge for DFSP status using enum number
     this.#setDfspStatusGauge(dfspId, pingStatus);
 
     if (pingStatus !== PingStatus.SUCCESS) this.#incrementErrorCounter(dfspId, pingStatus);
@@ -122,7 +118,6 @@ class DfspWatcher {
         code: PingStatusToError[pingStatus] || 'unknown',
         context: CONTEXT,
         operation: `ping-${dfspId}`,
-        step // or add here dfsp?
       };
       errorCounter.inc(errDetails);
       log.info('incrementErrorCounter is called:', { errDetails });
@@ -138,17 +133,10 @@ class DfspWatcher {
   }
 
   #setDfspStatusGauge(dfspId, newPingStatus) {
-    const prevPingStatus = this.dfspPreviousStatus[dfspId];
-
-    if (prevPingStatus === newPingStatus) {
-      return;
-    }
-
-    if (prevPingStatus) {
-      this.dfspStatusGauge.set({ state: prevPingStatus, dfsp: dfspId }, 0);
-    }
-    this.dfspStatusGauge.set({ state: newPingStatus, dfsp: dfspId }, 1);
-    this.dfspPreviousStatus[dfspId] = newPingStatus;
+    this.dfspStatusGauge.set(
+      { dfsp: dfspId },
+      PingStatusNumber[newPingStatus]
+    );
   }
 }
 
