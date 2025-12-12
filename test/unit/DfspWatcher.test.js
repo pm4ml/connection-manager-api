@@ -81,9 +81,12 @@ describe('DfspWatcher Tests -->', () => {
     await watcher.stopWatching();
     expect(dfspModel.updatePingStatus).toHaveBeenCalledTimes(2);
 
-    // Assert gauge set for each DFSP and each status
+    // Only the current status should be set to 1 for each DFSP
     expect(mockGaugeSet).toHaveBeenCalledWith({ state: PingStatus.SUCCESS, dfsp: 'dfsp1' }, 1);
     expect(mockGaugeSet).toHaveBeenCalledWith({ state: PingStatus.SUCCESS, dfsp: 'dfsp2' }, 1);
+    // No unnecessary 0 sets on first run
+    expect(mockGaugeSet).not.toHaveBeenCalledWith({ state: PingStatus.SUCCESS, dfsp: 'dfsp1' }, 0);
+    expect(mockGaugeSet).not.toHaveBeenCalledWith({ state: PingStatus.SUCCESS, dfsp: 'dfsp2' }, 0);
   });
 
   test('should ping all watched dfsps', async () => {
@@ -97,13 +100,14 @@ describe('DfspWatcher Tests -->', () => {
     await watcher.pingWatchedDfsps();
     expect(dfspModel.updatePingStatus).toHaveBeenCalledTimes(2);
 
-    // Assert gauge set for each DFSP and each status
     expect(mockGaugeSet).toHaveBeenCalledWith({ state: PingStatus.SUCCESS, dfsp: 'dfsp1' }, 1);
     expect(mockGaugeSet).toHaveBeenCalledWith({ state: PingStatus.SUCCESS, dfsp: 'dfsp2' }, 1);
+    expect(mockGaugeSet).not.toHaveBeenCalledWith({ state: PingStatus.SUCCESS, dfsp: 'dfsp1' }, 0);
+    expect(mockGaugeSet).not.toHaveBeenCalledWith({ state: PingStatus.SUCCESS, dfsp: 'dfsp2' }, 0);
   });
 
   describe('processOneDfspWatch method Tests', () => {
-    test('should update pingStatus e2e flow', async () => {
+    test('should update pingStatus e2e flow and set gauge correctly', async () => {
       const dfspId = 'dfsp1';
       const pingStatus = PingStatus.SUCCESS;
       mockAxios.onPost()
@@ -111,38 +115,65 @@ describe('DfspWatcher Tests -->', () => {
       const dfspModel = createMockDfspModel();
       const watcher = createDfspWatcher({ dfspModel });
 
+      // First call: should only set current status to 1
       await watcher.processOneDfspPing(dfspId);
       expect(dfspModel.updatePingStatus).toHaveBeenCalledWith(dfspId, pingStatus);
+      expect(mockGaugeSet).toHaveBeenCalledWith(
+        { state: pingStatus, dfsp: dfspId },
+        1
+      );
+      // No 0 set on first call
+      expect(mockGaugeSet).not.toHaveBeenCalledWith(
+        { state: pingStatus, dfsp: dfspId },
+        0
+      );
 
-      // Assert gauge set for all statuses, only SUCCESS is 1
-      Object.values(PingStatus).forEach(status => {
-        expect(mockGaugeSet).toHaveBeenCalledWith(
-          { state: status, dfsp: dfspId },
-          status === pingStatus ? 1 : 0
-        );
-      });
+      // Second call with different status: should set previous to 0, new to 1
+      mockAxios.onPost().reply(200, { pingStatus: PingStatus.NOT_REACHABLE });
+      await watcher.processOneDfspPing(dfspId);
+      expect(mockGaugeSet).toHaveBeenCalledWith(
+        { state: pingStatus, dfsp: dfspId },
+        0
+      );
+      expect(mockGaugeSet).toHaveBeenCalledWith(
+        { state: PingStatus.NOT_REACHABLE, dfsp: dfspId },
+        1
+      );
     });
 
-    test('should update pingStatus to PING_ERROR if http errorCode is received', async () => {
+    test('should update pingStatus to PING_ERROR if http errorCode is received and update gauge correctly', async () => {
       const dfspId = 'dfsp1';
       mockAxios.onPost()
         .reply(500);
       const dfspModel = createMockDfspModel();
       const watcher = createDfspWatcher({ dfspModel });
 
+      // First call: should only set current status to 1
       await watcher.processOneDfspPing(dfspId);
       expect(dfspModel.updatePingStatus).toHaveBeenCalledWith(dfspId, PingStatus.PING_ERROR);
+      expect(mockGaugeSet).toHaveBeenCalledWith(
+        { state: PingStatus.PING_ERROR, dfsp: dfspId },
+        1
+      );
+      expect(mockGaugeSet).not.toHaveBeenCalledWith(
+        { state: PingStatus.PING_ERROR, dfsp: dfspId },
+        0
+      );
 
-      // Assert gauge set for all statuses, only PING_ERROR is 1
-      Object.values(PingStatus).forEach(status => {
-        expect(mockGaugeSet).toHaveBeenCalledWith(
-          { state: status, dfsp: dfspId },
-          status === PingStatus.PING_ERROR ? 1 : 0
-        );
-      });
+      // Second call with different status: should set previous to 0, new to 1
+      mockAxios.onPost().reply(200, { pingStatus: PingStatus.SUCCESS });
+      await watcher.processOneDfspPing(dfspId);
+      expect(mockGaugeSet).toHaveBeenCalledWith(
+        { state: PingStatus.PING_ERROR, dfsp: dfspId },
+        0
+      );
+      expect(mockGaugeSet).toHaveBeenCalledWith(
+        { state: PingStatus.SUCCESS, dfsp: dfspId },
+        1
+      );
     });
 
-    test('should update pingStatus to PING_ERROR in case network error', async () => {
+    test('should update pingStatus to PING_ERROR in case network error and update gauge correctly', async () => {
       const dfspId = 'dfsp1';
       mockAxios.onPost()
         .networkError();
@@ -151,17 +182,17 @@ describe('DfspWatcher Tests -->', () => {
 
       await watcher.processOneDfspPing(dfspId);
       expect(dfspModel.updatePingStatus).toHaveBeenCalledWith(dfspId, PingStatus.PING_ERROR);
-
-      // Assert gauge set for all statuses, only PING_ERROR is 1
-      Object.values(PingStatus).forEach(status => {
-        expect(mockGaugeSet).toHaveBeenCalledWith(
-          { state: status, dfsp: dfspId },
-          status === PingStatus.PING_ERROR ? 1 : 0
-        );
-      });
+      expect(mockGaugeSet).toHaveBeenCalledWith(
+        { state: PingStatus.PING_ERROR, dfsp: dfspId },
+        1
+      );
+      expect(mockGaugeSet).not.toHaveBeenCalledWith(
+        { state: PingStatus.PING_ERROR, dfsp: dfspId },
+        0
+      );
     });
 
-    test('should increment errorCounter if response from ping-pong server is not SUCCESS', async () => {
+    test('should increment errorCounter if response from ping-pong server is not SUCCESS and update gauge correctly', async () => {
       mockAxios.onPost()
         .reply(200, { pingStatus: PingStatus.NOT_REACHABLE });
       const dfspModel = createMockDfspModel();
@@ -169,17 +200,17 @@ describe('DfspWatcher Tests -->', () => {
 
       await watcher.processOneDfspPing('dfspId');
       expect(mockErrCountInc).toHaveBeenCalledTimes(1);
-
-      // Assert gauge set for all statuses, only NOT_REACHABLE is 1
-      Object.values(PingStatus).forEach(status => {
-        expect(mockGaugeSet).toHaveBeenCalledWith(
-          { state: status, dfsp: 'dfspId' },
-          status === PingStatus.NOT_REACHABLE ? 1 : 0
-        );
-      });
+      expect(mockGaugeSet).toHaveBeenCalledWith(
+        { state: PingStatus.NOT_REACHABLE, dfsp: 'dfspId' },
+        1
+      );
+      expect(mockGaugeSet).not.toHaveBeenCalledWith(
+        { state: PingStatus.NOT_REACHABLE, dfsp: 'dfspId' },
+        0
+      );
     });
 
-    test('should NOT increment errorCounter if response from ping-pong server is SUCCESS', async () => {
+    test('should NOT increment errorCounter if response from ping-pong server is SUCCESS and update gauge correctly', async () => {
       mockAxios.onPost()
         .reply(200, { pingStatus: PingStatus.SUCCESS });
       const dfspModel = createMockDfspModel();
@@ -187,14 +218,39 @@ describe('DfspWatcher Tests -->', () => {
 
       await watcher.processOneDfspPing('dfspId');
       expect(mockErrCountInc).not.toHaveBeenCalled();
+      expect(mockGaugeSet).toHaveBeenCalledWith(
+        { state: PingStatus.SUCCESS, dfsp: 'dfspId' },
+        1
+      );
+      expect(mockGaugeSet).not.toHaveBeenCalledWith(
+        { state: PingStatus.SUCCESS, dfsp: 'dfspId' },
+        0
+      );
+    });
 
-      // Assert gauge set for all statuses, only SUCCESS is 1
-      Object.values(PingStatus).forEach(status => {
-        expect(mockGaugeSet).toHaveBeenCalledWith(
-          { state: status, dfsp: 'dfspId' },
-          status === PingStatus.SUCCESS ? 1 : 0
-        );
-      });
+    test('should set previous status to 0 and new status to 1 when status changes', async () => {
+      const dfspId = 'dfsp1';
+      mockAxios.onPost().replyOnce(200, { pingStatus: PingStatus.SUCCESS });
+      mockAxios.onPost().replyOnce(200, { pingStatus: PingStatus.NOT_REACHABLE });
+      const dfspModel = createMockDfspModel();
+      const watcher = createDfspWatcher({ dfspModel });
+
+      // First status: SUCCESS
+      await watcher.processOneDfspPing(dfspId);
+      expect(mockGaugeSet).toHaveBeenCalledWith(
+        { state: PingStatus.SUCCESS, dfsp: dfspId },
+        1
+      );
+      // Second status: NOT_REACHABLE, should set SUCCESS to 0, NOT_REACHABLE to 1
+      await watcher.processOneDfspPing(dfspId);
+      expect(mockGaugeSet).toHaveBeenCalledWith(
+        { state: PingStatus.SUCCESS, dfsp: dfspId },
+        0
+      );
+      expect(mockGaugeSet).toHaveBeenCalledWith(
+        { state: PingStatus.NOT_REACHABLE, dfsp: dfspId },
+        1
+      );
     });
   });
 });

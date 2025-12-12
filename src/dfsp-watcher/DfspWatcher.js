@@ -137,15 +137,19 @@ class DfspWatcher {
     return requestId;
   }
 
-  #setDfspStatusGauge(dfspId, pingStatus) {
-    const prevStatus = this.dfspPreviousStatus[dfspId];
-    if (prevStatus && prevStatus !== pingStatus) {
-      // Set previous status to 0
-      this.dfspStatusGauge.set({ state: prevStatus, dfsp: dfspId }, 0);
+  #setDfspStatusGauge(dfspId, newPingStatus) {
+    const prevPingStatus = this.dfspPreviousStatus[dfspId];
+
+    if (prevPingStatus === newPingStatus) {
+      return;
     }
-    // Always set current status to 1
-    this.dfspStatusGauge.set({ state: pingStatus, dfsp: dfspId }, 1);
-    this.dfspPreviousStatus[dfspId] = pingStatus;
+
+    for (const status of Object.values(PingStatus)) {
+      const value = (status === newPingStatus) ? 1 : 0;
+      this.dfspStatusGauge.set({ state: status, dfsp: dfspId }, value);
+    }
+
+    this.dfspPreviousStatus[dfspId] = newPingStatus;
   }
 }
 
