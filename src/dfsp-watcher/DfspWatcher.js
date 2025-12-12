@@ -53,7 +53,7 @@ class DfspWatcher {
     // The getGauge method in metrics.ts expects: (name: string, help?: string, labelNames?: string[])
     this.dfspStatusGauge = this.metrics.getGauge(
       'dfsp_status_state',
-      'Current DFSP status state (1=SUCCESS, 0=OTHER)',
+      'DFSP status indicator (1=current status, 0=not current status)',
       ['state', 'dfsp']
     );
   }
