@@ -133,10 +133,17 @@ class DfspWatcher {
   }
 
   #setDfspStatusGauge(dfspId, newPingStatus) {
-    this.dfspStatusGauge.set(
-      { dfsp: dfspId },
-      PingStatusNumber[newPingStatus]
-    );
+    try {
+      const statusValue = PingStatusNumber[newPingStatus];
+      if (typeof statusValue === 'undefined') {
+        this.log.warn('Invalid pingStatus for dfspStatusGauge, setting to -1 as fallback.', { dfspId, newPingStatus });
+        this.dfspStatusGauge.set({ dfsp: dfspId }, -1);
+      } else {
+        this.dfspStatusGauge.set({ dfsp: dfspId }, statusValue);
+      }
+    } catch (error) {
+      this.log.error('Error setting dfspStatusGauge:', { dfspId, newPingStatus, error });
+    }
   }
 }
 
