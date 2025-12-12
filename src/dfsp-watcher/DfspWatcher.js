@@ -56,6 +56,8 @@ class DfspWatcher {
       'DFSP status indicator (1=current status, 0=not current status)',
       ['state', 'dfsp']
     );
+    // Track previous status per DFSP to minimize unnecessary metric updates
+    this.dfspPreviousStatus = {};
   }
 
   async start() {
@@ -136,10 +138,14 @@ class DfspWatcher {
   }
 
   #setDfspStatusGauge(dfspId, pingStatus) {
-    // Set all possible states to 0, then set the current state to 1
-    Object.values(PingStatus).forEach(status => {
-      this.dfspStatusGauge.set({ state: status, dfsp: dfspId }, status === pingStatus ? 1 : 0);
-    });
+    const prevStatus = this.dfspPreviousStatus[dfspId];
+    if (prevStatus && prevStatus !== pingStatus) {
+      // Set previous status to 0
+      this.dfspStatusGauge.set({ state: prevStatus, dfsp: dfspId }, 0);
+    }
+    // Always set current status to 1
+    this.dfspStatusGauge.set({ state: pingStatus, dfsp: dfspId }, 1);
+    this.dfspPreviousStatus[dfspId] = pingStatus;
   }
 }
 
