@@ -144,11 +144,10 @@ class DfspWatcher {
       return;
     }
 
-    for (const status of Object.values(PingStatus)) {
-      const value = (status === newPingStatus) ? 1 : 0;
-      this.dfspStatusGauge.set({ state: status, dfsp: dfspId }, value);
+    if (prevPingStatus) {
+      this.dfspStatusGauge.set({ state: prevPingStatus, dfsp: dfspId }, 0);
     }
-
+    this.dfspStatusGauge.set({ state: newPingStatus, dfsp: dfspId }, 1);
     this.dfspPreviousStatus[dfspId] = newPingStatus;
   }
 }
