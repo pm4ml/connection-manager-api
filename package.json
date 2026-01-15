@@ -92,9 +92,9 @@
   },
   "dependencies": {
     "@hapi/hapi": "21.4.4",
-    "@keycloak/keycloak-admin-client": "^26.5.0",
+    "@keycloak/keycloak-admin-client": "^26.5.1",
     "@kubernetes/client-node": "^1.4.0",
-    "@mojaloop/central-services-logger": "11.10.2",
+    "@mojaloop/central-services-logger": "11.10.3",
     "@mojaloop/central-services-metrics": "12.8.3",
     "@mojaloop/central-services-shared": "18.34.6",
     "@ory/keto-client": "^25.4.0",
