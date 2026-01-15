@@ -14,6 +14,9 @@ ignore:
   - vulnerability: GHSA-wm7h-9275-46v2
     package:
       name: dicer
+  - vulnerability: GHSA-6rw7-vpxm-498p
+    package:
+      name: qs
   - vulnerability: GHSA-hrpp-h998-j3pp
     package:
       name: qs
@@ -50,6 +53,15 @@ ignore:
   - vulnerability: CVE-2025-9230
   - vulnerability: CVE-2025-9231
   - vulnerability: CVE-2025-9232
+  - vulnerability: CVE-2025-60876
+    package:
+      name: busybox
+  - vulnerability: CVE-2025-60876
+    package:
+      name: busybox-binsh
+  - vulnerability: CVE-2025-60876
+    package:
+      name: ssl_client
 
 # Set output format defaults
 output:
