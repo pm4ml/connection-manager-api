@@ -62,6 +62,9 @@ ignore:
   - vulnerability: CVE-2025-60876
     package:
       name: ssl_client
+  - vulnerability: CVE-2026-22184
+    package:
+      name: zlib
 
 # Set output format defaults
 output:
