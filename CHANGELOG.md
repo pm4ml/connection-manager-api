@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.6.0](https://github.com/mojaloop/connection-manager-api/compare/v3.5.0...v3.6.0) (2026-01-15)
+
+
+### Features
+
+* add docker compose profiles (ci, dev, full) and developer docs ([#176](https://github.com/mojaloop/connection-manager-api/issues/176)) ([8523040](https://github.com/mojaloop/connection-manager-api/commit/85230405ed056af7e47639c7f0063a9b56c29c8f))
+
 ## [3.5.0](https://github.com/mojaloop/connection-manager-api/compare/v3.4.0...v3.5.0) (2026-01-15)
 
 
