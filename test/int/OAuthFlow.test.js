@@ -9,14 +9,13 @@
  Unless required by applicable law or agreed to in writing, the Mojaloop files are distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  **/
 
-// Load test environment configuration
-require('./test-env-setup');
 
 const { createContext, destroyContext } = require('./context');
 const { getAuthorizationUrl, getLogoutUrl, extractRoles } = require('../../src/utils/authUtils');
 const { createSessionMiddleware, getSessionStore } = require('../../src/oauth/SessionConfig');
 const Constants = require('../../src/constants/Constants');
 const KeycloakService = require('../../src/service/KeycloakService');
+const { createUniqueDfsp } = require('./test-helpers');
 
 describe('OAuth Utilities Integration Tests', () => {
   let context;
@@ -119,19 +118,20 @@ describe('OAuth Utilities Integration Tests', () => {
   });
 
   describe('Role Extraction', () => {
-    const testDfspId = 'OAUTH_ROLE_TEST_DFSP';
+    let testDfsp;
 
     beforeAll(async () => {
-      await KeycloakService.createDfspResources(testDfspId, 'oauth-test@example.com');
+      testDfsp = createUniqueDfsp();
+      await KeycloakService.createDfspResources(testDfsp.dfspId, testDfsp.email);
     });
 
     afterAll(async () => {
-      await KeycloakService.deleteDfspResources(testDfspId);
+      await KeycloakService.deleteDfspResources(testDfsp.dfspId);
     });
 
     it('should extract roles from real Keycloak groups', async () => {
       const kcAdminClient = await KeycloakService.getKeycloakAdminClient();
-      const allUsers = await kcAdminClient.users.find({ username: 'oauth-test@example.com' });
+      const allUsers = await kcAdminClient.users.find({ username: testDfsp.email });
       const users = allUsers.filter(u => !u.username.startsWith('service-account-'));
       
       const userGroups = await kcAdminClient.users.listGroups({ id: users[0].id });

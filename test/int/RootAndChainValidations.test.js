@@ -27,6 +27,7 @@ const { createInternalHubCA } = require('../../src/service/HubCAService.js');
 const DFSPModel = require('../../src/models/DFSPModel.js');
 const { createContext, destroyContext } = require('../int/context.js');
 const database = require('../../src/db/database.js');
+const { createUniqueDfsp } = require('./test-helpers.js');
 
 describe('DfspPkiService', () => {
   let ctx;
@@ -46,10 +47,7 @@ describe('DfspPkiService', () => {
   beforeEach(async function () {
     await createInternalHubCA(ctx, ROOT_CA);
 
-    const dfsp = {
-      dfspId: DFSP_TEST_OUTBOUND,
-      name: 'DFSP used to test outbound flow'
-    };
+    const dfsp = createUniqueDfsp();
     const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
     dfspId = resultDfsp.id;
 

@@ -1,4 +1,4 @@
-process.env.APP_ENDPOINT = 'http://localhost:3001/api';
+process.env.APP_ENDPOINT = 'http://mcm.localhost/api';
 process.env.APP_OAUTH_USERNAME = 'admin';
 process.env.APP_OAUTH_PASSWORD = 'admin';
-process.env.MAILPIT_ENDPOINT = 'http://localhost:8025';
+process.env.MAILPIT_ENDPOINT = 'http://mailpit.mcm.localhost';

@@ -15,32 +15,25 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
+const sinon = require('sinon');
 const forge = require('node-forge');
-const { switchId, switchEmail } = require('../../src/constants/Constants');
+const { switchId } = require('../../src/constants/Constants');
 const JWSCertsService = require('../../src/service/JWSCertsService');
 const ExternalDFSPModel = require('../../src/models/ExternalDFSPModel');
 const PkiService = require('../../src/service/PkiService');
 const NotFoundError = require('../../src/errors/NotFoundError');
 const ValidationCodes = require('../../src/pki_engine/ValidationCodes');
 const DFSPModel = require('../../src/models/DFSPModel');
-const { setupTestDB, tearDownTestDB } = require('../int/test-database');
-const { createContext, destroyContext } = require('../int/context');
-const sinon = require('sinon');
 const ValidationError = require('../../src/errors/ValidationError');
 const database = require('../../src/db/database');
-
-//const ctx = { pkiEngine: { validateJWSCertificate: sinon.stub(), setDFSPJWSCerts: sinon.stub(), getDFSPJWSCerts: sinon.stub(), deleteDFSPJWSCerts: sinon.stub(), getAllDFSPJWSCerts: sinon.stub() }};
-
-const SWITCH_ID = 'switch';
+const { logger } = require('../../src/log/logger');
+const { setupTestDB, tearDownTestDB } = require('../int/test-database');
+const { createContext, destroyContext } = require('../int/context');
+const { createUniqueDfsp } = require('./test-helpers');
 
 describe('JWSCertsService Tests', () => {
   let ctx;
   let publicKey;
-
-  beforeEach(async () => {
-    // Reset the database before each test
-    await database.knex('dfsps').del();
-  });
 
   beforeAll(async () => {
     await setupTestDB();
@@ -48,6 +41,11 @@ describe('JWSCertsService Tests', () => {
     ctx = await createContext();
     const keypair = forge.rsa.generateKeyPair({ bits: 2048 });
     publicKey = forge.pki.publicKeyToPem(keypair.publicKey, 72);
+  });
+
+  beforeEach(async () => {
+    // Reset the database before each test
+    await database.knex('dfsps').del();
   });
 
   afterAll(async () => {
@@ -60,49 +58,45 @@ describe('JWSCertsService Tests', () => {
 
     it('should create a DfspJWSCerts entry', async () => {
       const body = { publicKey };
-      const dfsp = {
-        dfspId: 'DFSP_TEST',
-        name: 'DFSP'
-      };
-      const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
-      dfspId = resultDfsp.id;
+      const dfsp = createUniqueDfsp();
+      await PkiService.createDFSP(ctx, dfsp);
+      dfspId = dfsp.dfspId;
       const result = await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
       expect(result.publicKey).toBe(publicKey);
       const certs = await JWSCertsService.getAllDfspJWSCerts(ctx);
-      console.log(certs);
+      logger.debug(certs);
       await PkiService.deleteDFSP(ctx, dfspId);
       const certs2 = await JWSCertsService.getAllDfspJWSCerts(ctx);
-      console.log(certs2);
+      logger.debug(certs2);
     }, 30000);
 
     it('should set a hub JWSCerts', async () => {
       const body = { publicKey };
-      const result = await JWSCertsService.setHubJWSCerts(ctx, body);
+      const dfsp = createUniqueDfsp();
+      const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
+      const result = await JWSCertsService.createDfspJWSCerts(ctx, resultDfsp.id, body);
       expect(result.publicKey).toBe(publicKey);
 
-      const hubKeyData = await JWSCertsService.getHubJWSCerts(ctx);
-      console.log(hubKeyData);
-      expect(hubKeyData.dfspId).toBe(SWITCH_ID);
-      expect(hubKeyData.publicKey).toBe(publicKey);
-      expect(hubKeyData.validationState).toBe('VALID');
+      const keyData = await JWSCertsService.getDfspJWSCerts(ctx, resultDfsp.id);
+      logger.debug(keyData);
+      expect(keyData.dfspId).toBe(resultDfsp.id);
+      expect(keyData.publicKey).toBe(publicKey);
+      expect(keyData.validationState).toBe('VALID');
 
       const allKeysData = await JWSCertsService.getAllDfspJWSCerts(ctx);
-      console.log(allKeysData);
-      const hubKey = allKeysData.find(k => k.dfspId === SWITCH_ID);
-      expect(hubKey).toBeDefined();
+      logger.debug(allKeysData);
+      const dfspKey = allKeysData.find(k => k.dfspId === resultDfsp.id);
+      expect(dfspKey).toBeDefined();
 
-      await JWSCertsService.deleteDfspJWSCerts(ctx, SWITCH_ID);
-      await DFSPModel.delete(SWITCH_ID);
+      await JWSCertsService.deleteDfspJWSCerts(ctx, resultDfsp.id);
+      await PkiService.deleteDFSP(ctx, resultDfsp.id);
     }, 30000);
 
     it('should create and delete a DfspJWSCerts entry', async () => {
       const body = { publicKey };
-      const dfsp = {
-        dfspId: 'DFSP_TEST',
-        name: 'DFSP'
-      };
-      const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
-      dfspId = resultDfsp.id;
+      const dfsp = createUniqueDfsp();
+      await PkiService.createDFSP(ctx, dfsp);
+      dfspId = dfsp.dfspId;
       await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
       await JWSCertsService.deleteDfspJWSCerts(ctx, dfspId);
       await expect(JWSCertsService.getDfspJWSCerts(ctx, dfspId)).rejects.toBeInstanceOf(NotFoundError);
@@ -127,18 +121,18 @@ describe('JWSCertsService Tests', () => {
         const dfspId = `DFSP_TEST${i}`;
 
         try {
-          await PkiService.createDFSP(ctx, { dfspId, name: 'DFSP' });
+          await PkiService.createDFSP(ctx, createUniqueDfsp({ dfspId }));
           dfspIds.push(dfspId);
           await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
         } catch (error) {
-          console.error(`Error creating DFSP ${dfspId}:`, error);
+          logger.error(`Error creating DFSP ${dfspId}:`, error);
         }
       }
 
       const certs = await JWSCertsService.getAllDfspJWSCerts(ctx);
       const retrievedDfspIds = certs.map(cert => cert.dfspId);
 
-      console.log("Retrieved DFSP IDs:", retrievedDfspIds);
+      logger.debug("Retrieved DFSP IDs:", retrievedDfspIds);
 
       dfspIds.forEach(dfspId => {
         expect(retrievedDfspIds).toContain(dfspId);
@@ -192,10 +186,7 @@ describe('JWSCertsService Tests', () => {
 
     it('should throw an error with a wrong key size', async () => {
       const body = { publicKey: publicKey.replace('A', '') };
-      const dfsp = {
-        dfspId: 'DFSP_TEST',
-        name: 'DFSP'
-      };
+      const dfsp = createUniqueDfsp();
       const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
       dfspId = resultDfsp.id;
       const result = await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
@@ -223,35 +214,31 @@ describe('JWSCertsService Tests', () => {
 
   it('should get hub JWS certs', async () => {
     const body = { publicKey };
-    await JWSCertsService.setHubJWSCerts(ctx, body);
-    const hubKeyData = await JWSCertsService.getHubJWSCerts(ctx);
-    expect(hubKeyData.dfspId).toBe(SWITCH_ID);
-    expect(hubKeyData.publicKey).toBe(publicKey);
-    expect(hubKeyData.validationState).toBe('VALID');
+    const dfsp = createUniqueDfsp();
+    await PkiService.createDFSP(ctx, dfsp);
+    await JWSCertsService.createDfspJWSCerts(ctx, dfsp.dfspId, body);
+    const keyData = await JWSCertsService.getDfspJWSCerts(ctx, dfsp.dfspId);
+    expect(keyData.dfspId).toBe(dfsp.dfspId);
+    expect(keyData.publicKey).toBe(publicKey);
+    expect(keyData.validationState).toBe('VALID');
+    await PkiService.deleteDFSP(ctx, dfsp.dfspId);
   }, 30000);
 
   it('should delete DFSP JWS certs', async () => {
     const body = { publicKey };
-    const dfspId = 'DFSP_TEST';
-
-    // Ensure the DFSP is deleted before creating it
-    await PkiService.deleteDFSP(ctx, dfspId).catch(() => {});
-    const dfsp = { dfspId, name: 'DFSP' };
+    const dfsp = createUniqueDfsp();
     await PkiService.createDFSP(ctx, dfsp);
-    await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
-    await JWSCertsService.deleteDfspJWSCerts(ctx, dfspId);
+    await JWSCertsService.createDfspJWSCerts(ctx, dfsp.dfspId, body);
+    await JWSCertsService.deleteDfspJWSCerts(ctx, dfsp.dfspId);
 
-    await expect(JWSCertsService.getDfspJWSCerts(ctx, dfspId)).rejects.toBeInstanceOf(NotFoundError);
+    await expect(JWSCertsService.getDfspJWSCerts(ctx, dfsp.dfspId)).rejects.toBeInstanceOf(NotFoundError);
 
-    await PkiService.deleteDFSP(ctx, dfspId).catch(() => {});
+    await PkiService.deleteDFSP(ctx, dfsp.dfspId);
   }, 30000);
 
   it('should get all DFSP JWS certs', async () => {
     const body = { publicKey };
-    const dfsp = {
-      dfspId: 'DFSP_TEST',
-      name: 'DFSP'
-    };
+    const dfsp = createUniqueDfsp();
     const resultDfsp = await PkiService.createDFSP(ctx, dfsp);
     const dfspId = resultDfsp.id;
     await JWSCertsService.createDfspJWSCerts(ctx, dfspId, body);
@@ -303,7 +290,7 @@ describe('JWSCertsService - setHubJWSCerts', () => {
 
     const result = await JWSCertsService.setHubJWSCerts(ctx, body);
 
-    expect(createDFSPStub.calledOnceWith(ctx, { dfspId: switchId, name: switchId, email: switchEmail })).toBe(true);
+    expect(createDFSPStub.calledOnceWith(ctx, { dfspId: switchId, name: switchId, email: `${switchId}@hub.local` })).toBe(true);
     expect(createDfspJWSCertsStub.calledOnceWith(ctx, switchId, body)).toBe(true);
     expect(result.publicKey).toBe(body.publicKey);
   });
@@ -319,7 +306,7 @@ describe('JWSCertsService - setHubJWSCerts', () => {
 
     const result = await JWSCertsService.setHubJWSCerts(ctx, body);
 
-    expect(createDFSPStub.calledOnceWith(ctx, { dfspId: switchId, name: switchId, email: switchEmail })).toBe(true);
+    expect(createDFSPStub.calledOnceWith(ctx, { dfspId: switchId, name: switchId, email: `${switchId}@hub.local` })).toBe(true);
     expect(createDfspJWSCertsStub.calledOnceWith(ctx, switchId, body)).toBe(true);
     expect(result.publicKey).toBe(body.publicKey);
   });
@@ -339,5 +326,62 @@ describe('JWSCertsService - setHubJWSCerts', () => {
     sinon.stub(JWSCertsService, 'createDfspJWSCerts').rejects(new Error('Test Error'));
 
     await expect(JWSCertsService.setHubJWSCerts(ctx, body)).rejects.toThrow('Test Error');
+  });
+
+  describe('JWSCertsService - rotateHubJWSCerts', () => {
+    let ctx;
+
+    beforeEach(() => {
+      ctx = {};
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it('should successfully rotate hub JWS certs when hubJwsCertManager is configured', async () => {
+      const renewServerCertStub = sinon.stub().resolves();
+      ctx.hubJwsCertManager = {
+        renewServerCert: renewServerCertStub
+      };
+
+      const result = await JWSCertsService.rotateHubJWSCerts(ctx);
+
+      expect(renewServerCertStub.calledOnce).toBe(true);
+      expect(result).toEqual({ message: 'Hub JWS certificate rotation triggered' });
+    });
+
+    it('should throw an error when hubJwsCertManager is not configured', async () => {
+      ctx.hubJwsCertManager = null;
+
+      await expect(JWSCertsService.rotateHubJWSCerts(ctx)).rejects.toThrow('Hub JWS CertManager is not configured');
+    });
+
+    it('should throw an error when hubJwsCertManager is undefined', async () => {
+      ctx.hubJwsCertManager = undefined;
+
+      await expect(JWSCertsService.rotateHubJWSCerts(ctx)).rejects.toThrow('Hub JWS CertManager is not configured');
+    });
+
+    it('should propagate error when renewServerCert fails', async () => {
+      const renewServerCertStub = sinon.stub().rejects(new Error('Certificate renewal failed'));
+      ctx.hubJwsCertManager = {
+        renewServerCert: renewServerCertStub
+      };
+
+      await expect(JWSCertsService.rotateHubJWSCerts(ctx)).rejects.toThrow('Certificate renewal failed');
+      expect(renewServerCertStub.calledOnce).toBe(true);
+    });
+
+    it('should propagate custom error when renewServerCert fails with specific message', async () => {
+      const customError = new Error('Invalid certificate authority');
+      const renewServerCertStub = sinon.stub().rejects(customError);
+      ctx.hubJwsCertManager = {
+        renewServerCert: renewServerCertStub
+      };
+
+      await expect(JWSCertsService.rotateHubJWSCerts(ctx)).rejects.toThrow('Invalid certificate authority');
+      expect(renewServerCertStub.calledOnce).toBe(true);
+    });
   });
 });

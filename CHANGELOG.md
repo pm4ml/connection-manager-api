@@ -2,6 +2,107 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.6.0](https://github.com/mojaloop/connection-manager-api/compare/v3.5.0...v3.6.0) (2026-01-15)
+
+
+### Features
+
+* add docker compose profiles (ci, dev, full) and developer docs ([#176](https://github.com/mojaloop/connection-manager-api/issues/176)) ([8523040](https://github.com/mojaloop/connection-manager-api/commit/85230405ed056af7e47639c7f0063a9b56c29c8f))
+
+## [3.5.0](https://github.com/mojaloop/connection-manager-api/compare/v3.4.0...v3.5.0) (2026-01-15)
+
+
+### Features
+
+* add Traefik and domain-based routing ([f2ccf27](https://github.com/mojaloop/connection-manager-api/commit/f2ccf27e459984c6b76ab2f998457af3f3cad550))
+* add traefik for docker compose domain-based routing ([40c0f16](https://github.com/mojaloop/connection-manager-api/commit/40c0f1670c2b825dcef194e0161b18e418779d73))
+* unify domain routing in docker-compose, and persist Vault ([8a95263](https://github.com/mojaloop/connection-manager-api/commit/8a95263ae0e04bd7dc5673f97baca46cb32fadb4))
+
+
+### Bug Fixes
+
+*  deps ([121a7a5](https://github.com/mojaloop/connection-manager-api/commit/121a7a5bb59c3e7e4ff642cd6d90d5bfc31a4316))
+* add jest timeout ([6f59977](https://github.com/mojaloop/connection-manager-api/commit/6f5997717cc76d549eacf24184bb4273520766ef))
+* add more test cases, clean up test logging and suppress DB warnings ([e65f0a7](https://github.com/mojaloop/connection-manager-api/commit/e65f0a7410ed68aac076ef74c48da337dac23cd3))
+* add nvm ([e307275](https://github.com/mojaloop/connection-manager-api/commit/e307275a900c4b345b4f29ac4791c8127b3b60d2))
+* bump deps ([1fcc5cf](https://github.com/mojaloop/connection-manager-api/commit/1fcc5cfbda9af7006ebbcb95e4ec98effdcf7dae))
+* bump deps ([13ce461](https://github.com/mojaloop/connection-manager-api/commit/13ce4616cc24d52f7f9543938fb052adc508f03c))
+* config ([e9e6cee](https://github.com/mojaloop/connection-manager-api/commit/e9e6ceea61d06c3e33fb7cca5c993ada55dd3795))
+* deps ([2793011](https://github.com/mojaloop/connection-manager-api/commit/2793011fac3ee55f277d37345b94bb47a3dc9629))
+* deps ([4b580fd](https://github.com/mojaloop/connection-manager-api/commit/4b580fd33bbbaad66bf53533cf258ee0be699b58))
+* deps ([8cb320b](https://github.com/mojaloop/connection-manager-api/commit/8cb320b2d0cc6d936ca20a1a5b9396a218c1c9a8))
+* deps ([ec5680a](https://github.com/mojaloop/connection-manager-api/commit/ec5680a30e3ec182eeb6f222f1dcf5115692728e))
+* deps ([c29290a](https://github.com/mojaloop/connection-manager-api/commit/c29290a5904487ee304f8d60d13a22b6221541be))
+* dfspId assignment in tests ([d3f10ed](https://github.com/mojaloop/connection-manager-api/commit/d3f10edd05ead7a54c3450fa8d12ddc3e0483bf6))
+* disable auth ([fa68fae](https://github.com/mojaloop/connection-manager-api/commit/fa68fae8ff3afb199ed927d3b6fadea33c3f00d1))
+* docker compose deps ([5bc4aa1](https://github.com/mojaloop/connection-manager-api/commit/5bc4aa131ae3da2f7ff3683cae900f0b5972b567))
+* endpoint ([68962eb](https://github.com/mojaloop/connection-manager-api/commit/68962eb82655fcab695443b233c10996b41aef81))
+* links ([6b86057](https://github.com/mojaloop/connection-manager-api/commit/6b86057cf8edf0c868c38f5a35fa3b3147d90999))
+* resolve Keycloak pagination issues and standardize test configuration ([c0f5e37](https://github.com/mojaloop/connection-manager-api/commit/c0f5e37654a9d9df527827447e2b3c178d7cd291))
+* urls ([1fa67c6](https://github.com/mojaloop/connection-manager-api/commit/1fa67c65f394457e88b5a9a6be18ae3b697e0332))
+* vulnr ([6c7ea34](https://github.com/mojaloop/connection-manager-api/commit/6c7ea34e87c455b38826ea09387b328acd93bfe3))
+* vulnr ([bd76d49](https://github.com/mojaloop/connection-manager-api/commit/bd76d49756650752ef2e300410ce86fd1209487d))
+
+
+### Documentation
+
+* update configs and documentation to use domain-based routing (*.mcm.localhost) ([da06d77](https://github.com/mojaloop/connection-manager-api/commit/da06d77d553a86732141f0dc0a738103bbfd7bda))
+
+
+### Chore
+
+* bump deps ([4d6bf25](https://github.com/mojaloop/connection-manager-api/commit/4d6bf25a341be11e515a979d5b53217ecdbc5eb2))
+* bump deps ([5eb2ede](https://github.com/mojaloop/connection-manager-api/commit/5eb2ede9076f35e4c74739c2e1f75fd462b9d6d3))
+* cleanup ([68302f5](https://github.com/mojaloop/connection-manager-api/commit/68302f59c761771ad6fc5614579db90090650240))
+* fix lock file ([57c914d](https://github.com/mojaloop/connection-manager-api/commit/57c914dc241d975d6d60553790ce76a3e69332b6))
+* reorder imports ([f9c7865](https://github.com/mojaloop/connection-manager-api/commit/f9c7865bfbb9e707a37f81708da59427c5a4081e))
+
+## [3.4.0](https://github.com/mojaloop/connection-manager-api/compare/v3.3.2...v3.4.0) (2025-12-12)
+
+
+### Features
+
+* **csi-1941:** add dfsp gauge for alerting functionality ([#175](https://github.com/mojaloop/connection-manager-api/issues/175)) ([de1767e](https://github.com/mojaloop/connection-manager-api/commit/de1767ed62a3c29064ff4df935cc22c05d117121))
+
+### [3.3.2](https://github.com/mojaloop/connection-manager-api/compare/v3.3.1...v3.3.2) (2025-12-02)
+
+
+### Chore
+
+* add logging for cert manager ([#170](https://github.com/mojaloop/connection-manager-api/issues/170)) ([454dff4](https://github.com/mojaloop/connection-manager-api/commit/454dff4c771f5cef2945d90a7b472aa2f070f279))
+* fix audit ([#171](https://github.com/mojaloop/connection-manager-api/issues/171)) ([00159e0](https://github.com/mojaloop/connection-manager-api/commit/00159e096b5f7503028bdac6d16974cad52c7998))
+
+### [3.3.1](https://github.com/mojaloop/connection-manager-api/compare/v3.3.0...v3.3.1) (2025-12-01)
+
+
+### Bug Fixes
+
+* fix import on cert manager class ([#169](https://github.com/mojaloop/connection-manager-api/issues/169)) ([977a734](https://github.com/mojaloop/connection-manager-api/commit/977a73468d0b980d75b7ad5b9c6932cbf85d0082))
+
+## [3.3.0](https://github.com/mojaloop/connection-manager-api/compare/v3.2.1...v3.3.0) (2025-11-27)
+
+
+### Features
+
+* add endpoint to rotate switch jws in certmanager ([#164](https://github.com/mojaloop/connection-manager-api/issues/164)) ([3498b10](https://github.com/mojaloop/connection-manager-api/commit/3498b10df04b8d37b5c2a5abb6e60995ba97355c)), closes [#167](https://github.com/mojaloop/connection-manager-api/issues/167)
+
+### [3.2.1](https://github.com/mojaloop/connection-manager-api/compare/v3.2.0...v3.2.1) (2025-11-26)
+
+
+### Bug Fixes
+
+* cleanup ([7330e33](https://github.com/mojaloop/connection-manager-api/commit/7330e331353179f59582697596232306e3b07204))
+* improve integration tests and add test helpers ([61fb2cb](https://github.com/mojaloop/connection-manager-api/commit/61fb2cb90035a14f9cd95a4b96d3101276d2952b))
+
+## [3.2.0](https://github.com/mojaloop/connection-manager-api/compare/v3.2.0-storage-cluster.3...v3.2.0) (2025-11-25)
+
+### [3.1.5](https://github.com/mojaloop/connection-manager-api/compare/v3.1.4...v3.1.5) (2025-11-20)
+
+
+### Bug Fixes
+
+* service bug fixes (DFSP validation, timeout overflow, error handling) ([7a64bb1](https://github.com/mojaloop/connection-manager-api/commit/7a64bb12d4775312eac3a911ed8b8926ecd88d55))
+
 ### [3.1.4](https://github.com/mojaloop/connection-manager-api/compare/v3.1.3...v3.1.4) (2025-11-20)
 
 

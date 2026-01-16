@@ -24,6 +24,7 @@ const DFSPModel = require('../../../src/models/DFSPModel');
 const DFSPEndpointModel = require('../../../src/models/DFSPEndpointModel');
 const { StatusEnum, DirectionEnum } = require('../../../src/service/DfspNetworkConfigService');
 const database = require('../../../src/db/database');
+const { logger } = require('../../../src/log/logger');
 
 describe('DFSPEndpointModel', function () {
   beforeAll(async () => {
@@ -78,24 +79,24 @@ describe('DFSPEndpointModel', function () {
       };
 
       for (const dfsp of dfspData) {
-        console.log(`creating dfsp record=${dfsp.dfsp_id}`);
+        logger.debug(`creating dfsp record=${dfsp.dfsp_id}`);
         const dfspCreateResult = await DFSPModel.create(dfsp);
-        console.log(`dfspCreateResult=${dfspCreateResult}`);
+        logger.debug(`dfspCreateResult=${dfspCreateResult}`);
       }
     });
 
     afterEach(async () => {
       // Cleanup
 
-      console.log('deleting dfsp records');
+      logger.debug('deleting dfsp records');
       for (const dfsp of dfspData) {
-        console.log(`deleting dfsp record=${dfsp.dfsp_id}`);
+        logger.debug(`deleting dfsp record=${dfsp.dfsp_id}`);
         await DFSPModel.delete(dfsp.dfsp_id);
       }
-      console.log(`deleting endpointList=${JSON.stringify(endpointIdList)}`);
+      logger.debug(`deleting endpointList=${JSON.stringify(endpointIdList)}`);
       for (const endpointId of endpointIdList) {
         const id = Array.isArray(endpointId) ? endpointId[0] : endpointId;
-        console.log(`deleting endpoint record=${id}`);
+        logger.debug(`deleting endpoint record=${id}`);
         await DFSPEndpointModel.delete(id);
       }
     });
@@ -147,7 +148,7 @@ describe('DFSPEndpointModel', function () {
       // DFSPEndpointModel.create = async (id, state, direction, value) => {
       endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.direction, endpointData.value);
       endpointIdList.push(endpointData.id);
-      console.log(`endpointCreateResult=${endpointData.id}`);
+      logger.debug(`endpointCreateResult=${endpointData.id}`);
 
       const result = await DFSPEndpointModel.findById(endpointData.id);
 
@@ -166,16 +167,16 @@ describe('DFSPEndpointModel', function () {
       // DFSPEndpointModel.create = async (id, state, direction, value) => {
       endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.direction, endpointData.value);
       endpointIdList.push(endpointData.id);
-      console.log(`endpointCreateResult.1=${endpointData.id}`);
+      logger.debug(`endpointCreateResult.1=${endpointData.id}`);
       endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.direction, endpointData.value);
       endpointIdList.push(endpointData.id);
-      console.log(`endpointCreateResult.2=${endpointData.id}`);
+      logger.debug(`endpointCreateResult.2=${endpointData.id}`);
       endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.direction, endpointData.value);
       endpointIdList.push(endpointData.id);
-      console.log(`endpointCreateResult.3=${endpointData.id}`);
+      logger.debug(`endpointCreateResult.3=${endpointData.id}`);
 
       const result = await DFSPEndpointModel.findLastestByDirection(endpointData.dfsp_id, DirectionEnum.EGRESS);
-      console.log(result);
+      logger.debug(result);
 
       // Assert
       expect(result.id).toBe(Array.isArray(endpointData.id) ? endpointData.id[0] : endpointData.id);
@@ -192,16 +193,16 @@ describe('DFSPEndpointModel', function () {
       // DFSPEndpointModel.create = async (id, state, direction, value) => {
       endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.direction, endpointData.value);
       endpointIdList.push(endpointData.id);
-      console.log(`endpointCreateResult.1=${endpointData.id}`);
+      logger.debug(`endpointCreateResult.1=${endpointData.id}`);
       endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.direction, endpointData.value);
       endpointIdList.push(endpointData.id);
-      console.log(`endpointCreateResult.2=${endpointData.id}`);
+      logger.debug(`endpointCreateResult.2=${endpointData.id}`);
       endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, endpointData.direction, endpointData.value);
       endpointIdList.push(endpointData.id);
-      console.log(`endpointCreateResult.3=${endpointData.id}`);
+      logger.debug(`endpointCreateResult.3=${endpointData.id}`);
 
       const result = await DFSPEndpointModel.findAllByDirection(endpointData.dfsp_id, DirectionEnum.EGRESS);
-      console.log(result);
+      logger.debug(result);
 
       // Assert
       expect(result.length).toBe(3);
@@ -223,16 +224,16 @@ describe('DFSPEndpointModel', function () {
       // DFSPEndpointModel.create = async (id, state, direction, value) => {
       endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, DirectionEnum.EGRESS, endpointData.value);
       endpointIdList.push(endpointData.id);
-      console.log(`endpointCreateResult.1=${endpointData.id}`);
+      logger.debug(`endpointCreateResult.1=${endpointData.id}`);
       endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, DirectionEnum.INGRESS, endpointData.value);
       endpointIdList.push(endpointData.id);
-      console.log(`endpointCreateResult.2=${endpointData.id}`);
+      logger.debug(`endpointCreateResult.2=${endpointData.id}`);
       endpointData.id = await DFSPEndpointModel.create(endpointData.dfsp_id, endpointData.state, DirectionEnum.EGRESS, endpointData.value);
       endpointIdList.push(endpointData.id);
-      console.log(`endpointCreateResult.3=${endpointData.id}`);
+      logger.debug(`endpointCreateResult.3=${endpointData.id}`);
 
       const result = await DFSPEndpointModel.findAll(endpointData.dfsp_id);
-      console.log(result);
+      logger.debug(result);
 
       // Assert
       expect(result.length).toBe(3);

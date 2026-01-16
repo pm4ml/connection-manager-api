@@ -4,6 +4,7 @@ const InternalError = require('../../../src/errors/InternalError');
 const ValidationError = require('../../../src/errors/ValidationError');
 const NotFoundError = require('../../../src/errors/NotFoundError');
 const { createCSRAndDFSPOutboundEnrollment } = require('../../../src/service/DfspOutboundService');
+const { createUniqueDfsp } = require('../test-helpers');
 
 jest.mock('../../../src/models/DFSPModel');
 jest.mock('../../../src/service/DfspOutboundService');
@@ -17,9 +18,11 @@ describe('PkiService', () => {
   describe('createDFSP', () => {
     it('should create a DFSP and return its id', async () => {
       const ctx = {};
+      const { dfspId, email } = createUniqueDfsp();
       const body = {
-        dfspId: 'test-dfsp',
+        dfspId,
         name: 'Test DFSP',
+        email,
         monetaryZoneId: 'USD',
         isProxy: false,
         securityGroup: 'TestGroup',
@@ -35,9 +38,11 @@ describe('PkiService', () => {
 
     it('should throw an InternalError if DFSP creation fails', async () => {
       const ctx = {};
+      const { dfspId, email } = createUniqueDfsp();
       const body = {
-        dfspId: 'test-dfsp',
+        dfspId,
         name: 'Test DFSP',
+        email,
         monetaryZoneId: 'USD',
         isProxy: false,
         securityGroup: 'TestGroup',
@@ -54,9 +59,11 @@ describe('PkiService', () => {
   describe('createDFSPWithCSR', () => {
     it('should create a DFSP and generate CSR', async () => {
       const ctx = {};
+      const { dfspId, email } = createUniqueDfsp();
       const body = {
-      dfspId: 'test-dfsp',
+      dfspId,
       name: 'Test DFSP',
+      email,
       monetaryZoneId: 'USD',
       isProxy: false,
       securityGroup: 'TestGroup',
@@ -72,9 +79,11 @@ describe('PkiService', () => {
 
     it('should throw an InternalError if CSR generation fails', async () => {
       const ctx = {};
+      const { dfspId, email } = createUniqueDfsp();
       const body = {
-      dfspId: 'test-dfsp',
+      dfspId,
       name: 'Test DFSP',
+      email,
       monetaryZoneId: 'USD',
       isProxy: false,
       securityGroup: 'TestGroup',
@@ -201,7 +210,7 @@ describe('PkiService', () => {
   describe('validateDfsp', () => {
     it('should validate DFSP existence', async () => {
       const ctx = {};
-      const dfspId = 'test-dfsp';
+      const { dfspId } = createUniqueDfsp();
 
       jest.spyOn(PkiService, 'getDFSPById').mockResolvedValue({ id: dfspId });
 
@@ -213,7 +222,7 @@ describe('PkiService', () => {
   describe('getDFSPById', () => {
     it('should return a DFSP by its id', async () => {
       const ctx = {};
-      const dfspId = 'test-dfsp';
+      const { dfspId } = createUniqueDfsp();
       const dfspRow = { dfsp_id: dfspId, name: 'Test DFSP', monetaryZoneId: 'USD', isProxy: false, security_group: 'Group1' };
 
       jest.spyOn(DFSPModel, 'findByDfspId').mockResolvedValue(dfspRow);
@@ -231,7 +240,7 @@ describe('PkiService', () => {
 
     it('should throw NotFoundError if DFSP is not found', async () => {
       const ctx = {};
-      const dfspId = 'test-dfsp';
+      const { dfspId } = createUniqueDfsp();
 
       jest.spyOn(DFSPModel, 'findByDfspId').mockImplementation(() => { throw new NotFoundError(); });
 
@@ -251,7 +260,7 @@ describe('PkiService', () => {
   describe('updateDFSP', () => {
     it('should update a DFSP', async () => {
       const ctx = {};
-      const dfspId = 'test-dfsp';
+      const { dfspId } = createUniqueDfsp();
       const newDfsp = { name: 'Updated DFSP', monetaryZoneId: 'EUR', isProxy: true, securityGroup: 'UpdatedGroup' };
 
       DFSPModel.update.mockResolvedValue();
@@ -273,7 +282,7 @@ describe('PkiService', () => {
   describe('deleteDFSP', () => {
     it('should delete a DFSP by its id', async () => {
       const ctx = { pkiEngine: { deleteAllDFSPData: jest.fn().mockResolvedValue() } };
-      const dfspId = 'test-dfsp';
+      const { dfspId } = createUniqueDfsp();
 
       jest.spyOn(PkiService, 'validateDfsp').mockResolvedValue();
       jest.spyOn(DFSPModel, 'findIdByDfspId').mockResolvedValue(1);
@@ -294,7 +303,7 @@ describe('PkiService', () => {
         setDFSPCA: jest.fn().mockResolvedValue()
       }
       };
-      const dfspId = 'test-dfsp';
+      const { dfspId } = createUniqueDfsp();
       const body = { rootCertificate: 'root-cert', intermediateChain: 'intermediate-chain' };
 
       jest.spyOn(PkiService, 'validateDfsp').mockResolvedValue();
@@ -318,7 +327,7 @@ describe('PkiService', () => {
         getDFSPCA: jest.fn().mockResolvedValue({ rootCertificate: 'root-cert', intermediateChain: 'intermediate-chain' })
       }
       };
-      const dfspId = 'test-dfsp';
+      const { dfspId } = createUniqueDfsp();
 
       jest.spyOn(PkiService, 'validateDfsp').mockResolvedValue();
       jest.spyOn(DFSPModel, 'findIdByDfspId').mockResolvedValue(1);
@@ -333,7 +342,7 @@ describe('PkiService', () => {
         getDFSPCA: jest.fn().mockImplementation(() => { throw new NotFoundError(); })
       }
       };
-      const dfspId = 'test-dfsp';
+      const { dfspId } = createUniqueDfsp();
 
       jest.spyOn(PkiService, 'validateDfsp').mockResolvedValue();
       jest.spyOn(DFSPModel, 'findIdByDfspId').mockResolvedValue(1);
@@ -351,7 +360,7 @@ describe('PkiService', () => {
   describe('deleteDFSPca', () => {
     it('should delete DFSP CA certificates', async () => {
       const ctx = { pkiEngine: { deleteDFSPCA: jest.fn().mockResolvedValue() } };
-      const dfspId = 'test-dfsp';
+      const { dfspId } = createUniqueDfsp();
 
       jest.spyOn(PkiService, 'validateDfsp').mockResolvedValue();
       jest.spyOn(DFSPModel, 'findIdByDfspId').mockResolvedValue(1);
