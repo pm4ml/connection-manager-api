@@ -23,6 +23,7 @@ const path = require('path');
 const oas3Tools = require('oas3-tools');
 const { createWinstonLogger, logger } = require('./log/logger');
 const AuthMiddleware = require('./middleware/AuthMiddleware');
+const DfspIdValidationMiddleware = require('./middleware/DfspIdValidationMiddleware');
 const SessionConfig = require('./oauth/SessionConfig');
 const HubCAService = require('./service/HubCAService');
 
@@ -117,6 +118,11 @@ exports.connect = async () => {
     cors(corsUtils.getCorsOptions),
     createWinstonLogger()
   ];
+
+  // Add DFSP ID validation middleware if enabled
+  if (Constants.VALIDATION.DFSP_ID_HEADER_VALIDATION_ENABLED) {
+    middlewares.push(DfspIdValidationMiddleware.createDfspIdValidationMiddleware());
+  }
 
   // Add authentication middleware if enabled
   if (Constants.OPENID.ENABLED) {

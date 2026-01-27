@@ -5,14 +5,8 @@
   "high": true,
   "critical": true,
   "allowlist": [
-    "GHSA-hrpp-h998-j3pp", // https://github.com/advisories/GHSA-hrpp-h998-j3pp
-    "GHSA-p8p7-x288-28g6", // https://github.com/advisories/GHSA-p8p7-x288-28g6
-    "GHSA-qwcr-r2fm-qrc7", // https://github.com/advisories/GHSA-qwcr-r2fm-qrc7
-    "GHSA-jr5f-v2jv-69x6",
-    "GHSA-4hjh-wcwx-xvwj", // @ory/keto-client>axios https://github.com/advisories/GHSA-4hjh-wcwx-xvwj
-    "GHSA-wf5p-g6vw-rhxx",
     "GHSA-6rw7-vpxm-498p",
-    "GHSA-fjxv-7rqg-78g4",  // https://github.com/advisories/GHSA-fjxv-7rqg-78g4
-    "GHSA-mh29-5h37-fv8m"  // https://github.com/advisories/GHSA-mh29-5h37-fv8m - oas3-tools requires js-yaml v.3
+    "GHSA-fjxv-7rqg-78g4",
+    "GHSA-xxjr-mmjv-4gpg"
   ]
 }
