@@ -120,7 +120,7 @@ exports.connect = async () => {
   ];
 
   // Add DFSP ID validation middleware if enabled
-  if (Constants.VALIDATION.DFSP_ID_HEADER_VALIDATION_ENABLED) {
+  if (Constants.dfspIdHeaderValidationEnabled) {
     middlewares.push(DfspIdValidationMiddleware.createDfspIdValidationMiddleware());
   }
 
