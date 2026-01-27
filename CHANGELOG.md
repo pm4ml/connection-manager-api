@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.7.0](https://github.com/mojaloop/connection-manager-api/compare/v3.6.0...v3.7.0) (2026-01-27)
+
+
+### Features
+
+* implemented dfspid validation ([9fbe605](https://github.com/mojaloop/connection-manager-api/commit/9fbe6053c2d2f4ce86a78a86fa273f88247e59d9))
+
+
+### Chore
+
+* grype exceptions ([ec815c6](https://github.com/mojaloop/connection-manager-api/commit/ec815c6f5966c75da6c9a5d5264591be43870c0f))
+* rename vars ([f5e894c](https://github.com/mojaloop/connection-manager-api/commit/f5e894c7b11b3123e881c5de53261eae08831f80))
+
 ## [3.6.0](https://github.com/mojaloop/connection-manager-api/compare/v3.5.0...v3.6.0) (2026-01-15)
 
 
