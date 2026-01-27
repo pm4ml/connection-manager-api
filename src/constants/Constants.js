@@ -180,4 +180,5 @@ module.exports = {
   caCsrParameters: env.get('CA_CSR_PARAMETERS').asJsonConfig(),
 
   dfspWatcherEnabled: env.get('DFSP_WATCHER_ENABLED').default('false').asBool(),
+  dfspIdHeaderValidationEnabled: env.get('DFSP_ID_HEADER_VALIDATION_ENABLED').default('true').asBool(),
 };

@@ -65,6 +65,30 @@ ignore:
   - vulnerability: CVE-2026-22184
     package:
       name: zlib
+  - vulnerability: CVE-2025-59465
+    package:
+      name: node
+  - vulnerability: CVE-2025-55131
+    package:
+      name: node
+  - vulnerability: GHSA-r6q2-hw4h-h46w
+    package:
+      name: tar
+  - vulnerability: GHSA-8qq5-rm4j-mr97
+    package:
+      name: tar
+  - vulnerability: CVE-2025-55130
+    package:
+      name: node
+  - vulnerability: GHSA-xxjr-mmjv-4gpg
+    package:
+      name: lodash
+  - vulnerability: CVE-2026-21637
+    package:
+      name: node
+  - vulnerability: CVE-2025-59466
+    package:
+      name: node
 
 # Set output format defaults
 output:
