@@ -1,0 +1,524 @@
+#!/usr/bin/env node
+
+/**
+ * MCM Test Setup CLI
+ * Provides commands for setting up and tearing down MCM test environments
+ *
+ * Usage: node mcm-test-setup.mjs <command> [args...]
+ *
+ * Commands:
+ *   get-admin-session
+ *     Get portal admin session cookie
+ *
+ *   create-dfsp <dfsp_id> <dfsp_name> <email> <monetary_zone_id> <admin_session>
+ *     Create a DFSP via MCM API
+ *
+ *   destroy-dfsp <dfsp_id> <admin_session>
+ *     Delete a DFSP via MCM API
+ *
+ *   complete-invitation <email> <password> <first_name> <last_name>
+ *     Wait for Keycloak invitation email and complete registration flow
+ *
+ *   get-operator-session <email> <password>
+ *     Get operator session cookie via Kratos login
+ *
+ *   generate-pm4ml-creds <dfsp_id> <session_cookie>
+ *     Generate PM4ML credentials for a DFSP
+ *
+ *   get-jwt <client_id> <client_secret>
+ *     Get JWT token from Keycloak using client credentials
+ *
+ * Required environment variables:
+ *   MCM_NAMESPACE
+ *   KRATOS_SERVICE_NAME
+ *   KEYCLOAK_FQDN
+ *   KEYCLOAK_HUBOP_REALM_NAME
+ *   MAILPIT_NAMESPACE
+ *   PORTAL_ADMIN_USER
+ *   PORTAL_ADMIN_PASSWORD (for get-admin-session)
+ */
+
+const REQUIRED_ENV_VARS = [
+  'MCM_NAMESPACE',
+  'KRATOS_SERVICE_NAME',
+  'KEYCLOAK_FQDN',
+  'KEYCLOAK_HUBOP_REALM_NAME',
+  'MAILPIT_NAMESPACE',
+  'PORTAL_ADMIN_USER'
+];
+
+function validateEnv() {
+  const missing = REQUIRED_ENV_VARS.filter(v => !process.env[v]);
+  if (missing.length > 0) {
+    console.error(`ERROR: Missing required environment variables: ${missing.join(', ')}`);
+    process.exit(1);
+  }
+}
+
+// Helper: Extract CSRF token from Kratos flow data
+function extractCsrfToken(flowData) {
+  const csrfInput = flowData.ui?.nodes?.find(node =>
+    node.attributes?.name === 'csrf_token'
+  );
+  return csrfInput?.attributes?.value;
+}
+
+// Helper: Extract all cookies from response
+function extractCookies(response) {
+  const setCookieHeaders = response.headers.raw()['set-cookie'] || [];
+  return setCookieHeaders.map(cookie => cookie.split(';')[0]).join('; ');
+}
+
+// Helper: Login via Kratos OIDC flow to Keycloak
+async function loginViaOIDC(email, password) {
+  const kratosUrl = `http://${process.env.KRATOS_SERVICE_NAME}`;
+  const userAgent = 'mcm-test-setup';
+
+  // Step 1: Initialize Kratos browser login flow
+  const flowInitResp = await fetch(`${kratosUrl}/self-service/login/browser`, {
+    redirect: 'manual',
+    headers: {
+      'User-Agent': userAgent
+    }
+  });
+
+  // Extract flow ID from redirect Location header
+  const flowLocation = flowInitResp.headers.get('location');
+  const flowIdMatch = flowLocation?.match(/flow=([^&]+)/);
+  if (!flowIdMatch) {
+    console.error('ERROR: Failed to initialize Kratos login flow');
+    console.error('Location:', flowLocation);
+    process.exit(1);
+  }
+  const flowId = flowIdMatch[1];
+
+  // Step 2: Get flow data
+  const flowDataResp = await fetch(`${kratosUrl}/self-service/login/flows?id=${flowId}`, {
+    headers: {
+      'User-Agent': userAgent
+    }
+  });
+  const flowData = await flowDataResp.json();
+  const csrfToken = extractCsrfToken(flowData);
+  const flowCookies = extractCookies(flowDataResp);
+
+  if (!csrfToken) {
+    console.error('ERROR: Failed to extract CSRF token from Kratos flow');
+    process.exit(1);
+  }
+
+  // Step 3: Submit OIDC provider (keycloak) - this redirects to Keycloak
+  const oidcSubmitResp = await fetch(flowData.ui.action, {
+    method: 'POST',
+    redirect: 'manual',
+    headers: {
+      'Content-Type': 'application/json',
+      'Cookie': flowCookies,
+      'User-Agent': userAgent
+    },
+    body: JSON.stringify({
+      csrf_token: csrfToken,
+      provider: 'keycloak'
+    })
+  });
+
+  // Step 4: Follow redirect to Keycloak login page
+  const keycloakLoginUrl = oidcSubmitResp.headers.get('location');
+  if (!keycloakLoginUrl || !keycloakLoginUrl.includes('keycloak')) {
+    console.error('ERROR: Expected redirect to Keycloak, got:', keycloakLoginUrl);
+    process.exit(1);
+  }
+
+  const keycloakPageResp = await fetch(keycloakLoginUrl, {
+    redirect: 'manual',
+    headers: {
+      'User-Agent': userAgent
+    }
+  });
+  const keycloakHtml = await keycloakPageResp.text();
+  const keycloakCookies = extractCookies(keycloakPageResp);
+
+  // Step 5: Extract login form action
+  const formActionMatch = keycloakHtml.match(/action="([^"]*)"/);
+  if (!formActionMatch) {
+    console.error('ERROR: Failed to find Keycloak login form');
+    process.exit(1);
+  }
+  const formAction = formActionMatch[1].replace(/&amp;/g, '&');
+
+  // Step 6: Submit credentials to Keycloak
+  const keycloakLoginResp = await fetch(formAction, {
+    method: 'POST',
+    redirect: 'manual',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Cookie': keycloakCookies,
+      'User-Agent': userAgent
+    },
+    body: new URLSearchParams({
+      username: email,
+      password: password
+    })
+  });
+
+  // Step 7: Follow redirect chain back to Kratos
+  let currentResp = keycloakLoginResp;
+  let accumulatedCookies = keycloakCookies;
+  const maxRedirects = 10;
+
+  for (let i = 0; i < maxRedirects; i++) {
+    const location = currentResp.headers.get('location');
+    if (!location) break;
+
+    // Accumulate cookies from each response
+    const newCookies = extractCookies(currentResp);
+    if (newCookies) {
+      accumulatedCookies = `${accumulatedCookies}; ${newCookies}`;
+    }
+
+    currentResp = await fetch(location, {
+      redirect: 'manual',
+      headers: {
+        'Cookie': accumulatedCookies,
+        'User-Agent': userAgent
+      }
+    });
+
+    // If we got a 200, we should have the Kratos session cookie
+    if (currentResp.status === 200) {
+      break;
+    }
+  }
+
+  // Step 8: Extract Kratos session cookie
+  const allCookies = extractCookies(currentResp);
+  const sessionMatch = allCookies.match(/ory_kratos_session=([^;,]+)/);
+
+  if (!sessionMatch) {
+    console.error('ERROR: Failed to extract Kratos session cookie');
+    console.error('Final cookies:', allCookies);
+    process.exit(1);
+  }
+
+  return sessionMatch[1];
+}
+
+async function getAdminSession() {
+  if (!process.env.PORTAL_ADMIN_PASSWORD) {
+    console.error('ERROR: PORTAL_ADMIN_PASSWORD environment variable not set');
+    process.exit(1);
+  }
+
+  const session = await loginViaOIDC(
+    process.env.PORTAL_ADMIN_USER,
+    process.env.PORTAL_ADMIN_PASSWORD
+  );
+
+  console.log(session);
+}
+
+async function createDfsp(dfspId, dfspName, email, monetaryZoneId, adminSession) {
+  if (!dfspId || !dfspName || !email || !monetaryZoneId || !adminSession) {
+    console.error('ERROR: Usage: create-dfsp <dfsp_id> <dfsp_name> <email> <monetary_zone_id> <admin_session>');
+    process.exit(1);
+  }
+
+  const mcmUrl = `http://mcm-api.${process.env.MCM_NAMESPACE}.svc.cluster.local`;
+
+  const resp = await fetch(`${mcmUrl}/dfsps`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Cookie': `ory_kratos_session=${adminSession}`
+    },
+    body: JSON.stringify({
+      dfspId,
+      name: dfspName,
+      monetaryZoneId,
+      email
+    })
+  });
+
+  if (resp.status === 201 || resp.status === 409) {
+    console.error(`SUCCESS: DFSP created (HTTP ${resp.status})`);
+  } else {
+    console.error(`ERROR: Failed to create DFSP (HTTP ${resp.status})`);
+    console.error('Response:', await resp.text());
+    process.exit(1);
+  }
+}
+
+async function destroyDfsp(dfspId, adminSession) {
+  if (!dfspId || !adminSession) {
+    console.error('ERROR: Usage: destroy-dfsp <dfsp_id> <admin_session>');
+    process.exit(1);
+  }
+
+  const mcmUrl = `http://mcm-api.${process.env.MCM_NAMESPACE}.svc.cluster.local`;
+
+  const resp = await fetch(`${mcmUrl}/dfsps/${dfspId}`, {
+    method: 'DELETE',
+    headers: {
+      'Cookie': `ory_kratos_session=${adminSession}`
+    }
+  });
+
+  if (resp.status === 200 || resp.status === 204 || resp.status === 404) {
+    console.error(`SUCCESS: DFSP deleted (HTTP ${resp.status})`);
+  } else {
+    console.error(`ERROR: Failed to delete DFSP (HTTP ${resp.status})`);
+    process.exit(1);
+  }
+}
+
+async function completeInvitation(email, password, firstName, lastName) {
+  if (!email || !password || !firstName || !lastName) {
+    console.error('ERROR: Usage: complete-invitation <email> <password> <first_name> <last_name>');
+    process.exit(1);
+  }
+
+  const mailpitUrl = `http://mailpit-http.${process.env.MAILPIT_NAMESPACE}.svc.cluster.local`;
+
+  // Wait for invitation email
+  const maxAttempts = 30;
+  let invitationLink = null;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const messagesResp = await fetch(`${mailpitUrl}/api/v1/messages`);
+    const messagesData = await messagesResp.json();
+
+    // Find message for our email
+    for (const msg of messagesData.messages || []) {
+      const messageResp = await fetch(`${mailpitUrl}/api/v1/message/${msg.ID}`);
+      const messageData = await messageResp.json();
+
+      // Check if this message is for our email
+      const isForUs = messageData.To?.some(to => to.Address === email);
+      if (isForUs) {
+        // Extract invitation link from HTML
+        const linkMatch = messageData.HTML?.match(/https?:\/\/[^"]*keycloak[^"]*/);
+        if (linkMatch) {
+          invitationLink = linkMatch[0].replace(/\\u0026/g, '&');
+          break;
+        }
+      }
+    }
+
+    if (invitationLink) break;
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+
+  if (!invitationLink) {
+    console.error(`ERROR: Failed to receive invitation email for ${email}`);
+    process.exit(1);
+  }
+
+  // Complete Keycloak invitation flow
+  let currentUrl = invitationLink;
+  const maxRedirects = 10;
+
+  for (let redirect = 0; redirect < maxRedirects; redirect++) {
+    const resp = await fetch(currentUrl, {
+      redirect: 'manual',
+      headers: {
+        'User-Agent': 'mcm-test-setup'
+      }
+    });
+
+    // Follow redirects
+    if (resp.status === 302 || resp.status === 303) {
+      const location = resp.headers.get('location');
+      if (location) {
+        currentUrl = location;
+        continue;
+      }
+    }
+
+    const html = await resp.text();
+
+    // Check for profile form
+    if (html.includes('name="firstName"')) {
+      const formActionMatch = html.match(/action="([^"]*)"/);
+      if (formActionMatch) {
+        const formAction = formActionMatch[1].replace(/&amp;/g, '&');
+
+        await fetch(formAction, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: new URLSearchParams({
+            firstName,
+            lastName
+          })
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        continue;
+      }
+    }
+
+    // Check for password form
+    if (html.includes('name="password-new"')) {
+      const formActionMatch = html.match(/action="([^"]*)"/);
+      if (formActionMatch) {
+        const formAction = formActionMatch[1].replace(/&amp;/g, '&');
+
+        await fetch(formAction, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: new URLSearchParams({
+            'password-new': password,
+            'password-confirm': password
+          })
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        continue;
+      }
+    }
+
+    // Check for success
+    if (html.toLowerCase().includes('success')) {
+      console.error(`SUCCESS: Invitation completed for ${email}`);
+      return;
+    }
+
+    // Check for "click here to proceed" link
+    if (html.includes('Click here to proceed')) {
+      const proceedMatch = html.match(/href="([^"]*action-token[^"]*)"/);
+      if (proceedMatch) {
+        currentUrl = proceedMatch[1].replace(/&amp;/g, '&');
+        continue;
+      }
+    }
+
+    break;
+  }
+
+  console.error('SUCCESS: Invitation flow completed');
+}
+
+async function getOperatorSession(email, password) {
+  if (!email || !password) {
+    console.error('ERROR: Usage: get-operator-session <email> <password>');
+    process.exit(1);
+  }
+
+  const session = await loginViaOIDC(email, password);
+  console.log(session);
+}
+
+async function generatePm4mlCreds(dfspId, sessionCookie) {
+  if (!dfspId || !sessionCookie) {
+    console.error('ERROR: Usage: generate-pm4ml-creds <dfsp_id> <session_cookie>');
+    process.exit(1);
+  }
+
+  const mcmUrl = `http://mcm-api.${process.env.MCM_NAMESPACE}.svc.cluster.local`;
+
+  const resp = await fetch(`${mcmUrl}/dfsps/${dfspId}/credentials`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Cookie': `ory_kratos_session=${sessionCookie}`
+    }
+  });
+
+  const data = await resp.json();
+
+  if (!data.clientId || !data.clientSecret) {
+    console.error(`ERROR: Failed to generate PM4ML credentials for ${dfspId}`);
+    console.error('Response:', data);
+    process.exit(1);
+  }
+
+  console.log(`${data.clientId}|${data.clientSecret}`);
+}
+
+async function getJwt(clientId, clientSecret) {
+  if (!clientId || !clientSecret) {
+    console.error('ERROR: Usage: get-jwt <client_id> <client_secret>');
+    process.exit(1);
+  }
+
+  const keycloakUrl = `https://${process.env.KEYCLOAK_FQDN}/realms/${process.env.KEYCLOAK_HUBOP_REALM_NAME}/protocol/openid-connect/token`;
+
+  const resp = await fetch(keycloakUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: clientId,
+      client_secret: clientSecret
+    })
+  });
+
+  const data = await resp.json();
+
+  if (!data.access_token) {
+    console.error('ERROR: Failed to retrieve JWT token');
+    console.error('Response:', data);
+    process.exit(1);
+  }
+
+  console.log(data.access_token);
+}
+
+// Main CLI dispatcher
+const command = process.argv[2];
+const args = process.argv.slice(3);
+
+(async () => {
+  try {
+    validateEnv();
+
+    switch (command) {
+      case 'get-admin-session':
+        await getAdminSession();
+        break;
+      case 'create-dfsp':
+        await createDfsp(...args);
+        break;
+      case 'destroy-dfsp':
+        await destroyDfsp(...args);
+        break;
+      case 'complete-invitation':
+        await completeInvitation(...args);
+        break;
+      case 'get-operator-session':
+        await getOperatorSession(...args);
+        break;
+      case 'generate-pm4ml-creds':
+        await generatePm4mlCreds(...args);
+        break;
+      case 'get-jwt':
+        await getJwt(...args);
+        break;
+      default:
+        console.error(`ERROR: Unknown command: ${command || '(none)'}`);
+        console.error('');
+        console.error('Usage: node mcm-test-setup.mjs <command> [args...]');
+        console.error('');
+        console.error('Commands:');
+        console.error('  get-admin-session');
+        console.error('  create-dfsp <dfsp_id> <dfsp_name> <email> <monetary_zone_id> <admin_session>');
+        console.error('  destroy-dfsp <dfsp_id> <admin_session>');
+        console.error('  complete-invitation <email> <password> <first_name> <last_name>');
+        console.error('  get-operator-session <email> <password>');
+        console.error('  generate-pm4ml-creds <dfsp_id> <session_cookie>');
+        console.error('  get-jwt <client_id> <client_secret>');
+        process.exit(1);
+    }
+  } catch (error) {
+    console.error('ERROR:', error.message);
+    if (error.cause) {
+      console.error('Cause:', error.cause);
+    }
+    process.exit(1);
+  }
+})();

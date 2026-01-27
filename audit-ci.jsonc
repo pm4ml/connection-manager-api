@@ -13,6 +13,7 @@
     "GHSA-wf5p-g6vw-rhxx",
     "GHSA-6rw7-vpxm-498p",
     "GHSA-fjxv-7rqg-78g4",  // https://github.com/advisories/GHSA-fjxv-7rqg-78g4
-    "GHSA-mh29-5h37-fv8m"  // https://github.com/advisories/GHSA-mh29-5h37-fv8m - oas3-tools requires js-yaml v.3
+    "GHSA-mh29-5h37-fv8m",  // https://github.com/advisories/GHSA-mh29-5h37-fv8m - oas3-tools requires js-yaml v.3
+    "GHSA-xxjr-mmjv-4gpg"  // https://github.com/advisories/GHSA-xxjr-mmjv-4gpg - lodash in @mojaloop/central-services-shared
   ]
 }
