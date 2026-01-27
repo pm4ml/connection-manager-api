@@ -50,6 +50,15 @@ ignore:
   - vulnerability: GHSA-29xp-372q-xqph
     package:
       name: tar
+  - vulnerability: GHSA-r6q2-hw4h-h46w
+    package:
+      name: tar
+  - vulnerability: GHSA-8qq5-rm4j-mr97
+    package:
+      name: tar
+  - vulnerability: GHSA-xxjr-mmjv-4gpg
+    package:
+      name: lodash
   - vulnerability: CVE-2025-9230
   - vulnerability: CVE-2025-9231
   - vulnerability: CVE-2025-9232
