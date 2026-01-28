@@ -159,6 +159,7 @@ module.exports = {
     },
     pkiServerRole: env.get('VAULT_PKI_SERVER_ROLE').required().asString(),
     pkiClientRole: env.get('VAULT_PKI_CLIENT_ROLE').required().asString(),
+    bundleTtl: env.get('VAULT_BUNDLE_TTL').default('5m').asString(),
     auth: vaultAuth,
     signExpiryHours: env.get('VAULT_SIGN_EXPIRY_HOURS').default('43800').asString(),
     keyLength: env.get('PRIVATE_KEY_LENGTH').default(4096).asIntPositive(),

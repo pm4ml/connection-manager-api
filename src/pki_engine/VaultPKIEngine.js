@@ -37,6 +37,7 @@ class VaultPKIEngine extends PKIEngine {
     pkiServerRole,
     pkiClientRole,
     signExpiryHours,
+    bundleTtl,
     keyLength,
     keyAlgorithm
   }) {
@@ -48,6 +49,7 @@ class VaultPKIEngine extends PKIEngine {
     this.pkiClientRole = pkiClientRole;
     this.mounts = mounts;
     this.signExpiryHours = signExpiryHours;
+    this.bundleTtl = bundleTtl;
     this.reconnectTimer = null;
     this.keyLength = keyLength;
     this.keyAlgorithm = keyAlgorithm;
@@ -308,6 +310,7 @@ class VaultPKIEngine extends PKIEngine {
     const cert = this.getCertInfo(dfspClientCert.certificate);
     const bundle = {
       timeStamp: Date.now(),
+      ttl: this.bundleTtl,
       ca_bundle: `${dfspCA.intermediateChain}\n${dfspCA.rootCertificate}`,
       client_key: dfspClientCert.key,
       client_cert_chain: `${dfspClientCert.certificate}\n${dfspCA.intermediateChain}\n${dfspCA.rootCertificate}`,
