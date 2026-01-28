@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.7.1](https://github.com/mojaloop/connection-manager-api/compare/v3.7.0...v3.7.1) (2026-01-28)
+
+
+### Bug Fixes
+
+* validation logic ([3b56326](https://github.com/mojaloop/connection-manager-api/commit/3b563269c01bfa5b8d7ac3ff97bf2e7c5c5f3817))
+
+
+### Chore
+
+* add an exception to .grype.yaml ([b529886](https://github.com/mojaloop/connection-manager-api/commit/b529886fac6126d7ec445e581d807f84f17b7c13))
+* cleanup ([c8629da](https://github.com/mojaloop/connection-manager-api/commit/c8629da49eb28607dd84e3b530bcba252b85c2b7))
+
 ## [3.7.0](https://github.com/mojaloop/connection-manager-api/compare/v3.6.0...v3.7.0) (2026-01-27)
 
 
