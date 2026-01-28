@@ -90,8 +90,6 @@ ignore:
     package:
       name: node
   - vulnerability: CVE-2026-22796
-    package:
-      name: node
 
 # Set output format defaults
 output:
