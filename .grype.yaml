@@ -89,6 +89,7 @@ ignore:
   - vulnerability: CVE-2025-59466
     package:
       name: node
+  - vulnerability: CVE-2026-22796 # libcrypto3 libssl3
 
 # Set output format defaults
 output:

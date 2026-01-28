@@ -321,6 +321,7 @@ class VaultPKIEngine extends PKIEngine {
       isProxy,
     };
     await this.client.write(`${this.mounts.dfspClientCertBundle}/${dfspName}`, bundle);
+    return bundle;
   }
 
   async populateDFSPInternalIPWhitelistBundle (value) {
