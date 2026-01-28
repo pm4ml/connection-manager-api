@@ -39,10 +39,7 @@ describe('DfspIdValidationMiddleware', () => {
 
     req = {
       headers: {},
-      path: '',
-      openapi: {
-        pathParams: {}
-      }
+      path: ''
     };
 
     res = {
@@ -56,7 +53,6 @@ describe('DfspIdValidationMiddleware', () => {
   describe('when x-client-id header is not present', () => {
     it('should skip validation and call next', () => {
       req.path = '/api/dfsps/DFSP1/ca';
-      req.openapi.pathParams = { dfspId: 'DFSP1' };
       req.headers = {};
 
       middleware(req, res, next);
@@ -70,7 +66,6 @@ describe('DfspIdValidationMiddleware', () => {
   describe('when path does not contain dfspId', () => {
     it('should skip validation for non-DFSP paths', () => {
       req.path = '/api/health';
-      req.openapi = { pathParams: {} }; // No dfspId
       req.headers = { 'x-client-id': 'DFSP1' };
 
       middleware(req, res, next);
@@ -82,7 +77,6 @@ describe('DfspIdValidationMiddleware', () => {
 
     it('should skip validation for /api/dfsps aggregate endpoints', () => {
       req.path = '/api/dfsps/jwscerts';
-      req.openapi = { pathParams: {} }; // No dfspId in aggregate endpoints
       req.headers = { 'x-client-id': 'DFSP1' };
 
       middleware(req, res, next);
@@ -92,9 +86,8 @@ describe('DfspIdValidationMiddleware', () => {
       expect(res.json).not.toHaveBeenCalled();
     });
 
-    it('should skip validation when openapi context is not available', () => {
-      req.path = '/api/dfsps/DFSP1/ca';
-      req.openapi = undefined;
+    it('should skip validation for /api/dfsps/endpoints paths', () => {
+      req.path = '/api/dfsps/endpoints/something';
       req.headers = { 'x-client-id': 'DFSP1' };
 
       middleware(req, res, next);
@@ -108,7 +101,6 @@ describe('DfspIdValidationMiddleware', () => {
   describe('when dfspId matches x-client-id', () => {
     it('should allow the request to proceed', () => {
       req.path = '/api/dfsps/DFSP1/ca';
-      req.openapi.pathParams = { dfspId: 'DFSP1' };
       req.headers = { 'x-client-id': 'DFSP1' };
 
       middleware(req, res, next);
@@ -120,7 +112,6 @@ describe('DfspIdValidationMiddleware', () => {
 
     it('should allow requests with nested paths', () => {
       req.path = '/api/dfsps/DFSP1/enrollments/inbound';
-      req.openapi.pathParams = { dfspId: 'DFSP1' };
       req.headers = { 'x-client-id': 'DFSP1' };
 
       middleware(req, res, next);
@@ -132,7 +123,6 @@ describe('DfspIdValidationMiddleware', () => {
 
     it('should allow requests with multiple path parameters', () => {
       req.path = '/api/dfsps/DFSP1/enrollments/outbound/123';
-      req.openapi.pathParams = { dfspId: 'DFSP1', enId: '123' };
       req.headers = { 'x-client-id': 'DFSP1' };
 
       middleware(req, res, next);
@@ -146,7 +136,6 @@ describe('DfspIdValidationMiddleware', () => {
   describe('when dfspId does not match x-client-id', () => {
     it('should return 403 Forbidden', () => {
       req.path = '/api/dfsps/DFSP1/ca';
-      req.openapi.pathParams = { dfspId: 'DFSP1' };
       req.headers = { 'x-client-id': 'DFSP2' };
 
       middleware(req, res, next);
@@ -155,13 +144,12 @@ describe('DfspIdValidationMiddleware', () => {
       expect(res.status).toHaveBeenCalledWith(403);
       expect(res.json).toHaveBeenCalledWith({
         error: 'Forbidden',
-        message: 'DFSP ID in path (DFSP1) does not match x-client-id header (DFSP2)'
+        message: 'Requester (DFSP2) does not have access to the path /api/dfsps/DFSP1/ca'
       });
     });
 
     it('should return 403 for nested paths with mismatch', () => {
       req.path = '/api/dfsps/DFSP1/enrollments/inbound';
-      req.openapi.pathParams = { dfspId: 'DFSP1' };
       req.headers = { 'x-client-id': 'DFSP3' };
 
       middleware(req, res, next);
@@ -170,13 +158,12 @@ describe('DfspIdValidationMiddleware', () => {
       expect(res.status).toHaveBeenCalledWith(403);
       expect(res.json).toHaveBeenCalledWith({
         error: 'Forbidden',
-        message: 'DFSP ID in path (DFSP1) does not match x-client-id header (DFSP3)'
+        message: 'Requester (DFSP3) does not have access to the path /api/dfsps/DFSP1/enrollments/inbound'
       });
     });
 
     it('should be case-sensitive in validation', () => {
       req.path = '/api/dfsps/DFSP1/ca';
-      req.openapi.pathParams = { dfspId: 'DFSP1' };
       req.headers = { 'x-client-id': 'dfsp1' }; // lowercase
 
       middleware(req, res, next);
@@ -185,18 +172,18 @@ describe('DfspIdValidationMiddleware', () => {
       expect(res.status).toHaveBeenCalledWith(403);
       expect(res.json).toHaveBeenCalledWith({
         error: 'Forbidden',
-        message: 'DFSP ID in path (DFSP1) does not match x-client-id header (dfsp1)'
+        message: 'Requester (dfsp1) does not have access to the path /api/dfsps/DFSP1/ca'
       });
     });
   });
 
   describe('error handling', () => {
     it('should handle errors gracefully', () => {
-      req.openapi = { pathParams: { dfspId: 'DFSP1' } };
+      req.path = '/api/dfsps/DFSP1/ca';
       req.headers = { 'x-client-id': 'DFSP1' };
 
-      // Override openapi to cause an error
-      Object.defineProperty(req, 'openapi', {
+      // Override path to cause an error
+      Object.defineProperty(req, 'path', {
         get: () => { throw new Error('Test error'); }
       });
 
@@ -214,7 +201,6 @@ describe('DfspIdValidationMiddleware', () => {
   describe('edge cases', () => {
     it('should handle paths with special characters in dfspId', () => {
       req.path = '/api/dfsps/DFSP-1/ca';
-      req.openapi.pathParams = { dfspId: 'DFSP-1' };
       req.headers = { 'x-client-id': 'DFSP-1' };
 
       middleware(req, res, next);
@@ -225,7 +211,6 @@ describe('DfspIdValidationMiddleware', () => {
 
     it('should handle numeric dfspIds', () => {
       req.path = '/api/dfsps/123/ca';
-      req.openapi.pathParams = { dfspId: '123' };
       req.headers = { 'x-client-id': '123' };
 
       middleware(req, res, next);
@@ -236,7 +221,6 @@ describe('DfspIdValidationMiddleware', () => {
 
     it('should handle x-client-id header with different casing', () => {
       req.path = '/api/dfsps/DFSP1/ca';
-      req.openapi.pathParams = { dfspId: 'DFSP1' };
       req.headers = { 'X-Client-Id': 'DFSP1' }; // Different case header
 
       middleware(req, res, next);
@@ -250,7 +234,6 @@ describe('DfspIdValidationMiddleware', () => {
     it('should validate GET requests', () => {
       req.method = 'GET';
       req.path = '/api/dfsps/DFSP1/ca';
-      req.openapi.pathParams = { dfspId: 'DFSP1' };
       req.headers = { 'x-client-id': 'DFSP1' };
 
       middleware(req, res, next);
@@ -261,7 +244,6 @@ describe('DfspIdValidationMiddleware', () => {
     it('should validate POST requests', () => {
       req.method = 'POST';
       req.path = '/api/dfsps/DFSP1/enrollments/inbound';
-      req.openapi.pathParams = { dfspId: 'DFSP1' };
       req.headers = { 'x-client-id': 'DFSP1' };
 
       middleware(req, res, next);
@@ -271,8 +253,7 @@ describe('DfspIdValidationMiddleware', () => {
 
     it('should validate PUT requests', () => {
       req.method = 'PUT';
-      req.path = '/api/dfsps/DFSP1';
-      req.openapi.pathParams = { dfspId: 'DFSP1' };
+      req.path = '/api/dfsps/DFSP1/something';
       req.headers = { 'x-client-id': 'DFSP1' };
 
       middleware(req, res, next);
@@ -283,7 +264,6 @@ describe('DfspIdValidationMiddleware', () => {
     it('should validate DELETE requests', () => {
       req.method = 'DELETE';
       req.path = '/api/dfsps/DFSP1/enrollments/outbound/123';
-      req.openapi.pathParams = { dfspId: 'DFSP1', enId: '123' };
       req.headers = { 'x-client-id': 'DFSP1' };
 
       middleware(req, res, next);

@@ -43,14 +43,14 @@ exports.createDfspIdValidationMiddleware = () => {
         return next();
       }
 
-      // Check if the request has a dfspId path parameter
-      // This uses OpenAPI path parameter parsing, which automatically distinguishes
-      // between DFSP-specific paths like /api/dfsps/{dfspId}/* and aggregate endpoints
-      // like /api/dfsps/jwscerts (which don't have dfspId in their OpenAPI definition)
-      const dfspIdFromPath = req.openapi?.pathParams?.dfspId;
+      // Extract dfspId from path using regex pattern
+      // Matches paths like /dfsps/{dfspId}/* or /api/dfsps/{dfspId}/*
+      // Excludes aggregate endpoints like /dfsps/endpoints/*
+      const pathMatch = req.path.match(/\/dfsps\/(?!endpoints\/)([^/]+)\/.*/);
+      const dfspIdFromPath = pathMatch ? pathMatch[1] : null;
 
       if (!dfspIdFromPath) {
-        // Not a DFSP-specific path (either no openapi context yet, or no dfspId param)
+        // Not a DFSP-specific path
         return next();
       }
 
@@ -65,7 +65,7 @@ exports.createDfspIdValidationMiddleware = () => {
 
         return res.status(403).json({
           error: 'Forbidden',
-          message: `DFSP ID in path (${dfspIdFromPath}) does not match x-client-id header (${clientId})`
+          message: `Requester (${clientId}) does not have access to the path ${req.path}`
         });
       }
 
