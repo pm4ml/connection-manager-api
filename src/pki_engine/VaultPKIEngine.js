@@ -307,6 +307,7 @@ class VaultPKIEngine extends PKIEngine {
       .sort((a, b) => b.id - a.id)[0];
     const cert = this.getCertInfo(dfspClientCert.certificate);
     const bundle = {
+      timeStamp: Date.now(),
       ca_bundle: `${dfspCA.intermediateChain}\n${dfspCA.rootCertificate}`,
       client_key: dfspClientCert.key,
       client_cert_chain: `${dfspClientCert.certificate}\n${dfspCA.intermediateChain}\n${dfspCA.rootCertificate}`,
