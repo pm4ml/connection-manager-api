@@ -496,7 +496,7 @@ describe("PKIEngine", () => {
       const writeStub = sinon.stub(ctx.pkiEngine.client, "write").resolves();
 
       // Call the method
-      await ctx.pkiEngine.populateDFSPClientCertBundle(
+      const result = await ctx.pkiEngine.populateDFSPClientCertBundle(
         dfspId,
         dfspName,
         dfspMonetaryZoneId,
@@ -510,6 +510,8 @@ describe("PKIEngine", () => {
       expect(ctx.pkiEngine.getDFSPOutboundEnrollments.calledWithExactly(dfspId)).toBe(true);
       expect(ctx.pkiEngine.getCertInfo.calledWithExactly("client-cert")).toBe(true);
       expect(writeStub.calledWithExactly(`${ctx.pkiEngine.mounts.dfspClientCertBundle}/${dfspName}`, {
+        ttl: result.ttl,
+        timeStamp: result.timeStamp,
         ca_bundle: "intermediate-chain\nroot-certificate",
         client_key: "client-key",
         client_cert_chain: "client-cert\nintermediate-chain\nroot-certificate",

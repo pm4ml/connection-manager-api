@@ -1,6 +1,6 @@
 {
   "name": "@mojaloop/connection-manager-api",
-  "version": "3.7.1",
+  "version": "3.7.1-re-onboard.2",
   "description": "Mojaloop Connection Manager API",
   "license": "Apache-2.0",
   "author": "ModusBox",
@@ -96,7 +96,7 @@
     "@kubernetes/client-node": "^1.4.0",
     "@mojaloop/central-services-logger": "11.10.3",
     "@mojaloop/central-services-metrics": "12.8.3",
-    "@mojaloop/central-services-shared": "18.35.1",
+    "@mojaloop/central-services-shared": "18.35.2",
     "@ory/keto-client": "^25.4.0",
     "async-exit-hook": "^2.0.1",
     "async-retry": "^1.3.3",

@@ -7,6 +7,7 @@
   "allowlist": [
     "GHSA-6rw7-vpxm-498p",
     "GHSA-fjxv-7rqg-78g4",
-    "GHSA-xxjr-mmjv-4gpg"
+    "GHSA-xxjr-mmjv-4gpg",
+    "GHSA-p5wg-g6qr-c7cg"
   ]
 }
