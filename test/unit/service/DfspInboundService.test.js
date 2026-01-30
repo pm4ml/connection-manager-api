@@ -94,7 +94,7 @@ describe('DfspInboundService Tests -->', () => {
         .mockResolvedValue(createSignedEnrollmentsMock(RETENTION_COUNT - 1));
 
       await DfspInboundService.signDFSPInboundEnrollment(ctx, mockDfspId, 1);
-      await sleep(1_000); // wait for fire-and-forget pruning to complete
+      await sleep(100); // wait for fire-and-forget pruning to complete
 
       expect(mockPkiEngine.deleteDFSPInboundEnrollment).not.toHaveBeenCalled();
     });
@@ -105,7 +105,7 @@ describe('DfspInboundService Tests -->', () => {
       mockPkiEngine.getDFSPInboundEnrollments.mockResolvedValue(enrollments);
 
       await DfspInboundService.signDFSPInboundEnrollment(ctx, mockDfspId, 1);
-      await sleep(1_000);
+      await sleep(100);
 
       expect(mockPkiEngine.deleteDFSPInboundEnrollment).toHaveBeenCalledTimes(extra);
       expect(mockPkiEngine.deleteDFSPInboundEnrollment).toHaveBeenCalledWith(mockDbDfspId, enrollments[0].id);
@@ -119,8 +119,8 @@ describe('DfspInboundService Tests -->', () => {
       ];
       mockPkiEngine.getDFSPInboundEnrollments.mockResolvedValue(enrollments);
 
-      await DfspInboundService.signDFSPInboundEnrollment(ctx, mockDfspId, 100);
-      await sleep(1_000);
+      await DfspInboundService.signDFSPInboundEnrollment(ctx, mockDfspId, 1);
+      await sleep(100);
 
       expect(mockPkiEngine.deleteDFSPInboundEnrollment).toHaveBeenCalledTimes(1);
       // should not delete any CSR_LOADED enrollments
@@ -131,7 +131,7 @@ describe('DfspInboundService Tests -->', () => {
       mockPkiEngine.getDFSPInboundEnrollments.mockResolvedValue([]);
 
       await DfspInboundService.signDFSPInboundEnrollment(ctx, mockDfspId, 1);
-      await sleep(1_000);
+      await sleep(100);
 
       expect(mockPkiEngine.deleteDFSPInboundEnrollment).not.toHaveBeenCalled();
     });
@@ -141,8 +141,8 @@ describe('DfspInboundService Tests -->', () => {
       mockPkiEngine.getDFSPInboundEnrollments
         .mockResolvedValue(createSignedEnrollmentsMock(RETENTION_COUNT + 1));
 
-      const result = await DfspInboundService.signDFSPInboundEnrollment(ctx, mockDfspId, 100);
-      await sleep(1_000);
+      const result = await DfspInboundService.signDFSPInboundEnrollment(ctx, mockDfspId, 1);
+      await sleep(100);
 
       expect(result).toBeDefined();
     });
