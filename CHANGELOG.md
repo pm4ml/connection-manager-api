@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.7.3](https://github.com/mojaloop/connection-manager-api/compare/v3.7.1...v3.7.3) (2026-01-30)
+
+
+### Bug Fixes
+
+* add timestamp and TTL to certificate bundle in VaultPKIEngine ([#185](https://github.com/mojaloop/connection-manager-api/issues/185)) ([fa8cf96](https://github.com/mojaloop/connection-manager-api/commit/fa8cf96193877a1112dc567f6640483e774e0793))
+* update version to 3.7.2 in package.json and package-lock.json ([#188](https://github.com/mojaloop/connection-manager-api/issues/188)) ([e9e42c4](https://github.com/mojaloop/connection-manager-api/commit/e9e42c4e277a0c59672fe48d98fd31633def9d6f))
+
 ### [3.7.1](https://github.com/mojaloop/connection-manager-api/compare/v3.7.0...v3.7.1) (2026-01-28)
 
 
