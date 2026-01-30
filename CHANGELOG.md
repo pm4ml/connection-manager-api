@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.7.4](https://github.com/mojaloop/connection-manager-api/compare/v3.7.4-snapshot.0...v3.7.4) (2026-01-30)
+
 ### [3.7.3](https://github.com/mojaloop/connection-manager-api/compare/v3.7.1...v3.7.3) (2026-01-30)
 
 
