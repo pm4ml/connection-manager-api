@@ -165,6 +165,7 @@ module.exports = {
     keyLength: env.get('PRIVATE_KEY_LENGTH').default(4096).asIntPositive(),
     keyAlgorithm: env.get('PRIVATE_KEY_ALGORITHM').default('rsa').asString(),
     internalCaTtl: env.get('INTERNAL_CA_TTL').default('8760h').asString(),
+    inboundEnrollmentRetentionCount: env.get('INBOUND_ENROLLMENT_RETENTION_COUNT').default(10).asIntPositive(),
   },
   certManager,
 

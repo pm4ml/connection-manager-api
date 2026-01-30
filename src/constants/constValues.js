@@ -40,6 +40,13 @@ const DFSP_STATES = [
   'UPLOAD_PEER_JWS'
 ];
 
+const enrollmentStates = Object.freeze({
+  NEW: 'NEW',
+  CSR_LOADED: 'CSR_LOADED',
+  CERT_SIGNED: 'CERT_SIGNED',
+  INVALID: 'INVALID',
+});
+
 // TODO: find and link document containing rules on allowable paths
 const vaultPaths = {
   HUB_SERVER_CERT: 'hub-server-cert',
@@ -56,5 +63,6 @@ const vaultPaths = {
 module.exports = {
   CONTEXT,
   DFSP_STATES,
+  enrollmentStates,
   vaultPaths
 };

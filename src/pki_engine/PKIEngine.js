@@ -15,11 +15,11 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
+const forge = require('node-forge');
+const { logger } = require('../log/logger');
 const { getValidationConfig } = require('./ValidationsConfiguration');
 const ValidationCodes = require('./ValidationCodes');
 const Validation = require('./Validation');
-const forge = require('node-forge');
-const { logger } = require('../log/logger');
 
 /**
  * PKI Engine interface
