@@ -1,6 +1,6 @@
 {
   "name": "@mojaloop/connection-manager-api",
-  "version": "3.7.3",
+  "version": "3.7.4-snapshot.0",
   "description": "Mojaloop Connection Manager API",
   "license": "Apache-2.0",
   "author": "ModusBox",
@@ -131,8 +131,8 @@
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
-    "@commitlint/cli": "^20.3.1",
-    "@commitlint/config-conventional": "^20.3.1",
+    "@commitlint/cli": "^20.4.0",
+    "@commitlint/config-conventional": "^20.4.0",
     "@types/jest": "30.0.0",
     "audit-ci": "^7.1.0",
     "axios-mock-adapter": "2.1.0",
