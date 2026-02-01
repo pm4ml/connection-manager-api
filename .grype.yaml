@@ -109,6 +109,7 @@ ignore:
   - vulnerability: CVE-2025-69420 # libcrypto3 libssl3
   - vulnerability: GHSA-34x7-hfp2-rc4v # tar
   - vulnerability: GHSA-p5wg-g6qr-c7cg # eslint
+  - vulnerability: GHSA-37qj-frw5-hhjh # fast-xml-parser
 
 # Set output format defaults
 output:
