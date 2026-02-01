@@ -12,6 +12,7 @@
 #   PORTAL_ADMIN_PASSWORD - Portal admin password
 #   TTK_BACKEND_URL      - TTK backend URL (e.g., http://ml-testing-toolkit-backend:5050)
 #   TEST_CASES_DIR       - Path to test cases directory
+#   MCM_TEST_SETUP       - Path to mcm-test-setup script
 #
 # Optional environment variables:
 #   SAVE_REPORT          - Save report to TTK (default: true)
@@ -26,7 +27,7 @@ echo "===================================="
 echo ""
 
 # Validate required environment variables
-required_vars="MCM_URL KRATOS_PUBLIC_URL KEYCLOAK_URL KEYCLOAK_REALM MAILPIT_URL PORTAL_ADMIN_USER PORTAL_ADMIN_PASSWORD TTK_BACKEND_URL TEST_CASES_DIR"
+required_vars="MCM_URL KRATOS_PUBLIC_URL KEYCLOAK_URL KEYCLOAK_REALM MAILPIT_URL PORTAL_ADMIN_USER PORTAL_ADMIN_PASSWORD TTK_BACKEND_URL TEST_CASES_DIR MCM_TEST_SETUP"
 for var in $required_vars; do
   eval val=\$$var
   if [ -z "$val" ]; then
@@ -38,10 +39,6 @@ done
 # Default optional variables
 SAVE_REPORT="${SAVE_REPORT:-true}"
 ALLOW_FAILURES="${ALLOW_FAILURES:-false}"
-
-# Get script directory for mcm-test-setup
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MCM_TEST_SETUP="${SCRIPT_DIR}/mcm-test-setup"
 
 if [ ! -x "$MCM_TEST_SETUP" ]; then
   echo "ERROR: mcm-test-setup not found at $MCM_TEST_SETUP"
