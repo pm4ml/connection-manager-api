@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # MCM RBAC Test Runner
 # This script sets up test DFSPs, runs TTK RBAC tests, and cleans up
 #
@@ -28,7 +28,8 @@ echo ""
 # Validate required environment variables
 required_vars="MCM_URL KRATOS_PUBLIC_URL KEYCLOAK_URL KEYCLOAK_REALM MAILPIT_URL PORTAL_ADMIN_USER PORTAL_ADMIN_PASSWORD TTK_BACKEND_URL TEST_CASES_DIR"
 for var in $required_vars; do
-  if [ -z "${!var}" ]; then
+  eval val=\$$var
+  if [ -z "$val" ]; then
     echo "ERROR: Required environment variable $var is not set"
     exit 1
   fi
