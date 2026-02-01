@@ -159,11 +159,13 @@ module.exports = {
     },
     pkiServerRole: env.get('VAULT_PKI_SERVER_ROLE').required().asString(),
     pkiClientRole: env.get('VAULT_PKI_CLIENT_ROLE').required().asString(),
+    bundleTtl: env.get('VAULT_BUNDLE_TTL').default('5m').asString(),
     auth: vaultAuth,
     signExpiryHours: env.get('VAULT_SIGN_EXPIRY_HOURS').default('43800').asString(),
     keyLength: env.get('PRIVATE_KEY_LENGTH').default(4096).asIntPositive(),
     keyAlgorithm: env.get('PRIVATE_KEY_ALGORITHM').default('rsa').asString(),
     internalCaTtl: env.get('INTERNAL_CA_TTL').default('8760h').asString(),
+    inboundEnrollmentRetentionCount: env.get('INBOUND_ENROLLMENT_RETENTION_COUNT').default(10).asIntPositive(),
   },
   certManager,
 
@@ -180,4 +182,5 @@ module.exports = {
   caCsrParameters: env.get('CA_CSR_PARAMETERS').asJsonConfig(),
 
   dfspWatcherEnabled: env.get('DFSP_WATCHER_ENABLED').default('false').asBool(),
+  dfspIdHeaderValidationEnabled: env.get('DFSP_ID_HEADER_VALIDATION_ENABLED').default('true').asBool(),
 };

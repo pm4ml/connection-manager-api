@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.7.4](https://github.com/mojaloop/connection-manager-api/compare/v3.7.4-snapshot.0...v3.7.4) (2026-01-30)
+
+### [3.7.3](https://github.com/mojaloop/connection-manager-api/compare/v3.7.1...v3.7.3) (2026-01-30)
+
+
+### Bug Fixes
+
+* add timestamp and TTL to certificate bundle in VaultPKIEngine ([#185](https://github.com/mojaloop/connection-manager-api/issues/185)) ([fa8cf96](https://github.com/mojaloop/connection-manager-api/commit/fa8cf96193877a1112dc567f6640483e774e0793))
+* update version to 3.7.2 in package.json and package-lock.json ([#188](https://github.com/mojaloop/connection-manager-api/issues/188)) ([e9e42c4](https://github.com/mojaloop/connection-manager-api/commit/e9e42c4e277a0c59672fe48d98fd31633def9d6f))
+
+### [3.7.1](https://github.com/mojaloop/connection-manager-api/compare/v3.7.0...v3.7.1) (2026-01-28)
+
+
+### Bug Fixes
+
+* validation logic ([3b56326](https://github.com/mojaloop/connection-manager-api/commit/3b563269c01bfa5b8d7ac3ff97bf2e7c5c5f3817))
+
+
+### Chore
+
+* add an exception to .grype.yaml ([b529886](https://github.com/mojaloop/connection-manager-api/commit/b529886fac6126d7ec445e581d807f84f17b7c13))
+* cleanup ([c8629da](https://github.com/mojaloop/connection-manager-api/commit/c8629da49eb28607dd84e3b530bcba252b85c2b7))
+
+## [3.7.0](https://github.com/mojaloop/connection-manager-api/compare/v3.6.0...v3.7.0) (2026-01-27)
+
+
+### Features
+
+* implemented dfspid validation ([9fbe605](https://github.com/mojaloop/connection-manager-api/commit/9fbe6053c2d2f4ce86a78a86fa273f88247e59d9))
+
+
+### Chore
+
+* grype exceptions ([ec815c6](https://github.com/mojaloop/connection-manager-api/commit/ec815c6f5966c75da6c9a5d5264591be43870c0f))
+* rename vars ([f5e894c](https://github.com/mojaloop/connection-manager-api/commit/f5e894c7b11b3123e881c5de53261eae08831f80))
+
 ## [3.6.0](https://github.com/mojaloop/connection-manager-api/compare/v3.5.0...v3.6.0) (2026-01-15)
 
 

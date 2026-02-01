@@ -135,11 +135,44 @@ exports.signDFSPInboundEnrollment = async (ctx, dfspId, enId) => {
     ...enrollment,
     certificate: newCert,
     certInfo,
-    state: 'CERT_SIGNED',
+    state: Constants.enrollmentStates.CERT_SIGNED,
     validations,
     validationState
   };
 
   await pkiEngine.setDFSPInboundEnrollment(dbDfspId, values.id, values);
+
+  const retentionCount = Constants.vault.inboundEnrollmentRetentionCount;
+  if (retentionCount > 0) {
+    pruneSignedInboundEnrollments(ctx, dbDfspId, retentionCount);
+  }
+
   return values;
 };
+
+/**
+ * Prune old signed inbound enrollments, keeping only the N most recent
+ * @param {Object} ctx - Context with pkiEngine
+ * @param {number} dbDfspId - Database DFSP ID
+ * @param {number} retentionCount - Number of signed enrollments to keep
+ */
+async function pruneSignedInboundEnrollments (ctx, dbDfspId, retentionCount) {
+  try {
+    const { pkiEngine } = ctx;
+    const enrollments = await pkiEngine.getDFSPInboundEnrollments(dbDfspId);
+    const signedEnrollments = enrollments
+      .filter(e => e.state === Constants.enrollmentStates.CERT_SIGNED)
+      .sort((a, b) => b.id - a.id); // Newest first
+
+    if (signedEnrollments.length <= retentionCount) return;
+
+    const toDelete = signedEnrollments.slice(retentionCount);
+    await Promise.all(
+      toDelete.map(e => pkiEngine.deleteDFSPInboundEnrollment(dbDfspId, e.id))
+    );
+
+    log.info(`pruned old inbound enrollments  [count: ${toDelete.length}]`, { dbDfspId });
+  } catch (err) {
+    log.child({ dbDfspId }).warn('error in pruneSignedInboundEnrollments: ', err);
+  }
+}

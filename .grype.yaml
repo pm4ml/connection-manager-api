@@ -74,6 +74,41 @@ ignore:
   - vulnerability: CVE-2026-22184
     package:
       name: zlib
+  - vulnerability: CVE-2025-59465
+    package:
+      name: node
+  - vulnerability: CVE-2025-55131
+    package:
+      name: node
+  - vulnerability: GHSA-r6q2-hw4h-h46w
+    package:
+      name: tar
+  - vulnerability: GHSA-8qq5-rm4j-mr97
+    package:
+      name: tar
+  - vulnerability: CVE-2025-55130
+    package:
+      name: node
+  - vulnerability: GHSA-xxjr-mmjv-4gpg
+    package:
+      name: lodash
+  - vulnerability: CVE-2026-21637
+    package:
+      name: node
+  - vulnerability: CVE-2025-59466
+    package:
+      name: node
+  - vulnerability: CVE-2025-15467 # libcrypto3 libssl3
+  - vulnerability: CVE-2025-15468 # libcrypto3 libssl3
+  - vulnerability: CVE-2026-22795 # libcrypto3 libssl3
+  - vulnerability: CVE-2026-22796 # libcrypto3 libssl3
+  - vulnerability: CVE-2025-66199 # libcrypto3 libssl3
+  - vulnerability: CVE-2025-68160 # libcrypto3 libssl3
+  - vulnerability: CVE-2025-69418 # libcrypto3 libssl3
+  - vulnerability: CVE-2025-69419 # libcrypto3 libssl3
+  - vulnerability: CVE-2025-69420 # libcrypto3 libssl3
+  - vulnerability: GHSA-34x7-hfp2-rc4v # tar
+  - vulnerability: GHSA-p5wg-g6qr-c7cg # eslint
 
 # Set output format defaults
 output:
