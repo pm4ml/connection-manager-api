@@ -65,7 +65,7 @@ function extractCsrfToken(flowData) {
 
 // Helper: Extract all cookies from response
 function extractCookies(response) {
-  const setCookieHeaders = response.headers.raw()['set-cookie'] || [];
+  const setCookieHeaders = response.headers.getSetCookie?.() || [];
   return setCookieHeaders.map(cookie => cookie.split(';')[0]).join('; ');
 }
 
