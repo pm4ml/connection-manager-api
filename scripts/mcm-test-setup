@@ -29,21 +29,25 @@
  *     Get JWT token from Keycloak using client credentials
  *
  * Required environment variables:
- *   MCM_NAMESPACE
- *   KRATOS_SERVICE_NAME
- *   KEYCLOAK_FQDN
+ *   MCM_EXTERNAL_URL
+ *   KRATOS_PUBLIC_URL
+ *   KRATOS_EXTERNAL_URL
+ *   KEYCLOAK_URL
  *   KEYCLOAK_HUBOP_REALM_NAME
- *   MAILPIT_NAMESPACE
+ *   KEYCLOAK_DFSP_REALM_NAME
+ *   MAILPIT_URL
  *   PORTAL_ADMIN_USER
  *   PORTAL_ADMIN_PASSWORD (for get-admin-session)
  */
 
 const REQUIRED_ENV_VARS = [
-  'MCM_NAMESPACE',
-  'KRATOS_SERVICE_NAME',
-  'KEYCLOAK_FQDN',
+  'MCM_EXTERNAL_URL',
+  'KRATOS_PUBLIC_URL',
+  'KRATOS_EXTERNAL_URL',
+  'KEYCLOAK_URL',
   'KEYCLOAK_HUBOP_REALM_NAME',
-  'MAILPIT_NAMESPACE',
+  'KEYCLOAK_DFSP_REALM_NAME',
+  'MAILPIT_URL',
   'PORTAL_ADMIN_USER'
 ];
 
@@ -69,9 +73,14 @@ function extractCookies(response) {
   return setCookieHeaders.map(cookie => cookie.split(';')[0]).join('; ');
 }
 
+// Helper: Rewrite external Kratos URL to internal
+function toInternalUrl(url) {
+  return url.replace(process.env.KRATOS_EXTERNAL_URL, process.env.KRATOS_PUBLIC_URL);
+}
+
 // Helper: Login via Kratos OIDC flow to Keycloak
-async function loginViaOIDC(email, password) {
-  const kratosUrl = `http://${process.env.KRATOS_SERVICE_NAME}`;
+async function loginViaOIDC(email, password, provider) {
+  const kratosUrl = process.env.KRATOS_PUBLIC_URL;
   const userAgent = 'mcm-test-setup';
 
   // Step 1: Initialize Kratos browser login flow
@@ -91,24 +100,26 @@ async function loginViaOIDC(email, password) {
     process.exit(1);
   }
   const flowId = flowIdMatch[1];
+  const initCookies = extractCookies(flowInitResp);
 
   // Step 2: Get flow data
   const flowDataResp = await fetch(`${kratosUrl}/self-service/login/flows?id=${flowId}`, {
     headers: {
-      'User-Agent': userAgent
+      'User-Agent': userAgent,
+      'Cookie': initCookies
     }
   });
   const flowData = await flowDataResp.json();
   const csrfToken = extractCsrfToken(flowData);
-  const flowCookies = extractCookies(flowDataResp);
+  const flowCookies = initCookies;
 
   if (!csrfToken) {
     console.error('ERROR: Failed to extract CSRF token from Kratos flow');
     process.exit(1);
   }
 
-  // Step 3: Submit OIDC provider (keycloak) - this redirects to Keycloak
-  const oidcSubmitResp = await fetch(flowData.ui.action, {
+  // Step 3: Submit OIDC provider - this redirects to Keycloak
+  const oidcSubmitResp = await fetch(toInternalUrl(flowData.ui.action), {
     method: 'POST',
     redirect: 'manual',
     headers: {
@@ -118,12 +129,21 @@ async function loginViaOIDC(email, password) {
     },
     body: JSON.stringify({
       csrf_token: csrfToken,
-      provider: 'keycloak'
+      provider: provider
     })
   });
 
+  // Capture continuity cookie for callback
+  const oidcCookies = extractCookies(oidcSubmitResp);
+  const kratosCookies = oidcCookies ? `${flowCookies}; ${oidcCookies}` : flowCookies;
+
   // Step 4: Follow redirect to Keycloak login page
-  const keycloakLoginUrl = oidcSubmitResp.headers.get('location');
+  // Kratos returns 422 with redirect_browser_to for OIDC flows
+  let keycloakLoginUrl = oidcSubmitResp.headers.get('location');
+  if (oidcSubmitResp.status === 422) {
+    const oidcBody = await oidcSubmitResp.json();
+    keycloakLoginUrl = oidcBody.redirect_browser_to;
+  }
   if (!keycloakLoginUrl || !keycloakLoginUrl.includes('keycloak')) {
     console.error('ERROR: Expected redirect to Keycloak, got:', keycloakLoginUrl);
     process.exit(1);
@@ -163,12 +183,15 @@ async function loginViaOIDC(email, password) {
 
   // Step 7: Follow redirect chain back to Kratos
   let currentResp = keycloakLoginResp;
-  let accumulatedCookies = keycloakCookies;
+  let accumulatedCookies = `${kratosCookies}; ${keycloakCookies}`;
   const maxRedirects = 10;
 
   for (let i = 0; i < maxRedirects; i++) {
-    const location = currentResp.headers.get('location');
+    let location = currentResp.headers.get('location');
     if (!location) break;
+
+    // Rewrite external Kratos URLs to internal
+    location = toInternalUrl(location);
 
     // Accumulate cookies from each response
     const newCookies = extractCookies(currentResp);
@@ -190,13 +213,16 @@ async function loginViaOIDC(email, password) {
     }
   }
 
-  // Step 8: Extract Kratos session cookie
-  const allCookies = extractCookies(currentResp);
-  const sessionMatch = allCookies.match(/ory_kratos_session=([^;,]+)/);
+  // Step 8: Extract Kratos session cookie from accumulated cookies
+  const finalCookies = extractCookies(currentResp);
+  if (finalCookies) {
+    accumulatedCookies = `${accumulatedCookies}; ${finalCookies}`;
+  }
+  const sessionMatch = accumulatedCookies.match(/ory_kratos_session=([^;,]+)/);
 
   if (!sessionMatch) {
     console.error('ERROR: Failed to extract Kratos session cookie');
-    console.error('Final cookies:', allCookies);
+    console.error('Final cookies:', accumulatedCookies);
     process.exit(1);
   }
 
@@ -211,7 +237,8 @@ async function getAdminSession() {
 
   const session = await loginViaOIDC(
     process.env.PORTAL_ADMIN_USER,
-    process.env.PORTAL_ADMIN_PASSWORD
+    process.env.PORTAL_ADMIN_PASSWORD,
+    process.env.KEYCLOAK_HUBOP_REALM_NAME
   );
 
   console.log(session);
@@ -223,9 +250,9 @@ async function createDfsp(dfspId, dfspName, email, monetaryZoneId, adminSession)
     process.exit(1);
   }
 
-  const mcmUrl = `http://mcm-api.${process.env.MCM_NAMESPACE}.svc.cluster.local`;
+  const mcmUrl = process.env.MCM_EXTERNAL_URL;
 
-  const resp = await fetch(`${mcmUrl}/dfsps`, {
+  const resp = await fetch(`${mcmUrl}/api/dfsps`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -239,7 +266,7 @@ async function createDfsp(dfspId, dfspName, email, monetaryZoneId, adminSession)
     })
   });
 
-  if (resp.status === 201 || resp.status === 409) {
+  if (resp.status === 200 || resp.status === 201 || resp.status === 409) {
     console.error(`SUCCESS: DFSP created (HTTP ${resp.status})`);
   } else {
     console.error(`ERROR: Failed to create DFSP (HTTP ${resp.status})`);
@@ -254,9 +281,9 @@ async function destroyDfsp(dfspId, adminSession) {
     process.exit(1);
   }
 
-  const mcmUrl = `http://mcm-api.${process.env.MCM_NAMESPACE}.svc.cluster.local`;
+  const mcmUrl = process.env.MCM_EXTERNAL_URL;
 
-  const resp = await fetch(`${mcmUrl}/dfsps/${dfspId}`, {
+  const resp = await fetch(`${mcmUrl}/api/dfsps/${dfspId}`, {
     method: 'DELETE',
     headers: {
       'Cookie': `ory_kratos_session=${adminSession}`
@@ -277,7 +304,7 @@ async function completeInvitation(email, password, firstName, lastName) {
     process.exit(1);
   }
 
-  const mailpitUrl = `http://mailpit-http.${process.env.MAILPIT_NAMESPACE}.svc.cluster.local`;
+  const mailpitUrl = process.env.MAILPIT_URL;
 
   // Wait for invitation email
   const maxAttempts = 30;
@@ -407,7 +434,7 @@ async function getOperatorSession(email, password) {
     process.exit(1);
   }
 
-  const session = await loginViaOIDC(email, password);
+  const session = await loginViaOIDC(email, password, process.env.KEYCLOAK_DFSP_REALM_NAME);
   console.log(session);
 }
 
@@ -417,9 +444,9 @@ async function generatePm4mlCreds(dfspId, sessionCookie) {
     process.exit(1);
   }
 
-  const mcmUrl = `http://mcm-api.${process.env.MCM_NAMESPACE}.svc.cluster.local`;
+  const mcmUrl = process.env.MCM_EXTERNAL_URL;
 
-  const resp = await fetch(`${mcmUrl}/dfsps/${dfspId}/credentials`, {
+  const resp = await fetch(`${mcmUrl}/api/dfsps/${dfspId}/credentials`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -444,7 +471,7 @@ async function getJwt(clientId, clientSecret) {
     process.exit(1);
   }
 
-  const keycloakUrl = `https://${process.env.KEYCLOAK_FQDN}/realms/${process.env.KEYCLOAK_HUBOP_REALM_NAME}/protocol/openid-connect/token`;
+  const keycloakUrl = `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_HUBOP_REALM_NAME}/protocol/openid-connect/token`;
 
   const resp = await fetch(keycloakUrl, {
     method: 'POST',

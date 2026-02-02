@@ -3,16 +3,16 @@
 # This script sets up test DFSPs, runs TTK RBAC tests, and cleans up
 #
 # Required environment variables:
-#   MCM_URL              - MCM API URL (e.g., http://mcm-connection-manager-api:3001)
-#   KRATOS_PUBLIC_URL    - Kratos public URL (e.g., http://kratos-public)
-#   KEYCLOAK_URL         - Keycloak URL (e.g., http://keycloak)
-#   KEYCLOAK_REALM       - Keycloak realm (e.g., mojaloop)
-#   MAILPIT_URL          - Mailpit URL (e.g., http://mailpit-http:8025)
+#   MCM_EXTERNAL_URL     - MCM external URL (e.g., https://mcm.example.com)
+#   MAILPIT_URL          - Mailpit URL (e.g., http://mailpit-http:80)
 #   PORTAL_ADMIN_USER    - Portal admin username
 #   PORTAL_ADMIN_PASSWORD - Portal admin password
 #   TTK_BACKEND_URL      - TTK backend URL (e.g., http://ml-testing-toolkit-backend:5050)
 #   TEST_CASES_DIR       - Path to test cases directory
 #   MCM_TEST_SETUP       - Path to mcm-test-setup script
+#
+# Note: mcm-test-setup also requires: KRATOS_PUBLIC_URL, KRATOS_EXTERNAL_URL,
+#       KEYCLOAK_URL, KEYCLOAK_DFSP_REALM_NAME, KEYCLOAK_HUBOP_REALM_NAME
 #
 # Optional environment variables:
 #   SAVE_REPORT          - Save report to TTK (default: true)
@@ -26,8 +26,8 @@ echo "MCM RBAC Validation Test Suite"
 echo "===================================="
 echo ""
 
-# Validate required environment variables
-required_vars="MCM_URL KRATOS_PUBLIC_URL KEYCLOAK_URL KEYCLOAK_REALM MAILPIT_URL PORTAL_ADMIN_USER PORTAL_ADMIN_PASSWORD TTK_BACKEND_URL TEST_CASES_DIR MCM_TEST_SETUP"
+# Validate required environment variables (mcm-test-setup validates its own vars)
+required_vars="MCM_EXTERNAL_URL MAILPIT_URL PORTAL_ADMIN_USER PORTAL_ADMIN_PASSWORD TTK_BACKEND_URL TEST_CASES_DIR MCM_TEST_SETUP"
 for var in $required_vars; do
   eval val=\$$var
   if [ -z "$val" ]; then
@@ -131,8 +131,7 @@ DFSP2_JWT=$("$MCM_TEST_SETUP" get-jwt "$DFSP2_CLIENT_ID" "$DFSP2_CLIENT_SECRET")
 cat > /tmp/mcm-test-env.json << EOF
 {
   "inputValues": {
-    "MCM_URL": "$MCM_URL",
-    "MCM_EXTERNAL_URL": "$MCM_URL",
+    "MCM_EXTERNAL_URL": "$MCM_EXTERNAL_URL",
     "MONETARY_ZONE_ID": "$MONETARY_ZONE_ID",
     "DFSP1_ID": "$DFSP1_ID",
     "DFSP1_NAME": "$DFSP1_NAME",
