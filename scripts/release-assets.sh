@@ -10,12 +10,11 @@ TEMP_DIR=$(mktemp -d)
 
 echo "Building release assets..."
 
-# Build CLI
 echo "Building mcm-test-setup CLI..."
-cd "$PROJECT_ROOT/test/cli"
-npm ci
-npm run build
-cp dist/mcm-test-setup "$TEMP_DIR/"
+cd "$PROJECT_ROOT"
+npm ci --workspace=test/lib --workspace=test/cli
+npm run build --workspace=test/cli
+cp test/cli/dist/mcm-test-setup "$TEMP_DIR/"
 
 # Copy test runner script
 echo "Copying mcm-rbac-test.sh..."
