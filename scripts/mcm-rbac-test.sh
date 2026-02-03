@@ -63,7 +63,7 @@ generate_pm4ml_creds() {
 get_jwt() {
   "$MCM_TEST_SETUP" get-jwt \
     --keycloak-url "$KEYCLOAK_URL" \
-    --keycloak-realm "$KEYCLOAK_HUBOP_REALM_NAME" \
+    --keycloak-realm "$KEYCLOAK_DFSP_REALM_NAME" \
     --client-id "$1" --client-secret "$2"
 }
 
