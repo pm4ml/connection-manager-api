@@ -284,10 +284,14 @@ exports.createDfspResources = async (dfspId, email) => {
     });
 
     if (Constants.KETO.ENABLED) {
+      log.info(`Creating Keto relations for DFSP ${dfspId}, user ${userId.id}, service account ${serviceAccount.id}`);
       const ketoClient = getKetoClient();
       await ketoClient.createDfspRole(dfspId);
       await ketoClient.assignUserToDfspRole(userId.id, dfspId);
       await ketoClient.assignUserToDfspRole(serviceAccount.id, dfspId);
+      log.info(`Keto relations created for DFSP ${dfspId}`);
+    } else {
+      log.info(`Keto is disabled, skipping relation creation for DFSP ${dfspId}`);
     }
 
     await sendInvitationEmail(kcAdminClient, userId.id, email);
