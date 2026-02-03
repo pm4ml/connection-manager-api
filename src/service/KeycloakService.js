@@ -320,7 +320,7 @@ exports.deleteDfspResources = async (dfspId) => {
         id: clients[0].id
       });
 
-      if (Constants.ENABLE_KETO) {
+      if (Constants.KETO.ENABLED) {
         const ketoClient = getKetoClient();
         await ketoClient.removeUserFromDfspRole(serviceAccount.id, dfspId);
       }
@@ -360,7 +360,7 @@ exports.deleteDfspResources = async (dfspId) => {
           groupId: dfspGroup.id
         });
 
-        if (Constants.ENABLE_KETO) {
+        if (Constants.KETO.ENABLED) {
           const ketoClient = getKetoClient();
           await ketoClient.removeUserFromDfspRole(user.id, dfspId);
         }
@@ -403,7 +403,7 @@ exports.deleteDfspResources = async (dfspId) => {
     const dfspGroup = subGroups.find(g => g.name === getDfspGroupName(dfspId));
 
     if (dfspGroup?.id) {
-      if (Constants.ENABLE_KETO) {
+      if (Constants.KETO.ENABLED) {
         const ketoClient = getKetoClient();
         await ketoClient.deleteDfspRole(dfspId);
       }
