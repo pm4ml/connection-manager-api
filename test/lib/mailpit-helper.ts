@@ -33,13 +33,21 @@ export class MailpitHelper {
     await fetch(`${this.baseUrl}/api/v1/messages`, { method: 'DELETE' });
   }
 
-  async waitForInvitationEmail(email: string, maxAttempts = 30, intervalMs = 2000): Promise<string> {
+  async deleteMessage(messageId: string): Promise<void> {
+    await fetch(`${this.baseUrl}/api/v1/messages`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ IDs: [messageId] })
+    });
+  }
+
+  async waitForInvitationEmail(email: string, maxAttempts = 30, intervalMs = 2000): Promise<{ link: string; messageId: string }> {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       const message = await this.getLatestMessageForEmail(email);
       if (message?.HTML) {
         const link = this.extractInvitationLink(message.HTML);
         if (link) {
-          return link;
+          return { link, messageId: message.ID };
         }
       }
       await new Promise(resolve => setTimeout(resolve, intervalMs));

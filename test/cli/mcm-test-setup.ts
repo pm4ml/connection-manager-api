@@ -92,14 +92,15 @@ program
   .requiredOption('--last-name <name>', 'Last name')
   .action(async (opts) => {
     const mailpit = new MailpitHelper(opts.mailpitUrl);
-    const invitationLink = await mailpit.waitForInvitationEmail(opts.email);
+    const { link, messageId } = await mailpit.waitForInvitationEmail(opts.email);
 
     const keycloak = new KeycloakHelper();
-    await keycloak.completePasswordSetup(invitationLink, opts.password, {
+    await keycloak.completePasswordSetup(link, opts.password, {
       firstName: opts.firstName,
       lastName: opts.lastName
     });
 
+    await mailpit.deleteMessage(messageId);
     console.error('SUCCESS: Invitation flow completed');
   });
 

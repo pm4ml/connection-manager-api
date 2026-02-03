@@ -161,7 +161,6 @@ create_dfsp "$DFSP2_ID" "$DFSP2_NAME" "$DFSP2_EMAIL"
 echo ""
 echo "Completing DFSP1 invitation..."
 complete_invitation "$DFSP1_EMAIL" "$DFSP1_PASSWORD" "Test" "DFSP1"
-wget -q --method=DELETE "$MAILPIT_URL/api/v1/messages" -O /dev/null
 echo "Completing DFSP2 invitation..."
 complete_invitation "$DFSP2_EMAIL" "$DFSP2_PASSWORD" "Test" "DFSP2"
 
