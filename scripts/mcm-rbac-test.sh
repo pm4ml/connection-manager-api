@@ -3,8 +3,9 @@
 # This script sets up test DFSPs, runs TTK RBAC tests, and cleans up
 #
 # Required environment variables:
-#   MCM_EXTERNAL_URL       - MCM external URL (e.g., https://mcm.example.com)
-#   KRATOS_EXTERNAL_URL    - Kratos external URL
+#   MCM_URL                - MCM portal URL (e.g., https://mcm.example.com/api)
+#   MCM_PM4ML_URL          - MCM PM4ML API URL (e.g., https://mcm.example.com/pm4mlapi)
+#   KRATOS_URL             - Kratos URL
 #   KEYCLOAK_URL           - Keycloak URL
 #   KEYCLOAK_HUBOP_REALM_NAME - Keycloak Hub Operator realm name
 #   KEYCLOAK_DFSP_REALM_NAME  - Keycloak DFSP realm name
@@ -28,7 +29,7 @@ MONETARY_ZONE_ID="XTS"
 
 create_dfsp() {
   "$MCM_TEST_SETUP" create-dfsp \
-    --mcm-url "$MCM_EXTERNAL_URL" \
+    --mcm-url "$MCM_URL" \
     --id "$1" --name "$2" --email "$3" \
     --monetary-zone "$MONETARY_ZONE_ID" \
     --session "$PORTAL_ADMIN_SESSION"
@@ -36,7 +37,7 @@ create_dfsp() {
 
 destroy_dfsp() {
   "$MCM_TEST_SETUP" destroy-dfsp \
-    --mcm-url "$MCM_EXTERNAL_URL" \
+    --mcm-url "$MCM_URL" \
     --id "$1" --session "$PORTAL_ADMIN_SESSION" || true
 }
 
@@ -49,14 +50,14 @@ complete_invitation() {
 
 get_operator_session() {
   "$MCM_TEST_SETUP" get-operator-session \
-    --kratos-url "$KRATOS_EXTERNAL_URL" \
+    --kratos-url "$KRATOS_URL" \
     --keycloak-realm "$KEYCLOAK_DFSP_REALM_NAME" \
     --email "$1" --password "$2"
 }
 
 generate_pm4ml_creds() {
   "$MCM_TEST_SETUP" generate-pm4ml-creds \
-    --mcm-url "$MCM_EXTERNAL_URL" \
+    --mcm-url "$MCM_URL" \
     --dfsp-id "$1" --session "$2"
 }
 
@@ -94,7 +95,7 @@ echo "===================================="
 echo ""
 
 # Validate required environment variables
-required_vars="MCM_EXTERNAL_URL KRATOS_EXTERNAL_URL KEYCLOAK_URL KEYCLOAK_HUBOP_REALM_NAME KEYCLOAK_DFSP_REALM_NAME MAILPIT_URL PORTAL_ADMIN_USER PORTAL_ADMIN_PASSWORD TTK_BACKEND_URL TEST_CASES_DIR MCM_TEST_SETUP"
+required_vars="MCM_URL MCM_PM4ML_URL KRATOS_URL KEYCLOAK_URL KEYCLOAK_HUBOP_REALM_NAME KEYCLOAK_DFSP_REALM_NAME MAILPIT_URL PORTAL_ADMIN_USER PORTAL_ADMIN_PASSWORD TTK_BACKEND_URL TEST_CASES_DIR MCM_TEST_SETUP"
 for var in $required_vars; do
   eval val=\$$var
   if [ -z "$val" ]; then
@@ -146,7 +147,7 @@ trap cleanup_test_dfsps EXIT
 # Get portal admin session
 echo "Getting portal admin session..."
 PORTAL_ADMIN_SESSION=$("$MCM_TEST_SETUP" get-admin-session \
-  --kratos-url "$KRATOS_EXTERNAL_URL" \
+  --kratos-url "$KRATOS_URL" \
   --keycloak-realm "$KEYCLOAK_HUBOP_REALM_NAME" \
   --username "$PORTAL_ADMIN_USER" \
   --password "$PORTAL_ADMIN_PASSWORD")
@@ -191,7 +192,8 @@ DFSP2_JWT=$(get_jwt "$DFSP2_CLIENT_ID" "$DFSP2_CLIENT_SECRET")
 cat > /tmp/mcm-test-env.json << EOF
 {
   "inputValues": {
-    "MCM_EXTERNAL_URL": "$MCM_EXTERNAL_URL",
+    "MCM_URL": "$MCM_URL",
+    "MCM_PM4ML_URL": "$MCM_PM4ML_URL",
     "MONETARY_ZONE_ID": "$MONETARY_ZONE_ID",
     "DFSP1_ID": "$DFSP1_ID",
     "DFSP1_NAME": "$DFSP1_NAME",
