@@ -9,7 +9,7 @@ await esbuild.build({
   entryPoints: ['mcm-test-setup.ts'],
   bundle: true,
   platform: 'node',
-  target: 'node18',
+  target: 'node22',
   outfile,
   format: 'cjs',
   banner: {
