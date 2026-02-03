@@ -37,7 +37,7 @@ program
   .requiredOption('--monetary-zone <zone_id>', 'Monetary zone ID')
   .requiredOption('--session <session>', 'Admin session cookie')
   .action(async (opts) => {
-    const resp = await fetch(`${opts.mcmUrl}/api/dfsps`, {
+    const resp = await fetch(`${opts.mcmUrl}/dfsps`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -67,7 +67,7 @@ program
   .requiredOption('--id <dfsp_id>', 'DFSP ID')
   .requiredOption('--session <session>', 'Admin session cookie')
   .action(async (opts) => {
-    const resp = await fetch(`${opts.mcmUrl}/api/dfsps/${opts.id}`, {
+    const resp = await fetch(`${opts.mcmUrl}/dfsps/${opts.id}`, {
       method: 'DELETE',
       headers: {
         'Cookie': `ory_kratos_session=${opts.session}`
@@ -128,7 +128,7 @@ program
   .requiredOption('--dfsp-id <dfsp_id>', 'DFSP ID')
   .requiredOption('--session <session>', 'Session cookie')
   .action(async (opts) => {
-    const resp = await fetch(`${opts.mcmUrl}/api/dfsps/${opts.dfspId}/credentials`, {
+    const resp = await fetch(`${opts.mcmUrl}/dfsps/${opts.dfspId}/credentials`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
