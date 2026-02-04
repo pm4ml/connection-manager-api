@@ -77,7 +77,7 @@ describe('HubEndpointItemModel', () => {
 
             const result = await HubEndpointItemModel.create(values);
             expect(insertStub.called).toBe(true);
-            expect(result).toEqual([1]);
+            expect(result).toEqual(1);
         });
 
         it('should throw an error if insert fails', async () => {
