@@ -108,7 +108,7 @@ describe('DFSPEndpointItemModel', () => {
   });
 
   describe('create', () => {
-    it('should create a new endpoint item', async () => {
+    it('should create a new endpoint item and return the inserted id', async () => {
       const values = {
         state: 'ACTIVE',
         type: 'IP',
@@ -123,7 +123,7 @@ describe('DFSPEndpointItemModel', () => {
       });
 
       const result = await DFSPEndpointItemModel.create(values);
-      expect(result).toEqual([1]);
+      expect(result).toEqual(1);
     });
   });
 

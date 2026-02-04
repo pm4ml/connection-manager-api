@@ -10,6 +10,7 @@
     "GHSA-mh29-5h37-fv8m",  // https://github.com/advisories/GHSA-mh29-5h37-fv8m - oas3-tools requires js-yaml v.3
     "GHSA-xxjr-mmjv-4gpg",  // https://github.com/advisories/GHSA-xxjr-mmjv-4gpg - lodash in @mojaloop/central-services-shared
     "GHSA-37qj-frw5-hhjh",  // https://github.com/advisories/GHSA-37qj-frw5-hhjh
-    "GHSA-p5wg-g6qr-c7cg"   // https://github.com/advisories/GHSA-p5wg-g6qr-c7cg
+    "GHSA-p5wg-g6qr-c7cg",  // https://github.com/advisories/GHSA-p5wg-g6qr-c7cg
+    "GHSA-7h2j-956f-4vf2"   // https://github.com/advisories/GHSA-7h2j-956f-4vf2 - @isaacs/brace-expansion DoS
   ]
 }
