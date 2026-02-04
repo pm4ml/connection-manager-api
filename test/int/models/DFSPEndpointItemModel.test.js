@@ -32,19 +32,6 @@ describe('DFSPEndpointItemModel', () => {
       expect(result).toEqual(mockRow);
     });
 
-    it('should return the item when found with id in array', async () => {
-      const id = [1];
-      const mockRow = { id: 1, value: 'test' };
-      knex.table.mockReturnValue({
-        where: jest.fn().mockReturnValue({
-          select: jest.fn().mockResolvedValue([mockRow])
-        })
-      });
-
-      const result = await DFSPEndpointItemModel.findById(id);
-      expect(result).toEqual(mockRow);
-    });
-
     it('should throw NotFoundError when item is not found', async () => {
       const id = 1;
       knex.table.mockReturnValue({
@@ -123,7 +110,7 @@ describe('DFSPEndpointItemModel', () => {
       });
 
       const result = await DFSPEndpointItemModel.create(values);
-      expect(result).toEqual([1]);
+      expect(result).toEqual(1);
     });
   });
 

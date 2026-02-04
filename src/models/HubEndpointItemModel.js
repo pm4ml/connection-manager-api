@@ -66,7 +66,8 @@ exports.create = async (values) => {
     value: values.value,
     direction: values.direction,
   };
-  return runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE).insert(record), 'createHubEndpointItem');
+  const [id] = await runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE).insert(record), 'createHubEndpointItem');
+  return id;
 };
 
 exports.delete = async (id) => {
