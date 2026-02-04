@@ -126,7 +126,7 @@ exports.findLastestByDirection = async (dfspId, direction) => {
 };
 
 /**
- * Creates an endpoint, and parses the JSON in value, returning an Object.
+ * Creates an endpoint, and returns the inserted id.
  */
 exports.create = async (dfspId, state, direction, value) => {
   const validatedDfspId = await DFSPModel.findIdByDfspId(dfspId);
@@ -136,7 +136,8 @@ exports.create = async (dfspId, state, direction, value) => {
     dfsp_id: validatedDfspId,
     direction,
   };
-  return runQuery(knex => knex.table(ENDPOINT_TABLE).insert(record), 'createEndpoint');
+  const [id] = await runQuery(knex => knex.table(ENDPOINT_TABLE).insert(record), 'createEndpoint');
+  return id;
 };
 
 /**

@@ -68,15 +68,16 @@ exports.findObjectAll = async (dfspId) => {
 };
 
 exports.create = async (values) => {
-  const id = await DFSPModel.findIdByDfspId(values.dfspId);
+  const dfspId = await DFSPModel.findIdByDfspId(values.dfspId);
   const record = {
     state: values.state,
     type: values.type,
     value: values.value,
-    dfsp_id: id,
+    dfsp_id: dfspId,
     direction: values.direction,
   };
-  return runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE).insert(record), 'createDFSPEndpointItem');
+  const [id] = await runQuery((knex) => knex.table(ENDPOINT_ITEMS_TABLE).insert(record), 'createDFSPEndpointItem');
+  return id;
 };
 
 exports.delete = async (id) => {
