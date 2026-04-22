@@ -50,6 +50,15 @@ ignore:
   - vulnerability: GHSA-29xp-372q-xqph
     package:
       name: tar
+  - vulnerability: GHSA-r6q2-hw4h-h46w
+    package:
+      name: tar
+  - vulnerability: GHSA-8qq5-rm4j-mr97
+    package:
+      name: tar
+  - vulnerability: GHSA-xxjr-mmjv-4gpg
+    package:
+      name: lodash
   - vulnerability: CVE-2025-9230
   - vulnerability: CVE-2025-9231
   - vulnerability: CVE-2025-9232
@@ -100,6 +109,66 @@ ignore:
   - vulnerability: CVE-2025-69420 # libcrypto3 libssl3
   - vulnerability: GHSA-34x7-hfp2-rc4v # tar
   - vulnerability: GHSA-p5wg-g6qr-c7cg # eslint
+  - vulnerability: GHSA-37qj-frw5-hhjh # fast-xml-parser
+  - vulnerability: GHSA-m7jm-9gc2-mpf2 # fast-xml-parser
+  - vulnerability: GHSA-jmr7-xgp7-cmfj # fast-xml-parser
+  - vulnerability: GHSA-3ppc-4f35-3m26 # minimatch
+  - vulnerability: GHSA-83g3-92jg-28cx # tar
+  - vulnerability: GHSA-2g4f-4pwh-qvx6 # ajv
+  - vulnerability: GHSA-xq3m-2v4x-88gg
+    package:
+      name: protobufjs
+  - vulnerability: GHSA-44fc-8fm5-q62h
+    package:
+      name: convict
+  - vulnerability: GHSA-hf2r-9gf9-rwch
+    package:
+      name: convict
+  - vulnerability: GHSA-r5fr-rjxr-66jc
+    package:
+      name: lodash
+  - vulnerability: GHSA-f23m-r3pf-42rh
+    package:
+      name: lodash
+  - vulnerability: GHSA-c2c7-rcm5-vvqj
+    package:
+      name: picomatch
+  - vulnerability: GHSA-3v7f-55p6-f55p
+    package:
+      name: picomatch
+  - vulnerability: GHSA-7r86-cg39-jmmj
+    package:
+      name: minimatch
+  - vulnerability: GHSA-23c5-xmqv-rm74
+    package:
+      name: minimatch
+  - vulnerability: GHSA-fvcv-3m26-pcqx
+    package:
+      name: axios
+  - vulnerability: GHSA-3p68-rc4w-qgx5
+    package:
+      name: axios
+  - vulnerability: GHSA-f886-m6hf-6m8v
+    package:
+      name: brace-expansion
+  - vulnerability: GHSA-9ppj-qmqm-q256
+    package:
+      name: tar
+  - vulnerability: GHSA-qffp-2rhf-9h96
+    package:
+      name: tar
+  - vulnerability: CVE-2026-28389 # libcrypto3, libssl3
+  - vulnerability: CVE-2026-28390 # libcrypto3, libssl3
+  - vulnerability: CVE-2026-28388 # libcrypto3, libssl3
+  - vulnerability: CVE-2026-2673  # libcrypto3, libssl3
+  - vulnerability: CVE-2026-31790 # libcrypto3, libssl3
+  - vulnerability: CVE-2026-40200 # musl, musl-utils
+  - vulnerability: CVE-2026-6042  # musl, musl-utils
+  - vulnerability: CVE-2026-21710 # node
+  - vulnerability: CVE-2026-21717 # node
+  - vulnerability: CVE-2026-21713 # node
+  - vulnerability: CVE-2026-21714 # node
+  - vulnerability: CVE-2026-27171 # zlib
 
 # Set output format defaults
 output:

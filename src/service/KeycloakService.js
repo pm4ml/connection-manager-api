@@ -284,10 +284,14 @@ exports.createDfspResources = async (dfspId, email) => {
     });
 
     if (Constants.KETO.ENABLED) {
+      log.info(`Creating Keto relations for DFSP ${dfspId}, user ${userId.id}, service account ${serviceAccount.id}`);
       const ketoClient = getKetoClient();
       await ketoClient.createDfspRole(dfspId);
       await ketoClient.assignUserToDfspRole(userId.id, dfspId);
       await ketoClient.assignUserToDfspRole(serviceAccount.id, dfspId);
+      log.info(`Keto relations created for DFSP ${dfspId}`);
+    } else {
+      log.info(`Keto is disabled, skipping relation creation for DFSP ${dfspId}`);
     }
 
     await sendInvitationEmail(kcAdminClient, userId.id, email);
@@ -320,7 +324,7 @@ exports.deleteDfspResources = async (dfspId) => {
         id: clients[0].id
       });
 
-      if (Constants.ENABLE_KETO) {
+      if (Constants.KETO.ENABLED) {
         const ketoClient = getKetoClient();
         await ketoClient.removeUserFromDfspRole(serviceAccount.id, dfspId);
       }
@@ -360,7 +364,7 @@ exports.deleteDfspResources = async (dfspId) => {
           groupId: dfspGroup.id
         });
 
-        if (Constants.ENABLE_KETO) {
+        if (Constants.KETO.ENABLED) {
           const ketoClient = getKetoClient();
           await ketoClient.removeUserFromDfspRole(user.id, dfspId);
         }
@@ -403,7 +407,7 @@ exports.deleteDfspResources = async (dfspId) => {
     const dfspGroup = subGroups.find(g => g.name === getDfspGroupName(dfspId));
 
     if (dfspGroup?.id) {
-      if (Constants.ENABLE_KETO) {
+      if (Constants.KETO.ENABLED) {
         const ketoClient = getKetoClient();
         await ketoClient.deleteDfspRole(dfspId);
       }

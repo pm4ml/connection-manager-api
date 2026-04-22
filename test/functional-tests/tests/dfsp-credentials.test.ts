@@ -1,6 +1,6 @@
 import { ApiHelper, MethodEnum, ApiHelperOptions } from '../util/api-helper';
-import { MailpitHelper } from '../util/mailpit-helper';
-import { KeycloakHelper } from '../util/keycloak-helper';
+import { MailpitHelper } from '../../lib/mailpit-helper';
+import { KeycloakHelper } from '../../lib/keycloak-helper';
 import Config from '../util/config';
 
 describe('DFSP Credentials Tests', () => {

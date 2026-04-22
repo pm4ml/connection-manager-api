@@ -35,6 +35,17 @@ exports.createDFSP = (req, res, next) => {
 exports.deleteDFSP = (req, res, next) => {
   const { params: { dfspId } } = getRequestData(req);
   Pki.deleteDFSP(req.context, dfspId)
+    .then(() => {
+      res.status(204).end();
+    })
+    .catch(response => {
+      utils.writeJson(res, response, response.status);
+    });
+};
+
+exports.getDFSP = (req, res, next) => {
+  const { params: { dfspId } } = getRequestData(req);
+  Pki.getDFSPById(req.context, dfspId)
     .then(response => {
       utils.writeJson(res, response);
     })

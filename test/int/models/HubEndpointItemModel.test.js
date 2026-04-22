@@ -69,7 +69,7 @@ describe('HubEndpointItemModel', () => {
     });
 
     describe('create', () => {
-        it('should insert a new record', async () => {
+        it('should insert a new record and return the inserted id', async () => {
             const values = { state: 'active', type: 'type1', value: '{"ip": "127.0.0.1"}', direction: 'inbound' };
             const insertStub = sandbox.stub(knex, 'table').returns({
                 insert: sandbox.stub().resolves([1])
@@ -77,7 +77,7 @@ describe('HubEndpointItemModel', () => {
 
             const result = await HubEndpointItemModel.create(values);
             expect(insertStub.called).toBe(true);
-            expect(result).toEqual([1]);
+            expect(result).toEqual(1);
         });
 
         it('should throw an error if insert fails', async () => {

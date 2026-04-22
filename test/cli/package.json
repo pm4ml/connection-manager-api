@@ -1,0 +1,17 @@
+{
+  "name": "@mojaloop/mcm-test-cli",
+  "version": "1.0.0",
+  "description": "MCM Test Setup CLI for TTK",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@mojaloop/mcm-test-lib": "*",
+    "commander": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.27.0",
+    "typescript": "^5.9.3"
+  }
+}
