@@ -17,13 +17,13 @@ npm run build --workspace=test/cli
 cp test/cli/dist/mcm-test-setup "$TEMP_DIR/"
 
 # Copy test runner script
-echo "Copying mcm-rbac-test.sh..."
-cp "$PROJECT_ROOT/scripts/mcm-rbac-test.sh" "$TEMP_DIR/"
+echo "Copying mcm-iam-test.sh..."
+cp "$PROJECT_ROOT/scripts/mcm-iam-test.sh" "$TEMP_DIR/"
 
 # Create tar.gz archive
 echo "Creating mcm-test-scripts.tar.gz..."
 cd "$TEMP_DIR"
-tar czf "$TARGET_DIR/mcm-test-scripts.tar.gz" mcm-test-setup mcm-rbac-test.sh
+tar czf "$TARGET_DIR/mcm-test-scripts.tar.gz" mcm-test-setup mcm-iam-test.sh
 
 # Cleanup
 rm -rf "$TEMP_DIR"

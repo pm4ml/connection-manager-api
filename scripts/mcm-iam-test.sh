@@ -1,6 +1,6 @@
 #!/bin/sh
-# MCM RBAC Test Runner
-# This script sets up test DFSPs, runs TTK RBAC tests, and cleans up
+# MCM IAM Test Runner
+# This script sets up test DFSPs, runs TTK IAM tests, and cleans up
 #
 # Required environment variables:
 #   MCM_URL                - MCM portal URL (e.g., https://mcm.example.com/api)
@@ -90,7 +90,7 @@ run_ttk_test() {
 # --- Main Script ---
 
 echo "===================================="
-echo "MCM RBAC Validation Test Suite"
+echo "MCM IAM Validation Test Suite"
 echo "===================================="
 echo ""
 
@@ -217,7 +217,7 @@ EOFCONFIG
 
 echo ""
 echo "===================================="
-echo "Running MCM RBAC Tests"
+echo "Running MCM IAM Tests"
 echo "===================================="
 echo ""
 
@@ -231,9 +231,9 @@ if [ "$SAVE_REPORT" = "true" ]; then
   fi
 fi
 
-run_ttk_test "MCM RBAC Positive" "$TEST_CASES_DIR/mcm_rbac_positive.json" || TEST_FAILED=1
+run_ttk_test "MCM IAM Positive" "$TEST_CASES_DIR/mcm_iam_positive.json" || TEST_FAILED=1
 echo ""
-run_ttk_test "MCM RBAC Negative" "$TEST_CASES_DIR/mcm_rbac_negative.json" || TEST_FAILED=1
+run_ttk_test "MCM IAM Negative" "$TEST_CASES_DIR/mcm_iam_negative.json" || TEST_FAILED=1
 
 if [ -f "$TEST_CASES_DIR/mcm_pm4ml_api.json" ]; then
   echo ""
@@ -245,15 +245,15 @@ fi
 
 echo ""
 echo "===================================="
-echo "MCM RBAC Test Summary"
+echo "MCM IAM Test Summary"
 echo "===================================="
 echo ""
 
 if [ $TEST_FAILED -eq 0 ]; then
-  echo "All MCM RBAC tests PASSED"
+  echo "All MCM IAM tests PASSED"
   exit 0
 else
-  echo "ERROR: Some MCM RBAC tests FAILED"
+  echo "ERROR: Some MCM IAM tests FAILED"
   if [ "$ALLOW_FAILURES" = "true" ]; then
     echo "ALLOW_FAILURES is set, exiting with 0"
     exit 0
