@@ -6,7 +6,13 @@ if [ ! -f .env ]; then
 fi
 
 npm ci
-npm run backend:start
+
+if ! npm run backend:start; then
+  echo "=== backend:start failed; dumping container status and logs ==="
+  docker compose --profile ci ps -a
+  docker compose --profile ci logs --no-color --timestamps
+  exit 1
+fi
 
 cd ./test/functional-tests
 
