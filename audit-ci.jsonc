@@ -5,9 +5,13 @@
   "high": true,
   "critical": true,
   "allowlist": [
-    "GHSA-6rw7-vpxm-498p",
     "GHSA-fjxv-7rqg-78g4",
-    "GHSA-xxjr-mmjv-4gpg",
-    "GHSA-p5wg-g6qr-c7cg"
+    "GHSA-44fc-8fm5-q62h",
+    "GHSA-hf2r-9gf9-rwch",
+    "GHSA-r5fr-rjxr-66jc",
+    "GHSA-f23m-r3pf-42rh",
+    "GHSA-qx2v-qp2m-jg93",
+    "GHSA-jggg-4jg4-v7c6",
+    "GHSA-rpr9-rxv7-x643"
   ]
 }

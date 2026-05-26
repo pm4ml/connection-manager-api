@@ -48,6 +48,7 @@ USER app-user
 
 COPY --chown=app-user --from=builder /opt/app .
 COPY src /opt/app/src
+COPY permissions /opt/app/permissions
 
 EXPOSE 3001
 
