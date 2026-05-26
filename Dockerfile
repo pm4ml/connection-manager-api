@@ -16,6 +16,8 @@ USER root
 
 WORKDIR /opt/app
 
+ENV NPM_CONFIG_UPDATE_NOTIFIER=false
+
 ARG API_BUILD
 ENV API_BUILD=$API_BUILD
 
@@ -38,6 +40,9 @@ RUN npm prune --omit=dev
 FROM node:${NODE_VERSION}
 
 WORKDIR /opt/app
+
+ENV NPM_CONFIG_UPDATE_NOTIFIER=false
+
 # Create empty log file & link stdout to the application log file
 RUN mkdir ./logs && touch ./logs/combined.log
 RUN ln -sf /dev/stdout ./logs/combined.log
