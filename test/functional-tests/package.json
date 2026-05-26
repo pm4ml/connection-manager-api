@@ -17,7 +17,7 @@
     "cheerio": "^1.1.2",
     "dotenv": "^17.2.3",
     "env-var": "^7.5.0",
-    "jest-junit": "^16.0.0",
+    "jest-junit": "^17.0.0",
     "tough-cookie": "^6.0.0",
     "underscore": "^1.13.7"
   },
