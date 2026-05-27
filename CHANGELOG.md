@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.8.0](https://github.com/mojaloop/connection-manager-api/compare/v3.7.4...v3.8.0) (2026-05-27)
+
+
+### Features
+
+* add Keto OPL namespace file for Ory-based RBAC ([#193](https://github.com/mojaloop/connection-manager-api/issues/193)) ([48589d1](https://github.com/mojaloop/connection-manager-api/commit/48589d1b6faf15fb729efe10b9d5135ca9356d6c))
+
+
+### Bug Fixes
+
+* clear uuid vuln, add functional-test log diagnostics ([#196](https://github.com/mojaloop/connection-manager-api/issues/196)) ([09528e7](https://github.com/mojaloop/connection-manager-api/commit/09528e7011c91f972a679dcf51145b940dfdaa0c))
+
 ### [3.7.4](https://github.com/mojaloop/connection-manager-api/compare/v3.7.4-snapshot.0...v3.7.4) (2026-01-30)
 
 ### [3.7.3](https://github.com/mojaloop/connection-manager-api/compare/v3.7.1...v3.7.3) (2026-01-30)
