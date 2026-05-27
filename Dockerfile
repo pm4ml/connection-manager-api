@@ -16,6 +16,8 @@ USER root
 
 WORKDIR /opt/app
 
+ENV NPM_CONFIG_UPDATE_NOTIFIER=false
+
 ARG API_BUILD
 ENV API_BUILD=$API_BUILD
 
@@ -32,12 +34,14 @@ RUN apk add --no-cache -t build-dependencies make gcc g++ python3 libtool openss
     # && npm install -g node-gyp
 COPY package.json package-lock.json* /opt/app/
 
-RUN npm ci
-RUN npm prune --omit=dev
+RUN npm ci --omit=dev
 
 FROM node:${NODE_VERSION}
 
 WORKDIR /opt/app
+
+ENV NPM_CONFIG_UPDATE_NOTIFIER=false
+
 # Create empty log file & link stdout to the application log file
 RUN mkdir ./logs && touch ./logs/combined.log
 RUN ln -sf /dev/stdout ./logs/combined.log
