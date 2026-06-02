@@ -1,9 +1,9 @@
 const { Configuration, RelationshipApi } = require('@ory/keto-client');
 
 class KetoClient {
-  constructor(writeUrl) {
-    const config = new Configuration({ basePath: writeUrl });
-    this.client = new RelationshipApi(config);
+  constructor(writeUrl, readUrl) {
+    this.client = new RelationshipApi(new Configuration({ basePath: writeUrl }));
+    this.readClient = new RelationshipApi(new Configuration({ basePath: readUrl }));
   }
 
   async createRelationship(namespace, object, relation, subjectId) {
@@ -31,9 +31,11 @@ class KetoClient {
     }
   }
 
-  // Create dfsp:{dfspId} role that inherits from dfsp role
+  // Create dfsp:{dfspId} role: members of dfsp:{id} count as members of the
+  // generic dfsp role, and hub-admin members count as members of dfsp:{id}.
   async createDfspRole(dfspId) {
-    return await this.createRelationship('role', 'dfsp', 'member', `role:dfsp:${dfspId}#member`);
+    await this.createRelationship('role', 'dfsp', 'member', `role:dfsp:${dfspId}#member`);
+    await this.createRelationship('role', `dfsp:${dfspId}`, 'member', 'role:hub-admin#member');
   }
 
   // Assign user to dfsp:{dfspId} role
@@ -73,6 +75,48 @@ class KetoClient {
     } catch (error) {
       throw error;
     }
+  }
+
+  // List subject_ids that are direct members of dfsp:{dfspId}#member.
+  // Subject_set entries (e.g., hub-admin transitivity) are excluded.
+  async listDfspRoleMemberIds(dfspId) {
+    const out = [];
+    let pageToken;
+    do {
+      const { data } = await this.readClient.getRelationships({
+        namespace: 'role',
+        object: `dfsp:${dfspId}`,
+        relation: 'member',
+        pageToken,
+      });
+      for (const tuple of data.relation_tuples || []) {
+        if (tuple.subject_id) out.push(tuple.subject_id);
+      }
+      pageToken = data.next_page_token || undefined;
+    } while (pageToken);
+    return out;
+  }
+
+  // Returns true if the subject has membership in any dfsp:{id} role other than the excluded one.
+  async hasOtherDfspMemberships(subjectId, excludeDfspId) {
+    let pageToken;
+    do {
+      const { data } = await this.readClient.getRelationships({
+        namespace: 'role',
+        relation: 'member',
+        subjectId,
+        pageToken,
+      });
+      for (const tuple of data.relation_tuples || []) {
+        if (typeof tuple.object === 'string'
+            && tuple.object.startsWith('dfsp:')
+            && tuple.object !== `dfsp:${excludeDfspId}`) {
+          return true;
+        }
+      }
+      pageToken = data.next_page_token || undefined;
+    } while (pageToken);
+    return false;
   }
 }
 

@@ -1,9 +1,8 @@
-configs:
-  realm-template:
-    file: ./docker/keycloak/dfsps-realm.json
-
 volumes:
-  keycloak-import: {}
+  vault-data: {}
+  hydra-sqlite: {}
+  kratos-sqlite: {}
+  keto-sqlite: {}
 
 services:
   connection-manager-ui:
@@ -21,9 +20,9 @@ services:
     environment:
       - AUTH_ENABLED=TRUE
       - API_BASE_URL=http://localhost:3001
-      - LOGIN_URL=http://localhost:3001/api/auth/login
-      - LOGOUT_URL=http://localhost:3001/api/auth/logout
-      - CHECK_SESSION_URL=http://localhost:3001/api/auth/profile
+      - LOGIN_URL=http://localhost:4433/self-service/login/browser
+      - LOGOUT_URL=http://localhost:4433/self-service/logout/browser
+      - CHECK_SESSION_URL=http://localhost:4433/sessions/whoami
     tty: true
     stdin_open: true
     ports:
@@ -48,10 +47,11 @@ services:
       - DATABASE_PASSWORD=${DBPASS:-mcm}
       - DATABASE_SCHEMA=${DBUSER:-mcm}
       - VAULT_ENDPOINT=http://vault-dev:8233
-      - VAULT_ROLE_ID_FILE=/vault/tmp/role-id
-      - VAULT_ROLE_SECRET_ID_FILE=/vault/tmp/secret-id
+      - VAULT_ROLE_ID_FILE=/vault/file/role-id
+      - VAULT_ROLE_SECRET_ID_FILE=/vault/file/secret-id
     volumes:
-      - ./docker/vault/tmp:/vault/tmp
+      - vault-data:/vault/file
+      - ./docker/pki:/opt/app/docker/pki:ro
     depends_on:
       connection-manager-db:
         condition: service_healthy
@@ -76,12 +76,21 @@ services:
       - DATABASE_PASSWORD=${DBPASS:-mcm}
       - DATABASE_SCHEMA=${DBUSER:-mcm}
       - VAULT_ENDPOINT=http://vault-dev:8233
-      - VAULT_ROLE_ID_FILE=/vault/tmp/role-id
-      - VAULT_ROLE_SECRET_ID_FILE=/vault/tmp/secret-id
-      - OPENID_ENABLED=false
-      - OPENID_ENABLE_2FA=false
+      - VAULT_ROLE_ID_FILE=/vault/file/role-id
+      - VAULT_ROLE_SECRET_ID_FILE=/vault/file/secret-id
+      - IAM_ENABLED=true
+      - IAM_AUTO_CREATE_ACCOUNTS=true
+      - HYDRA_ADMIN_URL=http://hydra:4445
+      - HYDRA_PUBLIC_URL=http://hydra:4444
+      - HYDRA_AUDIENCE=connection-manager-api
+      - KRATOS_ADMIN_URL=http://kratos:4434
+      - KRATOS_PUBLIC_URL=http://kratos:4433
+      - KRATOS_IDENTITY_SCHEMA_ID=default
+      - KETO_READ_URL=http://keto:4466
+      - KETO_WRITE_URL=http://keto:4467
     volumes:
-      - ./docker/vault/tmp:/vault/tmp
+      - vault-data:/vault/file
+      - ./docker/pki:/opt/app/docker/pki:ro
     tty: true
     stdin_open: true
     ports:
@@ -90,8 +99,12 @@ services:
     depends_on:
       vault-dev:
         condition: service_healthy
-      keycloak:
-        condition: service_healthy
+      hydra:
+        condition: service_started
+      kratos:
+        condition: service_started
+      keto:
+        condition: service_started
       connection-manager-migration:
         condition: service_completed_successfully
     healthcheck:
@@ -102,7 +115,7 @@ services:
       start_period: 5s
 
   connection-manager-db:
-    image: mysql:9
+    image: mysql:9.7.0
     ports:
       - "3306:3306"
     volumes:
@@ -119,77 +132,165 @@ services:
       retries: 20
 
   vault-dev:
-    image: hashicorp/vault:1.19
+    image: hashicorp/vault:2.0
     restart: always
     environment:
-      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8233
       VAULT_ADDR: http://127.0.0.1:8233
-      VAULT_DEV_ROOT_TOKEN_ID: "myroot"
-      VAULT_LOCAL_CONFIG: '{"backend": {"file": {"path": "/vault/file"}}, "default_lease_ttl": "168h", "max_lease_ttl": "720h"}'
     ports:
       - "8233:8233"
     profiles:
       - functional
     volumes:
-      - ./docker/vault/tmp:/vault/tmp
-      - ./docker/vault/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
+      - ./docker/vault/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh:ro
+      - ./docker/vault/vault.hcl:/vault/config/vault.hcl:ro
+      - vault-data:/vault/file
+    tmpfs:
+      - /run:mode=1777
     cap_add:
       - IPC_LOCK
     healthcheck:
-      test: test -f /tmp/service_started
-      timeout: 1s
+      test: test -f /run/service_started
+      interval: 5s
+      timeout: 3s
       retries: 20
+      start_period: 5s
 
-  # MailHog for email testing
-  mailhog:
-    image: mailhog/mailhog
+  # Mailpit for email testing (SMTP + HTTP API)
+  mailpit:
+    image: axllent/mailpit:v1.30.1
     ports:
-      - "1025:1025"  # SMTP server
-      - "8025:8025"  # Web UI
+      - "1025:1025"
+      - "8025:8025"
     healthcheck:
-      test: wget --spider --quiet http://localhost:8025
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8025/api/v1/info"]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 5s
 
-  prepare-keycloak-realm:
-    image: steinbrueckri/envsubst
-    working_dir: /work
-    configs:
-      - source: realm-template
-        target: /template/dfsps-realm.json.template
-        mode: 0444
+  # The hydra image runs as a non-root user and does not pre-create
+  # /var/lib/sqlite, so the named-volume mount point lands root-owned. A tiny
+  # busybox container makes it writable (canonical Ory quickstart pattern).
+  hydra-sqlite-init:
+    image: busybox
+    command: chmod -R 777 /var/lib/sqlite
     volumes:
-      - keycloak-import:/work            # writeable volume shared with Keycloak
-    env_file:
-      - ./docker/keycloak/dfsp-realm.env
-    entrypoint: |
-      sh -c '
-        echo "Rendering realm import ..."
-        envsubst < /template/dfsps-realm.json.template > /work/dfsps-realm.json
-      '
+      - hydra-sqlite:/var/lib/sqlite
     restart: "no"
 
-  keycloak:
-    image: keycloak/keycloak:26.3
-    command: start-dev --import-realm
+  hydra-migrate:
+    image: oryd/hydra:v26.2.0
     environment:
-      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
-      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
-      - KC_HEALTH_ENABLED=true
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
     volumes:
-      - keycloak-import:/opt/keycloak/data/import
-    ports:
-      - "8080:8080"
+      - hydra-sqlite:/var/lib/sqlite
+      - ./docker/ory/hydra:/etc/config/hydra
+    command: migrate sql --yes --config /etc/config/hydra/hydra.yml -e
     depends_on:
-      mailhog:
-        condition: service_healthy
-      prepare-keycloak-realm:
+      hydra-sqlite-init:
         condition: service_completed_successfully
-    healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000;echo -e 'GET /health/ready HTTP/1.1\\r\\nhost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3;timeout 1 cat <&3 | grep -q UP"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+    restart: "no"
+
+  hydra:
+    image: oryd/hydra:v26.2.0
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    volumes:
+      - hydra-sqlite:/var/lib/sqlite
+      - ./docker/ory/hydra:/etc/config/hydra
+    command: serve all --dev --config /etc/config/hydra/hydra.yml
+    ports:
+      - "4444:4444"
+      - "4445:4445"
+    depends_on:
+      hydra-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  kratos-migrate:
+    image: oryd/kratos:v26.2.0
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    volumes:
+      - kratos-sqlite:/var/lib/sqlite
+      - ./docker/ory/kratos:/etc/config/kratos
+    command: migrate sql --yes --config /etc/config/kratos/kratos.yml -e
+    restart: "no"
+
+  kratos:
+    image: oryd/kratos:v26.2.0
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    volumes:
+      - kratos-sqlite:/var/lib/sqlite
+      - ./docker/ory/kratos:/etc/config/kratos
+    command: serve all --dev --config /etc/config/kratos/kratos.yml
+    ports:
+      - "4433:4433"
+      - "4434:4434"
+    depends_on:
+      kratos-migrate:
+        condition: service_completed_successfully
+      mailpit:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # The keto image does not pre-create /var/lib/sqlite with ory ownership,
+  # so the named-volume mount-point gets created as root. Following the
+  # canonical Ory quickstart pattern (see ory/hydra quickstart.yml), a tiny
+  # busybox container chmods the volume up-front.
+  keto-sqlite-init:
+    image: busybox
+    command: chmod -R 777 /var/lib/sqlite
+    volumes:
+      - keto-sqlite:/var/lib/sqlite
+    restart: "no"
+
+  keto-migrate:
+    image: oryd/keto:v26.2.0
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    volumes:
+      - keto-sqlite:/var/lib/sqlite
+      - ./docker/ory/keto:/etc/config/keto
+    command: migrate up -y --config /etc/config/keto/keto.yml
+    depends_on:
+      keto-sqlite-init:
+        condition: service_completed_successfully
+    restart: "no"
+
+  keto:
+    image: oryd/keto:v26.2.0
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    volumes:
+      - keto-sqlite:/var/lib/sqlite
+      - ./docker/ory/keto:/etc/config/keto
+    command: serve --config /etc/config/keto/keto.yml
+    ports:
+      - "4466:4466"
+      - "4467:4467"
+    depends_on:
+      keto-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # Ory reference self-service UI (login, registration, recovery, settings, verification)
+  kratos-ui:
+    image: oryd/kratos-selfservice-ui-node:v26.2.0
+    environment:
+      - PORT=3000
+      - KRATOS_PUBLIC_URL=http://kratos:4433
+      - KRATOS_BROWSER_URL=http://localhost:4433
+      - KRATOS_ADMIN_URL=http://kratos:4434
+      - COOKIE_SECRET=changeme-please-changeme-please
+      - CSRF_COOKIE_NAME=mcm_csrf_token
+      - CSRF_COOKIE_SECRET=changeme-please-changeme-please
+      - DANGEROUSLY_DISABLE_SECURE_CSRF_COOKIES=true
+      - BASE_URL=http://localhost:4455/
+    ports:
+      - "4455:3000"
+    depends_on:
+      kratos:
+        condition: service_started
+    restart: unless-stopped

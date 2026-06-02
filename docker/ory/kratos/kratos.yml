@@ -1,0 +1,88 @@
+serve:
+  public:
+    base_url: http://localhost:4433/
+    cors:
+      enabled: true
+      allowed_origins:
+        - "*"
+  admin:
+    base_url: http://kratos:4434/
+
+selfservice:
+  default_browser_return_url: http://localhost:8081/
+  allowed_return_urls:
+    - http://localhost:8081/
+    - http://localhost:4455/
+
+  methods:
+    password:
+      enabled: true
+    code:
+      enabled: true
+      config:
+        lifespan: 168h
+
+  flows:
+    error:
+      ui_url: http://localhost:4455/error
+
+    settings:
+      ui_url: http://localhost:4455/settings
+      privileged_session_max_age: 15m
+      required_aal: highest_available
+
+    recovery:
+      enabled: true
+      ui_url: http://localhost:4455/recovery
+      use: code
+      lifespan: 168h
+      after:
+        default_browser_return_url: http://localhost:8081/
+
+    verification:
+      enabled: true
+      ui_url: http://localhost:4455/verification
+      use: code
+
+    logout:
+      after:
+        default_browser_return_url: http://localhost:8081/
+
+    login:
+      ui_url: http://localhost:4455/login
+      lifespan: 10m
+
+    registration:
+      enabled: true
+      ui_url: http://localhost:4455/registration
+
+log:
+  level: debug
+  format: text
+  leak_sensitive_values: true
+
+secrets:
+  cookie:
+    - PLEASE-CHANGE-ME-VERY-IMPORTANT-SECRET
+  cipher:
+    - PLEASE-CHANGE-ME-32-CHAR-CIPHER1
+
+ciphers:
+  algorithm: xchacha20-poly1305
+
+hashers:
+  algorithm: bcrypt
+  bcrypt:
+    cost: 8
+
+identity:
+  default_schema_id: default
+  schemas:
+    - id: default
+      url: file:///etc/config/kratos/identity.schema.json
+
+courier:
+  smtp:
+    connection_uri: smtp://mailpit:1025/?disable_starttls=true
+    from_address: noreply@mojaloop.local
+    from_name: Mojaloop MCM

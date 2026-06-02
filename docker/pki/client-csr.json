@@ -1,0 +1,13 @@
+{
+  "subject": {
+    "CN": "mcm-client",
+    "O": "Mojaloop",
+    "OU": "PKI"
+  },
+  "extensions": {
+    "subjectAltName": {
+      "dns": ["localhost"],
+      "ips": ["127.0.0.1"]
+    }
+  }
+}

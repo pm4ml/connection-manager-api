@@ -74,13 +74,15 @@ exports.validatePorts = (ports) => {
 };
 
 /**
- * Validates that a DFSP ID meets Keycloak username requirements
+ * Validates that a DFSP ID meets identity-provider compatibility constraints
+ * (used both as Hydra client_id and as a fragment of Keto object identifiers).
+ *
  * @param {string} dfspId - The DFSP ID to validate
- * @throws {ValidationError} If the DFSP ID doesn't meet Keycloak requirements
+ * @throws {ValidationError}
  */
-exports.validateDfspIdForKeycloak = (dfspId) => {
+exports.validateDfspId = (dfspId) => {
   if (!dfspId || dfspId.length < 3 || dfspId.length > 255) {
-    throw new ValidationError(`DFSP ID must be between 3 and 255 characters for Keycloak compatibility`);
+    throw new ValidationError(`DFSP ID must be between 3 and 255 characters`);
   }
 
   const invalidChars = /[!@#$%^&*()+=\[\]{};':"\\|,.<>?~`\s]/;
@@ -93,8 +95,7 @@ exports.validateDfspIdForKeycloak = (dfspId) => {
 
 exports.validateEmail = (email) => {
   if (!email) {
-    throw new ValidationError('email is required when Keycloak is enabled and AUTO_CREATE_ACCOUNTS is true');
+    throw new ValidationError('email is required when IAM_AUTO_CREATE_ACCOUNTS is enabled');
   }
-  // todo: think if we need better validation. e.g. /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   return true;
 };

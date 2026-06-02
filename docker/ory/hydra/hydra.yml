@@ -1,0 +1,38 @@
+serve:
+  cookies:
+    same_site_mode: Lax
+  public:
+    cors:
+      enabled: true
+      allowed_origins:
+        - "*"
+
+urls:
+  self:
+    issuer: http://localhost:4444
+  consent: http://localhost:8081/consent
+  login: http://localhost:8081/login
+  logout: http://localhost:8081/logout
+
+secrets:
+  system:
+    - PLEASE-CHANGE-ME-VERY-IMPORTANT-32C
+
+oidc:
+  subject_identifiers:
+    supported_types:
+      - public
+
+strategies:
+  access_token: jwt
+
+ttl:
+  access_token: 1h
+  id_token: 1h
+  refresh_token: 720h
+  auth_code: 10m
+
+log:
+  level: debug
+  format: text
+  leak_sensitive_values: true

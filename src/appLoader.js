@@ -23,7 +23,6 @@ const path = require('path');
 const oas3Tools = require('oas3-tools');
 const { createWinstonLogger, logger } = require('./log/logger');
 const AuthMiddleware = require('./middleware/AuthMiddleware');
-const SessionConfig = require('./oauth/SessionConfig');
 const HubCAService = require('./service/HubCAService');
 
 const db = require('./db/database');
@@ -39,7 +38,6 @@ exports.connect = async () => {
   await executeSSLCustomLogic();
   // await pkiService.init(Constants.vault);
 
-  // swaggerRouter configuration
   const options = {
     routing: {
       controllers: path.join(__dirname, './controllers')
@@ -49,11 +47,7 @@ exports.connect = async () => {
       errorLimit: 400
     },
     openApiValidator: {
-      validateSecurity: {
-        handlers: {
-          OAuth2: Constants.OPENID.ENABLED ? AuthMiddleware.createOAuth2Handler() : () => true,
-        }
-      }
+      validateSecurity: false,
     }
   };
 
@@ -115,29 +109,9 @@ exports.connect = async () => {
       next();
     },
     cors(corsUtils.getCorsOptions),
-    createWinstonLogger()
+    createWinstonLogger(),
+    AuthMiddleware.createHeaderTrustMiddleware(),
   ];
-
-  // Add authentication middleware if enabled
-  if (Constants.OPENID.ENABLED) {
-    // Add session middleware for browser clients
-    middlewares.push(SessionConfig.createSessionMiddleware());
-
-    // Add authentication middleware for all clients
-    middlewares.push(AuthMiddleware.createAuthMiddleware());
-  } else {
-    middlewares.push((req, res, next) => {
-      const roles = req.headers['x-roles'];
-      if (roles) {
-        try {
-          req.user = { roles: JSON.parse(roles) };
-        } catch (e) {
-          logger.error("Error getting roles from request header: ", e);
-        }
-      }
-      next();
-    });
-  }
 
   app.use(...middlewares);
   const stack = app._router.stack;

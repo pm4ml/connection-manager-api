@@ -25,7 +25,8 @@ const formatValidator = require('../utils/formatValidator');
 const ValidationCodes = require('../pki_engine/ValidationCodes');
 const Constants = require('../constants/Constants');
 const { createCSRAndDFSPOutboundEnrollment } = require('./DfspOutboundService');
-const keycloakService = require('./KeycloakService');
+const HydraService = require('./HydraService');
+const KratosService = require('./KratosService');
 const { logger } = require('../log/logger');
 
 const log = logger.child({ component: 'PkiService' });
@@ -40,14 +41,23 @@ const log = logger.child({ component: 'PkiService' });
 exports.createDFSP = async (ctx, body) => {
   log.info('Creating DFSP with body:', body);
 
-  try {
-    if (Constants.KEYCLOAK.ENABLED && Constants.KEYCLOAK.AUTO_CREATE_ACCOUNTS) {
-      // Validate dfspId for Keycloak requirements if Keycloak is enabled
-      formatValidator.validateDfspIdForKeycloak(body.dfspId);
+  let identityId = null;
+  let clientCreated = false;
 
+  try {
+    if (Constants.IAM.ENABLED && Constants.IAM.AUTO_CREATE_ACCOUNTS) {
+      formatValidator.validateDfspId(body.dfspId);
       formatValidator.validateEmail(body.email);
 
-      await keycloakService.createDfspResources(body.dfspId, body.email);
+      await HydraService.createPM4MLClient(body.dfspId);
+      clientCreated = true;
+
+      const created = await KratosService.createIdentity(body.email, body.dfspId, 'dfsp');
+      identityId = created.identityId;
+
+      await KratosService.assignDfspRole(identityId, body.dfspId);
+      await KratosService.assignDfspRole(body.dfspId, body.dfspId);
+      await KratosService.sendInvitationEmail(body.email);
     }
 
     const regex = / /gi;
@@ -66,6 +76,12 @@ exports.createDFSP = async (ctx, body) => {
     return { id: body.dfspId };
   } catch (err) {
     log.error('error in createDFSP: ', err);
+    if (clientCreated) {
+      await HydraService.deleteClient(body.dfspId).catch((e) => log.warn('Hydra rollback failed', { e: e.message }));
+    }
+    if (identityId) {
+      await KratosService.deleteIdentity(identityId).catch((e) => log.warn('Kratos rollback failed', { e: e.message }));
+    }
     throw err instanceof ValidationError
       ? err
       : new InternalError(err.message);
@@ -97,19 +113,11 @@ exports.getDFSPs = async (ctx, user) => {
     return allDfsps;
   }
 
-  if (user.roles.includes('pta')) {
-    return allDfsps;
-  }
+  const allowedDfspIds = user.roles
+    .filter(r => r.startsWith('dfsp:'))
+    .map(r => r.slice(5));
 
-  const dfspRoles = user.roles.filter(role => role.startsWith('Application/DFSP:') || role.startsWith('dfsp:'));
-
-  if (dfspRoles.length === 0) {
-    return allDfsps;
-  }
-
-  return allDfsps.filter(dfsp => {
-    return dfsp.securityGroup && dfspRoles.includes(dfsp.securityGroup) || dfspRoles.includes(`dfsp:${dfsp.id}`);
-  });
+  return allDfsps.filter(dfsp => allowedDfspIds.includes(dfsp.id));
 };
 
 /**
@@ -172,8 +180,10 @@ exports.deleteDFSP = async (ctx, dfspId) => {
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   await pkiEngine.deleteAllDFSPData(dbDfspId);
 
-  if (Constants.KEYCLOAK.ENABLED) {
-    await keycloakService.deleteDfspResources(dfspId);
+  if (Constants.IAM.ENABLED) {
+    await KratosService.cleanupDfspIdentities(dfspId);
+    await HydraService.deleteClient(dfspId);
+    await KratosService.deleteDfspRole(dfspId);
   }
 
   return DFSPModel.delete(dfspId);
@@ -215,19 +225,11 @@ exports.getDfspsByMonetaryZones = async (ctx, monetaryZoneId, user) => {
     return allDfsps;
   }
 
-  if (user.roles.includes('pta')) {
-    return allDfsps;
-  }
+  const allowedDfspIds = user.roles
+    .filter(r => r.startsWith('dfsp:'))
+    .map(r => r.slice(5));
 
-  const dfspRoles = user.roles.filter(role => role.startsWith('Application/DFSP:'));
-
-  if (dfspRoles.length === 0) {
-    return allDfsps;
-  }
-
-  return allDfsps.filter(dfsp => {
-    return dfsp.securityGroup && dfspRoles.includes(dfsp.securityGroup);
-  });
+  return allDfsps.filter(dfsp => allowedDfspIds.includes(dfsp.id));
 };
 
 exports.getDFSPca = async (ctx, dfspId) => {

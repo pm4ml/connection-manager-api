@@ -26,11 +26,8 @@
 
 'use strict';
 
-const Constants = require('../constants/Constants');
 const NotFoundError = require('../errors/NotFoundError');
-const InternalError = require('../errors/InternalError');
-const BadRequestError = require('../errors/BadRequestError');
-const { getKeycloakAdminClient } = require('./KeycloakService');
+const HydraService = require('./HydraService');
 const { logger } = require('../log/logger');
 
 const VAULT_PATH_PREFIX = 'api-credentials';
@@ -38,26 +35,17 @@ const VAULT_PATH_PREFIX = 'api-credentials';
 const createCredentials = async (context, dfspId) => {
   try {
     const credentialsPath = `${VAULT_PATH_PREFIX}/${dfspId}`;
-    
-    const kcAdminClient = await getKeycloakAdminClient();
-    const existingClients = await kcAdminClient.clients.find({ clientId: dfspId });
 
-    if (!existingClients || existingClients.length === 0) {
-      throw new NotFoundError(`Client not found for DFSP ${dfspId}`);
-    }
+    const existing = await HydraService.getClient(dfspId);
+    const { clientId, clientSecret } = existing
+      ? await HydraService.rotateClientSecret(dfspId)
+      : await HydraService.createPM4MLClient(dfspId);
 
-    const existingClient = existingClients[0];
-    const secretResponse = await kcAdminClient.clients.generateNewClientSecret({
-      id: existingClient.id
-    });
-
-    // Store credentials in Vault (replacing any existing ones)
     const credentials = {
-      client_id: dfspId,
-      client_secret: secretResponse.value,
-      keycloak_client_id: existingClient.id,
+      client_id: clientId,
+      client_secret: clientSecret,
       created_at: new Date().toISOString(),
-      dfsp_id: dfspId
+      dfsp_id: dfspId,
     };
 
     await context.pkiEngine.setSecret(credentialsPath, credentials);
