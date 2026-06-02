@@ -1,56 +1,90 @@
 #!/usr/bin/dumb-init /bin/sh
-# dumb-init is PID 1 so it reaps zombies and forwards signals to the
-# backgrounded vault server.
 set -e
 
-# Marker lives on a tmpfs (see compose) so it is always absent on container
-# start — the healthcheck only passes once this run finishes bootstrapping.
-MARKER=/run/service_started
-INIT_FILE=/vault/file/init.txt
-export VAULT_ADDR=http://127.0.0.1:8233
+# Note above that we run dumb-init as PID 1 in order to reap zombie processes
+# as well as forward signals to all processes in its session. Normally, sh
+# wouldn't do either of these functions so we'd leak zombies as well as do
+# unclean termination of all our sub-processes.
 
-vault server -config=/vault/config/vault.hcl &
-VAULT_PID=$!
+# Prevent core dumps
+ulimit -c 0
 
-# Wait for the listener. `vault status` exits 1 on connection refused, and
-# 0 (unsealed) or 2 (sealed) once the listener is up.
-until vault status >/dev/null 2>&1 || [ "$?" = "2" ]; do sleep 1; done
+# Allow setting VAULT_REDIRECT_ADDR and VAULT_CLUSTER_ADDR using an interface
+# name instead of an IP address. The interface name is specified using
+# VAULT_REDIRECT_INTERFACE and VAULT_CLUSTER_INTERFACE environment variables. If
+# VAULT_*_ADDR is also set, the resulting URI will combine the protocol and port
+# number with the IP of the named interface.
+get_addr () {
+    local if_name=$1
+    local uri_template=$2
+    ip addr show dev $if_name | awk -v uri=$uri_template '/\s*inet\s/ { \
+      ip=gensub(/(.+)\/.+/, "\\1", "g", $2); \
+      print gensub(/^(.+:\/\/).+(:.+)$/, "\\1" ip "\\2", "g", uri); \
+      exit}'
+}
 
-# Initialize once. The unseal key and root token persist in the file-storage
-# volume so a restart can re-unseal the same backend.
-if [ ! -f "$INIT_FILE" ]; then
-  vault operator init -key-shares=1 -key-threshold=1 > "$INIT_FILE"
+if [ -n "$VAULT_REDIRECT_INTERFACE" ]; then
+    export VAULT_REDIRECT_ADDR=$(get_addr $VAULT_REDIRECT_INTERFACE ${VAULT_REDIRECT_ADDR:-"http://0.0.0.0:8200"})
+    echo "Using $VAULT_REDIRECT_INTERFACE for VAULT_REDIRECT_ADDR: $VAULT_REDIRECT_ADDR"
 fi
-UNSEAL_KEY=$(awk '/Unseal Key 1:/ {print $NF}' "$INIT_FILE")
-ROOT_TOKEN=$(awk '/Initial Root Token:/ {print $NF}' "$INIT_FILE")
+if [ -n "$VAULT_CLUSTER_INTERFACE" ]; then
+    export VAULT_CLUSTER_ADDR=$(get_addr $VAULT_CLUSTER_INTERFACE ${VAULT_CLUSTER_ADDR:-"https://0.0.0.0:8201"})
+    echo "Using $VAULT_CLUSTER_INTERFACE for VAULT_CLUSTER_ADDR: $VAULT_CLUSTER_ADDR"
+fi
 
-vault operator unseal "$UNSEAL_KEY" >/dev/null
-export VAULT_TOKEN="$ROOT_TOKEN"
+rm -f /tmp/service_started
 
-vault auth list | grep -q '^approle/' || vault auth enable approle
-vault write auth/approle/role/my-role secret_id_ttl=1000m token_ttl=1000m token_max_ttl=1000m
-vault read -field role_id auth/approle/role/my-role/role-id > /vault/file/role-id
-vault write -field secret_id -f auth/approle/role/my-role/secret-id > /vault/file/secret-id
+# VAULT_CONFIG_DIR isn't exposed as a volume but you can compose additional
+# config files in there if you use this image as a base, or use
+# VAULT_LOCAL_CONFIG below.
+VAULT_CONFIG_DIR=/vault/config
 
-vault secrets list | grep -q '^pki/' || vault secrets enable -path=pki pki
-vault secrets list | grep -q '^secrets/' || vault secrets enable -path=secrets kv
-vault secrets tune -max-lease-ttl=97600h pki
-vault write pki/config/urls \
-    issuing_certificates="$VAULT_ADDR/v1/pki/ca" \
-    crl_distribution_points="$VAULT_ADDR/v1/pki/crl"
-vault write pki/roles/example.com allowed_domains=example.com allow_subdomains=true allow_any_name=true allow_localhost=true enforce_hostnames=false max_ttl=720h
+# You can also set the VAULT_LOCAL_CONFIG environment variable to pass some
+# Vault configuration JSON without having to bind any volumes.
+if [ -n "$VAULT_LOCAL_CONFIG" ]; then
+    echo "$VAULT_LOCAL_CONFIG" > "$VAULT_CONFIG_DIR/local.json"
+fi
 
-vault policy write test-policy - <<EOF
-path "secrets/*" { capabilities = ["create", "read", "update", "delete", "list", "sudo"] }
-path "kv/*"      { capabilities = ["create", "read", "update", "delete", "list", "sudo"] }
-path "pki/*"     { capabilities = ["create", "read", "update", "delete", "list", "sudo"] }
-path "pki_int/*" { capabilities = ["create", "read", "update", "delete", "list", "sudo"] }
-EOF
-vault write auth/approle/role/my-role policies=test-policy ttl=1h
+# If the user is trying to run Vault directly with some arguments, then
+# pass them to Vault.
+if [ "${1:0:1}" = '-' ]; then
+    set -- vault "$@"
+fi
 
-vault secrets list | grep -q '^pki_int/' || vault secrets enable -path=pki_int pki
-vault secrets tune -max-lease-ttl=43800h pki_int
-vault write pki_int/roles/example.com allowed_domains=example.com allow_subdomains=true allow_any_name=true allow_localhost=true enforce_hostnames=false max_ttl=600h
+# Look for Vault subcommands.
+if [ "$1" = 'server' ]; then
+    shift
+    set -- vault server \
+        -config="$VAULT_CONFIG_DIR" \
+        "$@"
+elif [ "$1" = 'version' ]; then
+    # This needs a special case because there's no help output.
+    set -- vault "$@"
+elif vault --help "$1" 2>&1 | grep -q "vault $1"; then
+    # We can't use the return code to check for the existence of a subcommand, so
+    # we have to use grep to look for a pattern in the help output.
+    set -- vault "$@"
+fi
 
-touch "$MARKER"
-wait "$VAULT_PID"
+# If we are running Vault, make sure it executes as the proper user.
+if [ "$1" = 'vault' ]; then
+    # Ensure vault user owns the data directories
+    chown -R vault:vault /vault/data /vault/creds
+
+    if [ -z "$SKIP_SETCAP" ]; then
+        # Allow mlock to avoid swapping Vault memory to disk
+        setcap cap_ipc_lock=+ep $(readlink -f $(which vault))
+
+        # In the case vault has been started in a container without IPC_LOCK privileges
+        if ! vault -version 1>/dev/null 2>/dev/null; then
+            >&2 echo "Couldn't start vault with IPC_LOCK. Disabling IPC_LOCK, please use --privileged or --cap-add IPC_LOCK"
+            setcap cap_ipc_lock=-ep $(readlink -f $(which vault))
+        fi
+    fi
+
+    if [ "$(id -u)" = '0' ]; then
+      set -- su-exec vault "$@"
+    fi
+fi
+
+exec "$@"

@@ -14,6 +14,9 @@ ignore:
   - vulnerability: GHSA-wm7h-9275-46v2
     package:
       name: dicer
+  - vulnerability: GHSA-6rw7-vpxm-498p
+    package:
+      name: qs
   - vulnerability: GHSA-hrpp-h998-j3pp
     package:
       name: qs
@@ -23,30 +26,71 @@ ignore:
   - vulnerability: GHSA-72xf-g2v4-qvf3
     package:
       name: tough-cookie
-  - vulnerability: CVE-2025-23166
-    package:
-      name: node
   - vulnerability: GHSA-fjxv-7rqg-78g4
     package:
       name: form-data
-  - vulnerability: GHSA-jr5f-v2jv-69x6
-    package:
-      name: axios
-  - vulnerability: GHSA-wf5p-g6vw-rhxx
-    package:
-      name: axios
-  - vulnerability: GHSA-4hjh-wcwx-xvwj
-    package:
-      name: axios
   - vulnerability: GHSA-vj76-c3g6-qr5v
     package:
       name: tar-fs
   - vulnerability: GHSA-5j98-mcp5-4vw2
     package:
       name: glob
-  - vulnerability: CVE-2025-9230
-  - vulnerability: CVE-2025-9231
-  - vulnerability: CVE-2025-9232
+  - vulnerability: GHSA-29xp-372q-xqph
+    package:
+      name: tar
+  - vulnerability: GHSA-r6q2-hw4h-h46w
+    package:
+      name: tar
+  - vulnerability: GHSA-8qq5-rm4j-mr97
+    package:
+      name: tar
+  - vulnerability: GHSA-34x7-hfp2-rc4v
+    package:
+      name: tar
+  # convict CVEs — package effectively unmaintained at 6.x, no fix available
+  - vulnerability: GHSA-44fc-8fm5-q62h
+    package:
+      name: convict
+  - vulnerability: GHSA-hf2r-9gf9-rwch
+    package:
+      name: convict
+  # transitive lodash CVEs (via @mojaloop/central-services-error-handling)
+  - vulnerability: GHSA-r5fr-rjxr-66jc
+    package:
+      name: lodash
+  - vulnerability: GHSA-f23m-r3pf-42rh
+    package:
+      name: lodash
+  - vulnerability: GHSA-xxjr-mmjv-4gpg
+    package:
+      name: lodash
+  # transitive underscore CVE
+  - vulnerability: GHSA-qpx9-hpmf-5gmw
+    package:
+      name: underscore
+  # transitive undici CVEs
+  - vulnerability: GHSA-v9p9-hfj2-hcw8
+    package:
+      name: undici
+  - vulnerability: GHSA-f269-vfmq-vjvj
+    package:
+      name: undici
+  - vulnerability: GHSA-vrm6-8vpv-qv8q
+    package:
+      name: undici
+  - vulnerability: GHSA-g9mf-h72j-4rw9
+    package:
+      name: undici
+  - vulnerability: GHSA-2mjp-6q6p-2qxm
+    package:
+      name: undici
+  - vulnerability: GHSA-4992-7rv2-5pvq
+    package:
+      name: undici
+  # transitive protobufjs (via @mojaloop/event-sdk)
+  - vulnerability: GHSA-jggg-4jg4-v7c6
+    package:
+      name: protobufjs
 
 # Set output format defaults
 output:
