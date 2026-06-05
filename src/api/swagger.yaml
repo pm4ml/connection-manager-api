@@ -2649,6 +2649,70 @@ paths:
       - OAuth2:
         - dfsp
       x-swagger-router-controller: CredentialsController
+  /audit-log:
+    get:
+      tags:
+      - audit-log
+      summary: Returns IAM audit log entries
+      operationId: getAuditLog
+      parameters:
+      - name: from
+        in: query
+        description: Filter entries on or after this ISO 8601 datetime
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        description: Filter entries on or before this ISO 8601 datetime
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: actor
+        in: query
+        description: Filter by actor (username or email)
+        required: false
+        schema:
+          type: string
+      - name: action
+        in: query
+        description: Filter by action type (CREATE, UPDATE, DELETE)
+        required: false
+        schema:
+          type: string
+          enum: [READ, CREATE, UPDATE, DELETE]
+      - name: limit
+        in: query
+        description: Maximum number of entries to return (default 100)
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          default: 100
+      - name: offset
+        in: query
+        description: Number of entries to skip for pagination
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditLogEntry'
+      x-swagger-router-controller: AuditController
+      security:
+      - OAuth2:
+        - pta
   /monetaryzones:
     get:
       tags:
@@ -2696,6 +2760,35 @@ paths:
         - pta
 components:
   schemas:
+    AuditLogEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+        actor:
+          type: string
+          nullable: true
+        action:
+          type: string
+          enum: [READ, CREATE, UPDATE, DELETE]
+        entityType:
+          type: string
+          nullable: true
+        entityId:
+          type: string
+          nullable: true
+        beforeState:
+          type: object
+          nullable: true
+          additionalProperties: true
+        afterState:
+          type: object
+          nullable: true
+          additionalProperties: true
     LoginResponse:
       type: object
       properties:
