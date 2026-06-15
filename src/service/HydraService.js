@@ -46,13 +46,14 @@ const getOAuth2Client = () => {
 
 const generateSecret = () => crypto.randomBytes(32).toString('base64url');
 
+// Hydra SDK expects snake_case fields, including an explicit client_id.
 const buildClientBody = (dfspId, clientSecret) => ({
-  clientId: dfspId,
-  clientSecret,
-  clientName: `PM4ML client for DFSP ${dfspId}`,
-  grantTypes: ['client_credentials'],
-  responseTypes: [],
-  tokenEndpointAuthMethod: 'client_secret_basic',
+  client_id: dfspId,
+  client_secret: clientSecret,
+  client_name: `PM4ML client for DFSP ${dfspId}`,
+  grant_types: ['client_credentials'],
+  response_types: [],
+  token_endpoint_auth_method: 'client_secret_basic',
   audience: [Constants.HYDRA.AUDIENCE],
   scope: 'openid',
   metadata: {
@@ -85,7 +86,7 @@ exports.createPM4MLClient = async (dfspId) => {
   try {
     const { data } = await api.createOAuth2Client({ oAuth2Client: buildClientBody(dfspId, clientSecret) });
     log.info(`Created Hydra OAuth2 client for DFSP ${dfspId}`);
-    return { clientId: data.clientId || dfspId, clientSecret };
+    return { clientId: data.client_id || dfspId, clientSecret };
   } catch (error) {
     if (error?.response?.status === 409) {
       log.info(`Hydra client already exists for DFSP ${dfspId}, rotating secret`);
@@ -105,10 +106,7 @@ exports.rotateClientSecret = async (dfspId) => {
   const api = getOAuth2Client();
   const clientSecret = generateSecret();
   try {
-    await api.patchOAuth2Client({
-      id: dfspId,
-      jsonPatch: [{ op: 'replace', path: '/client_secret', value: clientSecret }],
-    });
+    await api.setOAuth2Client({ id: dfspId, oAuth2Client: buildClientBody(dfspId, clientSecret) });
     log.info(`Rotated Hydra client secret for DFSP ${dfspId}`);
     return { clientId: dfspId, clientSecret };
   } catch (error) {

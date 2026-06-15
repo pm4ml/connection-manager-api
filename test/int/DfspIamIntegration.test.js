@@ -18,7 +18,7 @@ const KetoClient = require('../../src/utils/KetoClient');
 const Constants = require('../../src/constants/Constants');
 const { createUniqueDfsp } = require('./test-helpers');
 
-const keto = new KetoClient(Constants.KETO.WRITE_URL, Constants.KETO.READ_URL);
+const keto = new KetoClient(Constants.KETO.WRITE_URL, Constants.KETO.READ_URL, Constants.KETO.HUB_OBJECT);
 
 const cleanup = async (ctx, dfsp) => {
   try { await PkiService.deleteDFSP(ctx, dfsp.dfspId); } catch (_) { /* ignore */ }
@@ -27,7 +27,7 @@ const cleanup = async (ctx, dfsp) => {
   if (ident) {
     try { await KratosService.deleteIdentity(ident.id); } catch (_) { /* ignore */ }
   }
-  try { await KratosService.deleteDfspRole(dfsp.dfspId); } catch (_) { /* ignore */ }
+  try { await keto.deleteDfsp(dfsp.dfspId); } catch (_) { /* ignore */ }
   try { await ctx.pkiEngine.deleteSecret(`api-credentials/${dfsp.dfspId}`); } catch (_) { /* ignore */ }
 };
 
@@ -52,30 +52,28 @@ describe('DFSP IAM Integration Tests', () => {
   });
 
   describe('DFSP Lifecycle Management', () => {
-    it('creates a DFSP with a Hydra client, a Kratos identity, and a Keto dfsp:{id} role', async () => {
+    it('creates a DFSP with a Hydra client, a Kratos identity, and Keto Dfsp tuples', async () => {
       await PkiService.createDFSP(context, testDfsp);
 
       const client = await HydraService.getClient(testDfsp.dfspId);
       expect(client).toBeTruthy();
-      expect(client.clientId).toBe(testDfsp.dfspId);
-      expect(client.grantTypes).toContain('client_credentials');
+      expect(client.client_id).toBe(testDfsp.dfspId);
+      expect(client.grant_types).toContain('client_credentials');
 
       const identity = await KratosService.findIdentityByEmail(testDfsp.email);
       expect(identity).toBeTruthy();
       expect(identity.traits.email).toBe(testDfsp.email);
-      expect(identity.traits.dfspId).toBe(testDfsp.dfspId);
-      expect(identity.traits.role).toBe('dfsp');
+      expect(identity.metadata_public.dfspId).toBe(testDfsp.dfspId);
 
-      const tuples = await keto.client.getRelationships({
-        namespace: 'role',
-        object: `dfsp:${testDfsp.dfspId}`,
-        relation: 'member',
-      });
-      const subjects = tuples.data.relation_tuples.map(t => t.subject_id || t.subject_set);
-      expect(subjects).toContainEqual(identity.id);
-      expect(subjects).toContainEqual(
-        expect.objectContaining({ namespace: 'role', object: 'hub-admin', relation: 'member' })
-      );
+      // Dfsp:<id>#members holds the human identity and the machine client (client_id = dfspId)
+      const members = await keto.listDfspMembers(testDfsp.dfspId);
+      expect(members).toContain(identity.id);
+      expect(members).toContain(testDfsp.dfspId);
+
+      // Dfsp:<id>#parent@Hub:<hub>
+      const parent = await keto.read.getRelationships({ namespace: 'Dfsp', object: testDfsp.dfspId, relation: 'parent' });
+      const parentSets = parent.data.relation_tuples.map(t => t.subject_set);
+      expect(parentSets).toContainEqual(expect.objectContaining({ namespace: 'Hub', object: Constants.KETO.HUB_OBJECT }));
     });
 
     it('rotates credentials via CredentialsService and keeps them retrievable from Vault', async () => {
@@ -113,7 +111,7 @@ describe('DFSP IAM Integration Tests', () => {
       expect(typeof json.access_token).toBe('string');
     });
 
-    it('deletes the Hydra client and Keto role when the DFSP is deleted', async () => {
+    it('removes the Hydra client, the identity, and the Keto Dfsp tuples on delete', async () => {
       await PkiService.createDFSP(context, testDfsp);
       await CredentialsService.createCredentials(context, testDfsp.dfspId);
       expect(await HydraService.getClient(testDfsp.dfspId)).toBeTruthy();
@@ -125,14 +123,7 @@ describe('DFSP IAM Integration Tests', () => {
 
       expect(await HydraService.getClient(testDfsp.dfspId)).toBeNull();
       expect(await KratosService.findIdentityByEmail(testDfsp.email)).toBeNull();
-
-      const tuples = await keto.client.getRelationships({
-        namespace: 'role',
-        object: 'dfsp',
-        relation: 'member',
-        subjectSet: { namespace: 'role', object: `dfsp:${testDfsp.dfspId}`, relation: 'member' },
-      });
-      expect(tuples.data.relation_tuples).toHaveLength(0);
+      expect(await keto.listDfspMembers(testDfsp.dfspId)).toHaveLength(0);
     });
 
     it('retains a multi-DFSP identity when only one of its DFSPs is deleted', async () => {
@@ -143,7 +134,10 @@ describe('DFSP IAM Integration Tests', () => {
 
         const identity = await KratosService.findIdentityByEmail(testDfsp.email);
         expect(identity).toBeTruthy();
-        await KratosService.assignDfspRole(identity.id, secondDfsp.dfspId);
+        // the shared identity is a member of both DFSPs
+        expect(await keto.listDfspMemberships(identity.id)).toEqual(
+          expect.arrayContaining([testDfsp.dfspId, secondDfsp.dfspId])
+        );
 
         await PkiService.deleteDFSP(context, testDfsp.dfspId);
 
@@ -183,7 +177,7 @@ describe('DFSP IAM Integration Tests', () => {
   });
 
   describe('Multi-DFSP Scenarios', () => {
-    it('isolates Hydra clients, Kratos identities, and Keto roles across DFSPs', async () => {
+    it('isolates Hydra clients, Kratos identities, and Keto tuples across DFSPs', async () => {
       const extra = [createUniqueDfsp(), createUniqueDfsp()];
       const all = [testDfsp, ...extra];
 
@@ -192,10 +186,10 @@ describe('DFSP IAM Integration Tests', () => {
 
         for (const d of all) {
           const client = await HydraService.getClient(d.dfspId);
-          expect(client.clientId).toBe(d.dfspId);
+          expect(client.client_id).toBe(d.dfspId);
 
           const identity = await KratosService.findIdentityByEmail(d.email);
-          expect(identity.traits.dfspId).toBe(d.dfspId);
+          expect(identity.metadata_public.dfspId).toBe(d.dfspId);
         }
 
         const credSets = await Promise.all(all.map(d => CredentialsService.createCredentials(context, d.dfspId)));

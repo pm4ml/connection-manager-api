@@ -1,13 +1,21 @@
 x-api-env: &api-env
-  - OPENID_DISCOVERY_URL=http://keycloak.${COMPOSE_DOMAIN:-mcm.localhost}/realms/dfsps
-  - LOGIN_CALLBACK=http://${COMPOSE_DOMAIN:-mcm.localhost}/api/auth/callback
-  - KEYCLOAK_BASE_URL=http://keycloak.${COMPOSE_DOMAIN:-mcm.localhost}
-  - KEYCLOAK_DISCOVERY_URL=http://keycloak.${COMPOSE_DOMAIN:-mcm.localhost}/realms/dfsps/.well-known/openid-configuration
+  - IAM_ENABLED=true
+  - IAM_AUTO_CREATE_ACCOUNTS=true
+  - HYDRA_PUBLIC_URL=http://hydra.${COMPOSE_DOMAIN:-mcm.localhost}
+  - HYDRA_ADMIN_URL=http://hydra-admin.${COMPOSE_DOMAIN:-mcm.localhost}
+  - HYDRA_AUDIENCE=connection-manager-api
+  - KRATOS_PUBLIC_URL=http://kratos.${COMPOSE_DOMAIN:-mcm.localhost}
+  - KRATOS_ADMIN_URL=http://kratos-admin.${COMPOSE_DOMAIN:-mcm.localhost}
+  - KRATOS_IDENTITY_SCHEMA_ID=default
+  - KRATOS_INVITE_RETURN_TO_URL=http://${COMPOSE_DOMAIN:-mcm.localhost}/
+  - KETO_READ_URL=http://keto-read.${COMPOSE_DOMAIN:-mcm.localhost}
+  - KETO_WRITE_URL=http://keto-write.${COMPOSE_DOMAIN:-mcm.localhost}
   - CLIENT_URL=http://${COMPOSE_DOMAIN:-mcm.localhost}
 
 x-api-labels: &api-labels
   - "traefik.http.routers.mcm-api.rule=Host(`${COMPOSE_DOMAIN:-mcm.localhost}`) && PathPrefix(`/api`)"
   - "traefik.http.services.mcm-api.loadbalancer.server.port=3001"
+  - "traefik.http.routers.mcm-api.middlewares=oathkeeper-auth"
 
 x-api-healthcheck: &api-healthcheck
   test: wget --spider --quiet http://localhost:3001/api/health
@@ -16,15 +24,14 @@ x-api-healthcheck: &api-healthcheck
   retries: 3
   start_period: 5s
 
-configs:
-  realm-template:
-    file: ./docker/keycloak/dfsps-realm.json
-
 volumes:
-  keycloak-import: {}
   vault-data: {}
   vault-creds: {}
   mailpit-data: {}
+  ory-config: {}
+  hydra-sqlite: {}
+  kratos-sqlite: {}
+  keto-sqlite: {}
 
 services:
 
@@ -45,8 +52,14 @@ services:
         aliases:
           - ${COMPOSE_DOMAIN:-mcm.localhost}
           - vault.${COMPOSE_DOMAIN:-mcm.localhost}
-          - keycloak.${COMPOSE_DOMAIN:-mcm.localhost}
           - mailpit.${COMPOSE_DOMAIN:-mcm.localhost}
+          - hydra.${COMPOSE_DOMAIN:-mcm.localhost}
+          - hydra-admin.${COMPOSE_DOMAIN:-mcm.localhost}
+          - kratos.${COMPOSE_DOMAIN:-mcm.localhost}
+          - kratos-admin.${COMPOSE_DOMAIN:-mcm.localhost}
+          - keto-read.${COMPOSE_DOMAIN:-mcm.localhost}
+          - keto-write.${COMPOSE_DOMAIN:-mcm.localhost}
+          - auth.${COMPOSE_DOMAIN:-mcm.localhost}
     restart: always
 
   connection-manager-ui:
@@ -58,9 +71,9 @@ services:
     environment:
       - AUTH_ENABLED=TRUE
       - API_BASE_URL=http://${COMPOSE_DOMAIN:-mcm.localhost}
-      - LOGIN_URL=http://${COMPOSE_DOMAIN:-mcm.localhost}/api/auth/login
-      - LOGOUT_URL=http://${COMPOSE_DOMAIN:-mcm.localhost}/api/auth/logout
-      - CHECK_SESSION_URL=http://${COMPOSE_DOMAIN:-mcm.localhost}/api/auth/profile
+      - LOGIN_URL=http://kratos.${COMPOSE_DOMAIN:-mcm.localhost}/self-service/login/browser
+      - LOGOUT_URL=http://kratos.${COMPOSE_DOMAIN:-mcm.localhost}/self-service/logout/browser
+      - CHECK_SESSION_URL=http://kratos.${COMPOSE_DOMAIN:-mcm.localhost}/sessions/whoami
     labels:
       - "traefik.http.routers.mcm-ui.rule=Host(`${COMPOSE_DOMAIN:-mcm.localhost}`) && !PathPrefix(`/api`)"
       - "traefik.http.services.mcm-ui.loadbalancer.server.port=8080"
@@ -90,6 +103,10 @@ services:
 
   connection-manager-migration-full:
     image: mojaloop/connection-manager-api
+    pull_policy: if_not_present
+    build:
+      context: .
+      dockerfile: Dockerfile
     profiles:
       - full
     env_file:
@@ -114,6 +131,7 @@ services:
     labels:
       - "traefik.http.routers.mcm-api.rule=Host(`${COMPOSE_DOMAIN:-mcm.localhost}`) && PathPrefix(`/api`)"
       - "traefik.http.services.mcm-api.loadbalancer.server.port=${PORT:-3001}"
+      - "traefik.http.routers.mcm-api.middlewares=oathkeeper-auth"
 
   connection-manager-api:
     image: mojaloop/connection-manager-api:local
@@ -136,14 +154,24 @@ services:
     depends_on:
       vault-init:
         condition: service_completed_successfully
-      keycloak:
+      hydra:
         condition: service_healthy
+      kratos:
+        condition: service_healthy
+      keto:
+        condition: service_healthy
+      iam-bootstrap:
+        condition: service_completed_successfully
       connection-manager-migration:
         condition: service_completed_successfully
     healthcheck: *api-healthcheck
 
   connection-manager-api-full:
     image: mojaloop/connection-manager-api
+    pull_policy: if_not_present
+    build:
+      context: .
+      dockerfile: Dockerfile
     profiles:
       - full
     env_file:
@@ -159,8 +187,14 @@ services:
     depends_on:
       vault-init:
         condition: service_completed_successfully
-      keycloak:
+      hydra:
         condition: service_healthy
+      kratos:
+        condition: service_healthy
+      keto:
+        condition: service_healthy
+      iam-bootstrap:
+        condition: service_completed_successfully
       connection-manager-migration-full:
         condition: service_completed_successfully
     healthcheck: *api-healthcheck
@@ -183,7 +217,7 @@ services:
       retries: 20
 
   vault:
-    image: hashicorp/vault:1.20
+    image: hashicorp/vault:1.21
     command: server
     restart: always
     tty: true
@@ -252,46 +286,224 @@ services:
       retries: 3
       start_period: 5s
 
-  prepare-keycloak-realm:
-    image: steinbrueckri/envsubst
-    working_dir: /work
-    configs:
-      - source: realm-template
-        target: /template/dfsps-realm.json.template
-        mode: 0444
+  # Hydra mounts a named volume at /var/lib/sqlite but runs as a non-root user
+  # and the image doesn't pre-create the dir, so busybox makes it writable.
+  # Renders the Ory config templates, substituting ${COMPOSE_DOMAIN}, into the
+  # ory-config volume that the Ory services mount.
+  prepare-ory-config:
+    image: alpine
+    environment:
+      - COMPOSE_DOMAIN=${COMPOSE_DOMAIN:-mcm.localhost}
+      - MCM_FQDN=${COMPOSE_DOMAIN:-mcm.localhost}
+      - KETO_READ_URL=http://keto:4466
+      - KETO_HUB_OBJECT=${KETO_HUB_OBJECT:-mojaloop}
     volumes:
-      - keycloak-import:/work
-    env_file:
-      - ./docker/keycloak/dfsp-realm.env
-    entrypoint: |
-      sh -c '
-        echo "Rendering realm import ..."
-        envsubst < /template/dfsps-realm.json.template > /work/dfsps-realm.json
-      '
+      - ./docker/ory:/templates:ro
+      - ./permissions:/permissions:ro
+      - ory-config:/rendered
+    entrypoint: ["/bin/sh", "/templates/render-config.sh"]
     restart: "no"
 
-  keycloak:
-    image: keycloak/keycloak:26.3
-    command: start-dev --import-realm
-    environment:
-      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
-      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
-      - KC_HEALTH_ENABLED=true
-      - KC_HOSTNAME=keycloak.${COMPOSE_DOMAIN:-mcm.localhost}
-      - KC_HOSTNAME_STRICT=true
-    labels:
-      - "traefik.http.routers.keycloak.rule=Host(`keycloak.${COMPOSE_DOMAIN:-mcm.localhost}`)"
-      - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
+  hydra-sqlite-init:
+    image: busybox
+    command: chmod -R 777 /var/lib/sqlite
     volumes:
-      - keycloak-import:/opt/keycloak/data/import
+      - hydra-sqlite:/var/lib/sqlite
+    restart: "no"
+
+  hydra-migrate:
+    image: oryd/hydra:v26.2.0
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    volumes:
+      - hydra-sqlite:/var/lib/sqlite
+      - ory-config:/etc/config:ro
+    command: migrate sql --yes --config /etc/config/hydra/hydra.yml -e
     depends_on:
-      mailpit:
-        condition: service_healthy
-      prepare-keycloak-realm:
+      hydra-sqlite-init:
+        condition: service_completed_successfully
+      prepare-ory-config:
+        condition: service_completed_successfully
+    restart: "no"
+
+  hydra:
+    image: oryd/hydra:v26.2.0
+    command: serve all --dev --config /etc/config/hydra/hydra.yml
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    volumes:
+      - hydra-sqlite:/var/lib/sqlite
+      - ory-config:/etc/config:ro
+    labels:
+      - "traefik.http.routers.hydra.rule=Host(`hydra.${COMPOSE_DOMAIN:-mcm.localhost}`)"
+      - "traefik.http.routers.hydra.service=hydra"
+      - "traefik.http.services.hydra.loadbalancer.server.port=4444"
+      - "traefik.http.routers.hydra-admin.rule=Host(`hydra-admin.${COMPOSE_DOMAIN:-mcm.localhost}`)"
+      - "traefik.http.routers.hydra-admin.service=hydra-admin"
+      - "traefik.http.services.hydra-admin.loadbalancer.server.port=4445"
+    depends_on:
+      hydra-migrate:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000;echo -e 'GET /health/ready HTTP/1.1\\r\\nhost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3;timeout 1 cat <&3 | grep -q UP"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+      test: ["CMD", "wget", "--spider", "--quiet", "http://127.0.0.1:4444/health/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    restart: unless-stopped
+
+  kratos-migrate:
+    image: oryd/kratos:v26.2.0
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    volumes:
+      - kratos-sqlite:/var/lib/sqlite
+      - ory-config:/etc/config:ro
+    command: migrate sql --yes --config /etc/config/kratos/kratos.yml -e
+    depends_on:
+      prepare-ory-config:
+        condition: service_completed_successfully
+    restart: "no"
+
+  kratos:
+    image: oryd/kratos:v26.2.0
+    command: serve --dev --watch-courier --config /etc/config/kratos/kratos.yml
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    volumes:
+      - kratos-sqlite:/var/lib/sqlite
+      - ory-config:/etc/config:ro
+    labels:
+      - "traefik.http.routers.kratos.rule=Host(`kratos.${COMPOSE_DOMAIN:-mcm.localhost}`)"
+      - "traefik.http.routers.kratos.service=kratos"
+      - "traefik.http.services.kratos.loadbalancer.server.port=4433"
+      - "traefik.http.routers.kratos-admin.rule=Host(`kratos-admin.${COMPOSE_DOMAIN:-mcm.localhost}`)"
+      - "traefik.http.routers.kratos-admin.service=kratos-admin"
+      - "traefik.http.services.kratos-admin.loadbalancer.server.port=4434"
+    depends_on:
+      kratos-migrate:
+        condition: service_completed_successfully
+      mailpit:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://127.0.0.1:4433/health/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    restart: unless-stopped
+
+  kratos-ui:
+    image: oryd/kratos-selfservice-ui-node:v26.2.0
+    profiles:
+      - dev
+      - full
+    environment:
+      - PORT=3000
+      - KRATOS_PUBLIC_URL=http://kratos:4433
+      - KRATOS_BROWSER_URL=http://kratos.${COMPOSE_DOMAIN:-mcm.localhost}
+      - COOKIE_SECRET=changeme-please-changeme-please
+      - CSRF_COOKIE_NAME=mcm_csrf_token
+      - CSRF_COOKIE_SECRET=changeme-please-changeme-please
+      - DANGEROUSLY_DISABLE_SECURE_CSRF_COOKIES=true
+      - BASE_URL=http://auth.${COMPOSE_DOMAIN:-mcm.localhost}/
+    labels:
+      - "traefik.http.routers.kratos-ui.rule=Host(`auth.${COMPOSE_DOMAIN:-mcm.localhost}`)"
+      - "traefik.http.services.kratos-ui.loadbalancer.server.port=3000"
+    depends_on:
+      kratos:
+        condition: service_healthy
+    restart: unless-stopped
+
+  keto-sqlite-init:
+    image: busybox
+    command: chmod -R 777 /var/lib/sqlite
+    volumes:
+      - keto-sqlite:/var/lib/sqlite
+    restart: "no"
+
+  keto-migrate:
+    image: oryd/keto:v26.2.0
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    volumes:
+      - keto-sqlite:/var/lib/sqlite
+      - ory-config:/etc/config:ro
+      - ./permissions/mcm.keto.ts:/etc/keto-namespaces/mcm.keto.ts:ro
+    command: migrate up -y --config /etc/config/keto/keto.yml
+    depends_on:
+      keto-sqlite-init:
+        condition: service_completed_successfully
+      prepare-ory-config:
+        condition: service_completed_successfully
+    restart: "no"
+
+  keto:
+    image: oryd/keto:v26.2.0
+    command: serve --config /etc/config/keto/keto.yml
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    volumes:
+      - keto-sqlite:/var/lib/sqlite
+      - ory-config:/etc/config:ro
+      - ./permissions/mcm.keto.ts:/etc/keto-namespaces/mcm.keto.ts:ro
+    labels:
+      - "traefik.http.routers.keto-read.rule=Host(`keto-read.${COMPOSE_DOMAIN:-mcm.localhost}`)"
+      - "traefik.http.routers.keto-read.service=keto-read"
+      - "traefik.http.services.keto-read.loadbalancer.server.port=4466"
+      - "traefik.http.routers.keto-write.rule=Host(`keto-write.${COMPOSE_DOMAIN:-mcm.localhost}`)"
+      - "traefik.http.routers.keto-write.service=keto-write"
+      - "traefik.http.services.keto-write.loadbalancer.server.port=4467"
+    depends_on:
+      keto-migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://127.0.0.1:4466/health/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    restart: unless-stopped
+
+  # Zero-trust gateway: Traefik consults Oathkeeper (forward-auth) for every
+  # /api request. Oathkeeper validates the Kratos session or Hydra JWT and
+  # returns the X-User/X-Email/X-DFSP-ID/X-Roles headers the API trusts.
+  oathkeeper:
+    image: oryd/oathkeeper:v26.2.0
+    command: serve --config /etc/config/oathkeeper/oathkeeper.yml
+    volumes:
+      - ory-config:/etc/config:ro
+    labels:
+      - "traefik.http.middlewares.oathkeeper-auth.forwardauth.address=http://oathkeeper:4456/decisions"
+      - "traefik.http.middlewares.oathkeeper-auth.forwardauth.authResponseHeaders=X-User,X-Email,X-DFSP-ID,X-Roles"
+    depends_on:
+      kratos:
+        condition: service_healthy
+      hydra:
+        condition: service_healthy
+      keto:
+        condition: service_healthy
+      prepare-ory-config:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # Seeds the initial hub-admin (Kratos identity + Hub:mojaloop#admins Keto
+  # tuple) so there is an account to log into the portal with.
+  iam-bootstrap:
+    image: alpine
+    environment:
+      - KRATOS_ADMIN_URL=http://kratos:4434
+      - KETO_WRITE_URL=http://keto:4467
+      - IAM_ADMIN_EMAIL=${IAM_ADMIN_EMAIL:-admin@mcm.local}
+      - IAM_ADMIN_PASSWORD=${IAM_ADMIN_PASSWORD:-admin1234}
+      - IAM_HUB_ADMIN_ROLE=${IAM_HUB_ADMIN_ROLE:-hub-admin}
+      - KETO_HUB_OBJECT=${KETO_HUB_OBJECT:-mojaloop}
+    volumes:
+      - ./docker/ory/bootstrap-admin.sh:/bootstrap-admin.sh:ro
+    entrypoint: ["/bin/sh", "-c", "apk add --no-cache curl jq >/dev/null && /bin/sh /bootstrap-admin.sh"]
+    depends_on:
+      kratos:
+        condition: service_healthy
+      keto:
+        condition: service_healthy
+    restart: "no"

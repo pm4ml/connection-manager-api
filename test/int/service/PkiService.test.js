@@ -119,9 +119,9 @@ describe('PkiService', () => {
       expect(result).toEqual(dfspRows.map(PkiService.dfspRowToObject));
     });
 
-    it('should return all DFSPs when user has pta role', async () => {
+    it('should return all DFSPs when user has hub-admin role', async () => {
       const ctx = {};
-      const user = { roles: ['pta', 'everyone'] };
+      const user = { roles: ['hub-admin', 'everyone'] };
       const dfspRows = [
         { dfsp_id: 'dfsp1', name: 'DFSP 1', monetaryZoneId: 'USD', isProxy: false, security_group: 'Application/DFSP:dfsp1' },
         { dfsp_id: 'dfsp2', name: 'DFSP 2', monetaryZoneId: 'EUR', isProxy: true, security_group: 'Application/DFSP:dfsp2' }
@@ -142,7 +142,7 @@ describe('PkiService', () => {
 
     it('should return filtered DFSPs when user has specific DFSP roles', async () => {
       const ctx = {};
-      const user = { roles: ['Application/DFSP:dfsp1', 'everyone'] };
+      const user = { roles: ['dfsp:dfsp1', 'everyone'] };
       const dfspRows = [
         { dfsp_id: 'dfsp1', name: 'DFSP 1', monetaryZoneId: 'USD', isProxy: false, security_group: 'Application/DFSP:dfsp1' },
         { dfsp_id: 'dfsp2', name: 'DFSP 2', monetaryZoneId: 'EUR', isProxy: true, security_group: 'Application/DFSP:dfsp2' }
@@ -162,9 +162,9 @@ describe('PkiService', () => {
       expect(result[0].id).toBe('dfsp1');
     });
 
-    it('should return all DFSPs when user has no DFSP-specific roles', async () => {
+    it('should return all DFSPs when user has hub-admin role and no DFSP roles', async () => {
       const ctx = {};
-      const user = { roles: ['mta', 'everyone'] };
+      const user = { roles: ['hub-admin', 'everyone'] };
       const dfspRows = [
         { dfsp_id: 'dfsp1', name: 'DFSP 1', monetaryZoneId: 'USD', isProxy: false, security_group: 'Application/DFSP:dfsp1' },
         { dfsp_id: 'dfsp2', name: 'DFSP 2', monetaryZoneId: 'EUR', isProxy: true, security_group: 'Application/DFSP:dfsp2' }
@@ -185,7 +185,7 @@ describe('PkiService', () => {
 
     it('should return multiple DFSPs when user has multiple DFSP roles', async () => {
       const ctx = {};
-      const user = { roles: ['Application/DFSP:dfsp1', 'Application/DFSP:dfsp3', 'everyone'] };
+      const user = { roles: ['dfsp:dfsp1', 'dfsp:dfsp3', 'everyone'] };
       const dfspRows = [
         { dfsp_id: 'dfsp1', name: 'DFSP 1', monetaryZoneId: 'USD', isProxy: false, security_group: 'Application/DFSP:dfsp1' },
         { dfsp_id: 'dfsp2', name: 'DFSP 2', monetaryZoneId: 'EUR', isProxy: true, security_group: 'Application/DFSP:dfsp2' },
@@ -386,9 +386,9 @@ describe('PkiService', () => {
       expect(result).toEqual(dfspRows.map(PkiService.dfspRowToObject));
     });
 
-    it('should return all DFSPs by monetary zone when user has pta role', async () => {
+    it('should return all DFSPs by monetary zone when user has hub-admin role', async () => {
       const ctx = {};
-      const user = { roles: ['pta', 'everyone'] };
+      const user = { roles: ['hub-admin', 'everyone'] };
       const monetaryZoneId = 'USD';
       const dfspRows = [
         { dfsp_id: 'dfsp1', name: 'DFSP 1', monetaryZoneId: 'USD', isProxy: false, security_group: 'Application/DFSP:dfsp1' },
@@ -403,7 +403,7 @@ describe('PkiService', () => {
 
     it('should return filtered DFSPs by monetary zone when user has specific DFSP roles', async () => {
       const ctx = {};
-      const user = { roles: ['Application/DFSP:dfsp1', 'everyone'] };
+      const user = { roles: ['dfsp:dfsp1', 'everyone'] };
       const monetaryZoneId = 'USD';
       const dfspRows = [
         { dfsp_id: 'dfsp1', name: 'DFSP 1', monetaryZoneId: 'USD', isProxy: false, security_group: 'Application/DFSP:dfsp1' },

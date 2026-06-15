@@ -62,12 +62,13 @@ echo "Configuring vault..."
 # Enable AppRole auth
 vault_api POST /v1/sys/auth/approle '{"type": "approle"}' > /dev/null
 
-# Configure AppRole
-vault_api POST /v1/auth/approle/role/my-role '{"secret_id_ttl": "1440h", "token_ttl": "1440h", "token_max_ttl": "1440h"}' > /dev/null
+# Configure AppRole. Non-expiring secret-id (ttl/num_uses 0) so a long-running
+# local stack never invalidates the issued credentials.
+vault_api POST /v1/auth/approle/role/mcm '{"secret_id_ttl": "0", "secret_id_num_uses": "0", "token_ttl": "1440h", "token_max_ttl": "1440h"}' > /dev/null
 
 # Get role-id and secret-id
-vault_api GET /v1/auth/approle/role/my-role/role-id | jq -r '.data.role_id' > /vault/creds/role-id
-vault_api POST /v1/auth/approle/role/my-role/secret-id | jq -r '.data.secret_id' > /vault/creds/secret-id
+vault_api GET /v1/auth/approle/role/mcm/role-id | jq -r '.data.role_id' > /vault/creds/role-id
+vault_api POST /v1/auth/approle/role/mcm/secret-id | jq -r '.data.secret_id' > /vault/creds/secret-id
 
 # Enable secrets engines
 vault_api POST /v1/sys/mounts/pki '{"type": "pki"}' > /dev/null
@@ -97,8 +98,8 @@ EOF
 POLICY_JSON=$(jq -n --arg policy "$POLICY" '{policy: $policy}')
 vault_api PUT /v1/sys/policy/test-policy "$POLICY_JSON" > /dev/null
 
-# Update AppRole with policy
-vault_api POST /v1/auth/approle/role/my-role '{"policies": ["test-policy"], "token_ttl": "1440h"}' > /dev/null
+# Update AppRole with policy (keep the non-expiring secret-id settings)
+vault_api POST /v1/auth/approle/role/mcm '{"policies": ["test-policy"], "secret_id_ttl": "0", "secret_id_num_uses": "0", "token_ttl": "1440h"}' > /dev/null
 
 # Enable and configure pki_int
 vault_api POST /v1/sys/mounts/pki_int '{"type": "pki"}' > /dev/null

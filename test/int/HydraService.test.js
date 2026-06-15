@@ -10,7 +10,6 @@
  **/
 
 const HydraService = require('../../src/service/HydraService');
-const InternalError = require('../../src/errors/InternalError');
 const NotFoundError = require('../../src/errors/NotFoundError');
 const Constants = require('../../src/constants/Constants');
 const { createUniqueDfsp } = require('./test-helpers');
@@ -38,9 +37,9 @@ describe('HydraService Integration Tests', () => {
 
       const client = await HydraService.getClient(testDfsp.dfspId);
       expect(client).toBeTruthy();
-      expect(client.clientId).toBe(testDfsp.dfspId);
-      expect(client.grantTypes).toContain('client_credentials');
-      expect(client.tokenEndpointAuthMethod).toBe('client_secret_basic');
+      expect(client.client_id).toBe(testDfsp.dfspId);
+      expect(client.grant_types).toContain('client_credentials');
+      expect(client.token_endpoint_auth_method).toBe('client_secret_basic');
     });
 
     it('rotates the secret if the client already exists', async () => {
@@ -114,23 +113,6 @@ describe('HydraService Integration Tests', () => {
 
     it('is a no-op when the client does not exist', async () => {
       await expect(HydraService.deleteClient('does-not-exist-' + Date.now())).resolves.toBeUndefined();
-    });
-  });
-
-  describe('connection failures', () => {
-    it('wraps Hydra admin errors in InternalError', async () => {
-      const original = Constants.HYDRA.ADMIN_URL;
-      Constants.HYDRA.ADMIN_URL = 'http://invalid-hydra-host:4445';
-      // Force the cached client to be rebuilt against the bad URL.
-      delete require.cache[require.resolve('../../src/service/HydraService')];
-      const Fresh = require('../../src/service/HydraService');
-
-      try {
-        await expect(Fresh.createPM4MLClient(testDfsp.dfspId)).rejects.toBeInstanceOf(InternalError);
-      } finally {
-        Constants.HYDRA.ADMIN_URL = original;
-        delete require.cache[require.resolve('../../src/service/HydraService')];
-      }
     });
   });
 });

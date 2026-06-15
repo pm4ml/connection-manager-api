@@ -9,10 +9,10 @@ serve:
 
 urls:
   self:
-    issuer: http://localhost:4444
-  consent: http://localhost:8081/consent
-  login: http://localhost:8081/login
-  logout: http://localhost:8081/logout
+    issuer: http://hydra.${COMPOSE_DOMAIN}
+  consent: http://auth.${COMPOSE_DOMAIN}/consent
+  login: http://auth.${COMPOSE_DOMAIN}/login
+  logout: http://auth.${COMPOSE_DOMAIN}/logout
 
 secrets:
   system:

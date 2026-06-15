@@ -27,7 +27,7 @@
 'use strict';
 
 const NotFoundError = require('../errors/NotFoundError');
-const HydraService = require('./HydraService');
+const DfspIamService = require('./DfspIamService');
 const { logger } = require('../log/logger');
 
 const VAULT_PATH_PREFIX = 'api-credentials';
@@ -36,10 +36,7 @@ const createCredentials = async (context, dfspId) => {
   try {
     const credentialsPath = `${VAULT_PATH_PREFIX}/${dfspId}`;
 
-    const existing = await HydraService.getClient(dfspId);
-    const { clientId, clientSecret } = existing
-      ? await HydraService.rotateClientSecret(dfspId)
-      : await HydraService.createPM4MLClient(dfspId);
+    const { clientId, clientSecret } = await DfspIamService.rotateDfspClientCredentials(dfspId);
 
     const credentials = {
       client_id: clientId,

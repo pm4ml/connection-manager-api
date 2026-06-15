@@ -29,7 +29,8 @@ export type HeaderType = { [key:string]:string; };
 export type LoginConfig = {
   username: string,
   password: string,
-  baseUrl: string
+  baseUrl: string,
+  kratosUrl: string
 }
 
 export type OAuthConfig = {
@@ -42,8 +43,6 @@ export type ApiHelperOptions = {
   login?: LoginConfig,
   oauth?: OAuthConfig
 }
-
-const cookieJar = new CookieJar();
 
 export enum MethodEnum {
   POST = 'POST',
@@ -64,6 +63,7 @@ export class ApiHelper {
   private _options: ApiHelperOptions
   private _authenticated: boolean = false
   private _accessToken: string | null = null
+  private _cookieJar: CookieJar = new CookieJar();
 
   constructor (options: ApiHelperOptions) {
     this._options = { ...options };
@@ -89,7 +89,7 @@ export class ApiHelper {
 
   async sendRequest (config: RequestConfig) {
     if (!this._authenticated && this._options?.login != null) {
-      await performLogin(this._options.login);
+      await performLogin(this._options.login, this._cookieJar);
       this._authenticated = true;
     }
 
@@ -97,7 +97,7 @@ export class ApiHelper {
       this._accessToken = await fetchOAuthToken(this._options.oauth);
     }
 
-    const cookies = await cookieJar.getCookieString(config.url);
+    const cookies = await this._cookieJar.getCookieString(config.url);
     const headers = processHeaders(config?.headers);
     if (cookies) {
       headers['Cookie'] = cookies;
@@ -114,7 +114,7 @@ export class ApiHelper {
     });
 
     for (const cookie of response.headers.getSetCookie()) {
-      await cookieJar.setCookie(cookie, config.url);
+      await this._cookieJar.setCookie(cookie, config.url);
     }
 
     let data: any;
@@ -153,69 +153,53 @@ const processHeaders = (rawHeaders: HeaderType | undefined): HeaderType => {
   return headers;
 };
 
-const performLogin = async (loginConfig: LoginConfig): Promise<void> => {
-  const loginUrl = `${loginConfig.baseUrl}/auth/login?return_to=${encodeURIComponent(loginConfig.baseUrl)}`;
-
+// Authenticates against the Kratos browser login flow. On success Kratos sets an
+// `ory_kratos_session` cookie scoped to the parent domain (mcm.localhost); that
+// cookie is what the Oathkeeper gateway uses to authorize subsequent /api calls.
+const performLogin = async (loginConfig: LoginConfig, cookieJar: CookieJar): Promise<void> => {
   try {
-    let response = await fetch(loginUrl, {
+    const initUrl = `${loginConfig.kratosUrl}/self-service/login/browser`;
+
+    const initResponse = await fetch(initUrl, {
       method: 'GET',
+      headers: { 'Accept': 'application/json' },
       redirect: 'manual'
     });
 
-    for (const cookie of response.headers.getSetCookie()) {
-      await cookieJar.setCookie(cookie, loginUrl);
+    for (const cookie of initResponse.headers.getSetCookie()) {
+      await cookieJar.setCookie(cookie, initUrl);
     }
 
-    if (response.status === 302 || response.status === 303) {
-      const keycloakAuthUrl = response.headers.get('location')!;
+    const flow = await initResponse.json();
+    const flowId = flow.id;
+    const csrfToken = extractCsrfToken(flow);
 
-      response = await fetch(keycloakAuthUrl, {
-        method: 'GET',
-        redirect: 'manual'
-      });
+    const submitUrl = `${loginConfig.kratosUrl}/self-service/login?flow=${flowId}`;
+    const cookies = await cookieJar.getCookieString(submitUrl);
 
-      for (const cookie of response.headers.getSetCookie()) {
-        await cookieJar.setCookie(cookie, keycloakAuthUrl);
-      }
+    const submitResponse = await fetch(submitUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Cookie': cookies || ''
+      },
+      body: JSON.stringify({
+        method: 'password',
+        identifier: loginConfig.username,
+        password: loginConfig.password,
+        csrf_token: csrfToken
+      }),
+      redirect: 'manual'
+    });
 
-      const html = await response.text();
-      const actionUrl = extractFormAction(html);
-      const keycloakCookies = await cookieJar.getCookieString(keycloakAuthUrl);
+    for (const cookie of submitResponse.headers.getSetCookie()) {
+      await cookieJar.setCookie(cookie, submitUrl);
+    }
 
-      const formData = new URLSearchParams();
-      formData.append('username', loginConfig.username);
-      formData.append('password', loginConfig.password);
-
-      response = await fetch(actionUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Cookie': keycloakCookies || ''
-        },
-        body: formData.toString(),
-        redirect: 'manual'
-      });
-
-      for (const cookie of response.headers.getSetCookie()) {
-        await cookieJar.setCookie(cookie, actionUrl);
-      }
-
-      if (response.status === 302 || response.status === 303) {
-        const callbackUrl = response.headers.get('location')!;
-        const callbackCookies = await cookieJar.getCookieString(callbackUrl);
-
-        response = await fetch(callbackUrl, {
-          method: 'GET',
-          headers: {
-            'Cookie': callbackCookies || ''
-          },
-          redirect: 'manual'
-        });
-
-        for (const cookie of response.headers.getSetCookie()) {
-          await cookieJar.setCookie(cookie, callbackUrl);
-        }
-      }
+    if (submitResponse.status !== 200) {
+      const errorBody = await submitResponse.text();
+      throw new Error(`Kratos login failed (status ${submitResponse.status}): ${errorBody}`);
     }
   } catch (error) {
     console.error('Login failed:', error);
@@ -223,24 +207,34 @@ const performLogin = async (loginConfig: LoginConfig): Promise<void> => {
   }
 };
 
-const extractFormAction = (html: string): string => {
-  const match = html.match(/action="([^"]+)"/);
-  if (match && match[1]) {
-    return match[1].replace(/&amp;/g, '&');
+// Extracts the csrf_token value from a Kratos flow's UI nodes.
+const extractCsrfToken = (flow: any): string => {
+  const node = flow?.ui?.nodes?.find(
+    (n: any) => n?.attributes?.name === 'csrf_token'
+  );
+  const value = node?.attributes?.value;
+  if (!value) {
+    throw new Error('Could not find csrf_token in Kratos flow');
   }
-  throw new Error('Could not find form action in HTML');
+  return value;
 };
 
+// Obtains a machine (PM4ML) access token from Hydra via the client_credentials
+// grant. The token is then sent as a Bearer token on API calls.
 const fetchOAuthToken = async (oauthConfig: OAuthConfig): Promise<string> => {
   try {
+    const credentials = Buffer.from(
+      `${oauthConfig.clientId}:${oauthConfig.clientSecret}`
+    ).toString('base64');
+
     const formData = new URLSearchParams();
     formData.append('grant_type', 'client_credentials');
-    formData.append('client_id', oauthConfig.clientId);
-    formData.append('client_secret', oauthConfig.clientSecret);
+    formData.append('audience', 'connection-manager-api');
 
     const response = await fetch(oauthConfig.tokenUrl, {
       method: 'POST',
       headers: {
+        'Authorization': `Basic ${credentials}`,
         'Content-Type': 'application/x-www-form-urlencoded'
       },
       body: formData.toString()
@@ -249,7 +243,7 @@ const fetchOAuthToken = async (oauthConfig: OAuthConfig): Promise<string> => {
     const data = await response.json();
 
     if (!data.access_token) {
-      throw new Error('No access token in response');
+      throw new Error(`No access token in response: ${JSON.stringify(data)}`);
     }
 
     return data.access_token;

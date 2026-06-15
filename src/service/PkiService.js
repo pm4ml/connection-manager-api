@@ -20,16 +20,32 @@ const DFSPModel = require('../models/DFSPModel');
 const InternalError = require('../errors/InternalError');
 const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
-const formatValidator = require('../utils/formatValidator');
 
 const ValidationCodes = require('../pki_engine/ValidationCodes');
 const Constants = require('../constants/Constants');
 const { createCSRAndDFSPOutboundEnrollment } = require('./DfspOutboundService');
-const HydraService = require('./HydraService');
-const KratosService = require('./KratosService');
+const DfspIamService = require('./DfspIamService');
 const { logger } = require('../log/logger');
 
 const log = logger.child({ component: 'PkiService' });
+
+/**
+ * Scopes a DFSP list to the caller using the gateway-supplied roles
+ * (X-Roles header): the hub-admin role sees everything, others see the
+ * DFSPs of their dfsp:{id} roles (a user may hold several, e.g. system
+ * integrators).
+ */
+const filterDfspsForUser = (allDfsps, user) => {
+  if (!user?.roles) return allDfsps;
+  if (user.roles.includes(Constants.IAM.HUB_ADMIN_ROLE)) return allDfsps;
+
+  const prefix = Constants.IAM.DFSP_ROLE_PREFIX;
+  const allowedDfspIds = user.roles
+    .filter(r => r.startsWith(prefix))
+    .map(r => r.slice(prefix.length));
+
+  return allDfsps.filter(dfsp => allowedDfspIds.includes(dfsp.id));
+};
 
 /**
  * Creates an entry to store DFSP related info
@@ -41,25 +57,9 @@ const log = logger.child({ component: 'PkiService' });
 exports.createDFSP = async (ctx, body) => {
   log.info('Creating DFSP with body:', body);
 
-  let identityId = null;
-  let clientCreated = false;
+  await DfspIamService.provisionDfsp(body.dfspId, body.email);
 
   try {
-    if (Constants.IAM.ENABLED && Constants.IAM.AUTO_CREATE_ACCOUNTS) {
-      formatValidator.validateDfspId(body.dfspId);
-      formatValidator.validateEmail(body.email);
-
-      await HydraService.createPM4MLClient(body.dfspId);
-      clientCreated = true;
-
-      const created = await KratosService.createIdentity(body.email, body.dfspId, 'dfsp');
-      identityId = created.identityId;
-
-      await KratosService.assignDfspRole(identityId, body.dfspId);
-      await KratosService.assignDfspRole(body.dfspId, body.dfspId);
-      await KratosService.sendInvitationEmail(body.email);
-    }
-
     const regex = / /gi;
     const dfspIdNoSpaces = body.dfspId ? body.dfspId.replace(regex, '-') : null;
 
@@ -76,12 +76,7 @@ exports.createDFSP = async (ctx, body) => {
     return { id: body.dfspId };
   } catch (err) {
     log.error('error in createDFSP: ', err);
-    if (clientCreated) {
-      await HydraService.deleteClient(body.dfspId).catch((e) => log.warn('Hydra rollback failed', { e: e.message }));
-    }
-    if (identityId) {
-      await KratosService.deleteIdentity(identityId).catch((e) => log.warn('Kratos rollback failed', { e: e.message }));
-    }
+    await DfspIamService.deprovisionDfsp(body.dfspId).catch((e) => log.warn('IAM rollback failed', { e: e.message }));
     throw err instanceof ValidationError
       ? err
       : new InternalError(err.message);
@@ -107,17 +102,7 @@ exports.createDFSPWithCSR = async (ctx, body) => {
  **/
 exports.getDFSPs = async (ctx, user) => {
   const rows = await DFSPModel.findAll();
-  const allDfsps = rows.map(r => exports.dfspRowToObject(r));
-
-  if (!user?.roles) {
-    return allDfsps;
-  }
-
-  const allowedDfspIds = user.roles
-    .filter(r => r.startsWith('dfsp:'))
-    .map(r => r.slice(5));
-
-  return allDfsps.filter(dfsp => allowedDfspIds.includes(dfsp.id));
+  return filterDfspsForUser(rows.map(r => exports.dfspRowToObject(r)), user);
 };
 
 /**
@@ -180,11 +165,7 @@ exports.deleteDFSP = async (ctx, dfspId) => {
   const dbDfspId = await DFSPModel.findIdByDfspId(dfspId);
   await pkiEngine.deleteAllDFSPData(dbDfspId);
 
-  if (Constants.IAM.ENABLED) {
-    await KratosService.cleanupDfspIdentities(dfspId);
-    await HydraService.deleteClient(dfspId);
-    await KratosService.deleteDfspRole(dfspId);
-  }
+  await DfspIamService.deprovisionDfsp(dfspId);
 
   return DFSPModel.delete(dfspId);
 };
@@ -219,17 +200,7 @@ exports.setDFSPca = async (ctx, dfspId, body) => {
 
 exports.getDfspsByMonetaryZones = async (ctx, monetaryZoneId, user) => {
   const dfsps = await DFSPModel.getDfspsByMonetaryZones(monetaryZoneId);
-  const allDfsps = dfsps.map(r => exports.dfspRowToObject(r));
-
-  if (!user?.roles) {
-    return allDfsps;
-  }
-
-  const allowedDfspIds = user.roles
-    .filter(r => r.startsWith('dfsp:'))
-    .map(r => r.slice(5));
-
-  return allDfsps.filter(dfsp => allowedDfspIds.includes(dfsp.id));
+  return filterDfspsForUser(dfsps.map(r => exports.dfspRowToObject(r)), user);
 };
 
 exports.getDFSPca = async (ctx, dfspId) => {

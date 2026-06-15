@@ -77,7 +77,7 @@ describe('Credentials Service Integration Tests', () => {
 
       const hydraClient = await HydraService.getClient(testDfsp.dfspId);
       expect(hydraClient).toBeTruthy();
-      expect(hydraClient.clientId).toBe(testDfsp.dfspId);
+      expect(hydraClient.client_id).toBe(testDfsp.dfspId);
 
       const vaultSecret = await context.pkiEngine.getSecret(`api-credentials/${testDfsp.dfspId}`);
       expect(vaultSecret.client_id).toBe(response.data.clientId);

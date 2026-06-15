@@ -1,18 +1,24 @@
 serve:
   public:
-    base_url: http://localhost:4433/
+    base_url: http://kratos.${COMPOSE_DOMAIN}/
     cors:
       enabled: true
       allowed_origins:
-        - "*"
+        - http://${COMPOSE_DOMAIN}
+        - http://auth.${COMPOSE_DOMAIN}
+      allow_credentials: true
   admin:
-    base_url: http://kratos:4434/
+    base_url: http://kratos-admin.${COMPOSE_DOMAIN}/
+
+cookies:
+  domain: ${COMPOSE_DOMAIN}
+  same_site: Lax
 
 selfservice:
-  default_browser_return_url: http://localhost:8081/
+  default_browser_return_url: http://${COMPOSE_DOMAIN}/
   allowed_return_urls:
-    - http://localhost:8081/
-    - http://localhost:4455/
+    - http://${COMPOSE_DOMAIN}/
+    - http://auth.${COMPOSE_DOMAIN}/
 
   methods:
     password:
@@ -21,40 +27,51 @@ selfservice:
       enabled: true
       config:
         lifespan: 168h
+    link:
+      enabled: true
+      config:
+        lifespan: 168h
+    profile:
+      enabled: false
 
   flows:
     error:
-      ui_url: http://localhost:4455/error
+      ui_url: http://auth.${COMPOSE_DOMAIN}/error
 
     settings:
-      ui_url: http://localhost:4455/settings
+      ui_url: http://auth.${COMPOSE_DOMAIN}/settings
       privileged_session_max_age: 15m
       required_aal: highest_available
+      after:
+        password:
+          default_browser_return_url: http://${COMPOSE_DOMAIN}/
 
     recovery:
       enabled: true
-      ui_url: http://localhost:4455/recovery
-      use: code
+      ui_url: http://auth.${COMPOSE_DOMAIN}/recovery
+      use: link
       lifespan: 168h
-      after:
-        default_browser_return_url: http://localhost:8081/
 
     verification:
       enabled: true
-      ui_url: http://localhost:4455/verification
+      ui_url: http://auth.${COMPOSE_DOMAIN}/verification
       use: code
 
     logout:
       after:
-        default_browser_return_url: http://localhost:8081/
+        default_browser_return_url: http://${COMPOSE_DOMAIN}/
 
     login:
-      ui_url: http://localhost:4455/login
+      ui_url: http://auth.${COMPOSE_DOMAIN}/login
       lifespan: 10m
 
     registration:
-      enabled: true
-      ui_url: http://localhost:4455/registration
+      enabled: false
+
+session:
+  cookie:
+    domain: ${COMPOSE_DOMAIN}
+    same_site: Lax
 
 log:
   level: debug
@@ -86,3 +103,11 @@ courier:
     connection_uri: smtp://mailpit:1025/?disable_starttls=true
     from_address: noreply@mojaloop.local
     from_name: Mojaloop MCM
+  templates:
+    recovery:
+      valid:
+        email:
+          subject: file:///etc/config/kratos/templates/recovery.valid.email.subject.gotmpl
+          body:
+            html: file:///etc/config/kratos/templates/recovery.valid.email.body.gotmpl
+            plaintext: file:///etc/config/kratos/templates/recovery.valid.email.body.plaintext.gotmpl

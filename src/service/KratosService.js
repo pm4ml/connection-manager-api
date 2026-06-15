@@ -30,7 +30,6 @@ const { Configuration, IdentityApi, FrontendApi } = require('@ory/kratos-client'
 const Constants = require('../constants/Constants');
 const InternalError = require('../errors/InternalError');
 const NotFoundError = require('../errors/NotFoundError');
-const KetoClient = require('../utils/KetoClient');
 const { logger } = require('../log/logger');
 
 const log = logger.child({ component: 'KratosService' });
@@ -51,14 +50,6 @@ const getFrontendApi = () => {
   return frontendApiCache;
 };
 
-let ketoClientCache = null;
-const getKetoClient = () => {
-  if (!ketoClientCache) {
-    ketoClientCache = new KetoClient(Constants.KETO.WRITE_URL, Constants.KETO.READ_URL);
-  }
-  return ketoClientCache;
-};
-
 const handleApiError = (error, operation, ctx = {}) => {
   const status = error?.response?.status;
   const body = error?.response?.data;
@@ -70,29 +61,27 @@ const handleApiError = (error, operation, ctx = {}) => {
 };
 
 /**
- * Creates a Kratos identity with traits {email, dfspId, role}.
- * The identity has an unverified email; password is set later via recovery flow.
+ * Creates a Kratos identity for a DFSP admin (hub admin when dfspId is
+ * omitted). Roles go in traits, which the portal reads via whoami; dfspId
+ * goes in metadata_public. Email starts unverified; the password is set
+ * through the invitation link.
  *
  * @param {string} email
- * @param {string} dfspId  (optional — undefined for hub admins)
- * @param {string} role    (e.g. "dfsp", "pta", "mta")
+ * @param {string} dfspId  (optional, undefined for hub admins)
  * @returns {Promise<{identityId: string}>}
  */
-exports.createIdentity = async (email, dfspId, role) => {
+exports.createIdentity = async (email, dfspId) => {
   const api = getIdentityApi();
-  const traits = { email };
-  if (dfspId) traits.dfspId = dfspId;
-  if (role) traits.role = role;
+  const createIdentityBody = {
+    schema_id: Constants.KRATOS.IDENTITY_SCHEMA_ID,
+    traits: { email, roles: dfspId ? [`${Constants.IAM.DFSP_ROLE_PREFIX}${dfspId}`] : [] },
+    verifiable_addresses: [{ value: email, via: 'email', verified: false, status: 'pending' }],
+  };
+  if (dfspId) createIdentityBody.metadata_public = { dfspId };
 
   try {
-    const { data } = await api.createIdentity({
-      createIdentityBody: {
-        schema_id: Constants.KRATOS.IDENTITY_SCHEMA_ID,
-        traits,
-        verifiable_addresses: [{ value: email, via: 'email', verified: false, status: 'pending' }],
-      },
-    });
-    log.info(`Created Kratos identity ${data.id} for ${email}`, { dfspId, role });
+    const { data } = await api.createIdentity({ createIdentityBody });
+    log.info(`Created Kratos identity ${data.id} for ${email}`, { dfspId });
     return { identityId: data.id };
   } catch (error) {
     if (error?.response?.status === 409) {
@@ -120,9 +109,8 @@ exports.findIdentityByEmail = async (email) => {
 };
 
 /**
- * Triggers a Kratos recovery flow for the given identity's email. Kratos's
- * configured courier dispatches the recovery email (containing a one-time code
- * or link) so the user can complete the invitation by setting a password.
+ * Triggers a Kratos magic-link recovery flow. The courier emails a one-time
+ * link; clicking it signs the user in to set their password.
  *
  * @param {string} email
  */
@@ -136,9 +124,9 @@ exports.sendInvitationEmail = async (email) => {
     const { data: flow } = await api.createNativeRecoveryFlow();
     await api.updateRecoveryFlow({
       flow: flow.id,
-      updateRecoveryFlowBody: { method: 'code', email },
+      updateRecoveryFlowBody: { method: 'link', email },
     });
-    log.info(`Triggered Kratos recovery flow (invitation) for ${email}`);
+    log.info(`Triggered Kratos invitation (recovery link) for ${email}`);
   } catch (error) {
     handleApiError(error, 'sendInvitationEmail', { email });
   }
@@ -160,59 +148,5 @@ exports.deleteIdentity = async (identityId) => {
       return;
     }
     handleApiError(error, 'deleteIdentity', { identityId });
-  }
-};
-
-/**
- * Assigns a role to an identity via Keto relation tuples.
- *
- * @param {string} identityId  Kratos identity ID
- * @param {string} dfspId      DFSP scope (omit for non-DFSP roles)
- */
-exports.assignDfspRole = async (identityId, dfspId) => {
-  const keto = getKetoClient();
-  await keto.createDfspRole(dfspId);
-  await keto.assignUserToDfspRole(identityId, dfspId);
-  log.info(`Assigned identity ${identityId} to DFSP role ${dfspId}`);
-};
-
-/**
- * Removes an identity from a DFSP role.
- */
-exports.removeDfspRole = async (identityId, dfspId) => {
-  const keto = getKetoClient();
-  await keto.removeUserFromDfspRole(identityId, dfspId);
-  log.info(`Removed identity ${identityId} from DFSP role ${dfspId}`);
-};
-
-/**
- * Deletes the DFSP role itself (after all members removed).
- */
-exports.deleteDfspRole = async (dfspId) => {
-  const keto = getKetoClient();
-  await keto.deleteDfspRole(dfspId);
-  log.info(`Deleted Keto DFSP role ${dfspId}`);
-};
-
-/**
- * Removes every direct Kratos-identity member from the dfsp:{dfspId} Keto role,
- * and deletes any identity that ends up with no remaining dfsp:* memberships.
- * The Hydra machine subject (subject_id === dfspId) is left alone — the Hydra
- * client itself is torn down separately.
- *
- * @param {string} dfspId
- */
-exports.cleanupDfspIdentities = async (dfspId) => {
-  const keto = getKetoClient();
-  const memberIds = await keto.listDfspRoleMemberIds(dfspId);
-  for (const subjectId of memberIds) {
-    if (subjectId === dfspId) continue;
-    await keto.removeUserFromDfspRole(subjectId, dfspId);
-    const hasOthers = await keto.hasOtherDfspMemberships(subjectId, dfspId);
-    if (!hasOthers) {
-      await exports.deleteIdentity(subjectId);
-    } else {
-      log.info(`Identity ${subjectId} retained — still a member of other DFSP roles`);
-    }
   }
 };

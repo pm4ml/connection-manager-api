@@ -21,13 +21,15 @@
             "verification": { "via": "email" }
           }
         },
-        "dfspId": {
+        "name": {
           "type": "string",
-          "title": "DFSP ID"
+          "title": "Name"
         },
-        "role": {
-          "type": "string",
-          "title": "Role"
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "required": ["email"],

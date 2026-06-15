@@ -39,14 +39,14 @@ const parseRoles = (raw) => {
 };
 
 /**
- * Trusts request headers set by the upstream Oathkeeper gateway.
- * Authorization is enforced by Oathkeeper+Keto; this middleware only surfaces
- * the authenticated subject so controllers can audit-log who made a request.
+ * Trusts the identity headers set by the upstream Oathkeeper gateway, which
+ * has already authenticated and authorized the request. Surfaces the caller
+ * on req.user so controllers can scope list responses and audit-log.
  *
- *   X-User    — Kratos identity ID or Hydra client_id
- *   X-Email   — email from Kratos identity traits
- *   X-DFSP-ID — DFSP context (from Oathkeeper URL match)
- *   X-Roles   — Keto-derived roles (JSON array or comma-separated)
+ *   X-User    Kratos identity id or Hydra client_id
+ *   X-Email   caller email
+ *   X-DFSP-ID DFSP from the request path
+ *   X-Roles   caller roles, e.g. ["hub-admin"] or ["dfsp:<id>"]
  */
 exports.createHeaderTrustMiddleware = () => (req, res, next) => {
   try {

@@ -81,30 +81,33 @@ module.exports = {
   // If set to true, enables logging of request metadata using Winston.
   // Note: Enabling this may expose sensitive headers in logs.
   WINSTON_REQUEST_META_DATA: env.get('WINSTON_REQUEST_META_DATA').default('false').asBool(),
-  CLIENT_URL: env.get('CLIENT_URL').default('http://localhost:8081/').asString(),
+  CLIENT_URL: env.get('CLIENT_URL').default('http://mcm.localhost/').asString(),
 
   IAM: {
     ENABLED: env.get('IAM_ENABLED').default('false').asBool(),
     AUTO_CREATE_ACCOUNTS: env.get('IAM_AUTO_CREATE_ACCOUNTS').default('true').asBool(),
+    HUB_ADMIN_ROLE: env.get('IAM_HUB_ADMIN_ROLE').default('hub-admin').asString(),
+    DFSP_ROLE_PREFIX: env.get('IAM_DFSP_ROLE_PREFIX').default('dfsp:').asString(),
   },
 
   HYDRA: {
-    ADMIN_URL: env.get('HYDRA_ADMIN_URL').default('http://localhost:4445').asString(),
-    PUBLIC_URL: env.get('HYDRA_PUBLIC_URL').default('http://localhost:4444').asString(),
+    ADMIN_URL: env.get('HYDRA_ADMIN_URL').default('http://hydra-admin.mcm.localhost').asString(),
+    PUBLIC_URL: env.get('HYDRA_PUBLIC_URL').default('http://hydra.mcm.localhost').asString(),
     AUDIENCE: env.get('HYDRA_AUDIENCE').default('connection-manager-api').asString(),
   },
 
   KRATOS: {
-    ADMIN_URL: env.get('KRATOS_ADMIN_URL').default('http://localhost:4434').asString(),
-    PUBLIC_URL: env.get('KRATOS_PUBLIC_URL').default('http://localhost:4433').asString(),
+    ADMIN_URL: env.get('KRATOS_ADMIN_URL').default('http://kratos-admin.mcm.localhost').asString(),
+    PUBLIC_URL: env.get('KRATOS_PUBLIC_URL').default('http://kratos.mcm.localhost').asString(),
     IDENTITY_SCHEMA_ID: env.get('KRATOS_IDENTITY_SCHEMA_ID').default('default').asString(),
-    INVITE_RETURN_TO_URL: env.get('KRATOS_INVITE_RETURN_TO_URL').default('http://localhost:8081/').asString(),
+    INVITE_RETURN_TO_URL: env.get('KRATOS_INVITE_RETURN_TO_URL').default('http://mcm.localhost/').asString(),
     INVITE_TOKEN_TTL: env.get('KRATOS_INVITE_TOKEN_TTL').default('168h').asString(),
   },
 
   KETO: {
-    READ_URL: env.get('KETO_READ_URL').default('http://localhost:4466').asString(),
-    WRITE_URL: env.get('KETO_WRITE_URL').default('http://localhost:4467').asString(),
+    READ_URL: env.get('KETO_READ_URL').default('http://keto-read.mcm.localhost').asString(),
+    WRITE_URL: env.get('KETO_WRITE_URL').default('http://keto-write.mcm.localhost').asString(),
+    HUB_OBJECT: env.get('KETO_HUB_OBJECT').default('mojaloop').asString(),
   },
 
   EXTRA_TLS: {

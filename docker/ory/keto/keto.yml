@@ -10,8 +10,7 @@ serve:
     port: 4468
 
 namespaces:
-  - id: 0
-    name: role
+  location: file:///etc/keto-namespaces/mcm.keto.ts
 
 log:
   level: debug

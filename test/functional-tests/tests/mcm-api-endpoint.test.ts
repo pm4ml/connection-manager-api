@@ -43,7 +43,8 @@ describe('MCM API Tests', () => {
     apiHelperOptions.login = {
       username: Config.username,
       password: Config.password,
-      baseUrl: Config.mcmEndpoint
+      baseUrl: Config.mcmEndpoint,
+      kratosUrl: Config.kratosPublicUrl
     }
   }
 
@@ -98,10 +99,11 @@ describe('MCM API Tests', () => {
 
   describe('DFSP Egress Endpoint Configuration should', () => {
 
-    test('MCMAPI.3 - return a 404 when querying a DFSP Endpoint Egress Configuration for a DFSP that does not exist', async () => {
+    test('MCMAPI.3 - return a 403 when querying a DFSP Endpoint Egress Configuration for a DFSP the caller has no access to', async () => {
       // ### Setup
-      const errorId = 'NotFoundError';
-      const errorMessage = 'DFSP with id DFSP_DOES_NOT_EXIST not found';
+      // The Oathkeeper gateway authorizes egress access via a Dfsp.manage
+      // permission tuple keyed on the DFSP id. An unknown id has no such tuple,
+      // so the request is denied at the gateway before reaching MCM.
       const invalidDfspId = 'DFSP_DOES_NOT_EXIST'
 
       // ### Act
@@ -111,10 +113,9 @@ describe('MCM API Tests', () => {
       });
 
       // ### Test
-      expect(response?.data?.payload?.id).toBe(errorId);
-      expect(response?.data?.payload?.message).toBe(errorMessage);
-      expect(response?.data?.message).toBe(errorMessage);
-      expect(response?.status).toBe(404);
+      expect(response?.status).toBe(403);
+      expect(response?.data?.error?.code).toBe(403);
+      expect(response?.data?.error?.status).toBe('Forbidden');
     });
 
     test('MCMAPI.4 - return a 404 when querying a DFSP Endpoint Egress Configuration that does not exist', async () => {
@@ -257,10 +258,11 @@ describe('MCM API Tests', () => {
 
   describe('DFSP Egress Ingress Configuration should', () => {
 
-    test('MCMAPI.7 - return a 404 when querying a DFSP Endpoint Ingress Configuration for a DFSP that does not exist', async () => {
+    test('MCMAPI.7 - return a 403 when querying a DFSP Endpoint Ingress Configuration for a DFSP the caller has no access to', async () => {
       // ### Setup
-      const errorId = 'NotFoundError';
-      const errorMessage = 'DFSP with id DFSP_DOES_NOT_EXIST not found';
+      // The Oathkeeper gateway authorizes ingress access via a Dfsp.manage
+      // permission tuple keyed on the DFSP id. An unknown id has no such tuple,
+      // so the request is denied at the gateway before reaching MCM.
       const invalidDfspId = 'DFSP_DOES_NOT_EXIST'
 
       // ### Act
@@ -270,10 +272,9 @@ describe('MCM API Tests', () => {
       });
 
       // ### Test
-      expect(response?.data?.payload?.id).toBe(errorId);
-      expect(response?.data?.payload?.message).toBe(errorMessage);
-      expect(response?.data?.message).toBe(errorMessage);
-      expect(response?.status).toBe(404);
+      expect(response?.status).toBe(403);
+      expect(response?.data?.error?.code).toBe(403);
+      expect(response?.data?.error?.status).toBe('Forbidden');
     });
 
     test('MCMAPI.8 - return a 404 when querying a DFSP Endpoint Ingress Configuration that does not exist', async () => {

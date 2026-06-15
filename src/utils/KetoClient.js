@@ -1,122 +1,77 @@
 const { Configuration, RelationshipApi } = require('@ory/keto-client');
 
 class KetoClient {
-  constructor(writeUrl, readUrl) {
-    this.client = new RelationshipApi(new Configuration({ basePath: writeUrl }));
-    this.readClient = new RelationshipApi(new Configuration({ basePath: readUrl }));
+  constructor(writeUrl, readUrl, hubObject) {
+    this.write = new RelationshipApi(new Configuration({ basePath: writeUrl }));
+    this.read = new RelationshipApi(new Configuration({ basePath: readUrl }));
+    this.hubObject = hubObject;
   }
 
-  async createRelationship(namespace, object, relation, subjectId) {
-    let createBody = { namespace, object, relation };
-
-    if (subjectId.includes('#')) {
-      const [subjectNamespaceAndObject, subjectRelation] = subjectId.split('#');
-      const [subjectNamespace, ...objectParts] = subjectNamespaceAndObject.split(':');
-      const subjectObject = objectParts.join(':');
-
-      createBody.subject_set = {
-        namespace: subjectNamespace,
-        object: subjectObject,
-        relation: subjectRelation
-      };
-    } else {
-      createBody.subject_id = subjectId;
-    }
-
+  async _put(body) {
     try {
-      await this.client.createRelationship({ createRelationshipBody: createBody });
+      await this.write.createRelationship({ createRelationshipBody: body });
     } catch (error) {
-      if (error.response?.status !== 409) // Already exists
-        throw error;
+      if (error.response?.status !== 409) throw error; // 409 = already exists
     }
   }
 
-  // Create dfsp:{dfspId} role: members of dfsp:{id} count as members of the
-  // generic dfsp role, and hub-admin members count as members of dfsp:{id}.
-  async createDfspRole(dfspId) {
-    await this.createRelationship('role', 'dfsp', 'member', `role:dfsp:${dfspId}#member`);
-    await this.createRelationship('role', `dfsp:${dfspId}`, 'member', 'role:hub-admin#member');
+  // Dfsp:<id>#parent@Hub:<hubObject>
+  async createDfsp (dfspId) {
+    await this._put({
+      namespace: 'Dfsp',
+      object: dfspId,
+      relation: 'parent',
+      subject_set: { namespace: 'Hub', object: this.hubObject, relation: '' },
+    });
   }
 
-  // Assign user to dfsp:{dfspId} role
-  async assignUserToDfspRole(userId, dfspId) {
-    return await this.createRelationship('role', `dfsp:${dfspId}`, 'member', userId);
+  // Dfsp:<id>#members@<userId>  (userId = Kratos identity id, or Hydra client_id for machines)
+  async addDfspMember (userId, dfspId) {
+    await this._put({ namespace: 'Dfsp', object: dfspId, relation: 'members', subject_id: userId });
   }
 
-  // Remove user from dfsp:{dfspId} role
-  async removeUserFromDfspRole(userId, dfspId) {
-    try {
-      await this.client.deleteRelationships({
-        namespace: 'role',
-        object: `dfsp:${dfspId}`,
-        relation: 'member',
-        subjectId: userId
-      });
-      return true;
-    } catch (error) {
-      throw error;
-    }
+  async removeDfspMember (userId, dfspId) {
+    await this.write.deleteRelationships({ namespace: 'Dfsp', object: dfspId, relation: 'members', subjectId: userId });
   }
 
-  // Delete dfsp:{dfspId} role (removes inheritance)
-  async deleteDfspRole(dfspId) {
-    try {
-      await this.client.deleteRelationships({
-        namespace: 'role',
-        object: 'dfsp',
-        relation: 'member',
-        subjectSet: {
-          namespace: 'role',
-          object: `dfsp:${dfspId}`,
-          relation: 'member'
-        }
-      });
-      return true;
-    } catch (error) {
-      throw error;
-    }
+  // Removes a DFSP entirely (parent link + all member tuples).
+  async deleteDfsp (dfspId) {
+    await this.write.deleteRelationships({ namespace: 'Dfsp', object: dfspId });
   }
 
-  // List subject_ids that are direct members of dfsp:{dfspId}#member.
-  // Subject_set entries (e.g., hub-admin transitivity) are excluded.
-  async listDfspRoleMemberIds(dfspId) {
+  // Direct member subject_ids of a DFSP.
+  async listDfspMembers (dfspId) {
     const out = [];
     let pageToken;
     do {
-      const { data } = await this.readClient.getRelationships({
-        namespace: 'role',
-        object: `dfsp:${dfspId}`,
-        relation: 'member',
-        pageToken,
-      });
-      for (const tuple of data.relation_tuples || []) {
-        if (tuple.subject_id) out.push(tuple.subject_id);
+      const { data } = await this.read.getRelationships({ namespace: 'Dfsp', object: dfspId, relation: 'members', pageToken });
+      for (const t of data.relation_tuples || []) {
+        if (t.subject_id) out.push(t.subject_id);
       }
       pageToken = data.next_page_token || undefined;
     } while (pageToken);
     return out;
   }
 
-  // Returns true if the subject has membership in any dfsp:{id} role other than the excluded one.
-  async hasOtherDfspMemberships(subjectId, excludeDfspId) {
+  // DFSP ids the subject is a direct member of. A user may belong to several
+  // DFSPs (e.g. system integrators).
+  async listDfspMemberships (userId) {
+    const out = [];
     let pageToken;
     do {
-      const { data } = await this.readClient.getRelationships({
-        namespace: 'role',
-        relation: 'member',
-        subjectId,
-        pageToken,
-      });
-      for (const tuple of data.relation_tuples || []) {
-        if (typeof tuple.object === 'string'
-            && tuple.object.startsWith('dfsp:')
-            && tuple.object !== `dfsp:${excludeDfspId}`) {
-          return true;
-        }
+      const { data } = await this.read.getRelationships({ namespace: 'Dfsp', relation: 'members', subjectId: userId, pageToken });
+      for (const t of data.relation_tuples || []) {
+        if (t.object) out.push(t.object);
       }
       pageToken = data.next_page_token || undefined;
     } while (pageToken);
-    return false;
+    return out;
+  }
+
+  // True if the subject is a member of any DFSP other than excludeDfspId.
+  async hasOtherDfspMemberships (userId, excludeDfspId) {
+    const memberships = await this.listDfspMemberships(userId);
+    return memberships.some((dfspId) => dfspId !== excludeDfspId);
   }
 }
 
