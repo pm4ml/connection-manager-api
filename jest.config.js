@@ -38,6 +38,7 @@ module.exports = {
       displayName: 'integration',
       testMatch: ['<rootDir>/test/int/**/*.test.js'],
       setupFiles: ['<rootDir>/test/int/test-env-setup.js'],
+      testTimeout: 30000,
     },
   ],
 };

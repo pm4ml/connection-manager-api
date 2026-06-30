@@ -81,45 +81,33 @@ module.exports = {
   // If set to true, enables logging of request metadata using Winston.
   // Note: Enabling this may expose sensitive headers in logs.
   WINSTON_REQUEST_META_DATA: env.get('WINSTON_REQUEST_META_DATA').default('false').asBool(),
-  CLIENT_URL: env.get('CLIENT_URL').default('http://localhost:8081/').asString(),
+  CLIENT_URL: env.get('CLIENT_URL').default('http://mcm.localhost/').asString(),
 
-  KEYCLOAK: {
-    ENABLED: env.get('KEYCLOAK_ENABLED').default('false').asBool(),
-    BASE_URL: env.get('KEYCLOAK_BASE_URL').default('http://localhost:8080').asString(),
-    DISCOVERY_URL: env.get('KEYCLOAK_DISCOVERY_URL').default('http://localhost:8080/realms/dfsps/.well-known/openid-configuration').asString(),
-    ADMIN_CLIENT_ID: env.get('KEYCLOAK_ADMIN_CLIENT_ID').default('connection-manager-client').asString(),
-    ADMIN_CLIENT_SECRET: env.get('KEYCLOAK_ADMIN_CLIENT_SECRET').asString(),
-    DFSPS_REALM: env.get('KEYCLOAK_DFSPS_REALM').default('dfsps').asString(),
-    AUTO_CREATE_ACCOUNTS: env.get('KEYCLOAK_AUTO_CREATE_ACCOUNTS').default('false').asBool(),
+  IAM: {
+    ENABLED: env.get('IAM_ENABLED').default('false').asBool(),
+    AUTO_CREATE_ACCOUNTS: env.get('IAM_AUTO_CREATE_ACCOUNTS').default('true').asBool(),
+    HUB_ADMIN_ROLE: env.get('IAM_HUB_ADMIN_ROLE').default('hub-admin').asString(),
+    DFSP_ROLE_PREFIX: env.get('IAM_DFSP_ROLE_PREFIX').default('dfsp:').asString(),
+  },
+
+  HYDRA: {
+    ADMIN_URL: env.get('HYDRA_ADMIN_URL').default('http://hydra-admin.mcm.localhost').asString(),
+    PUBLIC_URL: env.get('HYDRA_PUBLIC_URL').default('http://hydra.mcm.localhost').asString(),
+    AUDIENCE: env.get('HYDRA_AUDIENCE').default('connection-manager-api').asString(),
+  },
+
+  KRATOS: {
+    ADMIN_URL: env.get('KRATOS_ADMIN_URL').default('http://kratos-admin.mcm.localhost').asString(),
+    PUBLIC_URL: env.get('KRATOS_PUBLIC_URL').default('http://kratos.mcm.localhost').asString(),
+    IDENTITY_SCHEMA_ID: env.get('KRATOS_IDENTITY_SCHEMA_ID').default('default').asString(),
+    INVITE_RETURN_TO_URL: env.get('KRATOS_INVITE_RETURN_TO_URL').default('http://mcm.localhost/').asString(),
+    INVITE_TOKEN_TTL: env.get('KRATOS_INVITE_TOKEN_TTL').default('168h').asString(),
   },
 
   KETO: {
-    ENABLED: env.get('ENABLE_KETO').default('false').asBool(),
-    WRITE_URL: env.get('KETO_WRITE_URL').default('http://localhost:4467').asString(),
-  },
-
-  OPENID: {
-    ENABLE_2FA: env.get('OPENID_ENABLE_2FA').default('false').asBool(),
-    ENABLED: env.get('OPENID_ENABLED').default('false').asBool(),
-    AUDIENCE: env.get('OPENID_AUDIENCE').default('connection-manager-api').asString(),
-    ALLOW_INSECURE: env.get('OPENID_ALLOW_INSECURE').default('false').asBool(),
-    DISCOVERY_URL: env.get('OPENID_DISCOVERY_URL').asString(),
-    CLIENT_ID: env.get('OPENID_CLIENT_ID').asString(),
-    CLIENT_SECRET: env.get('OPENID_CLIENT_SECRET').asString(),
-    CALLBACK: env.get('LOGIN_CALLBACK').default('http://localhost:3001/api/auth/callback').asString(),
-    JWT_COOKIE_NAME: env.get('OPENID_JWT_COOKIE_NAME').default('MCM-API_ACCESS_TOKEN').asString(),
-    GROUPS: {
-      APPLICATION: env.get('OPENID_APPLICATION_GROUP').default('Application').asString(),
-      EVERYONE: env.get('OPENID_EVERYONE_GROUP').default('everyone').asString(),
-      MTA: env.get('OPENID_MTA_GROUP').default('MTA').asString(),
-      PTA: env.get('OPENID_PTA_GROUP').default('PTA').asString(),
-      DFSP: env.get('OPENID_DFSP_GROUP').default('DFSP').asString()
-    }
-  },
-
-  SESSION_STORE: {
-    SECRET: env.get('SESSION_STORE_SECRET').default('connection_manager_session_secret').asString(),
-    COOKIE_SAME_SITE_STRICT: env.get('SESSION_COOKIE_SAME_SITE_STRICT').default('true').asBool(),
+    READ_URL: env.get('KETO_READ_URL').default('http://keto-read.mcm.localhost').asString(),
+    WRITE_URL: env.get('KETO_WRITE_URL').default('http://keto-write.mcm.localhost').asString(),
+    HUB_OBJECT: env.get('KETO_HUB_OBJECT').default('mojaloop').asString(),
   },
 
   EXTRA_TLS: {

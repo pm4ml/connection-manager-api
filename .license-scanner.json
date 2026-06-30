@@ -1,0 +1,5 @@
+{
+  "exceptions": {
+    "tv4@1.3.0": { "reason": "Public Domain / MIT per upstream repo; no license field on the npm release", "expires": "2027-06-30" }
+  }
+}

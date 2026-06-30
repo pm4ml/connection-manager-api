@@ -31,35 +31,20 @@ process.env.VAULT_PKI_SERVER_ROLE = 'example.com';
 // Switch/Hub
 process.env.SWITCH_ID = 'switch';
 
-// Authentication
-process.env.AUTH_ENABLED = 'true';
+// IAM (Ory: Hydra + Kratos + Keto)
+process.env.IAM_ENABLED = 'true';
+process.env.IAM_AUTO_CREATE_ACCOUNTS = 'true';
 
-// Keycloak integration
-process.env.KEYCLOAK_ENABLED = 'true';
-process.env.KEYCLOAK_BASE_URL = 'http://keycloak.mcm.localhost';
-process.env.KEYCLOAK_DISCOVERY_URL = 'http://keycloak.mcm.localhost/realms/dfsps/.well-known/openid-configuration';
-process.env.KEYCLOAK_ADMIN_CLIENT_ID = 'connection-manager-api-service';
-process.env.KEYCLOAK_ADMIN_CLIENT_SECRET = 'dfsps123';
-process.env.KEYCLOAK_DFSPS_REALM = 'dfsps';
-process.env.KEYCLOAK_AUTO_CREATE_ACCOUNTS = 'true';
+process.env.HYDRA_PUBLIC_URL = 'http://hydra.mcm.localhost';
+process.env.HYDRA_ADMIN_URL = 'http://hydra-admin.mcm.localhost';
+process.env.HYDRA_AUDIENCE = 'connection-manager-api';
 
-// OpenID Connect (2FA Authentication)
-process.env.OPENID_ENABLED = 'true';
-process.env.OPENID_ENABLE_2FA = 'true';
-process.env.OPENID_ALLOW_INSECURE = 'true';
-process.env.OPENID_DISCOVERY_URL = 'http://keycloak.mcm.localhost/realms/dfsps/.well-known/openid-configuration';
-process.env.OPENID_CLIENT_ID = 'connection-manager-auth-client';
-process.env.OPENID_CLIENT_SECRET = 'dfsps456';
-process.env.OPENID_REDIRECT_URI = 'http://mcm.localhost/api/auth/callback';
+process.env.KRATOS_PUBLIC_URL = 'http://kratos.mcm.localhost';
+process.env.KRATOS_ADMIN_URL = 'http://kratos-admin.mcm.localhost';
+process.env.KRATOS_IDENTITY_SCHEMA_ID = 'default';
 
-// Cookie and role settings
-process.env.OPENID_JWT_COOKIE_NAME = 'MCM-API_ACCESS_TOKEN';
-process.env.OPENID_EVERYONE_ROLE = 'everyone';
-process.env.OPENID_MTA_ROLE = 'mta';
-process.env.OPENID_PTA_ROLE = 'pta';
-
-// Session
-process.env.SESSION_SECRET = 'test-session-secret-for-integration-tests';
+process.env.KETO_READ_URL = 'http://keto-read.mcm.localhost';
+process.env.KETO_WRITE_URL = 'http://keto-write.mcm.localhost';
 
 // Features
 process.env.DFSP_WATCHER_ENABLED = 'false';

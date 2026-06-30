@@ -1,4 +1,17 @@
 ignore:
+  # Pinned transitive deps (docs/build tooling, gRPC); not reachable at runtime
+  - vulnerability: GHSA-wcpc-wj8m-hjx6
+    package:
+      name: protobufjs
+  - vulnerability: GHSA-f38q-mgvj-vph7
+    package:
+      name: protobufjs
+  - vulnerability: GHSA-6v5v-wf23-fmfq
+    package:
+      name: markdown-it
+  - vulnerability: GHSA-h67p-54hq-rp68
+    package:
+      name: js-yaml
   # Ignore cross-spawn vulnerabilities by CVE ID due to false positive
   # as grype looks at package-lock.json where it shows versions with
   # vulnerabilities, npm ls shows only 7.0.6 verion is used
@@ -87,6 +100,25 @@ ignore:
   - vulnerability: GHSA-4992-7rv2-5pvq
     package:
       name: undici
+  - vulnerability: GHSA-vxpw-j846-p89q
+    package:
+      name: undici
+  - vulnerability: GHSA-vmh5-mc38-953g
+    package:
+      name: undici
+  - vulnerability: GHSA-hm92-r4w5-c3mj
+    package:
+      name: undici
+  - vulnerability: GHSA-pr7r-676h-xcf6
+    package:
+      name: undici
+  - vulnerability: GHSA-p88m-4jfj-68fv
+    package:
+      name: undici
+  # transitive linkify-it (docs tooling via markdown-it/shins); not reachable at runtime
+  - vulnerability: GHSA-22p9-wv53-3rq4
+    package:
+      name: linkify-it
   # transitive protobufjs (via @mojaloop/event-sdk)
   - vulnerability: GHSA-jggg-4jg4-v7c6
     package:

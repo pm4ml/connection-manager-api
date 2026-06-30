@@ -26,98 +26,40 @@
 
 'use strict';
 
-const Constants = require('../constants/Constants');
-const { validateToken } = require('../utils/authUtils');
-const PkiService = require("../service/PkiService");
 const { logger } = require('../log/logger');
 
-/**
- * Middleware to handle authentication for both browser and machine clients
- */
-exports.createAuthMiddleware = () => {
-  return async (req, res, next) => {
-    if (!Constants.OPENID.ENABLED) {
-      return next();
-    }
-
-    try {
-      const authHeader = req.headers.authorization || '';
-
-      if (authHeader.startsWith('Bearer ')) {
-        const token = authHeader.substring(7);
-
-        try {
-          req.user = await validateToken(token);
-        } catch (tokenError) {
-          logger.error('Token validation error:', tokenError);
-        }
-
-        return next();
-      } else if (req.session?.user) {
-        req.user = req.session.user;
-      }
-
-      next();
-    } catch (error) {
-      logger.error('Auth middleware error:', error);
-      next(error);
-    }
-  };
+const parseRoles = (raw) => {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_) {
+    return raw.split(',').map((r) => r.trim()).filter(Boolean);
+  }
 };
 
 /**
- * Creates an OAuth2 handler for use with oas3-tools security
+ * Trusts the identity headers set by the upstream Oathkeeper gateway, which
+ * has already authenticated and authorized the request. Surfaces the caller
+ * on req.user so controllers can scope list responses and audit-log.
+ *
+ *   X-User    Kratos identity id or Hydra client_id
+ *   X-Email   caller email
+ *   X-DFSP-ID DFSP from the request path
+ *   X-Roles   caller roles, e.g. ["hub-admin"] or ["dfsp:<id>"]
  */
-exports.createOAuth2Handler = () => {
-  return async (req, scopes, schema) => {
-    const { user } = req;
-    const apiPath = req.openapi?.openApiRoute;
-    let error = null;
+exports.createHeaderTrustMiddleware = () => (req, res, next) => {
+  try {
+    const id = req.headers['x-user'];
+    const email = req.headers['x-email'];
+    const dfspId = req.headers['x-dfsp-id'];
+    const roles = parseRoles(req.headers['x-roles']);
 
-    if (!user?.roles) {
-      error = new Error('Authentication required');
-      error.statusCode = 401;
-      error.headers = { 'X-AUTH-ERROR': error.message };
-      throw error;
+    if (id || email || dfspId || roles.length) {
+      req.user = { id, email, dfspId, roles };
     }
-
-    // Check DFSP-specific paths FIRST, before checking general scopes
-    // This allows DFSP users to access their own resources without needing admin roles
-    if (/\/dfsps\/{dfspId}/.test(apiPath)) {
-      if (user.roles.includes('pta')) {
-        return true;
-      }
-
-      const { dfspId } = req.openapi.pathParams;
-      return PkiService.getDFSPById(req.context, dfspId)
-        .then(dfsp => {
-          if (!dfsp.securityGroup || user.roles.includes(dfsp.securityGroup)) {
-            return true;
-          } else {
-            logger.info(`DFSP specific scopes: user does not have the required role`, { user, securityGroup: dfsp.securityGroup });
-            error = new Error(`user does not have the required role ${dfsp.securityGroup}`);
-            error.statusCode = 403;
-            error.headers = { 'X-AUTH-ERROR': error.message };
-            throw error;
-          }
-        })
-        .catch(err => {
-          error = new Error(err.message);
-          error.statusCode = 500;
-          error.headers = { 'X-AUTH-ERROR': error.message };
-          throw error;
-        });
-    }
-
-    // General scope check for non-DFSP-specific endpoints
-    if (!scopes.some(role => user.roles.includes(role))) {
-      logger.info(`API defined scopes: user does not have the required roles (See object)`, { user, scopes});
-      error = new Error(`user does not have the required roles ${scopes}`);
-      error.statusCode = 403;
-      error.headers = { 'X-AUTH-ERROR': error.message };
-      throw error;
-    }
-
-    return true;
-  };
+  } catch (err) {
+    logger.error('Header-trust middleware error:', err);
+  }
+  next();
 };

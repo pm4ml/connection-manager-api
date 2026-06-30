@@ -1,6 +1,6 @@
 import { ApiHelper, MethodEnum, ApiHelperOptions } from '../util/api-helper';
 import { MailpitHelper } from '../util/mailpit-helper';
-import { KeycloakHelper } from '../util/keycloak-helper';
+import { KratosHelper } from '../util/kratos-helper';
 import Config from '../util/config';
 
 describe('DFSP Credentials Tests', () => {
@@ -25,7 +25,8 @@ describe('DFSP Credentials Tests', () => {
     login: {
       username: Config.username,
       password: Config.password,
-      baseUrl: Config.mcmEndpoint
+      baseUrl: Config.mcmEndpoint,
+      kratosUrl: Config.kratosPublicUrl
     }
   });
 
@@ -53,30 +54,21 @@ describe('DFSP Credentials Tests', () => {
     const message = await mailpitHelper.getLatestMessageForEmail(dfspEmail);
 
     expect(message).toBeTruthy();
-    expect(message.Text).toMatch(/update.*account/i);
+    expect(message.Text).toMatch(/invited/i);
+    expect(message.Text).toMatch(/account/i);
 
     const invitationLink = mailpitHelper.extractInvitationLink(message.Text);
     expect(invitationLink).toBeTruthy();
 
-    const keycloakHelper = new KeycloakHelper();
-    await keycloakHelper.completePasswordSetup(invitationLink!, dfspPassword, {
-      firstName: 'DFSP',
-      lastName: 'User'
-    });
+    const kratosHelper = new KratosHelper(Config.kratosPublicUrl);
+    await kratosHelper.completePasswordSetup(invitationLink!, dfspPassword);
 
     const dfspUserApiHelper = new ApiHelper({
       login: {
         username: dfspEmail,
         password: dfspPassword,
-        baseUrl: Config.mcmEndpoint
-      }
-    });
-
-    const profileResponse = await dfspUserApiHelper.sendRequest({
-      method: MethodEnum.GET,
-      url:`${Config.mcmEndpoint}/auth/profile`,
-      headers: {
-        'Content-Type': 'application/json'
+        baseUrl: Config.mcmEndpoint,
+        kratosUrl: Config.kratosPublicUrl
       }
     });
 
@@ -106,7 +98,7 @@ describe('DFSP Credentials Tests', () => {
         oauth: {
           clientId: dfspClientId,
           clientSecret: dfspClientSecret,
-          tokenUrl: `http://keycloak.mcm.localhost/realms/dfsps/protocol/openid-connect/token`
+          tokenUrl: `${Config.hydraPublicUrl}/oauth2/token`
         }
       });
 

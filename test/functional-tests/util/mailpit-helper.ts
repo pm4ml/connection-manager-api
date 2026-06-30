@@ -22,7 +22,7 @@ export class MailpitHelper {
   }
 
   extractInvitationLink(messageText: string): string | null {
-    const linkMatch = messageText.match(/http:\/\/keycloak[^\s]+/);
+    const linkMatch = messageText.match(/http:\/\/kratos[^\s]+/);
     return linkMatch ? linkMatch[0] : null;
   }
 

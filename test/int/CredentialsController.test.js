@@ -12,7 +12,7 @@
 
 const { createContext, destroyContext } = require('./context');
 const CredentialsService = require('../../src/service/CredentialsService');
-const KeycloakService = require('../../src/service/KeycloakService');
+const HydraService = require('../../src/service/HydraService');
 const { createUniqueDfsp } = require('./test-helpers');
 
 describe('Credentials Service Integration Tests', () => {
@@ -24,14 +24,15 @@ describe('Credentials Service Integration Tests', () => {
 
     testDfsp = createUniqueDfsp();
 
-    // Create test DFSP resources in Keycloak
-    await KeycloakService.createDfspResources(testDfsp.dfspId, testDfsp.email);
+    // Create the Hydra OAuth2 client that backs the DFSP's PM4ML credentials
+    await HydraService.createPM4MLClient(testDfsp.dfspId);
   });
 
   afterAll(async () => {
-    await KeycloakService.deleteDfspResources(testDfsp.dfspId);
-    
+    await HydraService.deleteClient(testDfsp.dfspId);
+
     if (context) {
+      try { await context.pkiEngine.deleteSecret(`api-credentials/${testDfsp.dfspId}`); } catch (_) { /* ignore */ }
       await destroyContext(context);
     }
   });
@@ -71,17 +72,26 @@ describe('Credentials Service Integration Tests', () => {
       expect(retrievedCredentials.clientSecret).toBe(secondResponse.data.clientSecret);
     });
 
-    it('should maintain consistency between Vault and Keycloak', async () => {
+    it('should maintain consistency between Vault and Hydra', async () => {
       const response = await CredentialsService.createCredentials(context, testDfsp.dfspId);
 
-      const kcAdminClient = await KeycloakService.getKeycloakAdminClient();
-      const clients = await kcAdminClient.clients.find({ clientId: testDfsp.dfspId });
-      const keycloakSecret = await kcAdminClient.clients.getClientSecret({ id: clients[0].id });
+      const hydraClient = await HydraService.getClient(testDfsp.dfspId);
+      expect(hydraClient).toBeTruthy();
+      expect(hydraClient.client_id).toBe(testDfsp.dfspId);
 
       const vaultSecret = await context.pkiEngine.getSecret(`api-credentials/${testDfsp.dfspId}`);
-
-      expect(keycloakSecret.value).toBe(response.data.clientSecret);
+      expect(vaultSecret.client_id).toBe(response.data.clientId);
       expect(vaultSecret.client_secret).toBe(response.data.clientSecret);
+
+      // Verify the stored secret actually works against Hydra's token endpoint
+      const Constants = require('../../src/constants/Constants');
+      const basic = Buffer.from(`${response.data.clientId}:${response.data.clientSecret}`).toString('base64');
+      const tokenResp = await fetch(`${Constants.HYDRA.PUBLIC_URL}/oauth2/token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': `Basic ${basic}` },
+        body: new URLSearchParams({ grant_type: 'client_credentials' }),
+      });
+      expect(tokenResp.status).toBe(200);
     });
   });
 

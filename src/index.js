@@ -36,8 +36,8 @@ const run = async ({
 
   // Start the server
   http.createServer(appConnected).listen(serverPort, function () {
-    logger.info('Connection-Manager API server is listening on port %d...', serverPort);
-    logger.info('Swagger-ui is available on http://localhost:%d/docs', serverPort);
+    logger.info(`Connection-Manager API server is listening on port ${serverPort}...`);
+    logger.info(`Swagger-ui is available on http://localhost:${serverPort}/docs`);
   });
 
   const metricsServer = createMetricsServer();
